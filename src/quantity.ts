@@ -145,7 +145,7 @@ export function subtractQuantity(left: Quantity, right: Quantity): Quantity {
   );
 }
 
-/** Convert an exact sum or difference without discarding nonzero digits. */
+/** Store an exact arithmetic result without discarding any significant digits. */
 function quantityAtStorableScale(minor: bigint, decimals: number, unit: UnitCode, label: string): Quantity {
   const stored = storableQuantityDigits(minor, decimals);
   if (stored === undefined) throw new Error(`${label} exceeds the safe integer storage range.`);
@@ -167,14 +167,12 @@ export function multiplyQuantityByWholeNumber(
   multiplier: number,
 ): Quantity {
   assertSafeInteger(multiplier, "Quantity whole-number multiplier");
-  return quantity({
-    amountMinor: safeNumber(
-      BigInt(value.amountMinor) * BigInt(multiplier),
-      "Quantity whole-number multiplication",
-    ),
-    decimals: value.decimals,
-    unit: value.unit,
-  });
+  return quantityAtStorableScale(
+    BigInt(value.amountMinor) * BigInt(multiplier),
+    value.decimals,
+    value.unit,
+    "Quantity whole-number multiplication",
+  );
 }
 
 /** Multiply by an exact positive target-unit-per-source-unit factor. */

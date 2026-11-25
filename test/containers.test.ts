@@ -210,7 +210,7 @@ it("reconciles a subtree count after an edge-only contents move on both storage 
   expect(await native.read.world()).toEqual(await canonical.read.world());
 });
 
-it("keeps an embodied edge and serial unchanged when a contents move would erase its positive row", async () => {
+it.each(["node", "contents"])("keeps an embodied edge and serial unchanged when a %s move would erase its positive row", async (move) => {
   const catalog = createTabletCatalog();
   for (const storage of [
     createInMemoryInventoryDurableStorage(),
@@ -232,12 +232,18 @@ it("keeps an embodied edge and serial unchanged when a contents move would erase
       asPlacementNode: { acceptsPlacement: true },
     });
     const before = await inventory.read.world();
-    await expect(inventory.placement.moveContents({
+    const beforeStock = storage.readSegmentedStockHead();
+    const beforeRows = storage.readPositionSegment().materialize();
+    const command = {
       operationId: "move-into-serial-deficit", occurredAtEpochMs: time2,
-      nodeId: "source", into: "destination",
-    })).rejects.toThrow("is not positive after its event");
+      nodeId: move === "node" ? "deficit-case" : "source", into: "destination",
+    };
+    await expect(move === "node" ? inventory.placement.move(command) : inventory.placement.moveContents(command))
+      .rejects.toThrow("is not positive after its event");
     expect(await inventory.read.placementAncestry("deficit-case")).toEqual(["deficit-case", "source"]);
     expect(await inventory.read.world()).toEqual(before);
+    expect(storage.readSegmentedStockHead()).toEqual(beforeStock);
+    expect(storage.readPositionSegment().materialize()).toEqual(beforeRows);
   }
 });
 

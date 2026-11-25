@@ -1310,9 +1310,11 @@ export class InMemoryInventoryDurableStorage
       input.operationId
     );
     const existing = this.operations.get(input.operationId);
-    if (existing !== undefined) {
+    const existingOperation = existing?.value ??
+      retainedInventoryReportedTransferOperation(this.eventJournal.eventByOperation(input.operationId));
+    if (existingOperation !== undefined) {
       assertSameInventoryOperationIntent(
-        existing.value,
+        existingOperation,
         input.intentFingerprint
       );
       await this.fire(
@@ -1320,7 +1322,7 @@ export class InMemoryInventoryDurableStorage
         "after",
         input.operationId
       );
-      return { operation: structuredClone(existing.value), created: false };
+      return { operation: structuredClone(existingOperation), created: false };
     }
     for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
@@ -1522,7 +1524,13 @@ export class InMemoryInventoryDurableStorage
   private async completeUnlocked(
     operationId: string
   ): Promise<InventoryOperationReceipt> {
-    const stored = this.requireStored(operationId);
+    const stored = this.operations.get(operationId);
+    if (stored === undefined) {
+      // A reopened world can retain the completed operation only in its event journal.
+      const completed = retainedInventoryReportedTransferOperation(this.eventJournal.eventByOperation(operationId));
+      if (completed === undefined) throw new Error("Unknown inventory durable operation.");
+      return completed.receipt;
+    }
     if (stored.value.state === InventoryDurableOperationState.Completed) {
       return structuredClone(stored.value.receipt);
     }

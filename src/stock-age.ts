@@ -1,10 +1,14 @@
 import { InventoryEventKind, type InventoryCommittedEvent } from "./events.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 
+/** Internal replay marker for corrected history that can remove a retained transfer's source age. */
+export const replayEffectiveStockAge = Symbol("replayEffectiveStockAge");
+
 /** Capture FIFO age before a conserved movement changes source/destination positions. */
 export function captureConservedPositiveLayerStarts(
   event: InventoryCommittedEvent,
-  positiveLayerStart: (positionId: string) => number | undefined
+  positiveLayerStart: (positionId: string) => number | undefined,
+  replayEffectiveHistory = false
 ): Map<string, number> {
   const result = new Map<string, number>();
   for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
@@ -12,6 +16,10 @@ export function captureConservedPositiveLayerStarts(
     const destinationId = inventoryStockPositionIdentity(transfer.to);
     const sourceStartedAtEpochMs = positiveLayerStart(sourceId);
     if (sourceStartedAtEpochMs === undefined) {
+      // A corrected earlier receipt can expose a shortage behind a retained
+      // loose-stock transfer. The route remains evidence, with no earlier age to carry.
+      if (replayEffectiveHistory && transfer.from.serialId === undefined &&
+        inventoryConservedArrivalCanSettleDeficit(event)) continue;
       throw new Error(
         `Conserved FIFO provenance source ${sourceId} is not currently positive.`
       );

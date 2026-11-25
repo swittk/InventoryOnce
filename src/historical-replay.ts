@@ -33,6 +33,7 @@ import { compareQuantity, zeroQuantity } from "./quantity.js";
 import type { InventoryCatalog } from "./catalog.js";
 import { inventoryEventDependencyKeys } from "./event-query.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
+import { replayEffectiveStockAge } from "./stock-age.js";
 
 /** Machine-readable reason one proposed historical scenario cannot become inventory truth. */
 export type InventoryHistoricalReplayConflictCode =
@@ -113,6 +114,20 @@ export interface InventoryHistoricalReplayResult {
   readonly effectiveEvents: readonly InventoryCommittedEvent[];
   /** Consequences newly introduced relative to currently effective history. */
   readonly impact: InventoryHistoricalImpact;
+}
+
+/** Project effective history after separately checking the newly exposed deficits. */
+function projectEffectiveInventoryEvents(
+  catalog: InventoryCatalog,
+  events: readonly InventoryCommittedEvent[]
+): InventoryProjectionState {
+  const effectiveHistory = {
+    catalog,
+    events,
+    deficitPolicy: InventoryDeficitPolicy.Record,
+    [replayEffectiveStockAge]: true,
+  };
+  return projectInventoryEvents(effectiveHistory);
 }
 
 /** Build and validate one proposed effective history, preserving published history unchanged. */
@@ -197,17 +212,8 @@ export function replayInventoryHistoricalScenario({
   let actualProjection: InventoryProjectionState;
   let desired: InventoryProjectionState;
   try {
-    actualProjection = projectInventoryEvents({
-      catalog,
-      events: actualEvents,
-      deficitPolicy: InventoryDeficitPolicy.Record,
-    });
-    desired = projectInventoryEvents({
-      catalog,
-      events: effectiveEvents,
-      // Analyze first-class deficits explicitly above; Record lets replay reach later facts.
-      deficitPolicy: InventoryDeficitPolicy.Record,
-    });
+    actualProjection = projectEffectiveInventoryEvents(catalog, actualEvents);
+    desired = projectEffectiveInventoryEvents(catalog, effectiveEvents);
   } catch (error) {
     if (error instanceof InventoryHistoricalReplayConflictError) throw error;
     throw new InventoryHistoricalReplayConflictError({

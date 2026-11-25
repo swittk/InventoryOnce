@@ -54,8 +54,11 @@ describe("atomic conserved split/merge/reclassification", () => {
     expect(moved.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity.amountMinor)).toEqual([
       -Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER,
     ]);
-    expect((await inventory.read.positions({ itemId: "item-a" })).map((position) => position.key.placementNodeId))
-      .toEqual([firstDestination.placementNodeId, secondDestination.placementNodeId]);
+    const balance = parseQuantity(String(Number.MAX_SAFE_INTEGER), "piece");
+    expect(await inventory.read.positions({ itemId: "item-a" })).toMatchObject([
+      { key: firstDestination, measurements: { primary: { quantity: balance } } },
+      { key: secondDestination, measurements: { primary: { quantity: balance } } },
+    ]);
   });
 
   it("splits one stock position into explicit usable and quarantine positions atomically", async () => {

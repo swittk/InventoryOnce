@@ -1,5 +1,6 @@
 import { inventoryIntentFingerprint } from "./canonical.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { compareWorkingQuantities } from "./quantity-storage.js";
 import {
   addQuantity,
   compareQuantity,
@@ -10,7 +11,6 @@ import {
   quantity,
   quantityEq,
   quantityIsWholeMultipleOf,
-  safeNumber,
   subtractQuantity,
   zeroQuantity,
   type Quantity,
@@ -313,11 +313,13 @@ export function assertWholeMeasurementMultiple(
       wholeMeasured.axisId,
       wholeMeasured.quantity.unit,
     );
-    const expected = multiplyQuantityByWholeNumber(
-      wholeMeasured.quantity,
-      safeNumber(packageCount, "Whole package count"),
-    );
-    if (!quantityEq(actual, expected)) {
+    // The product can exceed safe digits at its original scale even when the posted total fits.
+    const expected = {
+      amountMinor: BigInt(wholeMeasured.quantity.amountMinor) * packageCount,
+      decimals: wholeMeasured.quantity.decimals,
+      unit: wholeMeasured.quantity.unit,
+    };
+    if (compareWorkingQuantities(actual, expected) !== 0) {
       throw new Error(
         `Independent axis '${wholeMeasured.axisId}' does not match the same whole package count.`,
       );

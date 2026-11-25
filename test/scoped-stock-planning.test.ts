@@ -90,6 +90,112 @@ function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
 }
 
 describe("indexed stock planning and availability", () => {
+  it.each([false, true])("validates fixed-package effects and broad claims at exact scale (grouped: %s)", async (grouped) => {
+    const item = measuredItemCatalog("pieces").activeItem("measured");
+    const packageId = "precise-weight-box";
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
+      packagingRevisions: [{
+        revisionId: packageId, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("box"),
+        fixedContents: {
+          primary: { axisId: "pieces", quantity: parseQuantity("1.000000000000000", "piece") },
+          independent: [{ axisId: "weight", quantity: parseQuantity("1.000000000000000", "kg") }],
+        },
+      }],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const to = { itemId: item.itemId, placementNodeId: "store" };
+    const lines = grouped
+      ? [{ to, amount: packageAmount(5, packageId) }, { to, amount: packageAmount(5, packageId) }]
+      : [{ to, amount: packageAmount(10, packageId) }];
+    const received = await inventory.stock.receiveMany({
+      operationId: "receive-grouped-precise-packages", occurredAtEpochMs: time0,
+      lines,
+    });
+    const storedWeight = parseQuantity("10.00000000000000", "kg");
+    expect(received.event.stockEffects).toMatchObject([{
+      measurementsDelta: { independent: [{ quantity: storedWeight }] },
+    }]);
+    expect(() => defineInventoryEvent({
+      catalog, event: { ...received.event, stockEffects: received.event.stockEffects.map((effect) => ({
+        ...effect,
+        measurementsDelta: {
+          ...effect.measurementsDelta,
+          independent: [{ axisId: "weight", quantity: parseQuantity("9.00000000000000", "kg") }],
+        },
+      })) },
+    })).toThrow("does not match the same whole package count");
+    const storedPieces = parseQuantity("10.00000000000000", "piece");
+    await inventory.reservations.reserve({
+      reservationId: "claim-grouped-precise-packages", operationId: "reserve-grouped-precise-packages",
+      itemRevisionId: item.revisionId, selector: { itemId: item.itemId }, requested: storedPieces, createdAtEpochMs: time1,
+    });
+    expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([{
+      requested: storedPieces, fulfillable: storedPieces, shortage: parseQuantity("0.000000000000000", "piece"),
+    }]);
+  });
+
+  it("publishes a witnessed issue and a later exact-position shortage in the same batch", async () => {
+    for (const storage of [createInMemoryInventoryDurableStorage(), createInMemoryInventoryDurableStorage({ failpoint: () => undefined })]) {
+      const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+      const from = loosePosition("store");
+      const amount = stockAmount("1", "piece");
+      await inventory.stock.receive({ operationId: "receive-for-shared-issue", occurredAtEpochMs: time0, to: from, amount });
+      const request = { selector, method: InventoryAllocationMethod.Fifo, amount };
+      const command = {
+        operationId: "shared-issue", occurredAtEpochMs: time1,
+        requests: [
+          { ...request, requestId: "witnessed" },
+          { ...request, requestId: "shortage", deficitPosition: from },
+        ],
+      };
+      const result = await inventory.stock.issueManyByPolicy(command);
+      expect(result.allocations).toMatchObject([
+        { requestId: "witnessed", lines: [{ allocatedPrimary: parseQuantity("1", "piece"), layerStartedAtEpochMs: time0 }] },
+        { requestId: "shortage", lines: [], deficit: { primary: parseQuantity("1", "piece") } },
+      ]);
+      expect(result.event.stockEffects).toMatchObject([{
+        measurementsDelta: { primary: { quantity: parseQuantity("-2", "piece") } },
+      }]);
+      expect(result.event.stockEffects[0]?.metadata).toBeUndefined();
+      expect(await inventory.read.positions(selector)).toMatchObject([{
+        measurements: { primary: { quantity: parseQuantity("-1", "piece") } },
+      }]);
+      expect(await inventory.stock.issueManyByPolicy(command)).toEqual({ ...result, replayed: true });
+    }
+  });
+
+  it("keeps positive stock outside the owner scope out of a recorded movement", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const outside = loosePosition("store", { ownerId: "owner-b" });
+    const inside = loosePosition("store", { ownerId: "owner-a" });
+    await inventory.stock.receive({
+      operationId: "receive-outside-owner", occurredAtEpochMs: time0, to: outside, amount: stockAmount("5", "piece"),
+    });
+    const before = storage.readSegmentedStockHead();
+    const request = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], ownerIds: ["owner-a"] }),
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("2", "piece"),
+    };
+    await expect(inventory.stock.transferByPolicy({
+      ...request, deficitPosition: outside, operationId: "transfer-outside-owner", occurredAtEpochMs: time1,
+      toPlacementNodeId: "destination",
+    })).rejects.toThrow("positive stock outside the selected stock scope");
+    await expect(inventory.stock.scrapByPolicy({
+      ...request, deficitPosition: outside, operationId: "scrap-outside-owner", occurredAtEpochMs: time1, reason: "Discarded",
+    })).rejects.toThrow("positive stock outside the selected stock scope");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    const moved = await inventory.stock.transferByPolicy({
+      ...request, deficitPosition: inside, operationId: "transfer-owner-shortage", occurredAtEpochMs: time1,
+      toPlacementNodeId: "destination",
+    });
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{ from: inside, to: { ownerId: "owner-a" } }]);
+    expect(await inventory.read.positions({ itemId: "item-a", ownerIds: ["owner-b"] })).toMatchObject([
+      { key: outside, measurements: { primary: { quantity: parseQuantity("5", "piece") } } },
+    ]);
+  });
+
   it.each([
     { verb: "receive", values: ["0.1", "9007199254740990", "0.9"] },
     { verb: "transfer", values: ["9007199254740990", "0.9", "0.1"] },
@@ -419,8 +525,8 @@ describe("indexed stock planning and availability", () => {
     expect(result.event.unwitnessedStockMovements?.map((part) => part.measurements.primary.quantity)).toEqual(
       ["9007199254740990", "0.1", "0.9"].map((value) => parseQuantity(value, "kg")),
     );
-    expect(result.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity.amountMinor))
-      .toEqual([Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
+    expect(result.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity))
+      .toEqual([parseQuantity("9007199254740991", "kg"), parseQuantity("-9007199254740991", "kg")]);
   });
 
   it.each([
@@ -477,6 +583,35 @@ describe("indexed stock planning and availability", () => {
       primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
       independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
     }]);
+  });
+
+  it.each([false, true])("separates a measured physical shortage from a split-required report (second lot: %s)", async (secondLot) => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    for (const lotId of secondLot ? ["earlier", "later"] : ["earlier"]) {
+      await inventory.stock.receive({
+        operationId: `receive-split-${lotId}`, occurredAtEpochMs: time0,
+        to: { itemId: "measured", lotId, placementNodeId: "store" },
+        amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "2.0", unit: "kg" }]),
+      });
+    }
+    const before = storage.readSegmentedStockHead();
+    const report = inventory.stock.transferByPolicy({
+      operationId: "report-split-or-shortage", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "3", unit: "kg" }]),
+    });
+    if (secondLot) {
+      await expect(report).rejects.toThrow("increments cannot be split");
+      expect(storage.readSegmentedStockHead()).toEqual(before);
+    } else {
+      expect((await report).event.unwitnessedStockMovements).toMatchObject([{
+        measurements: {
+          primary: { quantity: parseQuantity("1", "piece") },
+          independent: [{ quantity: parseQuantity("1.0", "kg") }],
+        },
+      }]);
+    }
   });
 
   it.each([
@@ -1254,7 +1389,8 @@ describe("indexed stock planning and availability", () => {
   });
 
   it("records an exact transfer shortage without copying the known lot, age or line cost", async () => {
-    for (const storage of [createInMemoryInventoryDurableStorage(), createInMemoryInventoryDurableStorage({ failpoint: () => undefined })]) {
+    for (const canonical of [false, true]) {
+      const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : undefined);
       const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
       await receiveKnownLots(inventory);
       const command = {
@@ -1264,7 +1400,14 @@ describe("indexed stock planning and availability", () => {
           amount: stockAmount("4", "piece"), metadata: { unitCostMinor: 175 },
         }],
       };
+      const begin = vi.spyOn(storage, "begin");
       const result = await inventory.stock.transferMany(command);
+      const frozenBegin = begin.mock.calls.find(
+        /** Read the valid canonical plan originally frozen for this report. */
+        ([input]) => input.operationId === command.operationId
+      )?.[0];
+      begin.mockRestore();
+      expect(frozenBegin !== undefined).toBe(canonical);
       const known = result.event.stockEffects.find((effect) => effect.position.lotId === "old" && effect.position.placementNodeId === "destination");
       const unlabelled = result.event.stockEffects.find((effect) => effect.position.lotId === undefined && effect.position.placementNodeId === "destination");
       expect(known).toMatchObject({ metadata: { unitCostMinor: 175 }, measurementsDelta: { primary: { quantity: { amountMinor: 2 } } } });
@@ -1288,6 +1431,17 @@ describe("indexed stock planning and availability", () => {
       const world = await inventory.read.world();
       const coldStorage = createInMemoryInventoryDurableStorage({ initialWorld: world });
       const cold = createTestInventory(coldStorage, undefined, clockAt(time3), InventoryDeficitPolicy.Record);
+      expect((await coldStorage.readOperation(command.operationId))?.receipt).toEqual(result.receipt);
+      expect(await coldStorage.complete(command.operationId)).toEqual(result.receipt);
+      await expect(coldStorage.complete("unknown-transfer")).rejects.toThrow("Unknown inventory durable operation");
+      if (frozenBegin !== undefined) {
+        expect(await coldStorage.begin(frozenBegin)).toMatchObject({
+          created: false, operation: { receipt: result.receipt },
+        });
+        await expect(coldStorage.begin({
+          ...frozenBegin, intentFingerprint: "changed transfer",
+        })).rejects.toThrow("changed intent");
+      }
       expect(await cold.stock.transferMany(command)).toEqual({ ...result, replayed: true });
       await expect(cold.stock.transferMany({ ...command, reason: "changed" })).rejects.toThrow("changed intent");
       expect(coldStorage.readSegmentedStockHead().worldRevision).toBe(world.revision);

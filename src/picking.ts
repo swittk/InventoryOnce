@@ -344,10 +344,12 @@ export function planWorkingInventoryAllocation({
       }) !== undefined);
     const canRecordPartial = deferMeasuredShortfall && allowMeasuredShortfall;
     // A genuine physical shortage may leave no usable witness, including when a whole pick cannot leave a storable remainder.
-    const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0 &&
-      (!allocated.incrementBlockedStock || !policyPrimaryCapacityCoversRequest(allocationInput));
+    const incrementBlocked = allocated.shortfall.amountMinor > 0 && allocated.incrementBlockedStock;
+    const rawCapacityCoversBlockedRequest = canRecordPartial && incrementBlocked &&
+      policyPrimaryCapacityCoversRequest(allocationInput);
+    const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0 && !rawCapacityCoversBlockedRequest;
     // A compatible greedy prefix can still leave a larger gap than a different whole assignment.
-    const couldImprovePartial = canRecordPartial && allocated.shortfall.amountMinor > 0 && allocated.incrementBlockedStock;
+    const couldImprovePartial = canRecordPartial && incrementBlocked;
     if (couldImprovePartial || (!acceptsLines(lines) &&
       (lines === undefined || allocated.shortfall.amountMinor === 0 || canRecordPartial))) {
       const measuredInput: AllocateWorkingInventoryInput = {
@@ -361,6 +363,16 @@ export function planWorkingInventoryAllocation({
       if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
         allocated = measured;
         lines = buildLines(measured.allocations);
+      }
+      if (rawCapacityCoversBlockedRequest && lines !== undefined && allocated.shortfall.amountMinor > 0) {
+        const remainder = inventoryPolicyMovementRemainder({
+          catalog, item: selected.item, report: resolved.measurements, lines,
+        });
+        if (remainder !== undefined && measuredRemainderNeedsSplit({
+          candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById, lines, remainder,
+        })) {
+          allocated = { ...allocated, incrementBlockedStock: true };
+        }
       }
     }
   }
@@ -392,6 +404,56 @@ export function planWorkingInventoryAllocation({
     unallocatedReservationsPresent:
       candidateResult.unallocatedReservationsPresent,
   };
+}
+
+/** Accepted whole witnesses and the remaining measured report. */
+interface MeasuredRemainderNeedsSplitInput {
+  /** Eligible stock after applying the signed pool burden. */
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+  /** Current stored or batch-local measured rows. */
+  readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
+  /** Already witnessed stock, excluded from the split check. */
+  readonly lines: readonly InventoryPolicyAllocationLine[];
+  /** Exact measurements still to be explained by the physical report. */
+  readonly remainder: InventoryMeasurementVector;
+}
+
+/** Detect when an unused whole row could cover the exact remainder only through a measured split. */
+function measuredRemainderNeedsSplit({
+  candidates, rows, lines, remainder,
+}: MeasuredRemainderNeedsSplitInput): boolean {
+  const picked = new Set(lines.map(
+    /** Exclude rows already represented by an exact witness. */
+    (line) => inventoryStockPositionIdentity(line.position)
+  ));
+  const primary = remainder.primary.quantity;
+  for (const candidate of candidates) {
+    const increment = candidate.allocationIncrement;
+    if (increment === undefined || compareWorkingQuantities(increment, primary) <= 0 ||
+      compareWorkingQuantities(candidate.available, primary) < 0) continue;
+    const identity = inventoryStockPositionIdentity(candidate.position);
+    const row = rows.get(identity);
+    if (row === undefined || picked.has(identity)) continue;
+    const onHand = inventoryPolicyPositionMeasurement(row.position, remainder.primary.axisId, primary.unit);
+    // A proportional match shows why exact lines are needed. It supplies no posting evidence.
+    const compatible = remainder.independent.every(
+      /** Cross-multiply exact digits without assigning weights to individual pieces. */
+      ({ axisId, quantity }) => {
+        const measured = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
+        return compareWorkingQuantities({
+          amountMinor: BigInt(quantity.amountMinor) * BigInt(onHand.amountMinor),
+          decimals: quantity.decimals + onHand.decimals,
+          unit: quantity.unit,
+        }, {
+          amountMinor: BigInt(measured.amountMinor) * BigInt(primary.amountMinor),
+          decimals: measured.decimals + primary.decimals,
+          unit: quantity.unit,
+        }) === 0;
+      }
+    );
+    if (compatible) return true;
+  }
+  return false;
 }
 
 /** Check whether all eligible primary stock could cover the report before considering indivisible rows. */

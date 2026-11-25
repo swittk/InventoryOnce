@@ -30,6 +30,38 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("late historical repair", () => {
+  it("retains a settling transfer when correction omits its last positive source layer", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const lotId = "SETTLING-LOT";
+    const from = loosePosition("settling-transfer-source", { lotId });
+    const to = loosePosition("settling-transfer-destination", { lotId });
+    const amount = stockAmount("2", "piece");
+    const receipt = await inventory.stock.receive({
+      operationId: "settling-transfer-receipt", occurredAtEpochMs: time0, to: from, amount,
+    });
+    await inventory.stock.issue({
+      operationId: "settling-transfer-prior-deficit", occurredAtEpochMs: time0, from: to, amount,
+    });
+    const transfer = await inventory.stock.transfer({
+      operationId: "settling-transfer", occurredAtEpochMs: time1, from,
+      toPlacementNodeId: "settling-transfer-destination", amount: stockAmount("3", "piece"),
+    });
+    expect(transfer.event.positiveLayerProvenanceTransfers).toMatchObject([{ from, to }]);
+    const correction = await inventory.stock.correct({
+      operationId: "omit-settling-transfer-receipt", occurredAtEpochMs: time2,
+      correctsEventId: receipt.event.eventId, reason: "The receipt did not occur.",
+      replaceWith: (plans) => plans.omit(),
+    });
+    expect(correction.event.historicalImpact?.deficits).toMatchObject([{
+      position: from, maximumDeficit: { primary: { quantity: parseQuantity("2", "piece") } },
+    }]);
+    const world = await inventory.read.world();
+    expect(world.projection.events[transfer.event.eventId]).toEqual(transfer.event);
+    expect(await inventory.read.positions({ itemId: from.itemId, lotIds: [lotId] })).toMatchObject([{
+      key: from, measurements: { primary: { quantity: parseQuantity("-2", "piece") } },
+    }]);
+  });
+
   it("retains a mixed transfer witness while exposing the shortage from an earlier corrected receipt", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const from = loosePosition("historical-transfer-source", { lotId: "TRANSFER-LOT" });
@@ -680,7 +712,7 @@ describe("late historical repair", () => {
             }),
         });
         expect(begin).not.toHaveBeenCalled();
-        expect((await inventory.read.reservationFeasibility()).groups[0]?.shortage.amountMinor).toBe(1);
+        expect((await inventory.read.reservationFeasibility()).groups[0]?.shortage).toEqual(parseQuantity("1", "piece"));
       } finally {
         begin.mockRestore();
       }

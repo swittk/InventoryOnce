@@ -4500,7 +4500,7 @@ async function commitInventoryPolicyBatch(
           deficitPolicy: internals.deficitPolicy,
           input: policyMovementInputFromBatchRequest(input, request),
           allocation,
-          /** Test the current deficit bucket without materializing any unpublished axes. */
+          /** Test the current proposed shortage row without materializing any unpublished axes. */
           hasPositivePrimary: async (id) => {
             const position = changed.get(id)?.position ?? currentRows.get(id)?.position ?? await source.position(id);
             return position !== undefined &&
@@ -4745,7 +4745,6 @@ function createPolicyBatchMovementEvent(
   deficitLines: readonly CreateInventoryIssueManyInput["lines"][number][],
   toPlacementNodeId: string | undefined
 ): InventoryEventDraft {
-  const exactLines = selectedLines.map(policyIssueLine);
   const header: InventoryCommandHeader = {
     ...inventoryCommandHeaderFromPolicyInput(input),
     metadata: {
@@ -4754,19 +4753,37 @@ function createPolicyBatchMovementEvent(
     },
   };
   if (kind === InventoryPolicyMovementKind.Issue) {
+    /** Positions combining witnessed and unwitnessed debits have per-request evidence only. */
+    const deficitPositionIds = new Set<string>();
+    for (const allocation of allocations) {
+      if (allocation.deficit !== undefined) {
+        deficitPositionIds.add(inventoryStockPositionIdentity(allocation.deficit.position));
+      }
+    }
     return createInventoryIssueManyEvent({
       catalog,
       ...header,
-      lines: [...exactLines, ...deficitLines],
+      lines: [
+        ...selectedLines.map(
+          /** Do not attach FIFO evidence to the unwitnessed part of a shared posting. */
+          (selected) => {
+            const { metadata, ...effect } = policyIssueLine(selected);
+            return metadata === undefined || (deficitPositionIds.size !== 0 &&
+              deficitPositionIds.has(inventoryStockPositionIdentity(selected.position)))
+              ? effect : { ...effect, metadata };
+          }
+        ),
+        ...deficitLines,
+      ],
     });
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
     if (toPlacementNodeId === undefined) {
       throw new Error("Policy transfer batch lost destination direct placement.");
     }
-    const transferLines = exactLines.map(
+    const transferLines = selectedLines.map(
       /** Apply the shared destination after every source allocation is frozen. */
-      (line) => ({ ...line, toPlacementNodeId })
+      (line) => ({ ...policyIssueLine(line), toPlacementNodeId })
     );
     if (deficitLines.length !== 0) {
       return createInventoryRecordedMovement({
@@ -5433,7 +5450,7 @@ async function commitInventoryPolicyMovement(
         deficitPolicy: internals.deficitPolicy,
         input,
         allocation,
-        /** A single operation only needs the published deficit bucket sign. */
+        /** A single operation only needs the sign of the published stock row. */
         hasPositivePrimary: async (id) => ((await source.position(id))?.measurements.primary.quantity.amountMinor ?? 0) > 0,
         ancestry: source.ancestry,
       });
@@ -5611,7 +5628,7 @@ interface PolicyRecordedDeficitInput {
   readonly input: InventoryOncePolicyMovementInput;
   /** Exact native allocation/shortfall result. */
   readonly allocation: InventoryWorkingPolicyAllocationPlan;
-  /** Look up the sign of the ordinary Issue deficit bucket's primary balance. */
+  /** Look up whether the proposed shortfall source currently holds positive stock. */
   hasPositivePrimary(positionId: string): Promise<boolean>;
   /** Resolve exact placement ancestry from the signed planning view. */
   readonly ancestry: InventoryPolicyStockSource["ancestry"];
@@ -5669,10 +5686,16 @@ async function policyRecordedDeficit({
   if (!inventoryScopedStockMatches(position, placementScope, ancestry)) {
     throw new Error("Inventory policy deficit position is outside the selected placement scope or whereabouts.");
   }
-  // Policy Issue uses a dedicated deficit bucket. Transfer and scrap use
-  // the unlabelled stock key itself, so their signed posting may settle there.
-  if (!unwitnessed && await hasPositivePrimary(inventoryStockPositionIdentity(position))) {
-    throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
+  if (await hasPositivePrimary(inventoryStockPositionIdentity(position))) {
+    if (!unwitnessed) {
+      throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
+    }
+    // The unlabelled row may absorb an unknown lot, while the other stock
+    // constraints still govern any existing physical stock it would debit.
+    const { lot: _lot, lotIds: _lotIds, ...settlementScope } = allocation.selector;
+    if (!inventoryScopedStockMatches(position, settlementScope, ancestry)) {
+      throw new Error("Inventory policy deficit position contains positive stock outside the selected stock scope.");
+    }
   }
   const { itemRevisionId, ...exactFrom } = position;
   return {

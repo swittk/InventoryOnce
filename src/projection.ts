@@ -1,5 +1,5 @@
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
+import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -380,7 +380,8 @@ function applyInventoryCommittedEventInternal(
   { catalog, state, event, deficitPolicy }: ApplyInventoryCommittedEventInput,
   mutateProjection: boolean,
   projectTraceability: boolean,
-  ownsPlacement = mutateProjection
+  ownsPlacement = mutateProjection,
+  replayEffectiveHistory = false
 ): ApplyInventoryCommittedEventResult {
   const normalizedDraft = defineInventoryEvent({ catalog, event });
   const normalizedEvent = commitInventoryEvent(
@@ -928,15 +929,18 @@ function applyInventoryCommittedEventInternal(
     captureConservedPositiveLayerStarts(
       normalizedEvent,
       /** Read a FIFO start from the published state before applying any effect. */
-      (positionId) => state.positiveLayerStartedAtEpochMsByPositionId[positionId]
+      (positionId) => state.positiveLayerStartedAtEpochMsByPositionId[positionId],
+      replayEffectiveHistory
     );
   for (const effect of normalizedEvent.stockEffects) {
+    /** Embodied serial stock must still have a positive instance after a move. */
+    let embodiedNodeId: string | undefined;
     if (effect.position.serialId !== undefined) {
       const serialIdentity = inventorySerialIdentity(
         effect.position.itemId,
         effect.position.serialId
       );
-      const embodiedNodeId = inventorySparseRecordValue(
+      embodiedNodeId = inventorySparseRecordValue(
         placementNodeIdByEmbodiedSerialIdentity,
         serialIdentity
       );
@@ -982,6 +986,12 @@ function applyInventoryCommittedEventInternal(
     }
     const wasPositive = quantityIsPositive(current.primary.quantity);
     const isPositive = quantityIsPositive(next.primary.quantity);
+    if (embodiedNodeId !== undefined && !isPositive &&
+      conservedPositiveLayerStartByDestinationId.has(identity)) {
+      throw new Error(
+        `Conserved FIFO provenance destination ${identity} is not positive after its event.`
+      );
+    }
     if (inventoryMeasurementsAreZero(next)) {
       deleteInventorySparseRecordValue(positions, identity);
       if (effect.position.whereaboutsId !== undefined) {
@@ -1677,12 +1687,9 @@ function inventoryLotDefinitionFingerprint(
 }
 
 /** Replay committed history through the same reducer used for live commits. */
-export function projectInventoryEvents({
-  catalog,
-  events,
-  deficitPolicy,
-  throughRecordSequence,
-}: ProjectInventoryEventsInput): InventoryProjectionState {
+export function projectInventoryEvents(input: ProjectInventoryEventsInput): InventoryProjectionState {
+  const { catalog, events, deficitPolicy, throughRecordSequence } = input;
+  const replayEffectiveHistory = replayEffectiveStockAge in input;
   if (
     throughRecordSequence !== undefined &&
     (!Number.isSafeInteger(throughRecordSequence) || throughRecordSequence < 0)
@@ -1702,7 +1709,9 @@ export function projectInventoryEvents({
     state = applyInventoryCommittedEventInternal(
       { catalog, state, event, deficitPolicy },
       true,
-      false
+      false,
+      true,
+      replayEffectiveHistory
     ).state;
     appliedEventCount += 1;
   }

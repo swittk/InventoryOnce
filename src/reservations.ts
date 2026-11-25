@@ -1272,6 +1272,11 @@ function reservationGroupFeasibility(
     });
   }
 
+  // Materialized balances may have fewer decimals than one fixed package increment.
+  for (const position of positions) {
+    decimals = Math.max(decimals, position.indivisibleIncrement?.decimals ?? 0);
+  }
+
   let totalRequested = 0n;
   const requestedByReservation: bigint[] = [];
   const edgeCapacityByReservation: bigint[][] = [];
