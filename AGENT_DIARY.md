@@ -1872,3 +1872,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Scoped planning rechecks the operation after a rejected plan so a concurrent same-intent publication can replay. Preview freezes its request before reading the stock head and uses one claim time for the pool and planner.
 - Physical recording subtracts witnessed vectors from the reported measurements before writing a residual. Deficit pools retain placement constraints, and a recorded shortfall needs a source inside the selected subtree. Lots sharing a direct node use one validated ancestor cutoff per read.
+
+## 2026-11-25 — matching measured witnesses
+
+- Physical policy picks can search another FIFO or FEFO assignment when the first full primary pick differs on a reported independent axis. An exact unheld assignment takes precedence. If held stock supplies the matching vector, the movement records it and leaves its claim in place.
+- An exact scoped retry can replay its completed operation after concurrent catalogue publication. Open subtree counts use the journal's placement edges at observation time, so an edge-only direct-contents move does not create a false discrepancy.

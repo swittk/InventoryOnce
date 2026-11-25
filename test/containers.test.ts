@@ -163,6 +163,49 @@ it("publishes direct stock, standalone children, and embodied children at one na
   expect(await native.read.world()).toEqual(await canonical.read.world());
 });
 
+it("reconciles a subtree count after an edge-only contents move on both storage paths", async () => {
+  const catalog = createTabletCatalog();
+  const storage = createInMemoryInventoryDurableStorage();
+  const canonicalStorage = createInMemoryInventoryDurableStorage({ failpoint: () => undefined });
+  const native = createTestInventory(storage, catalog);
+  const canonical = createTestInventory(canonicalStorage, catalog);
+  for (const inventory of [native, canonical]) {
+    await inventory.stock.receive({
+      operationId: "receive-beneath-count-cart", occurredAtEpochMs: time0,
+      to: loosePosition("child"), amount: stockAmount("2", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "park-count-cart-child", occurredAtEpochMs: time0, nodeId: "child", into: "source",
+    });
+    await inventory.counts.start({
+      operationId: "start-source-subtree-count", countId: "source-count", startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["source"] },
+    });
+  }
+
+  const command = { operationId: "move-after-count-start", occurredAtEpochMs: time2, nodeId: "source", into: "destination" };
+  const readWorld = vi.spyOn(storage, "readWorld");
+  const moved = await native.placement.moveContents(command);
+  expect(moved).toEqual(await canonical.placement.moveContents(command));
+  expect(moved.event.stockEffects).toEqual([]);
+  expect(readWorld).not.toHaveBeenCalled();
+  readWorld.mockRestore();
+
+  for (const inventory of [native, canonical]) {
+    await inventory.counts.observe({
+      operationId: "observe-empty-source-subtree", countId: "source-count", observedAtEpochMs: time2,
+      observations: [],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      operationId: "reconcile-empty-source-subtree", countId: "source-count", completedAtEpochMs: time3,
+    });
+    expect(reconciled.event).toBeUndefined();
+    expect(await inventory.read.placementAncestry("child")).toEqual(["child", "destination"]);
+    expect(await quantityAtNode(inventory, "child")).toBe(2);
+  }
+  expect(await native.read.world()).toEqual(await canonical.read.world());
+});
+
 /** Node use-by after opening but before the later test authority time. */
 const shortUseBy = 1787563800000;
 /** Corrected node use-by later than all test authority times. */

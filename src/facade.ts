@@ -253,6 +253,7 @@ import {
   planInventoryAllocation,
   inventoryAllocationPoolFromWorld,
   inventoryAllocationPoolSelector,
+  inventoryPolicyMovementRemainder,
   planInventoryAllocationInPool,
   resolveAllocationItemAndSelector,
   type ResolvedAllocationSelection,
@@ -4286,18 +4287,18 @@ async function commitInventoryScopedMovement({
         break;
       }
       const head = await storage.readSegmentedStockHead();
-      if (head.worldRevision !== 0 && head.catalog.digest !== catalog.digest) {
-        throw new Error(
-          "Inventory command uses unpublished catalogue revisions; publish the retained inventory catalogue first."
-        );
-      }
       const recordedAtEpochMs = clock.nowEpochMs();
       const source = segmentedPolicyStockSource(storage, recordedAtEpochMs);
       let event: InventoryEventDraft;
       try {
+        if (head.worldRevision !== 0 && head.catalog.digest !== catalog.digest) {
+          throw new Error(
+            "Inventory command uses unpublished catalogue revisions; publish the retained inventory catalogue first."
+          );
+        }
         event = await plan(source, recordedAtEpochMs);
       } catch (error) {
-        // The matching operation can publish between the first lookup and the head read.
+        // The matching operation can publish before this head read, including before a catalogue update.
         if ((await storage.readOperation(operationId)) !== undefined) {
           if (attempt < 7) continue;
           break;
@@ -5606,37 +5607,34 @@ async function commitInventoryPolicyMovement(
 function planInventoryAllocationForRecording(
   input: PlanInventoryAllocationInPoolInput
 ): InventoryPolicyAllocationPlan {
-  let selected = planInventoryAllocationInPool({
+  const preferred = planInventoryAllocationInPool({
     ...input,
     recordingAttempt: input.allowAllocatedStock ? "all-physical" : "prefer-unheld",
   });
-  if (!input.allowAllocatedStock && selected.shortfall.amountMinor !== 0) {
+  const measured = input.amount.independent.length !== 0;
+  const item = input.selection.item;
+  /** Calculate the remaining reported axes for one measured witness plan. */
+  const remainderOf = (plan: InventoryPolicyAllocationPlan): InventoryMeasurementVector | undefined =>
+    measured ? inventoryPolicyMovementRemainder({
+      catalog: input.catalog, item, report: plan.requestedMeasurements, lines: plan.lines,
+    }) : undefined;
+  let selected = preferred;
+  let residual = remainderOf(preferred);
+  if (!input.allowAllocatedStock && (preferred.shortfall.amountMinor !== 0 ||
+    (residual !== undefined && !inventoryMeasurementsAreZero(residual)))) {
     const physical = planInventoryAllocationInPool({
       ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
     });
-    if (compareQuantity(physical.shortfall, selected.shortfall) < 0) selected = physical;
+    const physicalResidual = remainderOf(physical);
+    // A coherent partial witness is better than a fuller count that contradicts the report.
+    if (inventoryPolicyMovementRemainderIsCoherent(physicalResidual) &&
+        (!inventoryPolicyMovementRemainderIsCoherent(residual) ||
+          compareQuantity(physical.shortfall, preferred.shortfall) < 0)) {
+      selected = physical;
+      residual = physicalResidual;
+    }
   }
-  if (input.amount.independent.length === 0) return selected;
-
-  const item = input.selection.item;
-  let remaining = selected.requestedMeasurements;
-  for (const line of selected.lines) {
-    remaining = subtractInventoryMeasurements(
-      remaining, resolveInventoryAmount(input.catalog, item, line.amount).measurements
-    );
-  }
-  // Only axes named by the report or fixed by its package constrain the residual.
-  const reportedAxes = new Set<string>();
-  for (const axis of selected.requestedMeasurements.independent) reportedAxes.add(axis.axisId);
-  /** Independent residuals whose axes were supplied by the command or its package. */
-  const independent: InventoryMeasurementVector["independent"][number][] = [];
-  for (const axis of remaining.independent) {
-    if (reportedAxes.has(axis.axisId)) independent.push(axis);
-  }
-  const residual = {
-    primary: remaining.primary,
-    independent,
-  };
+  if (residual === undefined) return selected;
   assertInventoryMeasurementsFollowPrimarySign(residual, "Reported physical movement remainder");
   if (inventoryMeasurementsAreZero(residual)) return selected;
   const position = {
@@ -5647,6 +5645,16 @@ function planInventoryAllocationForRecording(
       : {}),
   };
   return { ...selected, shortfallAmount: transferAmountForVector(input.catalog, position, residual) };
+}
+
+/** A positive reported residual can carry positive measurements only while primary stock remains. */
+function inventoryPolicyMovementRemainderIsCoherent(residual: InventoryMeasurementVector | undefined): boolean {
+  if (residual === undefined) return true;
+  for (const axis of residual.independent) {
+    const minor = axis.quantity.amountMinor;
+    if (minor < 0 || (minor > 0 && residual.primary.quantity.amountMinor === 0)) return false;
+  }
+  return true;
 }
 
 /** Reject unsafe policy combinations before planning or writing. */

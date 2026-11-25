@@ -3,6 +3,8 @@ import {
   allocateInventory,
   compareInventoryAllocationCandidates,
   InventoryAllocationMethod,
+  type AllocateInventoryInput,
+  type InventoryAllocation,
   type InventoryAllocationCandidate,
 } from "./allocation.js";
 import {
@@ -27,6 +29,8 @@ import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
+  inventoryMeasurementsAreZero,
+  subtractInventoryMeasurements,
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
@@ -255,48 +259,44 @@ export function planInventoryAllocationInPool({
     rowsById: candidateResult.rowsById,
     poolCandidates: candidateResult.candidates,
   });
-  const allocated = allocateInventory({
+  /** Use the same eligible candidates and order for primary and measured selection. */
+  const allocationInput: AllocateInventoryInput = {
     requested: requestedPrimary,
     candidates: deficitAdjusted.candidates,
     method,
     nowEpochMs: atEpochMs,
     // Expired rows were removed before assigning the direct-placement-pool deficit burden.
     allowExpired: true,
-  });
-  // Final allocation lines assembled from the reviewed candidate/result pairing.
-  const lines: InventoryPolicyAllocationLine[] = [];
-  for (const allocation of allocated.allocations) {
-    const candidate = deficitAdjusted.byPositionIdentity.get(
-      inventoryStockPositionIdentity(allocation.position)
-    );
-    if (candidate === undefined) {
-      throw new Error(
-        "Inventory allocation result references a missing candidate."
-      );
-    }
-    const currentPosition = candidateResult.rowsById.get(
-      inventoryStockPositionIdentity(allocation.position)
-    )?.position;
-    if (currentPosition === undefined) {
-      throw new Error("Inventory allocation candidate disappeared from its reviewed stock pool.");
-    }
-    lines.push({
-      position: allocation.position,
-      amount: inventoryAmountForPrimaryAllocation({
-        catalog,
-        itemRevisionId: selected.item.revisionId,
-        position: currentPosition,
-        allocatedPrimary: allocation.quantity,
-      }),
-      allocatedPrimary: allocation.quantity,
-      layerStartedAtEpochMs: candidate.receivedAtEpochMs,
-      ...(candidate.expiresAtEpochMs === undefined
-        ? {}
-        : { expiresAtEpochMs: candidate.expiresAtEpochMs }),
+  };
+  let allocated = allocateInventory(allocationInput);
+  /** The exact current witnesses at each selected quantity. */
+  const buildLines = (allocations: readonly InventoryAllocation[]): InventoryPolicyAllocationLine[] =>
+    inventoryPolicyAllocationLines({
+      catalog,
+      item: selected.item,
+      allocations,
+      candidates: deficitAdjusted.byPositionIdentity,
+      rows: candidateResult.rowsById,
     });
-  }
-  // Recording computes the exact independent residual from the chosen witnesses.
+  let lines = buildLines(allocated.allocations);
   const deferMeasuredShortfall = recordingAttempt !== undefined && amount.independent.length > 0;
+  if (deferMeasuredShortfall && allocated.shortfall.amountMinor === 0 &&
+      !inventoryMeasurementsAreZero(inventoryPolicyMovementRemainder({
+        catalog, item: selected.item, report: resolved.measurements, lines,
+      }))) {
+    // Only a conflicting measured pick needs to explore other exact FIFO/FEFO assignments.
+    const measured = allocateInventory({
+      ...allocationInput,
+      /** Accept only a complete assignment of the report's measured axes. */
+      acceptAllocations: (choices) => inventoryMeasurementsAreZero(inventoryPolicyMovementRemainder({
+        catalog, item: selected.item, report: resolved.measurements, lines: buildLines(choices),
+      })),
+    });
+    if (measured.shortfall.amountMinor === 0) {
+      allocated = measured;
+      lines = buildLines(measured.allocations);
+    }
+  }
   return {
     selector: selected.selector,
     itemRevisionId: selected.item.revisionId,
@@ -324,6 +324,87 @@ export function planInventoryAllocationInPool({
     unallocatedReservationsPresent:
       candidateResult.unallocatedReservationsPresent,
   };
+}
+
+/** Exact selections and their evidence at the planner's published revision. */
+interface InventoryPolicyAllocationLinesInput {
+  /** Retained item and package definitions. */
+  readonly catalog: InventoryCatalog;
+  /** Item revision selected for the request. */
+  readonly item: InventoryItemDefinitionRevision;
+  /** Exact quantities assigned in picking order. */
+  readonly allocations: readonly InventoryAllocation[];
+  /** Eligible candidates with FIFO origin and expiry. */
+  readonly candidates: ReadonlyMap<string, InventoryAllocationCandidate>;
+  /** Current signed stock rows with the exact measurements. */
+  readonly rows: ReadonlyMap<string, InventoryScopedStockPosition>;
+}
+
+/** Materialize exact movement lines from allocations and the frozen source rows. */
+function inventoryPolicyAllocationLines({
+  catalog, item, allocations, candidates, rows,
+}: InventoryPolicyAllocationLinesInput): InventoryPolicyAllocationLine[] {
+  // Final allocation lines assembled from the reviewed candidate/result pairing.
+  const lines: InventoryPolicyAllocationLine[] = [];
+  for (const allocation of allocations) {
+    const positionId = inventoryStockPositionIdentity(allocation.position);
+    const candidate = candidates.get(positionId);
+    if (candidate === undefined) {
+      throw new Error(
+        "Inventory allocation result references a missing candidate."
+      );
+    }
+    const currentPosition = rows.get(positionId)?.position;
+    if (currentPosition === undefined) {
+      throw new Error("Inventory allocation candidate disappeared from its reviewed stock pool.");
+    }
+    lines.push({
+      position: allocation.position,
+      amount: inventoryAmountForPrimaryAllocation({
+        catalog,
+        itemRevisionId: item.revisionId,
+        position: currentPosition,
+        allocatedPrimary: allocation.quantity,
+      }),
+      allocatedPrimary: allocation.quantity,
+      layerStartedAtEpochMs: candidate.receivedAtEpochMs,
+      ...(candidate.expiresAtEpochMs === undefined
+        ? {}
+        : { expiresAtEpochMs: candidate.expiresAtEpochMs }),
+    });
+  }
+  return lines;
+}
+
+/** Exact reported axes and the witnesses picked for one physical movement. */
+interface InventoryPolicyMovementRemainderInput {
+  /** Retained amount and package definitions. */
+  readonly catalog: InventoryCatalog;
+  /** Item revision named by every selected line. */
+  readonly item: InventoryItemDefinitionRevision;
+  /** Requested primary and explicitly reported or package-fixed independent axes. */
+  readonly report: InventoryMeasurementVector;
+  /** Picked witnesses whose measurements reduce the report. */
+  readonly lines: readonly InventoryPolicyAllocationLine[];
+}
+
+/** Subtract witnessed stock on every reported axis without claiming unreported measurements. */
+export function inventoryPolicyMovementRemainder({
+  catalog, item, report, lines,
+}: InventoryPolicyMovementRemainderInput): InventoryMeasurementVector {
+  let remainder = report;
+  for (const line of lines) {
+    remainder = subtractInventoryMeasurements(
+      remainder, resolveInventoryAmount(catalog, item, line.amount).measurements
+    );
+  }
+  const reportedAxes = new Set<string>();
+  for (const axis of report.independent) reportedAxes.add(axis.axisId);
+  const independent: InventoryMeasurementVector["independent"][number][] = [];
+  for (const axis of remainder.independent) {
+    if (reportedAxes.has(axis.axisId)) independent.push(axis);
+  }
+  return { primary: remainder.primary, independent };
 }
 
 /** Item revision and selector after freezing all ambiguous human/package choices. */

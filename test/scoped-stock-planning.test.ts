@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   defineInventoryCatalog,
   defineInventoryItem,
+  defineScalarInventoryItem,
+  extendInventoryCatalog,
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryMeasurementAxisRole,
@@ -253,6 +255,54 @@ describe("indexed stock planning and availability", () => {
       amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
     })).rejects.toThrow("Reported physical movement remainder");
     expect(storage.readSegmentedStockHead()).toEqual(before);
+  });
+
+  it.each([
+    { verb: "transfer", held: true },
+    { verb: "scrap", held: true },
+    { verb: "transfer", held: false },
+  ])("chooses a witness that matches every reported axis for $verb (held: $held)", async ({ verb, held }) => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    /** Exact source bin for both potential witnesses. */
+    const selection = { itemId: "measured", placementNodeIds: ["store"] };
+    const reported = measuredStockAmount("4", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]);
+    await inventory.stock.receive({
+      operationId: "receive-light-witness", occurredAtEpochMs: time0,
+      to: { itemId: "measured", placementNodeId: "store", lotId: "light" },
+      amount: measuredStockAmount("4", "piece", [{ axisId: "weight", value: "3", unit: "kg" }]),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-exact-witness", occurredAtEpochMs: time1,
+      to: { itemId: "measured", placementNodeId: "store", lotId: "exact" }, amount: reported,
+    });
+    if (held) {
+      const exactScope = { ...selection, lotIds: ["exact"] };
+      const [exact] = await inventory.read.positions(exactScope);
+      if (exact === undefined) throw new Error("Missing exact measured witness.");
+      const requested = parseQuantity("4", "piece");
+      await inventory.reservations.reserve({
+        operationId: "reserve-exact-witness", reservationId: "hold-exact", itemRevisionId: "measured-v1",
+        selector: exactScope, requested, createdAtEpochMs: time1,
+      });
+      await inventory.reservations.allocate({
+        operationId: "allocate-exact-witness", reservationId: "hold-exact", occurredAtEpochMs: time1,
+        allocations: [{ position: exact.key, quantity: requested }],
+      });
+    }
+    const command = {
+      operationId: "record-exact-witness", occurredAtEpochMs: time2, selector: selection,
+      method: InventoryAllocationMethod.Fifo, amount: reported,
+    };
+    const result = verb === "transfer"
+      ? await inventory.stock.transferByPolicy({ ...command, toPlacementNodeId: "destination" })
+      : await inventory.stock.scrapByPolicy({ ...command, reason: "Measured physical destruction" });
+    expect(result.event.unwitnessedStockMovements).toBeUndefined();
+    expect(await inventory.read.positions(selection)).toMatchObject([{ key: { lotId: "light" } }]);
+    if (held) {
+      expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([
+        { reservationIds: ["hold-exact"], shortage: { amountMinor: 4 } },
+      ]);
+    }
   });
 
   it("excludes placed deficits from a preview for explicitly unplaced stock", async () => {
@@ -586,6 +636,37 @@ describe("indexed stock planning and availability", () => {
     expect(write).toHaveBeenCalledTimes(3);
     await expect(inventory.stock.issueManyByPolicy(input)).rejects.toThrow("changed intent");
     expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("replays a scoped operation completed before a newer catalogue is published", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog);
+    await receiveKnownLots(inventory);
+    const extra = defineScalarInventoryItem({
+      itemId: "later-item", revisionId: "later-item-v1", axisId: "pieces", unit: "piece",
+    });
+    const updated = createTestInventory(storage, extendInventoryCatalog({
+      catalog,
+      itemRevisions: [extra],
+      activeItemRevisionIds: { [extra.itemId]: extra.revisionId },
+    }));
+    const command = issueCommand();
+    const readOperation = storage.readOperation.bind(storage);
+    const before = storage.readSegmentedStockHead();
+    let committed: Awaited<ReturnType<typeof inventory.stock.issueManyByPolicy>> | undefined;
+    vi.spyOn(storage, "readOperation").mockImplementationOnce(async (operationId) => {
+      const prior = await readOperation(operationId);
+      committed = await inventory.stock.issueManyByPolicy(command);
+      await updated.catalog.publish({ operationId: "publish-after-scoped-command", occurredAtEpochMs: time2 });
+      return prior;
+    });
+    const replay = await inventory.stock.issueManyByPolicy(command);
+    expect(committed).toBeDefined();
+    expect(replay).toEqual({ ...committed, replayed: true });
+    expect(storage.readSegmentedStockHead().worldRevision).toBe(before.worldRevision + 2);
+    await expect(inventory.stock.issueManyByPolicy({ ...command, operationId: "new-stale-catalogue-command" }))
+      .rejects.toThrow("publish the retained inventory catalogue first");
   });
 
   it("reopens an interrupted native transfer before publish and replays the committed pick after a lost reply", async () => {
