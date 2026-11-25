@@ -12,7 +12,13 @@ import {
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
-import { MAXIMUM_STORED_QUANTITY_MINOR, storableQuantityScale } from "./quantity-storage.js";
+import {
+  addExactQuantityDigits,
+  MAXIMUM_STORED_QUANTITY_MINOR,
+  storableQuantityDigits,
+  storableQuantityScale,
+  type ExactQuantityDigits,
+} from "./quantity-storage.js";
 
 /** Supported deterministic automatic stock-picking orders. */
 export enum InventoryAllocationMethod {
@@ -156,7 +162,7 @@ function allocateInventoryCandidates({
     let incrementBlockedStock = false;
     if (unconstrainedExact === undefined) {
       /** Capacity still needed to cover the request before applying increments. */
-      const uncovered: InventoryAllocationDigits = {
+      const uncovered: ExactQuantityDigits = {
         minor: BigInt(requested.amountMinor),
         decimals: requested.decimals,
       };
@@ -178,7 +184,7 @@ function allocateInventoryCandidates({
   }
 
   /** Intermediate remainders need extra digits even when all returned amounts fit. */
-  const remaining: InventoryAllocationDigits = {
+  const remaining: ExactQuantityDigits = {
     minor: BigInt(requested.amountMinor),
     decimals: requested.decimals,
   };
@@ -469,10 +475,8 @@ function largestAllocationMultipleWithRemainder({
 export function inventoryAllocationQuantityIfStorable(
   digits: bigint, decimals: number, unit: Quantity["unit"]
 ): Quantity | undefined {
-  const scale = storableQuantityScale(digits, decimals);
-  if (scale === undefined) return undefined;
-  const minor = scale === decimals ? digits : digits / (10n ** BigInt(decimals - scale));
-  return quantity({ amountMinor: Number(minor), decimals: scale, unit });
+  const stored = storableQuantityDigits(digits, decimals);
+  return stored === undefined ? undefined : quantity({ ...stored, unit });
 }
 
 /** Enforce the storage range for an amount that must be returned. */
@@ -484,35 +488,24 @@ function inventoryAllocationQuantityAtStorableScale(
   return value;
 }
 
-/** Temporary exact digits on the allocation's common unit. */
-interface InventoryAllocationDigits {
-  /** Signed digits before the storage range is applied. */
-  minor: bigint;
-  /** Decimal places used by the digits. */
-  decimals: number;
-}
-
 /** Greedy selection at its natural scale before writing the result. */
-interface GreedyInventoryAllocationChoice extends InventoryAllocationDigits {
+interface GreedyInventoryAllocationChoice extends ExactQuantityDigits {
   /** Whether an indivisible increment prevented taking the full available amount. */
   readonly incrementBlocked: boolean;
 }
 
 /** Subtract a selection on a shared exact scale without narrowing an intermediate remainder. */
 function subtractInventoryAllocationDigits(
-  remaining: InventoryAllocationDigits,
+  remaining: ExactQuantityDigits,
   pickedMinor: bigint,
   pickedDecimals: number
 ): void {
-  const decimals = Math.max(remaining.decimals, pickedDecimals);
-  remaining.minor = remaining.minor * (10n ** BigInt(decimals - remaining.decimals)) -
-    pickedMinor * (10n ** BigInt(decimals - pickedDecimals));
-  remaining.decimals = decimals;
+  addExactQuantityDigits(remaining, -pickedMinor, pickedDecimals);
 }
 
 /** Take the largest allowed amount from one ordered candidate and advance the exact remainder. */
 function takeGreedyInventoryAllocation(
-  remaining: InventoryAllocationDigits,
+  remaining: ExactQuantityDigits,
   candidate: InventoryAllocationCandidate
 ): GreedyInventoryAllocationChoice {
   const increment = candidate.allocationIncrement;
@@ -568,7 +561,7 @@ function exactAllocationsDoNotFollowGreedyPrefix(
     );
   }
   /** A prefix can exceed the storage scale even when the whole allocation is exact. */
-  const remaining: InventoryAllocationDigits = {
+  const remaining: ExactQuantityDigits = {
     minor: BigInt(requested.amountMinor),
     decimals: requested.decimals,
   };

@@ -41,6 +41,7 @@ import {
 } from "./model.js";
 import { findInventoryPositions, type InventoryProjectionState } from "./projection.js";
 import { inventoryPlacementAncestry } from "./placement.js";
+import { addExactQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
 import {
   inventoryScopedStockMatches,
   type InventoryScopedStockPool,
@@ -49,7 +50,6 @@ import {
 import {
   addQuantity,
   compareQuantity,
-  integerAtDecimals,
   positiveQuantity,
   quantity,
   quantityEq,
@@ -404,23 +404,15 @@ interface InventoryPolicyMovementRemainderInput {
   readonly lines: readonly InventoryPolicyAllocationLine[];
 }
 
-/** An exact remainder whose aligned digits may temporarily exceed safe integer storage. */
-interface ReportedAxisRemainder {
-  /** Exact signed digits at the current scale. */
-  minor: bigint;
-  /** Number of fractional decimal places. */
-  decimals: number;
-}
-
 /** Return the exact report remainder when the selected witnesses fit every reported axis. */
 export function inventoryPolicyMovementRemainder({
   catalog, item, report, lines,
 }: InventoryPolicyMovementRemainderInput): InventoryMeasurementVector | undefined {
   const reportedPrimary = report.primary.quantity;
-  let primaryMinor = BigInt(reportedPrimary.amountMinor);
-  let primaryDecimals = reportedPrimary.decimals;
+  /** Preserve the primary remainder even when a witness temporarily needs a finer scale. */
+  const primaryRemainder: ExactQuantityDigits = { minor: BigInt(reportedPrimary.amountMinor), decimals: reportedPrimary.decimals };
   /** Keep exact running remainders only for axes named by the report or its package. */
-  const reported = new Map<string, ReportedAxisRemainder>();
+  const reported = new Map<string, ExactQuantityDigits>();
   for (const axis of report.independent) {
     reported.set(axis.axisId, {
       minor: BigInt(axis.quantity.amountMinor), decimals: axis.quantity.decimals,
@@ -429,18 +421,12 @@ export function inventoryPolicyMovementRemainder({
   for (const line of lines) {
     const witness = resolveInventoryAmount(catalog, item, line.amount).measurements;
     const witnessedPrimary = witness.primary.quantity;
-    const primaryScale = Math.max(primaryDecimals, witnessedPrimary.decimals);
-    primaryMinor = primaryMinor * (10n ** BigInt(primaryScale - primaryDecimals)) -
-      integerAtDecimals(witnessedPrimary, primaryScale);
-    primaryDecimals = primaryScale;
+    addExactQuantityDigits(primaryRemainder, -BigInt(witnessedPrimary.amountMinor), witnessedPrimary.decimals);
     for (const axis of witness.independent) {
       const remaining = reported.get(axis.axisId);
       if (remaining === undefined) continue;
       const measured = axis.quantity;
-      const decimals = Math.max(remaining.decimals, measured.decimals);
-      remaining.minor = remaining.minor * (10n ** BigInt(decimals - remaining.decimals)) -
-        integerAtDecimals(measured, decimals);
-      remaining.decimals = decimals;
+      addExactQuantityDigits(remaining, -BigInt(measured.amountMinor), measured.decimals);
       if (remaining.minor < 0n) return undefined;
     }
   }
@@ -450,13 +436,13 @@ export function inventoryPolicyMovementRemainder({
     const remaining = reported.get(axis.axisId);
     if (remaining === undefined) throw new Error("Measured inventory report lost a reported axis.");
     const { minor, decimals } = remaining;
-    if (primaryMinor === 0n && minor !== 0n) return undefined;
+    if (primaryRemainder.minor === 0n && minor !== 0n) return undefined;
     const amount = inventoryAllocationQuantityIfStorable(minor, decimals, axis.quantity.unit);
     if (amount === undefined) return undefined;
     independent.push({ axisId: axis.axisId, quantity: amount });
   }
   const primary = inventoryAllocationQuantityIfStorable(
-    primaryMinor, primaryDecimals, reportedPrimary.unit
+    primaryRemainder.minor, primaryRemainder.decimals, reportedPrimary.unit
   );
   if (primary === undefined) return undefined;
   return { primary: { axisId: report.primary.axisId, quantity: primary }, independent };

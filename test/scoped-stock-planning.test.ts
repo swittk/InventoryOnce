@@ -90,6 +90,66 @@ function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
 }
 
 describe("indexed stock planning and availability", () => {
+  it.each([
+    { verb: "receive", values: ["0.1", "9007199254740990", "0.9"] },
+    { verb: "transfer", values: ["9007199254740990", "0.9", "0.1"] },
+    { verb: "issue", values: ["0.9", "9007199254740990", "0.1"] },
+    { verb: "policy transfer", values: ["9007199254740990", "0.1", "0.9"] },
+    { verb: "policy issue", values: ["9007199254740990", "0.9", "0.1"] },
+  ])("stores only the exact final total of duplicate $verb lines", async ({ verb, values }) => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const source = { itemId: item.itemId, placementNodeId: "store" };
+    // An independent tenths calculation fixes the expected durable quantity for every ordering.
+    const tenths = values.reduce((sum, value) => {
+      const [whole, fraction = "0"] = value.split(".");
+      return sum + BigInt(whole ?? "0") * 10n + BigInt(fraction);
+    }, 0n);
+    expect(tenths).toBe(BigInt(Number.MAX_SAFE_INTEGER) * 10n);
+    const total = (tenths / 10n).toString();
+    if (verb !== "receive") {
+      await inventory.stock.receive({ operationId: "receive-batch-total", occurredAtEpochMs: time0,
+        to: source, amount: stockAmount(total, "kg") });
+    }
+    const header = { operationId: "merge-exact-batch-total", occurredAtEpochMs: time1 };
+    const amounts = values.map((value) => stockAmount(value, "kg"));
+    const requests = amounts.map((amount, index) => ({ requestId: String(index), amount,
+      method: index === 1 ? InventoryAllocationMethod.Fefo : InventoryAllocationMethod.Fifo,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] } }));
+    /** Submit or replay the same public batch. */
+    const execute = () => {
+      switch (verb) {
+        case "receive": return inventory.stock.receiveMany({ ...header, lines: amounts.map((amount) => ({ to: source, amount })) });
+        case "transfer": return inventory.stock.transferMany({ ...header, lines: amounts.map((amount) => ({ from: source, amount, toPlacementNodeId: "destination" })) });
+        case "issue": return inventory.stock.issueMany({ ...header, lines: amounts.map((amount) => ({ from: source, amount })) });
+        case "policy transfer": return inventory.stock.transferManyByPolicy({ ...header, requests, toPlacementNodeId: "destination" });
+        default: return inventory.stock.issueManyByPolicy({ ...header, requests });
+      }
+    };
+    const first = await execute();
+    const polarized = first.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity.amountMinor);
+    const expected = verb === "receive" ? [Number(total)] :
+      verb.endsWith("transfer") ? [Number(total), -Number(total)] : [-Number(total)];
+    expect(polarized).toEqual(expected);
+    expect(await execute()).toEqual({ ...first, replayed: true });
+  });
+
+  it("rejects a duplicate receipt whose completed posting cannot be stored", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const before = storage.readSegmentedStockHead();
+    const operationId = "unstorable-completed-receipt";
+    await expect(inventory.stock.receiveMany({
+      operationId, occurredAtEpochMs: time0,
+      lines: [String(Number.MAX_SAFE_INTEGER), "0.1"].map((value) => ({
+        to: loosePosition("store"), amount: stockAmount(value, "piece"),
+      })),
+    })).rejects.toThrow("safe integer storage range");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await storage.readOperation(operationId)).toBeUndefined();
+  });
+
   it("witnesses a positive unlabelled row alongside labelled stock in one policy move", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     await inventory.stock.receive({ operationId: "receive-labelled-piece", occurredAtEpochMs: time0,
@@ -125,22 +185,24 @@ describe("indexed stock planning and availability", () => {
       .toEqual([Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
   });
 
-  it("records a compatible measured shortage even when unused rows have larger increments", async () => {
+  it.each([InventoryAllocationMethod.Fifo, InventoryAllocationMethod.Fefo])(
+    "records a compatible measured shortage with %s even when unused rows have larger increments", async (method) => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
-    for (const { lotId, count, weight } of [
-      { lotId: "a", count: "4", weight: "4" },
-      { lotId: "b", count: "2", weight: "4" },
-      { lotId: "c", count: "4", weight: "10" },
+    for (const { lotId, count, weight, expiresAtEpochMs } of [
+      { lotId: "a", count: "4", weight: "4", expiresAtEpochMs: time3 + 200 },
+      { lotId: "b", count: "2", weight: "4", expiresAtEpochMs: time3 + 100 },
+      { lotId: "c", count: "4", weight: "10", expiresAtEpochMs: time3 },
     ]) {
       await inventory.stock.receive({
         operationId: `receive-measured-${lotId}`, occurredAtEpochMs: time0,
         to: { itemId: "measured", lotId, placementNodeId: "store" },
+        lot: { expiresAtEpochMs },
         amount: measuredStockAmount(count, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
       });
     }
     const result = await inventory.stock.transferByPolicy({
       operationId: "transfer-six-weighed-pieces", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
-      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method,
       amount: measuredStockAmount("6", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
     });
     expect(result.event.positiveLayerProvenanceTransfers).toMatchObject([{ from: { lotId: "a" } }]);

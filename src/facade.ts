@@ -12,7 +12,6 @@ import {
 } from "./availability.js";
 import {
   InventoryAmountKind,
-  inventoryMeasuredAmountFromVector,
   measuredStockAmount,
   packageAmount,
   resolveInventoryAmount,
@@ -182,6 +181,11 @@ import {
   type InventoryFungibilitySummary,
   type PlanInventoryFungibilityAllocationInput,
 } from "./fungibility.js";
+import {
+  addInventoryMeasurementTotals,
+  materializeInventoryMeasurementTotals,
+  type InventoryMeasurementTotals,
+} from "./measurement-totals.js";
 import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
@@ -4065,20 +4069,6 @@ interface InventoryPolicyRecordedDeficit {
   readonly evidence: InventoryOnceRecordedDeficit;
 }
 
-/** One grouped exact source after several requests selected the same position. */
-interface InventoryPolicyBatchExactLine {
-  /** Position fields accepted by exact issue/transfer commands. */
-  readonly from: InventoryStockPositionInput;
-  /** Frozen item revision governing the position. */
-  readonly itemRevisionId: string;
-  /** Sum of every exact request allocation assigned to this position. */
-  readonly measurements: InventoryMeasurementVector;
-  /** Exact intact-package revision retained by this source position. */
-  readonly packagingRevisionId?: string;
-  /** Whole package count represented by the summed allocations. */
-  readonly packageCount?: number;
-}
-
 /** The signed pools and exact lookups needed by one policy or batch planner. */
 interface InventoryPolicyStockSource {
   /** Complete signed pool plus current exact holds for this request. */
@@ -4737,11 +4727,7 @@ function createPolicyBatchMovementEvent(
   deficitLines: readonly CreateInventoryIssueManyInput["lines"][number][],
   toPlacementNodeId: string | undefined
 ): InventoryEventDraft {
-  const exactLines = combinePolicyBatchExactLines(
-    catalog,
-    selectedLines,
-    kind === InventoryPolicyMovementKind.Issue ? deficitLines : []
-  );
+  const exactLines = selectedLines.map(policyIssueLine);
   const header: InventoryCommandHeader = {
     ...inventoryCommandHeaderFromPolicyInput(input),
     metadata: {
@@ -4753,7 +4739,7 @@ function createPolicyBatchMovementEvent(
     return createInventoryIssueManyEvent({
       catalog,
       ...header,
-      lines: exactLines,
+      lines: [...exactLines, ...deficitLines],
     });
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
@@ -4781,163 +4767,6 @@ function createPolicyBatchMovementEvent(
     return witnessed;
   }
   throw new Error("Inventory policy batch cannot create a scrap event.");
-}
-
-/** Sum repeated source positions so one event still has one effect per position. */
-function combinePolicyBatchExactLines(
-  catalog: InventoryCatalog,
-  lines: readonly InventoryPolicyAllocationLine[],
-  additionalLines: readonly CreateInventoryIssueManyInput["lines"][number][] = []
-): readonly CreateInventoryIssueManyInput["lines"][number][] {
-  return combinePolicyExactIssueLines(catalog, [
-    ...lines.map(policyIssueLine),
-    ...additionalLines,
-  ]);
-}
-
-/** Combine normal exact Issue inputs after freezing package/revision position identity. */
-function combinePolicyExactIssueLines(
-  catalog: InventoryCatalog,
-  lines: readonly CreateInventoryIssueManyInput["lines"][number][]
-): readonly CreateInventoryIssueManyInput["lines"][number][] {
-  const grouped = new Map<string, InventoryPolicyBatchExactLine>();
-  for (const line of lines) {
-    const item =
-      line.itemRevisionId === undefined
-        ? catalog.activeItem(line.from.itemId)
-        : catalog.itemRevision(line.itemRevisionId);
-    if (item.itemId !== line.from.itemId) {
-      throw new Error("Inventory policy exact Issue item/revision differ.");
-    }
-    const resolved = resolveInventoryAmount(catalog, item, line.amount);
-    const packagingRevisionId = resolved.packaging?.revisionId;
-    if (
-      line.from.packagingRevisionId !== undefined &&
-      line.from.packagingRevisionId !== packagingRevisionId
-    ) {
-      throw new Error(
-        "Inventory policy exact Issue amount package differs from its position."
-      );
-    }
-    const position = normalizeInventoryStockPositionKey({
-      ...line.from,
-      itemRevisionId: item.revisionId,
-      ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
-    });
-    assertPositionMatchesItem(item, position);
-    const positionIdentity = inventoryStockPositionIdentity(position);
-    const earlier = grouped.get(positionIdentity);
-    const { itemRevisionId, ...from } = position;
-    if (earlier === undefined) {
-      grouped.set(positionIdentity, {
-        from,
-        itemRevisionId,
-        measurements: resolved.measurements,
-        ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
-        ...(resolved.packageCount === undefined
-          ? {}
-          : { packageCount: resolved.packageCount }),
-      });
-      continue;
-    }
-    if (earlier.packagingRevisionId !== packagingRevisionId) {
-      throw new Error(
-        `Inventory policy repeated source '${positionIdentity}' with changed package identity.`
-      );
-    }
-    grouped.set(positionIdentity, {
-      ...earlier,
-      measurements: addInventoryMeasurements(
-        earlier.measurements,
-        resolved.measurements
-      ),
-      ...(packagingRevisionId === undefined
-        ? {}
-        : {
-            packageCount: addPolicyBatchPackageCounts(
-              earlier.packageCount,
-              resolved.packageCount,
-              positionIdentity
-            ),
-          }),
-    });
-  }
-  const positionIdentities = [...grouped.keys()];
-  positionIdentities.sort();
-  const exactLines: CreateInventoryIssueManyInput["lines"][number][] = [];
-  for (const positionIdentity of positionIdentities) {
-    const line = grouped.get(positionIdentity);
-    if (line === undefined) {
-      throw new Error(
-        `Inventory policy lost grouped position '${positionIdentity}'.`
-      );
-    }
-    exactLines.push({
-      from: line.from,
-      itemRevisionId: line.itemRevisionId,
-      amount: policyBatchExactLineAmount(catalog, line, positionIdentity),
-    });
-  }
-  return exactLines;
-}
-
-/** Rebuild one grouped source amount without silently unpacking intact package stock. */
-function policyBatchExactLineAmount(
-  catalog: InventoryCatalog,
-  line: InventoryPolicyBatchExactLine,
-  positionIdentity: string
-): InventoryAmount {
-  const measured = inventoryMeasuredAmountFromVector(line.measurements);
-  if (line.packagingRevisionId === undefined) return measured;
-  const packageCount = requirePolicyBatchPackageCount(
-    line.packageCount,
-    positionIdentity
-  );
-  const packaging = catalog.packagingRevision(line.packagingRevisionId);
-  const fixedAxisIds = new Set(
-    packaging.fixedContents.independent.map(
-      /** Package-fixed axes must not be repeated as independently observed inputs. */
-      (fixed) => fixed.axisId
-    )
-  );
-  return packageAmount(
-    packageCount,
-    line.packagingRevisionId,
-    measured.independent.filter(
-      /** Retain only independently observed axes not already fixed by the package revision. */
-      (independent) => !fixedAxisIds.has(independent.axisId)
-    )
-  );
-}
-
-/** Add two package counts while rejecting missing or unsafe whole-number evidence. */
-function addPolicyBatchPackageCounts(
-  left: number | undefined,
-  right: number | undefined,
-  positionIdentity: string
-): number {
-  const total =
-    requirePolicyBatchPackageCount(left, positionIdentity) +
-    requirePolicyBatchPackageCount(right, positionIdentity);
-  if (!Number.isSafeInteger(total)) {
-    throw new Error(
-      `Inventory policy batch package count overflowed at '${positionIdentity}'.`
-    );
-  }
-  return total;
-}
-
-/** Require one positive safe package count retained by a grouped source line. */
-function requirePolicyBatchPackageCount(
-  value: number | undefined,
-  positionIdentity: string
-): number {
-  if (value === undefined || !Number.isSafeInteger(value) || value <= 0) {
-    throw new Error(
-      `Inventory policy batch has invalid package count at '${positionIdentity}'.`
-    );
-  }
-  return value;
 }
 
 /** Encode exact per-request allocations as JSON-safe immutable event metadata. */
@@ -5392,7 +5221,16 @@ function assertPolicyBatchEvidenceMatchesEvent(
     if (effect.measurementsDelta.primary.quantity.amountMinor >= 0) continue;
     sourceEffects.set(inventoryStockPositionIdentity(effect.position), effect);
   }
-  const allocatedByPosition = new Map<string, InventoryMeasurementVector>();
+  const allocatedByPosition = new Map<string, InventoryMeasurementTotals>();
+  /** Preserve each exact source partition until the complete evidence has been read. */
+  const addPart = (positionIdentity: string, part: InventoryMeasurementVector): void => {
+    let totals = allocatedByPosition.get(positionIdentity);
+    if (totals === undefined) {
+      totals = new Map();
+      allocatedByPosition.set(positionIdentity, totals);
+    }
+    addInventoryMeasurementTotals(totals, part);
+  };
   for (const allocation of allocations) {
     for (const line of allocation.lines) {
       const effect = sourceEffects.get(line.positionIdentity);
@@ -5412,13 +5250,7 @@ function assertPolicyBatchEvidenceMatchesEvent(
           `Inventory policy batch primary evidence disagrees at '${line.positionIdentity}'.`
         );
       }
-      const earlier = allocatedByPosition.get(line.positionIdentity);
-      allocatedByPosition.set(
-        line.positionIdentity,
-        earlier === undefined
-          ? resolved
-          : addInventoryMeasurements(earlier, resolved)
-      );
+      addPart(line.positionIdentity, resolved);
     }
     if (allocation.deficit !== undefined) {
       const effect = sourceEffects.get(allocation.deficit.positionIdentity);
@@ -5438,15 +5270,7 @@ function assertPolicyBatchEvidenceMatchesEvent(
           `Inventory policy batch deficit primary evidence disagrees at '${allocation.deficit.positionIdentity}'.`
         );
       }
-      const earlier = allocatedByPosition.get(
-        allocation.deficit.positionIdentity
-      );
-      allocatedByPosition.set(
-        allocation.deficit.positionIdentity,
-        earlier === undefined
-          ? resolved
-          : addInventoryMeasurements(earlier, resolved)
-      );
+      addPart(allocation.deficit.positionIdentity, resolved);
     }
   }
   for (const [positionIdentity, effect] of sourceEffects) {
@@ -5454,7 +5278,7 @@ function assertPolicyBatchEvidenceMatchesEvent(
     if (
       allocated === undefined ||
       !inventoryMeasurementsEqual(
-        allocated,
+        materializeInventoryMeasurementTotals(allocated, effect.measurementsDelta.primary.axisId),
         negateInventoryMeasurements(effect.measurementsDelta)
       )
     ) {
@@ -5935,11 +5759,7 @@ function createPolicyMovementEvent(
               ),
             }),
       },
-      lines: combinePolicyBatchExactLines(
-        catalog,
-        lines,
-        deficit === undefined ? [] : [deficit.line]
-      ),
+      lines: [...lines.map(policyIssueLine), ...(deficit === undefined ? [] : [deficit.line])],
     });
   }
   const eventKind = kind === InventoryPolicyMovementKind.Transfer

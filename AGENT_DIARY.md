@@ -1908,3 +1908,8 @@ The R105 portable-current-input authority and final publication both continue to
 - A recorded movement sums its signed measurement axes before storing quantities. FIFO validation subtracts the separate unwitnessed portions before storing the witnessed remainder.
 - A compatible measured witness can leave a shortfall even when an unused row has a larger whole increment. Physical fungibility can use unheld stock while preserving existing claim shortages. Empty placement intersections have no deficit burden.
 - The recorded-deficit model counts positive unlabelled stock as policy capacity and tracks its witnessed debit separately from the unwitnessed shortfall.
+
+## 2026-11-25 — shared exact movement arithmetic
+
+- Batch movement commands group exact positions before storing their final measurements. Policy batches reuse that grouping, and per-request evidence verifies the same total in wide digits. Fungibility totals and measured remainders share exact digit alignment and storage narrowing.
+- The canonical coordinator checks for an exact replay after the last revision conflict, as the scoped stock writer does.

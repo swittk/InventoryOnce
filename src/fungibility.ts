@@ -55,16 +55,15 @@ import {
   inspectInventoryReservationFeasibility,
 } from "./reservations.js";
 import {
-  addQuantity,
   compareQuantity,
   convertQuantityByReferenceExact,
   leastCommonQuantityMultiple,
-  negateQuantity,
   positiveQuantity,
+  quantity,
   quantityToDecimalString,
-  zeroQuantity,
   type Quantity,
 } from "./quantity.js";
+import { addExactQuantityDigits, storableQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
 import {
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
@@ -173,40 +172,35 @@ export function summarizeInventoryFungibility({
 }: SummarizeInventoryFungibilityInput): InventoryFungibilitySummary {
   const definition = catalog.fungibilityRevision(fungibilityRevisionId);
   const normalizedScope = normalizeInventoryFungibilityScope(scope);
-  let total = zeroQuantity(definition.basisUnit);
-  let physicalTotal = zeroQuantity(definition.basisUnit);
-  let deficitTotal = zeroQuantity(definition.basisUnit);
+  /** Pool totals stay wide until every member contributes. */
+  const total: ExactQuantityDigits = { minor: 0n, decimals: 0 };
+  const physicalTotal: ExactQuantityDigits = { minor: 0n, decimals: 0 };
+  const deficitTotal: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   const members: InventoryFungibilityMemberSummary[] = [];
   for (const member of definition.members) {
     const item = catalog.itemRevision(member.itemRevisionId);
     const selector = selectorForFungibilityMember(item, normalizedScope);
     const positions = selectedFungibilityPositions(projection, selector);
-    let memberTotal = zeroQuantity(member.memberQuantity.unit);
-    let physicalMemberQuantity = zeroQuantity(member.memberQuantity.unit);
-    let deficitMemberQuantity = zeroQuantity(member.memberQuantity.unit);
+    /** Separate signed, physical, and deficit measures for this exact member. */
+    const memberTotal: ExactQuantityDigits = { minor: 0n, decimals: 0 };
+    const physicalMember: ExactQuantityDigits = { minor: 0n, decimals: 0 };
+    const deficitMember: ExactQuantityDigits = { minor: 0n, decimals: 0 };
     for (const position of positions) {
       const measured = inventoryMeasurementAt(
         position.measurements,
         member.measurementAxisId,
         member.memberQuantity.unit
       );
-      memberTotal = addQuantity(memberTotal, measured);
-      if (
-        compareQuantity(
-          measured,
-          zeroQuantity(measured.unit, measured.decimals)
-        ) < 0
-      ) {
-        deficitMemberQuantity = addQuantity(
-          deficitMemberQuantity,
-          negateQuantity(measured)
-        );
-      } else {
-        physicalMemberQuantity = addQuantity(physicalMemberQuantity, measured);
-      }
+      const minor = BigInt(measured.amountMinor);
+      addExactQuantityDigits(memberTotal, minor, measured.decimals);
+      if (minor < 0n) addExactQuantityDigits(deficitMember, -minor, measured.decimals);
+      else addExactQuantityDigits(physicalMember, minor, measured.decimals);
     }
+    const memberQuantity = storeFungibilityTotal(memberTotal, member.memberQuantity.unit);
+    const physicalMemberQuantity = storeFungibilityTotal(physicalMember, member.memberQuantity.unit);
+    const deficitMemberQuantity = storeFungibilityTotal(deficitMember, member.memberQuantity.unit);
     const poolQuantity = convertQuantityByReferenceExact(
-      memberTotal,
+      memberQuantity,
       member.memberQuantity,
       member.poolQuantity
     );
@@ -220,13 +214,13 @@ export function summarizeInventoryFungibility({
       member.memberQuantity,
       member.poolQuantity
     );
-    total = addQuantity(total, poolQuantity);
-    physicalTotal = addQuantity(physicalTotal, physicalPoolQuantity);
-    deficitTotal = addQuantity(deficitTotal, deficitPoolQuantity);
+    addExactQuantityDigits(total, BigInt(poolQuantity.amountMinor), poolQuantity.decimals);
+    addExactQuantityDigits(physicalTotal, BigInt(physicalPoolQuantity.amountMinor), physicalPoolQuantity.decimals);
+    addExactQuantityDigits(deficitTotal, BigInt(deficitPoolQuantity.amountMinor), deficitPoolQuantity.decimals);
     members.push({
       member,
       itemId: item.itemId,
-      memberQuantity: memberTotal,
+      memberQuantity,
       physicalMemberQuantity,
       deficitMemberQuantity,
       poolQuantity,
@@ -246,11 +240,18 @@ export function summarizeInventoryFungibility({
   return {
     definition,
     scope: normalizedScope,
-    total,
-    physicalTotal,
-    deficitTotal,
+    total: storeFungibilityTotal(total, definition.basisUnit),
+    physicalTotal: storeFungibilityTotal(physicalTotal, definition.basisUnit),
+    deficitTotal: storeFungibilityTotal(deficitTotal, definition.basisUnit),
     members,
   };
+}
+
+/** Store a completed pool or member total at its exact representable scale. */
+function storeFungibilityTotal({ minor, decimals }: ExactQuantityDigits, unit: Quantity["unit"]): Quantity {
+  const stored = storableQuantityDigits(minor, decimals);
+  if (stored === undefined) throw new Error("Fungibility total exceeds the safe integer storage range.");
+  return quantity({ ...stored, unit });
 }
 
 /** Exact selected member line produced by common-basis allocation. */
@@ -975,7 +976,7 @@ function totalPositivePrimary(
   selector: InventoryStockSelector,
   item: InventoryItemDefinitionRevision
 ): Quantity {
-  let total = zeroQuantity(item.primaryAxis.unit);
+  const total: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   for (const position of selectedFungibilityPositions(projection, selector)) {
     // Prepared/in-transit stock remains physical pool truth but is not ordinary allocation capacity.
     if (position.key.transferId !== undefined) continue;
@@ -984,14 +985,7 @@ function totalPositivePrimary(
       item.primaryAxis.axisId,
       item.primaryAxis.unit
     );
-    if (
-      compareQuantity(
-        measured,
-        zeroQuantity(measured.unit, measured.decimals)
-      ) > 0
-    ) {
-      total = addQuantity(total, measured);
-    }
+    if (measured.amountMinor > 0) addExactQuantityDigits(total, BigInt(measured.amountMinor), measured.decimals);
   }
-  return total;
+  return storeFungibilityTotal(total, item.primaryAxis.unit);
 }

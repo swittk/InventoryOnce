@@ -212,6 +212,9 @@ export async function commitInventoryOperation({
       throw error;
     }
   }
+  // A winner may have begun while the final revision conflict was returned.
+  const concurrent = await readReplay();
+  if (concurrent !== undefined) return concurrent;
   throw new Error(
     `Inventory operation '${operationId}' could not freeze a current world revision after ${maxRevisionRetries} attempts.`
   );

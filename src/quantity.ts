@@ -1,5 +1,5 @@
 /** Exact physical-quantity arithmetic. InventoryOnce never uses epsilon comparisons. */
-import { storableQuantityScale } from "./quantity-storage.js";
+import { storableQuantityDigits } from "./quantity-storage.js";
 
 declare const unitCodeBrand: unique symbol;
 
@@ -147,9 +147,9 @@ export function subtractQuantity(left: Quantity, right: Quantity): Quantity {
 
 /** Convert an exact sum or difference without discarding nonzero digits. */
 function quantityAtStorableScale(minor: bigint, decimals: number, unit: UnitCode, label: string): Quantity {
-  const scale = storableQuantityScale(minor, decimals) ?? decimals;
-  const digits = scale === decimals ? minor : minor / powerOfTen(decimals - scale);
-  return quantity({ amountMinor: safeNumber(digits, label), decimals: scale, unit });
+  const stored = storableQuantityDigits(minor, decimals);
+  if (stored === undefined) throw new Error(`${label} exceeds the safe integer storage range.`);
+  return quantity({ ...stored, unit });
 }
 
 /** Flip the sign of one exact quantity without changing its unit/scale. */

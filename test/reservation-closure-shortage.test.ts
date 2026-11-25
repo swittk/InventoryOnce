@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   InventoryDeficitPolicy,
@@ -15,6 +15,7 @@ import {
 import {
   commitInventoryOperation,
   createInMemoryInventoryDurableStorage,
+  InventoryWorldRevisionConflictError,
   type InMemoryInventoryDurableStorage,
 } from "../src/storage-api.js";
 import {
@@ -35,6 +36,41 @@ interface ReservationShortageFixture {
   /** Reference durable adapter used to inspect frozen operation and event truth. */
   readonly storage: InMemoryInventoryDurableStorage;
 }
+
+it("replays the matching operation after the last canonical revision conflict", async () => {
+  const catalog = createTabletCatalog();
+  const storage = createInMemoryInventoryDurableStorage();
+  const inventory = createTestInventory(storage, catalog);
+  const amount = stockAmount("1", "piece");
+  await inventory.stock.receive({ operationId: "canonical-race-stock", occurredAtEpochMs: time0,
+    to: loosePosition("store"), amount });
+  const operationId = "canonical-final-replay";
+  const event = createInventoryTransferEvent({
+    catalog, operationId, occurredAtEpochMs: time1, from: loosePosition("store"), toPlacementNodeId: "destination", amount,
+  });
+  const input = { catalog, storage, operationId, intentFingerprint: "same-transfer", clock: clockAt(time3),
+    deficitPolicy: InventoryDeficitPolicy.Reject, maxRevisionRetries: 1,
+    /** Plan the same physical operation in both contenders. */
+    plan: () => ({ event }) };
+  const begin = storage.begin.bind(storage);
+  const before = (await storage.readWorld()).revision;
+  let won: Awaited<ReturnType<typeof commitInventoryOperation>> | undefined;
+  vi.spyOn(storage, "begin").mockImplementationOnce(async (request) => {
+    await inventory.stock.receive({ operationId: "canonical-intervening-stock", occurredAtEpochMs: time1,
+      to: loosePosition("elsewhere"), amount });
+    try {
+      return await begin(request);
+    } catch (error) {
+      if (!(error instanceof InventoryWorldRevisionConflictError)) throw error;
+      won = await commitInventoryOperation(input);
+      throw error;
+    }
+  });
+  const replay = await commitInventoryOperation(input);
+  expect(won?.replayed).toBe(false);
+  expect(replay).toEqual({ ...won, replayed: true });
+  expect(replay.world.revision).toBe(before + 2);
+});
 
 /** Build the exact ReservationScope release counterexample through public calls. */
 async function createReservationShortageFixture(

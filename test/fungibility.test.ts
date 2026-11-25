@@ -138,6 +138,25 @@ async function receiveMember(input: {
 }
 
 describe("revision-frozen mutual-fungibility catalogue", () => {
+  it("derives and allocates a storable pool total across mixed-scale rows", async () => {
+    const catalog = fungibilityCatalog();
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    for (const { lotId, quantity } of [
+      { lotId: "a", quantity: "9007199254740990" }, { lotId: "b", quantity: "0.1" }, { lotId: "c", quantity: "0.9" },
+    ]) {
+      await receiveMember({ inventory, operationId: `receive-pool-scale-${lotId}`, itemId: "new-brand",
+        itemRevisionId: "new-brand-v1", lotId, quantity, occurredAtEpochMs: time0 });
+    }
+    const scope = { fungibilityRevisionId: "brand-pool-v1", scope: { placementNodeIds: ["store"] } };
+    const summary = await inventory.fungibility.summary(scope);
+    const total = parseQuantity(String(Number.MAX_SAFE_INTEGER), "dose-equivalent");
+    expect(summary.total).toEqual(total);
+    expect(summary.physicalTotal).toEqual(total);
+    const issue = await inventory.fungibility.issue({ ...scope, operationId: "issue-from-mixed-scale-pool",
+      occurredAtEpochMs: time1, requested: parseQuantity("1", "dose-equivalent"), method: InventoryAllocationMethod.Fifo });
+    expect(issue.event.stockEffects).toMatchObject([{ position: { lotId: "a" }, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } }]);
+  });
+
   it("retains old pool revisions while active publication advances independently", () => {
     const old = oldBrand();
     const newer = newBrand();
