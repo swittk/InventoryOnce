@@ -1957,3 +1957,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A reported transfer keeps normalized postings for fully witnessed routes alongside independently recorded remainders. A contents move puts its audit metadata on the placement event even when stock postings are built using a transfer.
 - The position writer checks the revision before comparing stock effects against current rows. Signed stock pools capture shared parent links and use-by cutoffs once. Allocation and availability reuse the pool's subtree restriction, and an explicit ancestry read still describes the captured revision.
+
+## 2026-11-26 — storable allocation bounds and reported remainder axes
+
+- Exact allocation bounds each suffix using the largest legal amount each position can store. Digits in a working balance that cannot appear in a single pick do not make smaller prefixes look more promising.
+- A reported remainder carries the independent axes the report actually contains, including an explicit zero. Intact packages still derive fixed axes from their retained definition.

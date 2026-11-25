@@ -767,6 +767,8 @@ describe("package and serial reservation granularity", () => {
       occurredAtEpochMs: time2,
       allocations: [{ position: position.key, quantity: parseQuantity("20", "piece") }],
     });
+    const hold = (await inventory.read.reservation("first-box-claim"))?.allocations;
+    expect(hold).toEqual([{ position: position.key, quantity: parseQuantity("20", "piece") }]);
     await inventory.stock.unpack({
       operationId: "unpack-allocated-box",
       occurredAtEpochMs: time2,
@@ -776,8 +778,7 @@ describe("package and serial reservation granularity", () => {
     expect((await inventory.read.reservationFeasibility(time2)).groups[0]).toMatchObject({
       reservationIds: ["first-box-claim"], shortage: parseQuantity("20", "piece"),
     });
-    expect((await inventory.read.reservation("first-box-claim"))?.allocations[0]?.position)
-      .toEqual(position.key);
+    expect((await inventory.read.reservation("first-box-claim"))?.allocations).toEqual(hold);
   });
 
   it("defines one serial identity as exactly one primary resource", async () => {

@@ -12,12 +12,14 @@ import {
 } from "./availability.js";
 import {
   InventoryAmountKind,
+  inventoryMeasuredAmountFromVector,
   measuredStockAmount,
   packageAmount,
   resolveInventoryAmount,
   stockAmount,
   assertInventoryAmountSum,
   type InventoryAmount,
+  type InventoryIndependentAmountInput,
 } from "./amounts.js";
 import {
   assertInventoryCatalogRetainsSnapshot,
@@ -240,6 +242,7 @@ import {
   quantity,
   quantityEq,
   quantityToDecimalString,
+  quantityWholeMultipleCount,
   subtractQuantity,
   zeroQuantity,
   type Quantity,
@@ -4175,7 +4178,11 @@ async function planRecordedExactTransfer({
     if (witnessedMeasurements !== undefined) {
       partial.push({
         from, toPlacementNodeId, itemRevisionId,
-        amount: transferAmountForVector(catalog, route.from, witnessedMeasurements),
+        amount: inventoryAmountForPrimaryAllocation({
+          catalog, itemRevisionId,
+          position: { key: route.from, measurements: witnessedMeasurements },
+          allocatedPrimary: witnessedMeasurements.primary.quantity,
+        }),
         ...(effect.metadata === undefined ? {} : { metadata: effect.metadata }),
       });
     }
@@ -4185,12 +4192,11 @@ async function planRecordedExactTransfer({
     // The ledger nets signed postings at the real unlabelled key. The typed
     // portion preserves the exact report even when the row stays positive.
     const { lotId: _witnessedLot, ...unlabelledSource } = from;
-    const unknownSource = { ...unlabelledSource, itemRevisionId };
     const remainder = witnessedMeasurements === undefined ? requested :
-      subtractInventoryMeasurements(requested, witnessedMeasurements);
+      subtractRecordedTransferWitness(requested, witnessedMeasurements);
     unknown.push({
       from: unlabelledSource, toPlacementNodeId, itemRevisionId,
-      amount: transferAmountForVector(catalog, unknownSource, remainder),
+      amount: reportedRemainderAmount(catalog, route.from.packagingRevisionId, remainder),
     });
   }
   if (unknown.length === 0) return event;
@@ -4208,16 +4214,58 @@ async function planRecordedExactTransfer({
   });
 }
 
-/** Convert a complete exact witness or remainder to the existing measured/package amount. */
-function transferAmountForVector(
+/** Take a witnessed portion from the exact report without adding unreported axes. */
+function subtractRecordedTransferWitness(
+  report: InventoryMeasurementVector,
+  witness: InventoryMeasurementVector,
+): InventoryMeasurementVector {
+  const independent: InventoryMeasurementVector["independent"][number][] = [];
+  for (const { axisId, quantity } of report.independent) {
+    independent.push({
+      /** Axis explicitly measured or fixed by the requested package. */
+      axisId,
+      /** Exact reported quantity still outside the witnessed stock. */
+      quantity: subtractQuantity(quantity, inventoryMeasurementAt(witness, axisId, quantity.unit)),
+    });
+  }
+  return {
+    /** Remaining amount in the primary axis already shared by report and witness. */
+    primary: {
+      /** Frozen primary axis of the item revision. */
+      axisId: report.primary.axisId,
+      /** Exact primary quantity still outside the witnessed stock. */
+      quantity: subtractQuantity(report.primary.quantity, witness.primary.quantity),
+    },
+    /** Only the exact report's independent axes, including any explicit zero. */
+    independent,
+  };
+}
+
+/** Store reported remainder axes verbatim, including measured zero for an optional axis. */
+function reportedRemainderAmount(
   catalog: InventoryCatalog,
-  key: InventoryStockPositionKey,
-  measurements: InventoryMeasurementVector
+  packagingRevisionId: string | undefined,
+  measurements: InventoryMeasurementVector,
 ): InventoryAmount {
-  return inventoryAmountForPrimaryAllocation({
-    catalog, itemRevisionId: key.itemRevisionId,
-    position: { key, measurements }, allocatedPrimary: measurements.primary.quantity,
-  });
+  if (packagingRevisionId === undefined) return inventoryMeasuredAmountFromVector(measurements);
+  const packaging = catalog.packagingRevision(packagingRevisionId);
+  const count = quantityWholeMultipleCount(measurements.primary.quantity, packaging.fixedContents.primary.quantity);
+  const independent: InventoryIndependentAmountInput[] = [];
+  for (const { axisId, quantity } of measurements.independent) {
+    if (packaging.fixedContents.independent.some(
+      /** Fixed axes come from the retained package definition when resolving the amount. */
+      (axis) => axis.axisId === axisId,
+    )) continue;
+    independent.push({
+      /** Independently reported axis not fixed by the intact package. */
+      axisId,
+      /** Exact decimal representation of the measured remainder. */
+      value: quantityToDecimalString(quantity),
+      /** Unit frozen by the item revision's axis. */
+      unit: quantity.unit,
+    });
+  }
+  return packageAmount(count, packagingRevisionId, independent);
 }
 
 /** Read policy facts from the canonical snapshot held by the staged coordinator. */
@@ -5578,14 +5626,8 @@ function planInventoryAllocationForRecording(
     throw new Error("Reported physical movement remainder cannot exactly match its witnessed axes.");
   }
   if (inventoryMeasurementsAreZero(residual)) return selected;
-  const position = {
-    itemId: item.itemId,
-    itemRevisionId: item.revisionId,
-    ...(input.amount.kind === InventoryAmountKind.Package
-      ? { packagingRevisionId: input.amount.packagingRevisionId }
-      : {}),
-  };
-  return { ...selected, shortfallAmount: transferAmountForVector(input.catalog, position, residual) };
+  const packagingRevisionId = input.amount.kind === InventoryAmountKind.Package ? input.amount.packagingRevisionId : undefined;
+  return { ...selected, shortfallAmount: reportedRemainderAmount(input.catalog, packagingRevisionId, residual) };
 }
 
 /** Reject unsafe policy combinations before planning or writing. */

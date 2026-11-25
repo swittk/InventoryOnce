@@ -1088,7 +1088,12 @@ describe("derived pool summaries and exact member movements", () => {
       method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] }, toPlacementNodeId: "room",
     };
     const preferred = await inventory.fungibility.transfer({ ...command, operationId: "move-unheld-member" });
-    expect(preferred.event.stockEffects.map((effect) => effect.position.itemId)).toEqual([unheld.itemId, unheld.itemId]);
+    expect(preferred.event.stockEffects.map((effect) => [
+      effect.position.itemId, effect.position.placementNodeId, effect.measurementsDelta.primary.quantity,
+    ])).toEqual([
+      [unheld.itemId, "room", parseQuantity("4", "piece")],
+      [unheld.itemId, "store", parseQuantity("-4", "piece")],
+    ]);
     expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual(expect.arrayContaining([
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("0", "kg") }),
     ]));

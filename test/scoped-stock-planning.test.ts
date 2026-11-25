@@ -1245,6 +1245,65 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.stock.transferMany(command)).toEqual({ ...moved, replayed: true });
   });
 
+  it.each([
+    { packaged: false, reportedZero: true, policy: false },
+    { packaged: true, reportedZero: true, policy: false },
+    { packaged: false, reportedZero: false, policy: false },
+    { packaged: true, reportedZero: false, policy: false },
+    { packaged: false, reportedZero: true, policy: true },
+    { packaged: true, reportedZero: true, policy: true },
+  ])("keeps only reported optional axes on the remainder ($packaged packaged, $reportedZero zero, $policy policy)", async ({
+    packaged, reportedZero, policy,
+  }) => {
+    const base = measuredItemCatalog("pieces").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base,
+      independentAxes: base.independentAxes.map((axis) => ({ ...axis, requirement: InventoryMeasurementRequirement.Optional })),
+    });
+    const packageId = "measured-box";
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
+      packagingRevisions: [{
+        revisionId: packageId, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("box"),
+        fixedContents: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const from = { itemId: item.itemId, placementNodeId: "store" };
+    const weight = [{ axisId: "weight", value: "0", unit: "kg" }];
+    const received = reportedZero ? [] : weight;
+    const reported = reportedZero ? weight : [];
+    await inventory.stock.receive({
+      operationId: "receive-remainder-axis", occurredAtEpochMs: time0, to: from,
+      amount: packaged ? packageAmount(1, packageId, received) : measuredStockAmount("1", "piece", received),
+    });
+    const command = {
+      operationId: "move-remainder-axis", occurredAtEpochMs: time2, from, toPlacementNodeId: "destination",
+      amount: packaged ? packageAmount(2, packageId, reported) : measuredStockAmount("2", "piece", reported),
+    };
+    /** Commit or replay the same transfer using the selected public entry point. */
+    const transfer = () => policy
+      ? inventory.stock.transferByPolicy({
+          operationId: command.operationId, occurredAtEpochMs: command.occurredAtEpochMs,
+          amount: command.amount, toPlacementNodeId: command.toPlacementNodeId,
+          method: InventoryAllocationMethod.Fifo,
+          selector: inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] }),
+        })
+      : inventory.stock.transfer(command);
+    const moved = await transfer();
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("1", "piece") },
+        independent: reportedZero ? [{ axisId: "weight", quantity: parseQuantity("0", "kg") }] : [],
+      },
+    }]);
+    const axes = moved.event.stockEffects.map((effect) => effect.evidence?.transactedMeasurements.independent.map(
+      ({ axisId, quantity }) => [axisId, quantity.amountMinor === 0, quantity.unit, quantity.decimals],
+    ));
+    expect(axes).toEqual(reportedZero ? [[["weight", true, "kg", 0]], [["weight", true, "kg", 0]]] : [[], []]);
+    expect(await transfer()).toEqual({ ...moved, replayed: true });
+  });
+
   it.each(["exact transfer", "policy transfer", "policy scrap"])(
     "settles an unlabelled remainder against one signed row for %s",
     async (verb) => {

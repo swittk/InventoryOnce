@@ -75,6 +75,7 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
         { position: { lotId: "early" }, quantity: parseQuantity("2", "piece") },
         { position: { lotId: "late" }, quantity: parseQuantity("1", "piece") },
       ],
+      shortfall: parseQuantity("0", "piece"),
       incrementBlockedStock: true,
     });
   });
@@ -479,7 +480,32 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       // A measured constraint rejects every assignment in these capacity controls.
       acceptAllocations: () => false,
     });
-    expect(result).toMatchObject({ incrementBlockedStock: blocked, allocationConstraintBlockedStock: false });
+    expect(result).toMatchObject({
+      allocations: [], shortfall: requested, incrementBlockedStock: blocked, allocationConstraintBlockedStock: false,
+    });
+  });
+
+  it("finds the maximum stored witness when a wide later balance cannot be taken whole", () => {
+    const requested = parseQuantity("1000", "kg");
+    const result = allocateInventoryUpTo({
+      requested, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+      candidates: [
+        candidate({ lotId: "early", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+          extra: { available: parseQuantity("0.0000000000008", "kg") } }),
+        {
+          ...candidate({ lotId: "late", receivedAtEpochMs: time1, expiresAtEpochMs: time3 }),
+          available: { amountMinor: 1000n * (10n ** 18n) - 1n, decimals: 18, unit: requested.unit },
+        },
+      ],
+    });
+    expect(result).toMatchObject({
+      allocations: [
+        { position: { lotId: "early" }, quantity: parseQuantity("0.000000000000800000", "kg") },
+        { position: { lotId: "late" }, quantity: parseQuantity("999.999999999999", "kg") },
+      ],
+      shortfall: parseQuantity("0.000000000000200000", "kg"),
+      incrementBlockedStock: false,
+    });
   });
 
   it("skips unstoreable nonterminal picks without exhausting the choice budget", () => {
