@@ -20,9 +20,8 @@ import {
   type InventoryItemDefinitionRevision,
 } from "./catalog.js";
 import {
-  applyInventoryRecordedDeficitBurden,
+  applyInventoryDeficitBurdenToPositions,
   inventoryRecordedDeficitPoolSelector,
-  inventorySelectedDeficitPlacementNodeIds,
 } from "./deficits.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
@@ -36,8 +35,13 @@ import {
   type InventoryStockPositionKey,
   type ItemRevisionId,
 } from "./model.js";
-import type { InventoryProjectionState } from "./projection.js";
-import { inventorySparseRecordValue } from "./sparse-record.js";
+import { findInventoryPositions, type InventoryProjectionState } from "./projection.js";
+import { inventoryPlacementAncestry } from "./placement.js";
+import {
+  inventoryScopedStockMatches,
+  type InventoryScopedStockPool,
+  type InventoryScopedStockPosition,
+} from "./stock-scope.js";
 import {
   addQuantity,
   compareQuantity,
@@ -53,12 +57,9 @@ import {
   inventoryReservationIsActiveAt,
   inventoryReservationsAt,
   type InventoryReservation,
-  type InventoryReservationBook,
 } from "./reservations.js";
 import {
   InventoryOptionalIdentityConstraintKind,
-  inventoryStockPositionMatchesNormalizedSelector,
-  inventoryStockPositionMatchesSelector,
   normalizeInventoryStockSelector,
   type InventoryOptionalIdentityConstraint,
   type InventoryStockSelector,
@@ -124,7 +125,7 @@ export interface InventoryPolicyAllocationPlan {
   readonly incrementBlockedStock: boolean;
   /** True when an exact physical assignment was rejected by a whole-plan acceptance rule. */
   readonly allocationConstraintBlockedStock: boolean;
-  /** True when active broad claims remain protected only by final global feasibility checking. */
+  /** True when this revision has active broad claims without exact positions. */
   readonly unallocatedReservationsPresent: boolean;
 }
 
@@ -141,68 +142,115 @@ export interface PlanInventoryAllocationInput
   readonly reservationAtEpochMs?: number;
 }
 
-/**
- * Plan exact FIFO/FEFO lines without mutating storage or inventing stock.
- * Broad unallocated claims remain protected by the committing operation's global feasibility check.
- */
-export function planInventoryAllocation({
+/** Plan exact FIFO/FEFO lines using existing holds without mutating storage or inventing stock. */
+export function planInventoryAllocation(
+  input: PlanInventoryAllocationInput
+): InventoryPolicyAllocationPlan {
+  const selection = resolveAllocationItemAndSelector(
+    input.catalog, input.selector, input.amount, input.itemRevisionId
+  );
+  return planInventoryAllocationInPool({
+    ...input,
+    selection,
+    pool: inventoryAllocationPoolFromWorld(
+      input.world, selection, input.reservationAtEpochMs ?? input.atEpochMs
+    ),
+  });
+}
+
+/** Read the canonical signed pool and claim evidence without copying the projection. */
+export function inventoryAllocationPoolFromWorld(
+  world: InventoryWorldState,
+  selection: ResolvedAllocationSelection,
+  reservationAtEpochMs: number
+): InventoryScopedStockPool {
+  return {
+    positions: inventoryStockPoolRowsFromProjection(
+      world.projection, inventoryAllocationPoolSelector(selection)
+    ),
+    reservations: inventoryReservationsAt(world.reservations, reservationAtEpochMs),
+  };
+}
+
+/** Read exact signed rows and their live policy facts from the canonical indexes. */
+export function inventoryStockPoolRowsFromProjection(
+  projection: InventoryProjectionState,
+  selector: InventoryStockSelector
+): readonly InventoryScopedStockPosition[] {
+  const rows: InventoryScopedStockPosition[] = [];
+  for (const position of findInventoryPositions(projection, selector)) {
+    const layerStartedAtEpochMs = projection.positiveLayerStartedAtEpochMsByPositionId[
+      inventoryStockPositionIdentity(position.key)
+    ];
+    const effectiveUseByEpochMs = inventoryPositionEffectiveUseByEpochMs(projection, position.key);
+    rows.push({
+      position,
+      ancestry: position.key.placementNodeId === undefined
+        ? []
+        : inventoryPlacementAncestry(projection.placement, position.key.placementNodeId),
+      ...(layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs }),
+      ...(effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs }),
+    });
+  }
+  return rows;
+}
+
+/** Describe the complete signed pools needed before filtering by lot, package, or owner. */
+export function inventoryAllocationPoolSelector(
+  selection: ResolvedAllocationSelection
+): InventoryStockSelector {
+  return inventoryRecordedDeficitPoolSelector(
+    selection.selector, selection.item.revisionId, selection.selector.placementNodeIds ?? []
+  );
+}
+
+/** The same synchronous policy reducer can use a canonical or indexed pool. */
+export interface PlanInventoryAllocationInPoolInput
+  extends Omit<PlanInventoryAllocationInput, "world" | "selector" | "itemRevisionId"> {
+  /** Resolved exact item revision and request selector. */
+  readonly selection: ResolvedAllocationSelection;
+  /** Complete signed pool rows and claim states at the requested reservation time. */
+  readonly pool: InventoryScopedStockPool;
+}
+
+/** Plan exact FIFO/FEFO picks over one complete signed stock pool. */
+export function planInventoryAllocationInPool({
   catalog,
-  world,
-  selector: rawSelector,
+  selection: selected,
+  pool,
   amount,
-  itemRevisionId,
   method,
   atEpochMs,
   allowExpiredLots = false,
   reservationId,
   allowAllocatedStock = false,
   reservationAtEpochMs = atEpochMs,
-}: PlanInventoryAllocationInput): InventoryPolicyAllocationPlan {
+}: PlanInventoryAllocationInPoolInput): InventoryPolicyAllocationPlan {
   assertInventoryEpochMilliseconds(atEpochMs, "inventory allocation authority time");
   assertInventoryEpochMilliseconds(
     reservationAtEpochMs,
     "inventory allocation reservation authority time"
-  );
-  const selected = resolveAllocationItemAndSelector(
-    catalog,
-    rawSelector,
-    amount,
-    itemRevisionId
   );
   const resolved = resolveInventoryAmount(catalog, selected.item, amount);
   const requestedPrimary = positiveQuantity(
     resolved.measurements.primary.quantity,
     "Inventory allocation request"
   );
-  const deficitPlacementNodeIds = inventorySelectedDeficitPlacementNodeIds(
-    world.projection,
-    selected.selector,
-    selected.item.revisionId
-  );
-  const deficitPoolSelector = inventoryRecordedDeficitPoolSelector(
-    selected.selector,
-    selected.item.revisionId,
-    deficitPlacementNodeIds
-  );
   const candidateResult = createPolicyAllocationCandidates({
     catalog,
-    projection: world.projection,
-    reservations: world.reservations,
-    selector: deficitPoolSelector,
+    pool,
     item: selected.item,
-    atEpochMs,
     reservationAtEpochMs,
     ...(reservationId === undefined ? {} : { reservationId }),
     allowAllocatedStock,
   });
   const deficitAdjusted = applyPolicyAllocationDeficitBurden({
-    projection: world.projection,
     selector: selected.selector,
-    placementNodeIds: deficitPlacementNodeIds,
     item: selected.item,
     method,
     atEpochMs,
     allowExpiredLots,
+    rowsById: candidateResult.rowsById,
     poolCandidates: candidateResult.candidates,
   });
   const allocated = allocateInventory({
@@ -224,14 +272,11 @@ export function planInventoryAllocation({
         "Inventory allocation result references a missing candidate."
       );
     }
-    const currentPosition =
-      world.projection.positions[
-        inventoryStockPositionIdentity(allocation.position)
-      ];
+    const currentPosition = candidateResult.rowsById.get(
+      inventoryStockPositionIdentity(allocation.position)
+    )?.position;
     if (currentPosition === undefined) {
-      throw new Error(
-        "Inventory allocation candidate disappeared from the reviewed world."
-      );
+      throw new Error("Inventory allocation candidate disappeared from its reviewed stock pool.");
     }
     lines.push({
       position: allocation.position,
@@ -278,7 +323,7 @@ export function planInventoryAllocation({
 }
 
 /** Item revision and selector after freezing all ambiguous human/package choices. */
-interface ResolvedAllocationSelection {
+export interface ResolvedAllocationSelection {
   /** Exact item revision used by every candidate. */
   readonly item: InventoryItemDefinitionRevision;
   /** Normalized selector narrowed to that revision and optional exact package. */
@@ -289,11 +334,8 @@ interface ResolvedAllocationSelection {
 interface PolicyAllocationCandidates {
   /** Exact physical candidates accepted by the generic allocation algorithm. */
   readonly candidates: readonly InventoryAllocationCandidate[];
-  /** Candidate evidence keyed by exact position identity. */
-  readonly byPositionIdentity: ReadonlyMap<
-    string,
-    InventoryAllocationCandidate
-  >;
+  /** Exact current signed rows, including ancestry and layer evidence. */
+  readonly rowsById: ReadonlyMap<string, InventoryScopedStockPosition>;
   /** True when at least one active same-revision claim is still broad/unallocated. */
   readonly unallocatedReservationsPresent: boolean;
 }
@@ -317,12 +359,10 @@ interface DeficitAdjustedPolicyAllocationCandidates {
 
 /** Inputs for reducing positive policy candidates by signed recorded deficit. */
 interface ApplyPolicyAllocationDeficitBurdenInput {
-  /** Current signed physical projection. */
-  readonly projection: InventoryProjectionState;
+  /** All signed rows in the affected pools and their ancestry. */
+  readonly rowsById: ReadonlyMap<string, InventoryScopedStockPosition>;
   /** Exact caller selector applied after the direct-placement pool pays its deficit once. */
   readonly selector: InventoryStockSelector;
-  /** Direct-placement pools owning this request and their deficit. */
-  readonly placementNodeIds: readonly string[];
   /** Exact item revision/primary axis. */
   readonly item: InventoryItemDefinitionRevision;
   /** FIFO/FEFO order used to burden positive rows deterministically. */
@@ -341,16 +381,23 @@ interface ApplyPolicyAllocationDeficitBurdenInput {
  * deficit again every time a different exact row is selected.
  */
 function applyPolicyAllocationDeficitBurden({
-  projection,
+  rowsById,
   selector,
-  placementNodeIds,
   item,
   method,
   atEpochMs,
   allowExpiredLots,
   poolCandidates,
 }: ApplyPolicyAllocationDeficitBurdenInput): DeficitAdjustedPolicyAllocationCandidates {
-  const normalizedSelector = normalizeInventoryStockSelector(selector);
+  // A selector can narrow by lot or owner only after the entire pool bears its deficit.
+  const selectedIds = new Set<string>();
+  const positions: InventoryStockPosition[] = [];
+  for (const [positionId, row] of rowsById) {
+    positions.push(row.position);
+    if (inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) {
+      selectedIds.add(positionId);
+    }
+  }
   // Remember whether policy filtering hid otherwise selector-matching expired stock.
   let expiredStockWasExcluded = false;
   // Candidate buffer retained in policy order before direct-placement deficit burden is applied.
@@ -359,13 +406,7 @@ function applyPolicyAllocationDeficitBurden({
     const expired =
       candidate.expiresAtEpochMs !== undefined && candidate.expiresAtEpochMs <= atEpochMs;
     if (expired && !allowExpiredLots) {
-      if (
-        inventoryStockPositionMatchesNormalizedSelector(
-          candidate.position,
-          normalizedSelector,
-          projection.placement
-        )
-      ) {
+      if (selectedIds.has(inventoryStockPositionIdentity(candidate.position))) {
         expiredStockWasExcluded = true;
       }
       continue;
@@ -376,12 +417,12 @@ function applyPolicyAllocationDeficitBurden({
     /** Use the same exact ordering as the eventual allocator. */
     (left, right) => compareInventoryAllocationCandidates(left, right, method)
   );
-  const burden = applyInventoryRecordedDeficitBurden({
-    projection,
+  const burden = applyInventoryDeficitBurdenToPositions({
+    positions,
     itemRevisionId: item.revisionId,
     axisId: item.primaryAxis.axisId,
     unit: item.primaryAxis.unit,
-    placementNodeIds,
+    placementNodeIds: [],
     lines: ordered.map(
       /** Preserve policy order while exposing only positive candidate capacity. */
       (candidate) => ({
@@ -398,16 +439,8 @@ function applyPolicyAllocationDeficitBurden({
   // Exact lookup used to reconcile allocator output back to the adjusted candidate metadata.
   const byPositionIdentity = new Map<string, InventoryAllocationCandidate>();
   for (const candidate of ordered) {
-    if (
-      !inventoryStockPositionMatchesNormalizedSelector(
-        candidate.position,
-        normalizedSelector,
-        projection.placement
-      )
-    ) {
-      continue;
-    }
     const identity = inventoryStockPositionIdentity(candidate.position);
+    if (!selectedIds.has(identity)) continue;
     const available = burden.capacityByPositionIdentity.get(identity);
     if (available === undefined) {
       throw new Error(
@@ -439,16 +472,10 @@ function applyPolicyAllocationDeficitBurden({
 interface CreatePolicyAllocationCandidatesInput {
   /** Frozen catalogue. */
   readonly catalog: InventoryCatalog;
-  /** Current physical/event/lot projection. */
-  readonly projection: InventoryProjectionState;
-  /** Current reservation lifecycle evidence. */
-  readonly reservations: InventoryReservationBook;
-  /** Exact revision-frozen eligible stock scope. */
-  readonly selector: InventoryStockSelector;
+  /** Complete signed position pool and relevant claim states. */
+  readonly pool: InventoryScopedStockPool;
   /** Exact item revision and reservation axis policy. */
   readonly item: InventoryItemDefinitionRevision;
-  /** Physical authority time used for expiry evidence. */
-  readonly atEpochMs: number;
   /** Claim-book authority time used to reconstruct active reservations. */
   readonly reservationAtEpochMs: number;
   /** Optional claim whose own binding stays available to its allocator/consumer. */
@@ -458,7 +485,7 @@ interface CreatePolicyAllocationCandidatesInput {
 }
 
 /** Resolve one request to exactly one immutable item revision and optional package revision. */
-function resolveAllocationItemAndSelector(
+export function resolveAllocationItemAndSelector(
   catalog: InventoryCatalog,
   rawSelector: InventoryStockSelector,
   amount: InventoryAmount,
@@ -544,62 +571,30 @@ function optionalIdentityConstraintAllows(
 /** Build exact positive candidates after subtracting active exact reservation bindings. */
 function createPolicyAllocationCandidates({
   catalog,
-  projection,
-  reservations,
-  selector,
+  pool,
   item,
-  atEpochMs,
   reservationAtEpochMs,
   reservationId,
   allowAllocatedStock,
 }: CreatePolicyAllocationCandidatesInput): PolicyAllocationCandidates {
-  const normalizedSelector = normalizeInventoryStockSelector(selector);
-  // Positive exact-position candidates retained for the allocation pass.
+  const rowsById = new Map<string, InventoryScopedStockPosition>();
+  for (const row of pool.positions) {
+    rowsById.set(inventoryStockPositionIdentity(row.position.key), row);
+  }
   const candidates: InventoryAllocationCandidate[] = [];
-  // Exact-position lookup shared with the later allocation-result reconciliation pass.
-  const byPositionIdentity = new Map<string, InventoryAllocationCandidate>();
-  // Reservation book frozen to the same authority time as this candidate plan.
-  const historicalReservations = inventoryReservationsAt(
-    reservations,
-    reservationAtEpochMs
-  );
-  // Build exact claim pressure once. Re-scanning every reservation for every candidate is quadratic.
   const reservationSummary = createExactPrimaryReservationSummary({
-    reservations: historicalReservations,
+    reservations: pool.reservations,
+    positions: rowsById,
     item,
     atEpochMs: reservationAtEpochMs,
-    ...(reservationId === undefined
-      ? {}
-      : { excludedReservationId: reservationId }),
+    ...(reservationId === undefined ? {} : { excludedReservationId: reservationId }),
     allowAllocatedStock,
   });
 
-  for (const positionIdentity of inventorySparseRecordValue(
-    projection.positionIdsByItemRevisionId,
-    item.revisionId
-  ) ?? []) {
-    const position = projection.positions[positionIdentity];
-    if (position === undefined) {
-      throw new Error(
-        `Inventory allocation item-revision index references missing position ${positionIdentity}.`
-      );
-    }
-    // Prepared/in-transit/detached/missing stock is conserved truth, not ordinary allocatable stock.
-    if (
-      position.key.transferId !== undefined ||
-      position.key.placementNodeId === undefined
-    ) {
-      continue;
-    }
-    if (
-      !inventoryStockPositionMatchesNormalizedSelector(
-        position.key,
-        normalizedSelector,
-        projection.placement
-      )
-    ) {
-      continue;
-    }
+  for (const [positionIdentity, row] of rowsById) {
+    const position = row.position;
+    // Prepared, in-transit, detached and missing stock cannot supply an ordinary pick.
+    if (position.key.transferId !== undefined || position.key.placementNodeId === undefined) continue;
     const onHand = inventoryMeasurementAt(
       position.measurements,
       item.primaryAxis.axisId,
@@ -623,13 +618,13 @@ function createPolicyAllocationCandidates({
     )
       continue;
     const receivedAtEpochMs =
-      projection.positiveLayerStartedAtEpochMsByPositionId[positionIdentity];
+      row.layerStartedAtEpochMs;
     if (receivedAtEpochMs === undefined) {
       throw new Error(
         `Positive inventory position ${positionIdentity} has no projected positive-layer origin.`
       );
     }
-    const expiresAtEpochMs = inventoryPositionEffectiveUseByEpochMs(projection, position.key);
+    const expiresAtEpochMs = row.effectiveUseByEpochMs;
     const candidate: InventoryAllocationCandidate = {
       position: position.key,
       available,
@@ -638,14 +633,10 @@ function createPolicyAllocationCandidates({
       ...allocationIncrementForPosition(catalog, position, item),
     };
     candidates.push(candidate);
-    byPositionIdentity.set(
-      inventoryStockPositionIdentity(position.key),
-      candidate
-    );
   }
   return {
     candidates,
-    byPositionIdentity,
+    rowsById,
     unallocatedReservationsPresent:
       reservationSummary.unallocatedReservationsPresent,
   };
@@ -663,6 +654,8 @@ interface ExactPrimaryReservationSummary {
 interface CreateExactPrimaryReservationSummaryInput {
   /** Reservation rows reconstructed at the claim-book authority time. */
   readonly reservations: readonly InventoryReservation[];
+  /** Exact signed rows of this selected pool, keyed by position. */
+  readonly positions: ReadonlyMap<string, InventoryScopedStockPosition>;
   /** Exact item revision whose primary candidates are being planned. */
   readonly item: InventoryItemDefinitionRevision;
   /** Claim-book authority time used to decide whether each row still protects stock. */
@@ -676,6 +669,7 @@ interface CreateExactPrimaryReservationSummaryInput {
 /** Sum every active exact binding once so candidate planning stays O(reservations + allocations + candidates). */
 function createExactPrimaryReservationSummary({
   reservations,
+  positions,
   item,
   atEpochMs,
   excludedReservationId,
@@ -695,15 +689,14 @@ function createExactPrimaryReservationSummary({
       continue;
     }
     if (allowAllocatedStock) continue;
-    if (item.reservationAxisId !== item.primaryAxis.axisId) {
-      throw new Error(
-        "Automatic primary-quantity picking cannot subtract an exact reservation on an independent axis; use explicit fulfillment lines."
-      );
-    }
     for (const allocation of allocations) {
-      const positionIdentity = inventoryStockPositionIdentity(
-        allocation.position
-      );
+      const positionIdentity = inventoryStockPositionIdentity(allocation.position);
+      if (!positions.has(positionIdentity)) continue;
+      if (item.reservationAxisId !== item.primaryAxis.axisId) {
+        throw new Error(
+          "Automatic primary-quantity picking cannot subtract an exact reservation on an independent axis; use explicit fulfillment lines."
+        );
+      }
       const existing =
         reservedPrimaryByPositionIdentity.get(positionIdentity) ??
         zeroQuantity(item.primaryAxis.unit);

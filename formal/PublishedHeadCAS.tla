@@ -176,9 +176,24 @@ RepairStep ==
   \/ WriteAbortedHistory
   \/ ClearAbortedFence
 
+\* Native stock publication applies all visible rows and the replay receipt in one transaction.
+\* Its plan may have been prepared from separate indexed reads, so the base must still win.
+PublishNative(attempt, checkBase) ==
+  /\ attempt \in prepared
+  /\ fenceAttempt = None
+  /\ history[OperationOf(attempt)] = "none"
+  /\ ~checkBase \/ (headRevision = BaseRevision(attempt) /\ headWorld = BaseWorld(attempt))
+  /\ headRevision' = headRevision + 1
+  /\ headWorld' = TargetWorld(attempt)
+  /\ worldBlobs' = worldBlobs \cup {TargetWorld(attempt)}
+  /\ history' = [history EXCEPT ![OperationOf(attempt)] = "completed"]
+  /\ publishedAttempts' = publishedAttempts \cup {attempt}
+  /\ UNCHANGED <<prepared, fenceAttempt, fenceDigest, written, worldPublished, abortClaimed>>
+
 Next ==
   \/ \E attempt \in Attempts: Prepare(attempt)
   \/ \E attempt \in Attempts: Claim(attempt)
+  \/ \E attempt \in Attempts: PublishNative(attempt, TRUE)
   \/ StartAbort
   \/ RepairStep
 
@@ -234,6 +249,19 @@ AbortedHistoryNeverPublished ==
       => ~\E attempt \in publishedAttempts: OperationOf(attempt) = op
 
 AbortMarkerBlocksPublication == abortClaimed => ~worldPublished
+
+\* The visible target must come from the attempt based on the preceding revision.
+HeadFollowsPublishedAttempts ==
+  /\ headRevision = Cardinality(publishedAttempts)
+  /\ headRevision # 0 =>
+       \E attempt \in publishedAttempts:
+         /\ TargetWorld(attempt) = headWorld
+         /\ BaseRevision(attempt) + 1 = headRevision
+
+\* Drop only the native base check to expose a real stale-plan overwrite.
+NativeStaleMutationSpec ==
+  Init /\ [][Next \/ \E attempt \in Attempts:
+    headRevision > BaseRevision(attempt) /\ PublishNative(attempt, FALSE)]_vars
 
 FenceEventuallyClears == [](fenceAttempt # None => <> (fenceAttempt = None))
 

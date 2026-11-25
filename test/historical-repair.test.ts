@@ -419,6 +419,7 @@ describe("late historical repair", () => {
       recordedAtEpochMs: time3,
       expectedWorldRevision: before.revision,
       expectedRecordSequence: before.projection.lastRecordSequence,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
       event: plan.event,
     });
     expect(committed).toBeUndefined();
@@ -489,6 +490,7 @@ describe("late historical repair", () => {
         recordedAtEpochMs: time3,
         expectedWorldRevision: beforeWorld.revision,
         expectedRecordSequence: beforeWorld.projection.lastRecordSequence,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
         event: invalidEvent,
       })
     ).rejects.toThrow("omits unknown assertion");
@@ -615,7 +617,7 @@ describe("late historical repair", () => {
     expect((await inventory.read.events()).events).toEqual([]);
   });
 
-  it("falls back to the protected coordinator for same-item claims and counts", async () => {
+  it("publishes a correction with same-item claims and preserves the open-count path", async () => {
     {
       const storage = createInMemoryInventoryDurableStorage();
       const inventory = createTestInventory(storage);
@@ -647,7 +649,8 @@ describe("late historical repair", () => {
               amount: stockAmount("1", "piece"),
             }),
         });
-        expect(begin).toHaveBeenCalled();
+        expect(begin).not.toHaveBeenCalled();
+        expect((await inventory.read.reservationFeasibility()).groups[0]?.shortage.amountMinor).toBe(1);
       } finally {
         begin.mockRestore();
       }

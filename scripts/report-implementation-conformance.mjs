@@ -454,7 +454,7 @@ Validation HEAD provenance: \`${report.repositoryHead}\`
 }** with bounded trace/property witnesses.
 - Trace entries: **${report.traces.total}** — ${modeText}.
 - The package reference adapter runs the complete frozen-plan and failpoint matrix.
-- Migration definition, dry-run, publication, retry, changed-plan rejection, repair, and abort are represented without claiming a Shinebright database adapter in this slice.
+- The migration suite covers definition, dry-run, publication, retry, changed-plan rejection, repair, and abort through the reference adapter.
 
 ## Index and real-world scale
 

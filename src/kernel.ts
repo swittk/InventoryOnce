@@ -27,11 +27,35 @@ export * from "./model.js";
 /** Current projection/replay reducer. */
 export * from "./projection.js";
 /** Generic revision-safe read-model aggregation helpers. */
-export * from "./read-model.js";
+export {
+  findInventoryEventByOperationId,
+  listInventoryPackagingRevisions,
+  summarizeInventoryStock,
+  type InventoryQualifiedDimensionSummary,
+  type InventoryStockDimensionBucket,
+  type InventoryStockRevisionSummary,
+  type InventoryStockSummary,
+  type ListInventoryPackagingRevisionsInput,
+  type SummarizeInventoryStockInput,
+} from "./read-model.js";
 /** Truthful physical/use-by/reservation availability summaries. */
-export * from "./availability.js";
+export {
+  summarizeInventoryAvailability,
+  type InventoryAvailabilityRevisionSummary,
+  type InventoryAvailabilitySummary,
+  type InventoryPositionAvailability,
+  type SummarizeInventoryAvailabilityInput,
+} from "./availability.js";
 /** Native policy allocation planning helpers. */
-export * from "./picking.js";
+export {
+  inventoryAmountForPrimaryAllocation,
+  planInventoryAllocation,
+  type InventoryAllocationPolicyRequest,
+  type InventoryPolicyAllocationLine,
+  type InventoryPolicyAllocationPlan,
+  type PlanInventoryAllocationInput,
+  type InventoryAmountForPrimaryAllocationInput,
+} from "./picking.js";
 /** Revision-frozen heterogeneous package composition definitions and opening planner. */
 export * from "./composition.js";
 /** Revision-frozen read-only collection/taxonomy summaries. */

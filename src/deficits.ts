@@ -149,17 +149,53 @@ export function inventoryPositionDeficitMeasurements(
  */
 export function applyInventoryRecordedDeficitBurden({
   projection,
+  ...input
+}: ApplyInventoryRecordedDeficitBurdenInput): InventoryDeficitCapacityAdjustment {
+  return applyInventoryDeficitBurdenToPositions({
+    ...input,
+    positions: inventoryDeficitRevisionRows(projection, input.itemRevisionId),
+  });
+}
+
+/** Read signed rows for one exact revision through the canonical projection index. */
+function* inventoryDeficitRevisionRows(
+  projection: InventoryProjectionState,
+  itemRevisionId: ItemRevisionId
+): Iterable<InventoryStockPosition> {
+  for (const positionIdentity of inventorySparseRecordValue(
+    projection.positionIdsByItemRevisionId,
+    itemRevisionId
+  ) ?? []) {
+    const position = projection.positions[positionIdentity];
+    if (position === undefined) {
+      throw new Error(
+        `Inventory deficit item-revision index references missing position '${positionIdentity}'.`
+      );
+    }
+    yield position;
+  }
+}
+
+/** Deficit reducer inputs with all signed rows supplied by the caller's physical pool. */
+interface ApplyInventoryDeficitBurdenToPositionsInput
+  extends Omit<ApplyInventoryRecordedDeficitBurdenInput, "projection"> {
+  /** Signed position rows of this revision from every selected pool. */
+  readonly positions: Iterable<InventoryStockPosition>;
+}
+
+/** Reduce candidate capacities using the exact signed deficit of each supplied pool. */
+export function applyInventoryDeficitBurdenToPositions({
+  positions,
   itemRevisionId,
   axisId,
   unit,
   placementNodeIds,
   lines,
-}: ApplyInventoryRecordedDeficitBurdenInput): InventoryDeficitCapacityAdjustment {
+}: ApplyInventoryDeficitBurdenToPositionsInput): InventoryDeficitCapacityAdjustment {
   const selectedLocations = normalizePlacementNodeIds(placementNodeIds);
   const allLocationsSelected = selectedLocations.size === 0;
   const deficitByLocation = recordedDeficitByLocation(
-    projection,
-    itemRevisionId,
+    positions,
     axisId,
     unit,
     allLocationsSelected ? undefined : selectedLocations
@@ -253,23 +289,13 @@ export function applyInventoryRecordedDeficitBurden({
 
 /** Collect positive deficit magnitude by exact direct placement without assigning it to lots. */
 function recordedDeficitByLocation(
-  projection: InventoryProjectionState,
-  itemRevisionId: ItemRevisionId,
+  positions: Iterable<InventoryStockPosition>,
   axisId: string,
   unit: UnitCode,
   selectedLocations: ReadonlySet<string> | undefined
 ): ReadonlyMap<string, Quantity> {
   const result = new Map<string, Quantity>();
-  for (const positionIdentity of inventorySparseRecordValue(
-    projection.positionIdsByItemRevisionId,
-    itemRevisionId
-  ) ?? []) {
-    const position = projection.positions[positionIdentity];
-    if (position === undefined) {
-      throw new Error(
-        `Inventory deficit item-revision index references missing position '${positionIdentity}'.`
-      );
-    }
+  for (const position of positions) {
     if (
       selectedLocations !== undefined &&
       (position.key.placementNodeId === undefined ||

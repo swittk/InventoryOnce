@@ -7,6 +7,7 @@ import {
   InventoryCountStatus,
   InventoryEventKind,
   InventoryOptionalIdentityConstraintKind,
+  InventoryReservationFeasibilityStatus,
   InventoryStockWhereaboutsState,
   InventoryWhereaboutsAction,
   parseQuantity,
@@ -410,14 +411,14 @@ describe("detached and missing stock whereabouts", () => {
       createdAtEpochMs: time1,
     });
 
-    await expect(
-      inventory.stock.detach({
-        operationId: "broad-reservation-blocked-detach",
-        occurredAtEpochMs: time2,
-        from: loosePosition("store"),
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
+    await inventory.stock.detach({
+      operationId: "broad-reservation-physical-detach",
+      occurredAtEpochMs: time2,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    expect((await inventory.read.reservationFeasibility(time2)).status)
+      .toBe(InventoryReservationFeasibilityStatus.Shortage);
 
     await inventory.reservations.release({
       operationId: "broad-reservation-two:release",
@@ -428,7 +429,7 @@ describe("detached and missing stock whereabouts", () => {
       operationId: "broad-reservation-detach-all",
       occurredAtEpochMs: time2,
       from: loosePosition("store"),
-      amount: stockAmount("2", "piece"),
+      amount: stockAmount("1", "piece"),
     });
     await expect(
       inventory.reservations.reserve({
@@ -584,7 +585,7 @@ describe("detached and missing stock whereabouts", () => {
     expect(remaining[0]?.measurements.primary.quantity.amountMinor).toBe(1);
   });
 
-  it("protects exact reservation bindings while still allowing unreserved stock to detach", async () => {
+  it("retains exact reservation bindings when previously held stock detaches", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "reserved-detach-receive",
@@ -627,26 +628,16 @@ describe("detached and missing stock whereabouts", () => {
     });
     expect(await currentUnresolvedPositions(inventory)).toHaveLength(1);
 
-    await expect(
-      inventory.stock.detach({
-        operationId: "reserved-detach-bound-unit",
-        occurredAtEpochMs: time2,
-        from: placed.key,
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
-
-    await inventory.reservations.release({
-      operationId: "reserved-detach-release",
-      reservationId: "reserved-detach-claim",
-      occurredAtEpochMs: time2,
-    });
     await inventory.stock.detach({
-      operationId: "reserved-detach-after-release",
-      occurredAtEpochMs: time3,
+      operationId: "reserved-detach-bound-unit",
+      occurredAtEpochMs: time2,
       from: placed.key,
       amount: stockAmount("1", "piece"),
     });
+    expect((await inventory.read.reservation("reserved-detach-claim"))?.allocations[0]?.position)
+      .toEqual(placed.key);
+    expect((await inventory.read.reservationFeasibility(time2)).status)
+      .toBe(InventoryReservationFeasibilityStatus.Shortage);
     expect(await currentUnresolvedPositions(inventory)).toHaveLength(2);
   });
 

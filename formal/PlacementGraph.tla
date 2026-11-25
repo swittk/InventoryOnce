@@ -23,12 +23,18 @@ vars == <<parent, acceptsPlacement, stockAnchor,
           lastAction, anchorsBeforeLastMove, lastMovedNode,
           contentsBeforeLastEmbodimentTermination>>
 
-\* A finite functional parent graph is acyclic iff every nonempty node subset
-\* has at least one member whose parent escapes that subset.
-PlacementForest(p) ==
-  /\ p[NoParent] = NoParent
-  /\ \A subset \in SUBSET Nodes:
-       subset # {} => \E node \in subset: p[node] \notin subset
+\* Four parent steps suffice to reach the root in this finite forest.
+\* Reuse the constant set of valid parent maps across movement candidates.
+RECURSIVE FollowParent(_, _, _)
+FollowParent(p, node, steps) ==
+  IF steps = 0 THEN node ELSE FollowParent(p, p[node], steps - 1)
+
+ValidParentForests ==
+  {p \in [ParentDomain -> ParentDomain]:
+    p[NoParent] = NoParent /\
+    \A node \in Nodes: FollowParent(p, node, Cardinality(Nodes)) = NoParent}
+
+PlacementForest(p) == p \in ValidParentForests
 
 EmbodiedNodesFor(resource, embodiment) ==
   {node \in Nodes: embodiment[node] = resource}
@@ -206,9 +212,36 @@ RejectPlacement(node) ==
                   contentsBeforeLastEmbodimentTermination,
                   lastAction, lastMovedNode>>
 
-Next ==
+\* Empty only the direct source. Its children's own contents stay anchored.
+MoveDirectContents(source, destination, splitEmbodiment) ==
+  LET nextParent == [node \in ParentDomain |->
+                       IF parent[node] = source THEN destination ELSE parent[node]]
+  IN
+    /\ source \in Nodes \ retiredNodes
+    /\ destination \in acceptsPlacement \ retiredNodes
+    /\ destination # source
+    /\ DirectContentsAt(source, parent, stockAnchor, activeResources, resourcePlacement) # {}
+    /\ PlacementForest(nextParent)
+    /\ parent' = nextParent
+    /\ stockAnchor' = [row \in StockRows |->
+                         IF stockAnchor[row] = source THEN destination ELSE stockAnchor[row]]
+    /\ resourcePlacement' = [resource \in Resources |->
+        IF resource \in activeResources /\ resourcePlacement[resource] = source /\
+           ~(splitEmbodiment /\ ResourceIsEmbodied(resource, embodimentByNode))
+        THEN destination ELSE resourcePlacement[resource]]
+    \* An ancestor move's saved anchor snapshot has no meaning after a new direct move.
+    /\ anchorsBeforeLastMove' = stockAnchor'
+    /\ lastAction' = "move-direct-contents"
+    /\ lastMovedNode' = source
+    /\ UNCHANGED <<acceptsPlacement, activeResources, retiredResources, genericUnits,
+                    embodimentByNode, retiredNodes,
+                    contentsBeforeLastEmbodimentTermination>>
+
+Next(splitEmbodiment) ==
   \/ \E node \in Nodes, destination \in Nodes:
        MoveStandaloneNode(node, destination)
+  \/ \E source \in Nodes, destination \in Nodes:
+       MoveDirectContents(source, destination, splitEmbodiment)
   \/ \E node \in Nodes: UnplaceStandaloneNode(node)
   \/ \E node \in Nodes, resource \in Resources,
        destination \in ParentDomain:
@@ -222,7 +255,8 @@ Next ==
   \/ \E node \in Nodes: AllowPlacement(node)
   \/ \E node \in Nodes: RejectPlacement(node)
 
-Spec == Init /\ [][Next]_vars
+Spec == Init /\ [][Next(FALSE)]_vars
+DirectContentsSplitMutationSpec == Init /\ [][Next(TRUE)]_vars
 
 TypeOK ==
   /\ parent \in [ParentDomain -> ParentDomain]
@@ -235,7 +269,7 @@ TypeOK ==
   /\ retiredNodes \subseteq Nodes
   /\ resourcePlacement \in [Resources -> ParentDomain]
   /\ lastAction \in {
-       "init", "move", "unplace", "embodied-resource-move",
+       "init", "move", "unplace", "embodied-resource-move", "move-direct-contents",
        "resource-move", "individualize", "embody", "deindividualize"
      }
   /\ anchorsBeforeLastMove \in [StockRows -> Nodes]
@@ -255,6 +289,22 @@ PlacementTargetsAcceptContents ==
 AncestorMovePreservesDirectStockAnchors ==
   lastAction \in {"move", "embodied-resource-move"} =>
     stockAnchor = anchorsBeforeLastMove
+
+\* Require a common destination for the exact child edges, direct rows and live serials.
+\* The unchanged clauses also protect stock anchored below the moving children.
+DirectContentsStep ==
+  lastAction' = "move-direct-contents" =>
+    \E destination \in Nodes \ {lastMovedNode'}:
+      /\ \A node \in ParentDomain:
+         parent'[node] = IF parent[node] = lastMovedNode' THEN destination ELSE parent[node]
+      /\ \A row \in StockRows:
+         stockAnchor'[row] = IF stockAnchor[row] = lastMovedNode' THEN destination ELSE stockAnchor[row]
+      /\ \A resource \in Resources:
+         resourcePlacement'[resource] =
+           IF resource \in activeResources /\ resourcePlacement[resource] = lastMovedNode'
+           THEN destination ELSE resourcePlacement[resource]
+
+DirectContentsPublishesTogether == [][DirectContentsStep]_vars
 
 EmbodimentIsOneToOne ==
   \A left \in Nodes, right \in Nodes:
@@ -299,7 +349,7 @@ CycleMutation ==
                   contentsBeforeLastEmbodimentTermination,
                   lastAction, lastMovedNode>>
 
-CycleMutationNext == Next \/ CycleMutation
+CycleMutationNext == Next(FALSE) \/ CycleMutation
 CycleMutationSpec == Init /\ [][CycleMutationNext]_vars
 
 \* Deliberate negative control: remove placement capability while direct content remains.
@@ -312,7 +362,7 @@ RejectingTargetMutation ==
                   contentsBeforeLastEmbodimentTermination,
                   lastAction, lastMovedNode>>
 
-RejectingTargetMutationNext == Next \/ RejectingTargetMutation
+RejectingTargetMutationNext == Next(FALSE) \/ RejectingTargetMutation
 RejectingTargetMutationSpec == Init /\ [][RejectingTargetMutationNext]_vars
 
 \* Deliberate negative control: move an ancestor by rewriting a descendant row's direct anchor.
@@ -328,7 +378,7 @@ DescendantRewriteMutation ==
                   resourcePlacement,
                   contentsBeforeLastEmbodimentTermination>>
 
-DescendantRewriteMutationNext == Next \/ DescendantRewriteMutation
+DescendantRewriteMutationNext == Next(FALSE) \/ DescendantRewriteMutation
 DescendantRewriteMutationSpec == Init /\ [][DescendantRewriteMutationNext]_vars
 
 \* Deliberate negative control: stock moves but its embodied node does not.
@@ -343,7 +393,7 @@ EmbodiedMoveDesyncMutation ==
                   retiredResources, genericUnits, embodimentByNode,
                   retiredNodes, contentsBeforeLastEmbodimentTermination>>
 
-EmbodiedMoveDesyncMutationNext == Next \/ EmbodiedMoveDesyncMutation
+EmbodiedMoveDesyncMutationNext == Next(FALSE) \/ EmbodiedMoveDesyncMutation
 EmbodiedMoveDesyncMutationSpec == Init /\ [][EmbodiedMoveDesyncMutationNext]_vars
 
 \* Deliberate negative control: destroy a dependent embodied resource.
@@ -369,7 +419,7 @@ UnsafeEmbodimentTerminationMutation ==
   /\ UNCHANGED <<stockAnchor, anchorsBeforeLastMove>>
 
 UnsafeEmbodimentTerminationNext ==
-  Next \/ UnsafeEmbodimentTerminationMutation
+  Next(FALSE) \/ UnsafeEmbodimentTerminationMutation
 
 UnsafeEmbodimentTerminationSpec ==
   Init /\ [][UnsafeEmbodimentTerminationNext]_vars

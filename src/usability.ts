@@ -12,24 +12,35 @@ export function inventoryPositionEffectiveUseByEpochMs(
   projection: InventoryProjectionState,
   position: InventoryStockPositionKey
 ): number | undefined {
-  let earliest =
+  const lotExpiresAtEpochMs =
     position.lotId === undefined
       ? undefined
       : inventorySparseRecordValue(
           projection.lots,
           inventoryLotIdentity(position.itemId, position.lotId)
         )?.definition.expiresAtEpochMs;
+  return inventoryEffectiveUseByFromAncestry(
+    lotExpiresAtEpochMs,
+    position.placementNodeId === undefined
+      ? []
+      : inventoryPlacementAncestry(projection.placement, position.placementNodeId),
+    /** Read the current node use-by from the same published projection. */
+    (nodeId) => inventorySparseRecordValue(projection.placementNodes, nodeId)?.definition.useByEpochMs
+  );
+}
+
+/** Reduce lot expiry and every applicable node use-by to one inclusive cutoff. */
+export function inventoryEffectiveUseByFromAncestry(
+  lotExpiresAtEpochMs: number | undefined,
+  ancestry: readonly string[],
+  nodeUseBy: (nodeId: string) => number | undefined
+): number | undefined {
+  let earliest = lotExpiresAtEpochMs;
   if (earliest !== undefined) {
     assertInventoryEpochMilliseconds(earliest, "lot expiresAtEpochMs");
   }
-  for (const nodeId of
-    position.placementNodeId === undefined
-      ? []
-      : inventoryPlacementAncestry(projection.placement, position.placementNodeId)) {
-    const nodeUseByEpochMs = inventorySparseRecordValue(
-      projection.placementNodes,
-      nodeId
-    )?.definition.useByEpochMs;
+  for (const nodeId of ancestry) {
+    const nodeUseByEpochMs = nodeUseBy(nodeId);
     if (nodeUseByEpochMs === undefined) continue;
     assertInventoryEpochMilliseconds(
       nodeUseByEpochMs,

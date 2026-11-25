@@ -145,15 +145,17 @@ test("all executable manifest schema versions fail closed independently", () => 
 });
 
 test("positive reachability registration binds each invariant to its witness config", () => {
-  const files = ["SnapshotSupersededWorkflowNonzeroWitness.cfg"];
-  assert.doesNotThrow(() =>
-    assertFormalPositiveReachabilityRegistration(
-      files,
-      () => "SPECIFICATION FairSpec\nINVARIANT NonzeroSnapshotIsUnreachable\n",
-    ),
-  );
+  const files = fs.readdirSync(path.join(root, "formal"));
+  /** Read each registered config from the repository, so newly registered witnesses are checked too. */
+  const readConfig = name => readAssuranceFile(root, `formal/${name}.cfg`).toString();
+  assert.doesNotThrow(() => assertFormalPositiveReachabilityRegistration(files, readConfig));
   assert.throws(
-    () => assertFormalPositiveReachabilityRegistration(files, () => "SPECIFICATION FairSpec\nINVARIANT RenamedWitness\n"),
+    () => assertFormalPositiveReachabilityRegistration(
+      files,
+      name => name === "SnapshotSupersededWorkflowNonzeroWitness"
+        ? "SPECIFICATION FairSpec\nINVARIANT RenamedWitness\n"
+        : readConfig(name),
+    ),
     /does not declare registered invariant/u,
   );
 });

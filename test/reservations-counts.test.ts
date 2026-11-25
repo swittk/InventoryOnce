@@ -263,7 +263,7 @@ describe("broad reservations and physical truth", () => {
     });
   });
 
-  it("ordinary movement protects claims while explicit scrap reports the resulting shortage", async () => {
+  it("records ordinary issue and unrelated receipt while retaining a short claim", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-three",
@@ -279,20 +279,17 @@ describe("broad reservations and physical truth", () => {
       requested: parseQuantity("2", "piece"),
       createdAtEpochMs: time1,
     });
-    await expect(
-      inventory.stock.issue({
-        operationId: "ordinary-issue-two",
-        occurredAtEpochMs: time2,
-        from: loosePosition("store"),
-        amount: stockAmount("2", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled");
-    await inventory.stock.scrap({
-      operationId: "physical-scrap-two",
+    await inventory.stock.issue({
+      operationId: "ordinary-issue-two",
       occurredAtEpochMs: time2,
       from: loosePosition("store"),
       amount: stockAmount("2", "piece"),
-      reason: "Two pieces were physically destroyed.",
+    });
+    await inventory.stock.receive({
+      operationId: "unrelated-receipt-during-shortage",
+      occurredAtEpochMs: time3,
+      to: loosePosition("other-store"),
+      amount: stockAmount("2", "piece"),
     });
 
     const report = await inventory.read.reservationFeasibility();
@@ -303,6 +300,51 @@ describe("broad reservations and physical truth", () => {
       fulfillable: { amountMinor: 1 },
       shortage: { amountMinor: 1 },
     });
+  });
+
+  it("recovers a staged issue with a short claim as one exact physical fact", async () => {
+    /** Trigger one interruption after the issue receipt was staged and before publication. */
+    let interrupted = false;
+    const storage = createInMemoryInventoryDurableStorage({
+      failpoint: ({ stage, timing, operationId }) => {
+        if (operationId === "record-held-issue" &&
+            stage === InventoryStorageWriteStage.Receipt &&
+            timing === "after" && !interrupted) {
+          interrupted = true;
+          throw new Error("issue publication interrupted");
+        }
+      },
+    });
+    const inventory = createTestInventory(storage);
+    const position = loosePosition("store");
+    await inventory.stock.receive({
+      operationId: "receive-before-interrupted-issue", occurredAtEpochMs: time0,
+      to: position, amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      operationId: "reserve-before-interrupted-issue", reservationId: "held",
+      itemRevisionId: "item-a-v2", selector: { itemId: "item-a" },
+      requested: parseQuantity("2", "piece"), createdAtEpochMs: time1,
+    });
+    const before = await inventory.read.world();
+    /** Retry this exact physical issue through a new facade over the retained staged adapter. */
+    const issue = {
+      operationId: "record-held-issue", occurredAtEpochMs: time2,
+      from: position, amount: stockAmount("1", "piece"),
+    };
+    await expect(inventory.stock.issue(issue)).rejects.toThrow("issue publication interrupted");
+    expect(await inventory.read.world()).toEqual(before);
+
+    const restarted = createTestInventory(storage);
+    const recovered = await restarted.stock.issue(issue);
+    expect(recovered.replayed).toBe(true);
+    expect(await restarted.stock.issue(issue)).toEqual(recovered);
+    expect(recovered.receipt.worldRevision).toBe(before.revision + 1);
+    expect((await restarted.read.world()).reservations).toEqual(before.reservations);
+    expect((await restarted.read.reservationFeasibility(time2)).groups[0]?.shortage.amountMinor)
+      .toBe(1);
+    await expect(restarted.stock.issue({ ...issue, amount: stockAmount("2", "piece") }))
+      .rejects.toThrow("changed intent");
   });
 
   it("keeps count lifecycle usable through an existing shortage and records further physical loss", async () => {

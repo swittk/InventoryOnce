@@ -59,7 +59,7 @@ export interface InventoryMigrationSourceBundle {
 
 /** Declarative source plugin that owns both legacy reads and native catalogue reconstruction. */
 export interface InventoryMigrationSourcePlugin {
-  /** Stable plugin identity such as `shinebright-inventory-v1`. */
+  /** Stable plugin identity such as `legacy-inventory-v1`. */
   readonly pluginId: string;
   /**
    * Read named typed queries and return one complete side-effect-free native bundle.
@@ -72,7 +72,7 @@ export interface InventoryMigrationSourcePlugin {
 
 /** Declarative plugin translating one legacy installation into InventoryOnce facts. */
 export interface InventoryMigrationPlugin {
-  /** Stable plugin identity such as `shinebright-inventory-v1`. */
+  /** Stable plugin identity such as `legacy-inventory-v1`. */
   readonly pluginId: string;
   /**
    * Read named typed queries and return one side-effect-free declaration.

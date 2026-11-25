@@ -684,7 +684,7 @@ describe("projection index real-world scale", () => {
     );
     const candidateStart = projection.indexOf("function candidatePositionIds");
     const candidateEnd = projection.indexOf(
-      "\nfunction captureConservedPositiveLayerStarts(",
+      "\nfunction recordIndexedIdentityMutation(",
       candidateStart
     );
     expect(candidateStart).toBeGreaterThanOrEqual(0);
@@ -714,8 +714,8 @@ describe("projection index real-world scale", () => {
     expect(picking).toContain("reservedPrimaryByPositionIdentity.get(");
     expect(picking).not.toContain("exactPrimaryReservedAtPosition(");
     expect(picking).not.toContain("Object.values(world.projection.events)");
-    expect(availability).toContain("indexAvailabilityReservations({");
-    expect(availability).toContain("exactAllocationsByPositionIdentity.get(");
+    expect(availability).toContain("indexScopedAvailabilityHolds(pool, useBy,");
+    expect(availability).toContain("exactHolds.get(id)");
     expect(availability).not.toContain("exactAllocationsAtPosition(");
     expect(reservations).toContain("if (broadReservations.length === 0)");
     expect(reservations).toContain("exactReservationGroupFeasibility({");
@@ -740,10 +740,10 @@ describe("projection index real-world scale", () => {
       "inventoryCommittedEventsInSequence(world.projection)"
     );
     expect(facade).not.toContain("Object.values(world.projection.events)");
-    expect(facade).toContain(
-      "const planningPositions: Record<string, InventoryStockPosition>"
-    );
-    expect(facade).toContain("applyPolicyAllocationToPlanningPositions(");
+    expect(facade).toContain("const changed = new Map<string, InventoryScopedStockPosition>()");
+    expect(facade).toContain("policyPoolAfterPriorRequests(");
+    expect(facade).not.toContain("...world.projection.positions");
+    expect(facade).not.toContain("Object.entries(world.projection.positionIdsByItemRevisionId");
     expect(facade).not.toContain("inventoryWorldAfterPolicyAllocation(");
     expect(facade).toContain(
       "inventorySparseRecordValue(projection.lotIdentitiesByItemId, itemId)"

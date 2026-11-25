@@ -1,3 +1,5 @@
+import { candidateSubtreePositionIds } from "./stock-scope.js";
+import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -923,7 +925,11 @@ function applyInventoryCommittedEventInternal(
   const touchedPositionIdsBySerialIdentity = new Map<string, Set<string>>();
   /** Conserved moves carry the oldest current source/destination layer into the destination. */
   const conservedPositiveLayerStartByDestinationId =
-    captureConservedPositiveLayerStarts(state, normalizedEvent);
+    captureConservedPositiveLayerStarts(
+      normalizedEvent,
+      /** Read a FIFO start from the published state before applying any effect. */
+      (positionId) => state.positiveLayerStartedAtEpochMsByPositionId[positionId]
+    );
   for (const effect of normalizedEvent.stockEffects) {
     if (effect.position.serialId !== undefined) {
       const serialIdentity = inventorySerialIdentity(
@@ -1083,6 +1089,9 @@ function applyInventoryCommittedEventInternal(
       position === undefined ||
       !quantityIsPositive(position.measurements.primary.quantity)
     ) {
+      // The exact transfer still witnessed this route. All incoming stock
+      // paid down the signed balance, leaving no current layer to age.
+      if (inventoryConservedArrivalCanSettleDeficit(normalizedEvent)) continue;
       throw new Error(
         `Conserved FIFO provenance destination ${identity} is not positive after its event.`
       );
@@ -1828,7 +1837,16 @@ function candidatePositionIds(
   // full selector matcher still verifies each position's current ancestry.
   if (selector.withinPlacementNodeIds !== undefined) {
     const subtreeCandidates = candidateSubtreePositionIds(
-      state,
+      {
+        /** Read exact position postings for one anchored node. */
+        positionIds: (nodeId) => {
+          const ids = inventorySparseRecordValue(state.positionIdsByPlacementNodeId, nodeId) ?? [];
+          return { size: ids.length, ids };
+        },
+        /** Read only the immediate children of the visited node. */
+        childNodeIds: (nodeId) =>
+          inventorySparseRecordValue(state.placement.childNodeIdsByParentNodeId, nodeId) ?? [],
+      },
       selector.withinPlacementNodeIds,
       itemCandidateCount
     );
@@ -1849,121 +1867,6 @@ function candidatePositionIds(
   // A position has exactly one item revision; no deduplication is necessary.
   candidates.sort(compareInventoryIdentityText);
   return candidates;
-}
-
-/** One enter/leave visit in the bounded physical placement traversal. */
-interface InventorySubtreeCandidateVisit {
-  /** Exact placement node being inspected. */
-  readonly nodeId: string;
-  /** Whether this visit finishes a node after its descendants. */
-  readonly exiting: boolean;
-}
-
-/**
- * Enumerate selective subtree stock without traversing an arbitrarily large
- * mostly empty topology. Once the graph/index search would cost as much as
- * the item/revision candidates, return undefined to use that existing index.
- */
-function candidateSubtreePositionIds(
-  state: InventoryProjectionState,
-  rootNodeIds: readonly string[],
-  itemCandidateCount: number
-): readonly string[] | undefined {
-  // With small item scopes, filtering a few rows is cheaper than graph work.
-  if (itemCandidateCount < 128) return undefined;
-  const visitedNodes = new Set<string>();
-  const ancestors = new Set<string>();
-  const candidates: string[] = [];
-  for (const rootNodeId of rootNodeIds) {
-    const pending: InventorySubtreeCandidateVisit[] = [
-      { nodeId: rootNodeId, exiting: false },
-    ];
-    while (pending.length > 0) {
-      const visit = pending.pop();
-      if (visit === undefined) break;
-      const nodeId = visit.nodeId;
-      if (visit.exiting) {
-        ancestors.delete(nodeId);
-        visitedNodes.add(nodeId);
-        continue;
-      }
-      if (ancestors.has(nodeId)) {
-        throw new Error("Placement graph contains a cycle at '" + nodeId + "'.");
-      }
-      // Several selected roots can overlap. A direct-stock identity must be
-      // considered exactly once, regardless of the number of matching roots.
-      if (visitedNodes.has(nodeId)) continue;
-      if (visitedNodes.size + ancestors.size + 1 >= itemCandidateCount) {
-        return undefined;
-      }
-      ancestors.add(nodeId);
-      const directPositions = inventorySparseRecordValue(
-        state.positionIdsByPlacementNodeId,
-        nodeId
-      ) ?? [];
-      for (const positionId of directPositions) candidates.push(positionId);
-      if (candidates.length >= itemCandidateCount) return undefined;
-      const children =
-        inventorySparseRecordValue(
-          state.placement.childNodeIdsByParentNodeId,
-          nodeId
-        ) ?? [];
-      // Do not allocate/traverse 100k sibling nodes to answer a 5k-row item
-      // query. This conservative bound affects only the chosen index path.
-      if (
-        children.length + visitedNodes.size + ancestors.size >=
-        itemCandidateCount
-      ) {
-        return undefined;
-      }
-      pending.push({ nodeId, exiting: true });
-      for (let index = children.length - 1; index >= 0; index -= 1) {
-        const child = children[index];
-        if (child !== undefined) {
-          pending.push({ nodeId: child, exiting: false });
-        }
-      }
-    }
-  }
-  candidates.sort(compareInventoryIdentityText);
-  return candidates;
-}
-
-/** Capture FIFO age before a conserved movement changes source/destination positions. */
-function captureConservedPositiveLayerStarts(
-  state: InventoryProjectionState,
-  event: InventoryCommittedEvent
-): ReadonlyMap<string, number> {
-  const result = new Map<string, number>();
-  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-    const sourceId = inventoryStockPositionIdentity(transfer.from);
-    const destinationId = inventoryStockPositionIdentity(transfer.to);
-    const source = state.positions[sourceId];
-    if (
-      source === undefined ||
-      !quantityIsPositive(source.measurements.primary.quantity)
-    ) {
-      throw new Error(
-        `Conserved FIFO provenance source ${sourceId} is not currently positive.`
-      );
-    }
-    const sourceStartedAtEpochMs = state.positiveLayerStartedAtEpochMsByPositionId[sourceId];
-    if (sourceStartedAtEpochMs === undefined) {
-      throw new Error(
-        `Conserved FIFO provenance source ${sourceId} has no projected layer start.`
-      );
-    }
-    const destinationStartedAtEpochMs =
-      state.positiveLayerStartedAtEpochMsByPositionId[destinationId];
-    result.set(
-      destinationId,
-      destinationStartedAtEpochMs === undefined ||
-        sourceStartedAtEpochMs < destinationStartedAtEpochMs
-        ? sourceStartedAtEpochMs
-        : destinationStartedAtEpochMs
-    );
-  }
-  return result;
 }
 
 /** Record one exact final identity membership for a touched grouping row. */

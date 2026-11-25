@@ -16,6 +16,8 @@ import {
 import {
   addInventoryMeasurements,
   assertWholeMeasurementMultiple,
+  assertInventoryMeasurementsFollowPrimarySign,
+  subtractInventoryMeasurements,
   inventoryMeasurementsAreZero,
   inventoryMeasurementsFingerprint,
   negateInventoryMeasurements,
@@ -359,6 +361,16 @@ export type InventoryTransferLifecycleChange =
       /** Transfer-lifecycle transferId value retained or supplied by this record. */ readonly transferId: string;
     };
 
+/** Exact portion of a physical report whose original lot, serial and source age were unwitnessed. */
+export interface InventoryUnwitnessedStockMovement {
+  /** Signed source posting, without a lot or serial assignment. */
+  readonly from: InventoryStockPositionKey;
+  /** Unlabelled arrival for a transfer, or omission for destruction. */
+  readonly to?: InventoryStockPositionKey;
+  /** Positive exact quantity vector belonging to these postings. */
+  readonly measurements: InventoryMeasurementVector;
+}
+
 /** Caller-supplied immutable event intent before durable record time/order is assigned. */
 export interface InventoryEventDraft {
   /** Stable event identity chosen by the operation. */
@@ -371,7 +383,9 @@ export interface InventoryEventDraft {
   readonly occurredAtEpochMs: number;
   /** Signed exact stock changes; may be empty for metadata/traceability-only events. */
   readonly stockEffects: readonly InventoryStockEffect[];
-  /** Conserved source-to-destination movements that retain FIFO layer age. */
+  /** Unwitnessed portions of an ordinary physical transfer or scrap, when recorded. */
+  readonly unwitnessedStockMovements?: readonly InventoryUnwitnessedStockMovement[];
+  /** Conserved witnessed movements that retain source FIFO layer age. */
   readonly positiveLayerProvenanceTransfers?: readonly InventoryPositiveLayerProvenanceTransfer[];
   /** Required exact unit/revision evidence for a revision-transition event. */
   readonly revisionTransition?: InventoryRevisionTransitionEvidence;
@@ -766,12 +780,16 @@ export function defineInventoryEvent({
     event.stockEffects,
     event.kind
   );
+  const unwitnessed = normalizeUnwitnessedStockMovements(
+    catalog, event.kind, event.unwitnessedStockMovements, stockEffects
+  );
   const positiveLayerProvenanceTransfers =
     normalizePositiveLayerProvenanceTransfers(
       catalog,
       event.kind,
       event.positiveLayerProvenanceTransfers ?? [],
-      stockEffects
+      stockEffects,
+      unwitnessed?.effects
     );
   const positiveLayerProvenanceOverrides =
     normalizePositiveLayerProvenanceOverrides(
@@ -852,6 +870,7 @@ export function defineInventoryEvent({
   return cloneInventoryRetainedData({
     ...event,
     stockEffects,
+    ...(unwitnessed === undefined ? {} : { unwitnessedStockMovements: unwitnessed.movements }),
     positiveLayerProvenanceTransfers,
     positiveLayerProvenanceOverrides,
     lotDefinitions,
@@ -995,6 +1014,14 @@ export function inventoryEventIntentFingerprint(
     (event.lotDefinitions ?? []).map(lotDefinitionFingerprintParts),
     (event.placementNodeDefinitions ?? []).map(placementNodeDefinitionFingerprintParts),
     (event.placementChanges ?? []).map(placementChangeFingerprintParts),
+    (event.unwitnessedStockMovements ?? []).map(
+      /** Bind one unlabelled route and its exact reported vector into the physical assertion identity. */
+      (movement) => [
+        inventoryStockPositionIdentity(movement.from),
+        movement.to === undefined ? null : inventoryStockPositionIdentity(movement.to),
+        inventoryMeasurementsFingerprint(movement.measurements),
+      ]
+    ),
     (event.positiveLayerProvenanceTransfers ?? []).map(
       /** Turn one conserved provenance transfer into stable fingerprint parts. */
       (transfer) => [
@@ -1210,12 +1237,93 @@ function inventoryTransferLifecycleFingerprint(
   return [change.action, change.transferId];
 }
 
+/** Normalized unwitnessed routes and their signed contribution to each exact stock effect. */
+interface NormalizedUnwitnessedStockMovements {
+  /** Individual reports retained for exact audit and costing. */
+  readonly movements: readonly InventoryUnwitnessedStockMovement[];
+  /** Signed contribution per exact position, used to verify witnessed FIFO rights. */
+  readonly effects: ReadonlyMap<string, InventoryMeasurementVector>;
+}
+
+/** Validate only typed unwitnessed routes and their partition of the event's concrete postings. */
+function normalizeUnwitnessedStockMovements(
+  catalog: InventoryCatalog,
+  kind: InventoryEventKind,
+  raw: readonly InventoryUnwitnessedStockMovement[] | undefined,
+  stockEffects: readonly InventoryStockEffect[]
+): NormalizedUnwitnessedStockMovements | undefined {
+  if (raw === undefined) return undefined;
+  if (raw.length === 0 || (kind !== InventoryEventKind.Transfer && kind !== InventoryEventKind.Scrap)) {
+    throw new Error("Unwitnessed movement requires a transfer or scrap with a reported quantity.");
+  }
+  const movements: InventoryUnwitnessedStockMovement[] = [];
+  const effects = new Map<string, InventoryMeasurementVector>();
+  for (const portion of raw) {
+    const from = normalizeInventoryStockPositionKey(portion.from);
+    if (from.lotId !== undefined || from.serialId !== undefined || from.placementNodeId === undefined) {
+      throw new Error("Unwitnessed stock needs a direct source placement without a lot or serial.");
+    }
+    const item = catalog.itemRevision(from.itemRevisionId);
+    assertPositionMatchesItem(item, from);
+    assertMeasurementsMatchItem(item, portion.measurements, true);
+    const measurements = positiveInventoryMeasurements(portion.measurements, "Unwitnessed stock");
+    if (from.packagingRevisionId !== undefined) {
+      assertWholeMeasurementMultiple(measurements, catalog.packagingRevision(from.packagingRevisionId).fixedContents);
+    }
+    const to = portion.to === undefined ? undefined : normalizeInventoryStockPositionKey(portion.to);
+    if (kind === InventoryEventKind.Transfer) {
+      if (to === undefined || to.placementNodeId === undefined || to.placementNodeId === from.placementNodeId ||
+          inventoryStockPositionIdentity(to) !== inventoryStockPositionIdentity({ ...from, placementNodeId: to.placementNodeId })) {
+        throw new Error("Unwitnessed transfer must preserve every dimension except direct placement.");
+      }
+      addUnwitnessedEffect(effects, to, measurements);
+    } else if (to !== undefined) {
+      throw new Error("Unwitnessed scrap cannot have a destination.");
+    }
+    addUnwitnessedEffect(effects, from, negateInventoryMeasurements(measurements));
+    movements.push({ from, measurements, ...(to === undefined ? {} : { to }) });
+  }
+
+  // A portion must be represented in the existing effect, with any remainder still a coherent witness.
+  const stockById = new Map<string, InventoryMeasurementVector>();
+  for (const effect of stockEffects) {
+    stockById.set(inventoryStockPositionIdentity(effect.position), effect.measurementsDelta);
+  }
+  for (const [id, portion] of effects) {
+    const total = stockById.get(id);
+    if (total === undefined || primarySign(total) !== primarySign(portion)) {
+      throw new Error("Unwitnessed movement is missing its signed stock effect.");
+    }
+    const witnessed = subtractInventoryMeasurements(total, portion);
+    assertInventoryMeasurementsFollowPrimarySign(witnessed, "Witnessed movement");
+    if (!inventoryMeasurementsAreZero(witnessed) && primarySign(witnessed) !== primarySign(total)) {
+      throw new Error("Unwitnessed movement exceeds its signed stock effect.");
+    }
+  }
+  return { movements, effects };
+}
+
+/** Sum one explicitly signed part of an unwitnessed route by its exact position. */
+function addUnwitnessedEffect(
+  effects: Map<string, InventoryMeasurementVector>,
+  position: InventoryStockPositionKey,
+  measurements: InventoryMeasurementVector
+): void {
+  const id = inventoryStockPositionIdentity(position);
+  const current = effects.get(id);
+  if (current !== undefined && primarySign(current) !== primarySign(measurements)) {
+    throw new Error("An unwitnessed position cannot be both source and destination in one movement.");
+  }
+  effects.set(id, current === undefined ? measurements : addInventoryMeasurements(current, measurements));
+}
+
 /** Validate conserved FIFO provenance transfers and return stable destination ordering. */
 function normalizePositiveLayerProvenanceTransfers(
   catalog: InventoryCatalog,
   kind: InventoryEventKind,
   transfers: readonly InventoryPositiveLayerProvenanceTransfer[],
-  effects: readonly InventoryStockEffect[]
+  effects: readonly InventoryStockEffect[],
+  unwitnessed?: ReadonlyMap<string, InventoryMeasurementVector>
 ): readonly InventoryPositiveLayerProvenanceTransfer[] {
   if (
     transfers.length !== 0 &&
@@ -1278,20 +1386,28 @@ function normalizePositiveLayerProvenanceTransfers(
         "Inventory FIFO provenance transfer must reference positions changed by the same event."
       );
     }
+    const fromUnknown = unwitnessed?.get(fromIdentity);
+    const toUnknown = unwitnessed?.get(toIdentity);
+    const fromWitness = fromUnknown === undefined
+      ? fromEffect.measurementsDelta
+      : subtractInventoryMeasurements(fromEffect.measurementsDelta, fromUnknown);
+    const toWitness = toUnknown === undefined
+      ? toEffect.measurementsDelta
+      : subtractInventoryMeasurements(toEffect.measurementsDelta, toUnknown);
     if (
       compareQuantity(
-        fromEffect.measurementsDelta.primary.quantity,
-        zeroQuantity(fromEffect.measurementsDelta.primary.quantity.unit)
+        fromWitness.primary.quantity,
+        zeroQuantity(fromWitness.primary.quantity.unit)
       ) >= 0 ||
       compareQuantity(
-        toEffect.measurementsDelta.primary.quantity,
-        zeroQuantity(toEffect.measurementsDelta.primary.quantity.unit)
+        toWitness.primary.quantity,
+        zeroQuantity(toWitness.primary.quantity.unit)
       ) <= 0 ||
       (kind !== InventoryEventKind.RevisionTransition &&
         !inventoryMeasurementsAreZero(
           addInventoryMeasurements(
-            fromEffect.measurementsDelta,
-            toEffect.measurementsDelta
+            fromWitness,
+            toWitness
           )
         ))
     ) {

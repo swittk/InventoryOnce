@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
@@ -31,6 +31,60 @@ import {
 export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-PLACEMENT-COMMAND-ATOMIC",
 ] as const;
+
+it("publishes direct stock, standalone children, and embodied children at one native fence", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const canonicalStorage = createInMemoryInventoryDurableStorage({ failpoint: () => undefined });
+  const catalog = createHeterogeneousPlacementCatalog();
+  const native = createTestInventory(storage, catalog);
+  const canonical = createTestInventory(canonicalStorage, catalog);
+  for (const inventory of [native, canonical]) {
+    await inventory.stock.receive({
+      operationId: "receive-composite", occurredAtEpochMs: time0,
+      to: loosePosition("source"), amount: stockAmount("3", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "individualize-composite", occurredAtEpochMs: time1,
+      from: loosePosition("source"), amount: stockAmount("1", "piece"),
+      serialId: "case", asPlacementNode: { acceptsPlacement: true },
+    });
+    await inventory.stock.receive({
+      operationId: "stock-below-composite", occurredAtEpochMs: time1,
+      to: { itemId: "item-b", placementNodeId: "case" }, amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "independent-composite-child", occurredAtEpochMs: time1, nodeId: "standalone", into: "source",
+    });
+  }
+  const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+  const before = storage.readSegmentedStockHead();
+  const direct = storage.readSegmentedDirectContents("source", "destination");
+  expect(direct.positions).toHaveLength(2);
+  expect(direct.children).toMatchObject([{ nodeId: "case", embodiedPosition: { key: { serialId: "case" } } }, { nodeId: "standalone" }]);
+  const input = { operationId: "empty-composite", occurredAtEpochMs: time2, nodeId: "source", into: "destination" };
+  await expect(native.placement.moveContents({ ...input, into: "case" })).rejects.toThrow("descendants");
+  const publish = storage.commitSegmentedStockEvent.bind(storage);
+  const write = vi.spyOn(storage, "commitSegmentedStockEvent");
+  write.mockRejectedValueOnce(new Error("before composite publish"));
+  await expect(native.placement.moveContents(input)).rejects.toThrow("before composite publish");
+  expect(storage.readSegmentedStockHead()).toEqual(before);
+  expect(await native.read.placementAncestry("case")).toEqual(["case", "source"]);
+  write.mockImplementationOnce(async (plan) => {
+    await publish(plan);
+    throw new Error("after composite publish");
+  });
+  await expect(native.placement.moveContents(input)).rejects.toThrow("after composite publish");
+  const result = await createTestInventory(storage, catalog).placement.moveContents(input);
+  expect(result).toEqual({ ...await canonical.placement.moveContents(input), replayed: true });
+  expect(result.receipt.worldRevision).toBe(before.worldRevision + 1);
+  expect(await native.read.placementAncestry("case")).toEqual(["case", "destination"]);
+  expect(await native.read.placementAncestry("standalone")).toEqual(["standalone", "destination"]);
+  expect(await native.read.positions({ itemId: "item-b", placementNodeIds: ["case"] })).toHaveLength(1);
+  expect(await native.read.positions({ itemId: "item-a", placementNodeIds: ["source"] })).toEqual([]);
+  expect(readWorld).not.toHaveBeenCalled();
+  readWorld.mockRestore();
+  expect(await native.read.world()).toEqual(await canonical.read.world());
+});
 
 /** Node use-by after opening but before the later test authority time. */
 const shortUseBy = 1787563800000;

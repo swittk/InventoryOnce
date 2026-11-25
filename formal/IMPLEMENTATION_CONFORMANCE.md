@@ -61,7 +61,7 @@ The source plugin remains application-specific translation. InventoryOnce proves
 
 This kernel/formal slice runs the bounded traces against the reference in-memory durable adapter. The complete storage-conformance suite keeps the exhaustive named operation and migration failpoint matrix.
 
-The Parse/Mongo and Parse/SQLite durable adapters, their restart/index-scale checks, and the Shinebright application seam belong to the backend/data slice. They must run the same public traces and failpoint matrix there; this PR does not claim that evidence before the adapter code exists.
+Downstream integrations must run the same public traces and failpoint matrix against their application entry points and durable adapters, including restart and index-scale tests on MongoDB and SQLite.
 
 ## Assurance boundary and explicit gaps
 

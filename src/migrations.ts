@@ -9,6 +9,7 @@ import {
   inventoryMetadataFingerprint,
   type InventoryIntentFingerprintValue,
 } from "./canonical.js";
+import { inventorySha256 } from "./digest.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import { type InventoryClock } from "./coordinator.js";
 import {
@@ -204,7 +205,7 @@ export interface InventoryMigrationPlan {
   readonly events: readonly InventoryEventDraft[];
   /** Deterministically ordered source rows that generate no event and can never resume. */
   readonly sourceDispositions: readonly InventoryMigrationSourceDisposition[];
-  /** Frozen collision-free digest checked again before the first durable write. */
+  /** SHA-256 commitment to the compiled plan, checked again before the first durable write. */
   readonly planDigest: string;
   /** Every plugin/compiler diagnostic. */
   readonly diagnostics: readonly InventoryMigrationDiagnostic[];
@@ -907,11 +908,11 @@ function compareInventoryMigrationSourceDisposition(
   return compareInventoryIdentityText(left.dispositionId, right.dispositionId);
 }
 
-/** Fingerprint the complete compiled plan so callers cannot swap rows after review. */
+/** Hash the complete normalized plan binding into one fixed-size commitment. */
 function inventoryMigrationPlanDigest(
   plan: Omit<InventoryMigrationPlan, "planDigest"> | InventoryMigrationPlan
 ): string {
-  return inventoryIntentFingerprint([
+  return inventorySha256(inventoryIntentFingerprint([
     plan.migrationId,
     plan.sourceSystem,
     plan.sourceVersion ?? null,
@@ -936,7 +937,7 @@ function inventoryMigrationPlanDigest(
       ]
     ),
     inventoryMetadataFingerprint(plan.metadata),
-  ]);
+  ]));
 }
 
 /** Build the complete committed event batch and exact next roots before durable begin. */

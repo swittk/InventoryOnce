@@ -816,7 +816,7 @@ function coverageReport(apiManifest, fieldManifest, gaps) {
     "",
     "## Kernel reference-adapter seam",
     "",
-    "The finite refinement suite runs the core façade against the memory reference adapter. Mongo/SQLite adapter and Shinebright application-call evidence belong to downstream integration repositories and are not executed here.",
+    "The finite refinement suite runs the core façade against the memory reference adapter. Downstream integrations must verify their Mongo/SQLite adapters and application calls.",
     "",
     "| Kernel call | Family | Required evidence |",
     "|---|---|---|"

@@ -1115,24 +1115,12 @@ describe("native policy and reservation safety", () => {
       ],
     });
 
-    await expect(
-      inventory.stock.scrapByPolicy({
-        operationId: "scrap-protected-shortfall",
-        occurredAtEpochMs: time2,
-        selector: inventoryStockSelector("item-a", { lotIds: ["DAMAGED"] }),
-        amount: stockAmount("2", "piece"),
-        method: InventoryAllocationMethod.Fifo,
-        reason: "Both pieces were physically destroyed.",
-      })
-    ).rejects.toThrow("shortfall");
-
     await inventory.stock.scrapByPolicy({
       operationId: "scrap-allocated-physical-truth",
       occurredAtEpochMs: time2,
       selector: inventoryStockSelector("item-a", { lotIds: ["DAMAGED"] }),
       amount: stockAmount("2", "piece"),
       method: InventoryAllocationMethod.Fifo,
-      allowAllocatedStock: true,
       reason: "Both pieces were physically destroyed.",
     });
     const report = await inventory.read.reservationFeasibility(time2);
