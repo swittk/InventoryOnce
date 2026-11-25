@@ -1205,7 +1205,8 @@ function reservationGroupFeasibility(
     });
   }
   burdenPositions.sort(compareReservationDeficitBurdenPosition);
-  const burden = applyInventoryRecordedDeficitBurden({
+  // An empty resolved placement set has no candidate capacity or deficit to attribute.
+  const burden = placementNodeIds.length === 0 ? undefined : applyInventoryRecordedDeficitBurden({
     projection,
     itemRevisionId: first.itemRevisionId,
     axisId: axis.axisId,
@@ -1225,7 +1226,7 @@ function reservationGroupFeasibility(
   const positions: ReservationFeasibilityPosition[] = [];
   for (const position of burdenPositions) {
     if (!position.reservationCandidate) continue;
-    const capacity = burden.capacityByPositionIdentity.get(position.identity);
+    const capacity = burden?.capacityByPositionIdentity.get(position.identity);
     if (capacity === undefined) {
       throw new Error(
         `Reservation deficit burden lost position '${position.identity}'.`

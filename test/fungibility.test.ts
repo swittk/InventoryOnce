@@ -924,7 +924,7 @@ describe("derived pool summaries and exact member movements", () => {
     ).toBe(2);
   });
 
-  it("prefers the unheld member before moving a whole row with an independent-axis hold", async () => {
+  it("prefers an unheld member despite an unrelated shortage, then records a held move", async () => {
     const held = defineInventoryItem({
       itemId: "weighed-member", revisionId: "weighed-member-v1",
       primaryAxis: {
@@ -940,13 +940,14 @@ describe("derived pool summaries and exact member movements", () => {
       qualifiedDimensions: [],
     });
     const unheld = newBrand();
+    const unrelated = doubleStrength();
     const pool = defineScalarInventoryFungibilityPool({
       poolId: "weighed-pool", revisionId: "weighed-pool-v1", basisUnit: "equivalent",
       members: [{ item: held }, { item: unheld }],
     });
     const catalog = defineInventoryCatalog({
-      itemRevisions: [held, unheld],
-      activeItemRevisionIds: { [held.itemId]: held.revisionId, [unheld.itemId]: unheld.revisionId },
+      itemRevisions: [held, unheld, unrelated],
+      activeItemRevisionIds: { [held.itemId]: held.revisionId, [unheld.itemId]: unheld.revisionId, [unrelated.itemId]: unrelated.revisionId },
       fungibilityRevisions: [pool], activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
     });
     const storage = createInMemoryInventoryDurableStorage();
@@ -970,18 +971,31 @@ describe("derived pool summaries and exact member movements", () => {
     });
     await receiveMember({ inventory, itemId: unheld.itemId, itemRevisionId: unheld.revisionId,
       lotId: "unheld-member", quantity: "4", operationId: "receive-unheld-member", occurredAtEpochMs: time1 });
+    const outside = { itemId: unrelated.itemId, placementNodeId: "elsewhere" };
+    const one = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "receive-outside-pool", occurredAtEpochMs: time0, to: outside, amount: one });
+    await inventory.reservations.reserve({
+      operationId: "reserve-outside-pool", reservationId: "outside-pool", itemRevisionId: unrelated.revisionId,
+      selector: { itemId: outside.itemId, placementNodeIds: [outside.placementNodeId] },
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+    await inventory.stock.issue({ operationId: "deplete-outside-pool", occurredAtEpochMs: time1, from: outside, amount: one });
     const command = {
       occurredAtEpochMs: time2, fungibilityRevisionId: pool.revisionId, requested: parseQuantity("4", "equivalent"),
       method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] }, toPlacementNodeId: "room",
     };
     const preferred = await inventory.fungibility.transfer({ ...command, operationId: "move-unheld-member" });
     expect(preferred.event.stockEffects.map((effect) => effect.position.itemId)).toEqual([unheld.itemId, unheld.itemId]);
+    expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual(expect.arrayContaining([
+      expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("0", "kg") }),
+    ]));
     const physical = await inventory.fungibility.transfer({ ...command, operationId: "move-held-member" });
     expect(physical.event.stockEffects.map((effect) => effect.measurementsDelta.independent[0]?.quantity.amountMinor))
       .toEqual([8, -8]);
-    expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([
-      { reservationIds: ["weighed-hold"], shortage: { amountMinor: 8, unit: "kg" } },
-    ]);
+    expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual(expect.arrayContaining([
+      expect.objectContaining({ reservationIds: ["outside-pool"], shortage: parseQuantity("1", "piece") }),
+      expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("8", "kg") }),
+    ]));
   });
 
   it("preserves a broad claim when fungible stock moves into another eligible location", async () => {

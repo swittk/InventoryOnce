@@ -214,6 +214,8 @@ describe("reservation closure through an existing shortage", () => {
       to: loosePosition("u2"),
       amount: stockAmount("1", "piece"),
     });
+    const selector = { itemId: "item-a", placementNodeIds: ["u2"] };
+    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: { amountMinor: 2 } } } }]);
     await expect(
       inventory.reservations.reserve({
         reservationId: "c3",
@@ -238,9 +240,30 @@ describe("reservation closure through an existing shortage", () => {
       from: loosePosition("u2"),
       amount: stockAmount("1", "piece"),
     });
+    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: { amountMinor: 1 } } } }]);
     const after = await inventory.read.world();
     expect(after.revision).toBe(before.revision + 2);
     expect(after.reservations).toEqual(before.reservations);
+  });
+
+  it("reports a disjoint placement shortfall without adding deficits outside either filter", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({ operationId: "intersection-receipt", occurredAtEpochMs: time0,
+      to: loosePosition("bin"), amount: stockAmount("1", "piece") });
+    await inventory.placement.move({ operationId: "place-bin-in-scope", occurredAtEpochMs: time0, nodeId: "bin", into: "scope" });
+    await inventory.reservations.reserve({
+      operationId: "reserve-intersection", reservationId: "intersection", itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["bin"], withinPlacementNodeIds: ["scope"] },
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+    await inventory.placement.move({ operationId: "place-bin-elsewhere", occurredAtEpochMs: time2, nodeId: "bin", into: "outside" });
+    for (const nodeId of ["unrelated-a", "unrelated-b"]) {
+      await inventory.stock.issue({ operationId: `deficit-${nodeId}`, occurredAtEpochMs: time2,
+        from: loosePosition(nodeId), amount: stockAmount(String(Number.MAX_SAFE_INTEGER), "piece") });
+    }
+    expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([{
+      reservationIds: ["intersection"], shortage: { amountMinor: 1 },
+    }]);
   });
 
   it("rejects a forged release plan that changes an unrelated reservation row", async () => {

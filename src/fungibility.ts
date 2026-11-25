@@ -440,6 +440,21 @@ function planInventoryFungibilityAllocationWithHolds({
     }
   }
 
+  /** Cache the baseline only if a physical recording trial leaves some claim short. */
+  let earlierShortages: Map<string, Quantity> | undefined;
+  /** Find each group's shortage under the same claim book and authority time. */
+  const readEarlierShortages = (): ReadonlyMap<string, Quantity> => {
+    if (earlierShortages !== undefined) return earlierShortages;
+    earlierShortages = new Map();
+    const before = inspectInventoryReservationFeasibility({
+      catalog, projection: world.projection, book: world.reservations, atEpochMs: reservationAtEpochMs,
+    });
+    for (const group of before.groups) {
+      const first = group.reservationIds[0];
+      if (first !== undefined) earlierShortages.set(first, group.shortage);
+    }
+    return earlierShortages;
+  };
   const allocated = allocateInventory({
     requested,
     candidates,
@@ -449,7 +464,7 @@ function planInventoryFungibilityAllocationWithHolds({
     ...(allowAllocatedStock
       ? {}
       : {
-          /** Keep only complete pool assignments that preserve every active item claim. */
+          /** Prefer complete assignments that preserve claim capacity. */
           acceptAllocations: (
             allocations: readonly InventoryAllocation[]
           ): boolean =>
@@ -460,6 +475,7 @@ function planInventoryFungibilityAllocationWithHolds({
               reservationEffect,
               allocations,
               evidenceByPosition,
+              ...(recording ? { readEarlierShortages } : {}),
             }),
         }),
   });
@@ -548,9 +564,11 @@ interface FungibilityReservationPreservationInput {
     string,
     InventoryFungibilityCandidateEvidence
   >;
+  /** Physical recording can retain a pre-existing shortage without increasing it. */
+  readonly readEarlierShortages?: () => ReadonlyMap<string, Quantity>;
 }
 
-/** Return whether removing the complete selected member set leaves every item claim feasible. */
+/** Check feasibility, allowing physical reports that preserve existing claim capacity. */
 function fungibilityAllocationsPreserveReservations({
   catalog,
   world,
@@ -558,6 +576,7 @@ function fungibilityAllocationsPreserveReservations({
   reservationEffect,
   allocations,
   evidenceByPosition,
+  readEarlierShortages,
 }: FungibilityReservationPreservationInput): boolean {
   const positions = createFungibilitySparseRecordOverlay(
     world.projection.positions
@@ -683,14 +702,20 @@ function fungibilityAllocationsPreserveReservations({
     positionIdsByItemRevisionId,
     positionIdsByPlacementNodeId,
   };
-  return (
-    inspectInventoryReservationFeasibility({
-      catalog,
-      projection,
-      book: world.reservations,
-      atEpochMs: reservationAtEpochMs,
-    }).status === InventoryReservationFeasibilityStatus.Feasible
-  );
+  const after = inspectInventoryReservationFeasibility({
+    catalog, projection, book: world.reservations, atEpochMs: reservationAtEpochMs,
+  });
+  if (after.status === InventoryReservationFeasibilityStatus.Feasible) return true;
+  if (readEarlierShortages === undefined) return false;
+  const before = readEarlierShortages();
+  // Group membership is unchanged because the claim book and time stay fixed.
+  for (const group of after.groups) {
+    if (group.shortage.amountMinor === 0) continue;
+    const first = group.reservationIds[0];
+    const earlier = first === undefined ? undefined : before.get(first);
+    if (earlier === undefined || compareQuantity(group.shortage, earlier) > 0) return false;
+  }
+  return true;
 }
 
 /**

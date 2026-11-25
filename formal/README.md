@@ -88,7 +88,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 | `DurableTransferRefinement` | 7 | 6 | 5 |
 | `TransferLifecycle` | 4,321 | 929 | 7 |
 | `RepairLiveness` | 540 | 265 | 13 |
-| `RecordedDeficit` | 12,728,078 | 383,865 | 8 |
+| `RecordedDeficit` | 7,710,551 | 232,617 | 9 |
 | `SnapshotSupersededWorkflow` | 162 | 75 | 10 |
 | `InventoryOperation` | 22,689 | 3,889 | 11 |
 | `ImplementationConformance` | 172,510 | 6,481 | 5 |
@@ -211,7 +211,7 @@ revision or exact substitute; normal stock events continue to record the item ac
 
 ### Recorded deficits
 
-`RecordedDeficit.tla` distinguishes witnessed lot stock, the policy Issue liability, and the signed unlabelled balance. A negative unlabelled balance reduces policy availability in the affected pool. Exact transfers witness at most the selected lot's balance. The source's signed net counts every debit once, and transfer arrivals match the witnessed decrement plus the unwitnessed shortfall in the same step. Replays return the frozen shortfall. The fabricated-arrival mutation credits the entire transfer to witnessed stock and fails `TransferArrivalsMatchSeparateWitnesses`. Positive reachability checks cover a mixed transfer and an unwitnessed debit that leaves a positive unlabelled balance.
+`RecordedDeficit.tla` distinguishes witnessed lot stock, the policy Issue liability, and the signed unlabelled balance. A positive unlabelled balance backs policy allocations, and a negative balance reduces policy availability in the same pool. The model uses a representative lot-first policy order. Exact transfers witness at most the selected lot's balance. The source's signed net counts every debit once, and transfer arrivals match witnessed decrements and the unwitnessed shortfall in the same step. Replays return the frozen shortfall. The fabricated-arrival mutation credits the entire transfer to witnessed stock and fails `TransferArrivalsMatchSeparateWitnesses`. Reachability checks cover a mixed transfer, an unwitnessed debit that leaves a positive unlabelled balance, and a policy move that witnesses both lot and unlabelled stock.
 
 Executable refinement in the TypeScript façade reconstructs `InventoryOnceEventResult.deficit` from immutable event metadata/effects and checks it after restart with the memory reference adapter. Migration uses the same signed Issue semantics for coherent negative `__untracked__` rows rather than inventing opening receipts. Mongo/SQLite adapter checks belong to the backend/data slice.
 

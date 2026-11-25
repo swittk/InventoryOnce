@@ -93,8 +93,8 @@ export function inventoryRecordedDeficitPoolSelector(
 
 /**
  * Limit deficit pools to direct nodes holding this item revision, without
- * traversing unrelated empty descendants. Include roots so an empty subtree
- * never becomes the unconstrained empty-list wildcard.
+ * traversing unrelated empty descendants. An intersected selector can return
+ * no direct pools, and the feasibility reducer treats that as no capacity.
  */
 export function inventorySelectedDeficitPlacementNodeIds(
   projection: InventoryProjectionState,

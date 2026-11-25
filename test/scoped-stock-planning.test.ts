@@ -90,6 +90,66 @@ function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
 }
 
 describe("indexed stock planning and availability", () => {
+  it("witnesses a positive unlabelled row alongside labelled stock in one policy move", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({ operationId: "receive-labelled-piece", occurredAtEpochMs: time0,
+      to: loosePosition("store", { lotId: "labelled" }), amount: stockAmount("1", "piece") });
+    await inventory.stock.receive({ operationId: "receive-unlabelled-pieces", occurredAtEpochMs: time1,
+      to: loosePosition("store"), amount: stockAmount("2", "piece") });
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "transfer-labelled-and-unlabelled", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector, method: InventoryAllocationMethod.Fifo, amount: stockAmount("2", "piece"),
+    });
+    expect(result.event.unwitnessedStockMovements).toBeUndefined();
+    expect(result.event.positiveLayerProvenanceTransfers?.map((route) => route.from.lotId)).toEqual(["labelled", undefined]);
+    expect(await inventory.read.positions(selector)).toMatchObject([
+      { key: { placementNodeId: "store" }, measurements: { primary: { quantity: { amountMinor: 1 } } } },
+    ]);
+  });
+
+  it("conserves separate unwitnessed routes whose intermediate sum cannot be stored", async () => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const result = await inventory.stock.transferMany({
+      operationId: "combine-unwitnessed-scales", occurredAtEpochMs: time1,
+      lines: ["9007199254740990", "0.1", "0.9"].map((value, index) => ({
+        from: { itemId: item.itemId, placementNodeId: "store", lotId: `reported-lot-${index}` },
+        toPlacementNodeId: "destination", amount: stockAmount(value, "kg"),
+      })),
+    });
+    expect(result.event.unwitnessedStockMovements?.map((part) => part.measurements.primary.quantity)).toEqual(
+      ["9007199254740990", "0.1", "0.9"].map((value) => parseQuantity(value, "kg")),
+    );
+    expect(result.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity.amountMinor))
+      .toEqual([Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
+  });
+
+  it("records a compatible measured shortage even when unused rows have larger increments", async () => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    for (const { lotId, count, weight } of [
+      { lotId: "a", count: "4", weight: "4" },
+      { lotId: "b", count: "2", weight: "4" },
+      { lotId: "c", count: "4", weight: "10" },
+    ]) {
+      await inventory.stock.receive({
+        operationId: `receive-measured-${lotId}`, occurredAtEpochMs: time0,
+        to: { itemId: "measured", lotId, placementNodeId: "store" },
+        amount: measuredStockAmount(count, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
+      });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "transfer-six-weighed-pieces", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("6", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
+    });
+    expect(result.event.positiveLayerProvenanceTransfers).toMatchObject([{ from: { lotId: "a" } }]);
+    expect(result.event.unwitnessedStockMovements?.map((portion) => portion.measurements)).toEqual([{
+      primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") },
+      independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
+    }]);
+  });
+
   it.each([
     { pieces: "10", weight: "5", accepted: false },
     { pieces: "4", weight: "8", accepted: false },
@@ -641,12 +701,13 @@ describe("indexed stock planning and availability", () => {
         const portion = result.event.unwitnessedStockMovements?.[0];
         expect(portion?.measurements.primary.quantity.amountMinor).toBe(2);
         expect(portion?.from.lotId).toBeUndefined();
-        expect(portion?.to?.lotId).toBeUndefined();
         const source = await inventory.read.positions(selector);
         expect(source.map((row) => [row.key.lotId, row.measurements.primary.quantity.amountMinor])).toEqual([
           ["young", 2], [undefined, 3],
         ]);
         if (verb !== "policy scrap") {
+          expect(portion?.to).toMatchObject({ placementNodeId: "destination" });
+          expect(portion?.to?.lotId).toBeUndefined();
           const arrival = await inventory.read.planAllocation({
             selector: inventoryStockSelector("item-a", { placementNodeIds: ["destination"] }),
             amount: stockAmount("4", "piece"), method: InventoryAllocationMethod.Fifo, atEpochMs: time3,
@@ -725,7 +786,7 @@ describe("indexed stock planning and availability", () => {
           selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], lotIds: ["old"] }),
         },
         {
-          requestId: "pick-unlabelled", method: InventoryAllocationMethod.Fifo, amount: stockAmount("3", "piece"),
+          requestId: "pick-unlabelled", method: InventoryAllocationMethod.Fifo, amount: stockAmount("4", "piece"),
           selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], lot: { kind: InventoryOptionalIdentityConstraintKind.Absent } }),
         },
       ],
@@ -734,7 +795,7 @@ describe("indexed stock planning and availability", () => {
     const result = await inventory.stock.transferManyByPolicy(command);
     expect(result.allocations).toMatchObject([
       { requestId: "report-old", deficit: { primary: { amountMinor: 2 } } },
-      { requestId: "pick-unlabelled", lines: [{ allocatedPrimary: { amountMinor: 3 }, layerStartedAtEpochMs: time1 }] },
+      { requestId: "pick-unlabelled", lines: [{ allocatedPrimary: { amountMinor: 3 }, layerStartedAtEpochMs: time1 }], deficit: { primary: { amountMinor: 1 } } },
     ]);
     expect((await inventory.stock.transferManyByPolicy(command)).event).toEqual(result.event);
     expect(readWorld).not.toHaveBeenCalled();
@@ -993,6 +1054,39 @@ describe("indexed stock planning and availability", () => {
     expect(storage.readSegmentedStockHead().worldRevision).toBe(head.worldRevision + 1);
     await expect(inventory.stock.transfer({ ...command, operationId: "genuinely-empty-serial" }))
       .rejects.toThrow("Unwitnessed transfer cannot claim a serial identity");
+  });
+
+  it("replays the concurrent winner of the final scoped publication attempt", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await receiveKnownLots(inventory);
+    const command = issueCommand();
+    const commit = storage.commitSegmentedStockEvent.bind(storage);
+    const readHead = storage.readSegmentedStockHead.bind(storage);
+    let declined = 0;
+    let winner: Awaited<ReturnType<typeof inventory.stock.issueManyByPolicy>> | undefined;
+    const planning: InventorySegmentedStockPlanningCapability = storage;
+    const head = vi.spyOn(planning, "readSegmentedStockHead");
+    vi.spyOn(storage, "commitSegmentedStockEvent").mockImplementation(async (plan) => {
+      if (plan.operationId !== command.operationId || declined === 8) return commit(plan);
+      declined += 1;
+      if (declined === 8) {
+        head.mockImplementationOnce(async () => {
+          winner = await inventory.stock.issueManyByPolicy(command);
+          return readHead();
+        });
+      } else {
+        await inventory.stock.receive({ operationId: `intervening-${declined}`, occurredAtEpochMs: time1,
+          to: loosePosition("other"), amount: stockAmount("1", "piece") });
+      }
+      return undefined;
+    });
+    const before = readHead().worldRevision;
+    const replay = await inventory.stock.issueManyByPolicy(command);
+    expect(winner?.replayed).toBe(false);
+    expect(replay).toEqual({ ...winner, replayed: true });
+    expect(declined).toBe(8);
+    expect(readHead().worldRevision).toBe(before + 8);
   });
 
   it("reopens an interrupted native transfer before publish and replays the committed pick after a lost reply", async () => {

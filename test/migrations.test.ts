@@ -187,12 +187,15 @@ describe("typed migration query/plugin, dry-run, apply, and compatibility reuse"
     });
     const small = compile(1, "source-0");
     const large = compile(160, "source-0");
+    const changedSource = compile(160, "different-source-0");
     expect(small.events).toHaveLength(1);
     expect(large.events).toHaveLength(160);
+    expect(changedSource.status).toBe(InventoryMigrationPlanStatus.Ready);
+    expect(changedSource.events).toHaveLength(160);
     expect(small.planDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(large.planDigest).toMatch(/^[0-9a-f]{64}$/);
     expect(large.planDigest).toBe(compile(160, "source-0").planDigest);
-    expect(large.planDigest).not.toBe(compile(160, "different-source-0").planDigest);
+    expect(large.planDigest).not.toBe(changedSource.planDigest);
   });
 
   it("lets one source plugin derive both catalogue and opening facts from typed queries", async () => {

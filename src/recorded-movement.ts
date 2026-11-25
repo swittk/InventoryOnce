@@ -12,8 +12,23 @@ import {
   type InventoryStockEffect,
   type InventoryUnwitnessedStockMovement,
 } from "./events.js";
-import { addInventoryMeasurements, negateInventoryMeasurements } from "./measurements.js";
+import { negateInventoryMeasurements } from "./measurements.js";
+import {
+  addInventoryMeasurementTotals,
+  materializeInventoryMeasurementTotals,
+  type InventoryMeasurementTotals,
+} from "./measurement-totals.js";
 import { inventoryStockPositionIdentity } from "./model.js";
+
+/** Original posting plus working totals only when additional portions share its identity. */
+interface ReportedPosting {
+  /** First posting, retaining position and optional witnessed metadata. */
+  readonly effect: InventoryStockEffect;
+  /** Wide totals created on the first merge. */
+  combined?: InventoryMeasurementTotals;
+  /** Whole package count when supplied by every merged part. */
+  packageCount: bigint | undefined;
+}
 
 /** One exact reported portion for which the planner found no witnessed source stock. */
 export interface InventoryUnwitnessedMovementLine extends InventoryScrapLine {
@@ -39,11 +54,11 @@ interface CreateInventoryRecordedMovementInput {
 export function createInventoryRecordedMovement({
   catalog, header, kind, witnessed, unknown,
 }: CreateInventoryRecordedMovementInput): InventoryEventDraft {
-  const effects = new Map<string, InventoryStockEffect>();
+  const effects = new Map<string, ReportedPosting>();
   let eventId = witnessed?.eventId;
   const unwitnessedStockMovements: InventoryUnwitnessedStockMovement[] = [];
   for (const effect of witnessed?.stockEffects ?? []) {
-    effects.set(inventoryStockPositionIdentity(effect.position), effect);
+    addReportedPosting(effects, effect);
   }
   for (const line of unknown) {
     const toPlacementNodeId = line.toPlacementNodeId;
@@ -56,9 +71,7 @@ export function createInventoryRecordedMovement({
     for (const effect of portion.stockEffects) {
       if (effect.measurementsDelta.primary.quantity.amountMinor < 0) source = effect;
       else destination = effect;
-      const id = inventoryStockPositionIdentity(effect.position);
-      const current = effects.get(id);
-      effects.set(id, current === undefined ? effect : joinReportedParts(current, effect));
+      addReportedPosting(effects, effect);
     }
     if (source === undefined) throw new Error("Recorded movement lost its signed source.");
     unwitnessedStockMovements.push({
@@ -74,7 +87,7 @@ export function createInventoryRecordedMovement({
       ...header,
       eventId,
       kind,
-      stockEffects: [...effects.values()],
+      stockEffects: Array.from(effects.values(), materializeReportedPosting),
       positiveLayerProvenanceTransfers: witnessed?.positiveLayerProvenanceTransfers ?? [],
       traceabilityChanges: [],
       unwitnessedStockMovements,
@@ -82,25 +95,42 @@ export function createInventoryRecordedMovement({
   });
 }
 
-/** Keep the witnessed evidence while summing a same-direction unlabelled posting. */
-function joinReportedParts(witnessed: InventoryStockEffect, remainder: InventoryStockEffect): InventoryStockEffect {
-  const signed = witnessed.measurementsDelta.primary.quantity.amountMinor;
-  if ((signed < 0) !== (remainder.measurementsDelta.primary.quantity.amountMinor < 0)) {
+/** Accumulate same-direction portions without storing an intermediate posting. */
+function addReportedPosting(effects: Map<string, ReportedPosting>, effect: InventoryStockEffect): void {
+  const id = inventoryStockPositionIdentity(effect.position);
+  const current = effects.get(id);
+  const count = effect.evidence?.packageCount;
+  if (current === undefined) {
+    effects.set(id, { effect, packageCount: count === undefined ? undefined : BigInt(count) });
+    return;
+  }
+  const first = current.effect.measurementsDelta;
+  if ((first.primary.quantity.amountMinor < 0) !== (effect.measurementsDelta.primary.quantity.amountMinor < 0)) {
     throw new Error("An unwitnessed movement cannot merge opposing changes at one stock position.");
   }
-  const measurementsDelta = addInventoryMeasurements(witnessed.measurementsDelta, remainder.measurementsDelta);
-  const packageCount = witnessed.evidence?.packageCount;
+  if (current.combined === undefined) {
+    current.combined = new Map();
+    addInventoryMeasurementTotals(current.combined, first);
+  }
+  addInventoryMeasurementTotals(current.combined, effect.measurementsDelta);
+  current.packageCount = current.packageCount === undefined || count === undefined
+    ? undefined
+    : current.packageCount + BigInt(count);
+}
+
+/** Keep witnessed metadata and store only the final signed sum and evidence. */
+function materializeReportedPosting({ effect, combined, packageCount }: ReportedPosting): InventoryStockEffect {
+  if (combined === undefined) return effect;
+  const measurementsDelta = materializeInventoryMeasurementTotals(combined, effect.measurementsDelta.primary.axisId);
   return {
-    ...witnessed,
+    ...effect,
     measurementsDelta,
     evidence: {
-      transactedMeasurements: signed < 0 ? negateInventoryMeasurements(measurementsDelta) : measurementsDelta,
-      ...(witnessed.position.packagingRevisionId === undefined
+      transactedMeasurements: measurementsDelta.primary.quantity.amountMinor < 0 ? negateInventoryMeasurements(measurementsDelta) : measurementsDelta,
+      ...(effect.position.packagingRevisionId === undefined
         ? {}
-        : { packagingRevisionId: witnessed.position.packagingRevisionId }),
-      ...(packageCount === undefined || remainder.evidence?.packageCount === undefined
-        ? {}
-        : { packageCount: String(BigInt(packageCount) + BigInt(remainder.evidence.packageCount)) }),
+        : { packagingRevisionId: effect.position.packagingRevisionId }),
+      ...(packageCount === undefined ? {} : { packageCount: String(packageCount) }),
     },
   };
 }

@@ -1902,3 +1902,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Terminal allocation choices skip ranges where the pick or final shortfall cannot fit at an exact scale. The jump respects both storage divisibility and the row's allocation increment.
 - Quantity sums and differences can remove trailing zeros when storage requires it. Mixed witnessed and unwitnessed postings reuse the validated split for FIFO provenance. A recorded shortfall's posting still has to match any explicit whereabouts selection.
+
+## 2026-11-25 — recorded posting totals and claim preference
+
+- A recorded movement sums its signed measurement axes before storing quantities. FIFO validation subtracts the separate unwitnessed portions before storing the witnessed remainder.
+- A compatible measured witness can leave a shortfall even when an unused row has a larger whole increment. Physical fungibility can use unheld stock while preserving existing claim shortages. Empty placement intersections have no deficit burden.
+- The recorded-deficit model counts positive unlabelled stock as policy capacity and tracks its witnessed debit separately from the unwitnessed shortfall.

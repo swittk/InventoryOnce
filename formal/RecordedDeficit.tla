@@ -20,7 +20,7 @@ Outcomes == {"none", "receipt", "record-full", "record-shortage",
 Min(left, right) == IF left <= right THEN left ELSE right
 Max(left, right) == IF left >= right THEN left ELSE right
 Available(physicalValue, issueDeficit, unlabelled) ==
-  Max(physicalValue - issueDeficit - Max(-unlabelled, 0), 0)
+  Max(physicalValue + unlabelled - issueDeficit, 0)
 Intent(mode, quantity, verb) == <<mode, quantity, verb>>
 
 VARIABLES physical, deficit, signedNet, beforePhysical, beforeDeficit,
@@ -92,20 +92,23 @@ RecordMovement(op, quantity, verb, fabricate) ==
   LET available == IF verb = "exact-transfer" THEN physical
                    ELSE Available(physical, deficit, unlabelledNet)
       allocated == Min(quantity, available)
+      \* A representative policy order uses lot stock before positive unlabelled stock.
+      lotAllocated == Min(physical, allocated)
+      unlabelledAllocated == allocated - lotAllocated
       shortfall == quantity - allocated
   IN
     /\ Fresh(op)
     /\ quantity \in MovementQuantities
     /\ IF verb = "issue" THEN deficit + shortfall <= MaxQuantity
-                       ELSE unlabelledNet - shortfall >= -MaxQuantity
+                       ELSE unlabelledNet - unlabelledAllocated - shortfall >= -MaxQuantity
     /\ beforePhysical' = physical
     /\ beforeDeficit' = deficit
     /\ beforeSignedNet' = signedNet
     /\ beforeUnlabelledNet' = unlabelledNet
-    /\ physical' = physical - allocated
+    /\ physical' = physical - lotAllocated
     /\ deficit' = IF verb = "issue" THEN deficit + shortfall ELSE deficit
-    /\ unlabelledNet' = IF verb = "issue" THEN unlabelledNet
-                         ELSE unlabelledNet - shortfall
+    /\ unlabelledNet' = unlabelledNet - unlabelledAllocated -
+                        (IF verb = "issue" THEN 0 ELSE shortfall)
     /\ signedNet' = physical' - deficit' + unlabelledNet'
     /\ intentByOperation' = [intentByOperation EXCEPT
          ![op] = Intent("record", quantity, verb)]
@@ -130,6 +133,7 @@ RecordMovement(op, quantity, verb, fabricate) ==
 RejectMovement(op, quantity, verb) ==
   LET available == Available(physical, deficit, unlabelledNet)
       shortfall == Max(quantity - available, 0)
+      lotAllocated == Min(physical, quantity)
   IN
     /\ Fresh(op)
     /\ quantity \in MovementQuantities
@@ -138,7 +142,6 @@ RejectMovement(op, quantity, verb) ==
     /\ beforeSignedNet' = signedNet
     /\ beforeUnlabelledNet' = unlabelledNet
     /\ lastMode' = "reject"
-    /\ UNCHANGED unlabelledNet
     /\ lastVerb' = verb
     /\ beforeArrivals' = arrivals
     /\ arrivals' = IF verb = "transfer" /\ shortfall = 0
@@ -149,7 +152,8 @@ RejectMovement(op, quantity, verb) ==
     /\ lastReplayed' = FALSE
     /\ lastChangedIntentRejected' = FALSE
     /\ IF shortfall = 0
-          THEN /\ physical' = physical - quantity
+          THEN /\ physical' = physical - lotAllocated
+               /\ unlabelledNet' = unlabelledNet - (quantity - lotAllocated)
                /\ deficit' = deficit
                /\ signedNet' = physical' - deficit' + unlabelledNet'
                /\ intentByOperation' = [intentByOperation EXCEPT
@@ -159,6 +163,7 @@ RejectMovement(op, quantity, verb) ==
                /\ lastOperation' = op
                /\ lastOutcome' = "reject-full"
           ELSE /\ physical' = physical
+               /\ UNCHANGED unlabelledNet
                /\ deficit' = deficit
                /\ signedNet' = signedNet
                /\ lastOperation' = NoOperation
@@ -247,17 +252,27 @@ TypeOK ==
 SignedNetIsPhysicalMinusDeficit == signedNet = physical - deficit + unlabelledNet
 
 RecordedDeficitNeverBecomesPhysical ==
-  /\ Available(physical, deficit, unlabelledNet) >= 0
-  /\ Available(physical, deficit, unlabelledNet) <= physical
-  /\ (deficit > 0 \/ unlabelledNet < 0) => Available(physical, deficit, unlabelledNet) < physical \/ physical = 0
+  LET positive == physical + Max(unlabelledNet, 0)
+      available == Available(physical, deficit, unlabelledNet)
+  IN /\ 0 <= available /\ available <= positive
+     /\ (deficit > 0 \/ unlabelledNet < 0) => available < positive \/ positive = 0
+
+UnwitnessedSourceDebit ==
+  IF lastOutcome = "record-shortage" /\ lastVerb # "issue" THEN lastShortfall ELSE 0
+
+WitnessedUnlabelledDebit == beforeUnlabelledNet - unlabelledNet - UnwitnessedSourceDebit
+
+WitnessedDebit == beforePhysical - physical + WitnessedUnlabelledDebit
 
 \* Issue transitions may consume only capacity available before the step;
 \* recorded deficit is a liability and can never fund physical allocation.
 IssueConsumesOnlyAvailableCapacity ==
-  ~(lastOutcome \in {"record-full", "record-shortage", "reject-full"}) \/
-    beforePhysical - physical <=
-      IF lastVerb = "exact-transfer" THEN beforePhysical
-      ELSE Available(beforePhysical, beforeDeficit, beforeUnlabelledNet)
+  lastOutcome \in {"record-full", "record-shortage", "reject-full"} =>
+    /\ 0 <= WitnessedUnlabelledDebit
+    /\ WitnessedUnlabelledDebit <= Max(beforeUnlabelledNet, 0)
+    /\ WitnessedDebit = lastRequested - lastShortfall
+    /\ WitnessedDebit <= IF lastVerb = "exact-transfer" THEN beforePhysical
+                         ELSE Available(beforePhysical, beforeDeficit, beforeUnlabelledNet)
 
 \* Scope: Seen(op) is defined by intentByOperation[op] # NoIntent; the first
 \* conjunct below records that representation invariant rather than adding a new transition check.
@@ -334,7 +349,7 @@ ChangedIntentRejectsAndStutters ==
 \* Other verbs, rejected attempts, and retries cannot add destination stock.
 TransferArrivalsMatchSeparateWitnesses ==
   IF lastVerb \in TransferVerbs /\ lastOutcome \in {"record-full", "record-shortage", "reject-full"}
-  THEN /\ arrivals[1] - beforeArrivals[1] = beforePhysical - physical
+  THEN /\ arrivals[1] - beforeArrivals[1] = WitnessedDebit
        /\ arrivals[2] - beforeArrivals[2] = lastShortfall
        /\ arrivals[1] + arrivals[2] - beforeArrivals[1] - beforeArrivals[2]
           = beforeSignedNet - signedNet
@@ -347,12 +362,17 @@ MixedTransferIsUnreachable ==
 
 \* A signed unlabelled posting can settle against a row already on hand.
 UnlabelledSourceChangesByReportedRemainder ==
-  unlabelledNet = beforeUnlabelledNet -
-    (IF lastOutcome = "record-shortage" /\ lastVerb # "issue"
-     THEN lastShortfall ELSE 0)
+  unlabelledNet = beforeUnlabelledNet - UnwitnessedSourceDebit -
+    (IF lastOutcome \in {"record-full", "record-shortage", "reject-full"} /\ lastVerb # "exact-transfer"
+     THEN Max(lastRequested - lastShortfall - beforePhysical, 0) ELSE 0)
 
 PositiveUnlabelledSettlementIsUnreachable ==
   ~(lastVerb = "exact-transfer" /\ lastOutcome = "record-shortage" /\
     beforePhysical > physical /\ beforeUnlabelledNet > unlabelledNet /\ unlabelledNet > 0)
+
+\* A policy transfer can witness a positive unlabelled row after selecting lot stock.
+PositiveUnlabelledAllocationIsUnreachable ==
+  ~(lastVerb = "transfer" /\ lastOutcome = "record-full" /\
+    beforePhysical > physical /\ WitnessedUnlabelledDebit > 0 /\ lastShortfall = 0)
 
 =============================================================================

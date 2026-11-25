@@ -1,6 +1,12 @@
 import { cloneInventoryRetainedData } from "./sparse-record.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
+  addInventoryMeasurementTotals,
+  inventoryMeasurementTotalsAreZero,
+  materializeInventoryMeasurementTotals,
+  type InventoryMeasurementTotals,
+} from "./measurement-totals.js";
+import {
   inventoryIntentFingerprint,
   inventoryMetadataFingerprint,
   type InventoryIntentFingerprintValue,
@@ -17,7 +23,6 @@ import {
   addInventoryMeasurements,
   assertWholeMeasurementMultiple,
   assertInventoryMeasurementsFollowPrimarySign,
-  subtractInventoryMeasurements,
   inventoryMeasurementsAreZero,
   inventoryMeasurementsFingerprint,
   negateInventoryMeasurements,
@@ -47,7 +52,6 @@ import {
 } from "./placement.js";
 import {
   compareQuantity,
-  integerAtDecimals,
   negateQuantity,
   positiveQuantity,
   quantityEq,
@@ -1246,6 +1250,14 @@ interface NormalizedUnwitnessedStockMovements {
   readonly witnessedEffects: ReadonlyMap<string, InventoryMeasurementVector>;
 }
 
+/** Running subtraction of unwitnessed portions at one exact posting identity. */
+interface UnwitnessedPostingTotal {
+  /** Expected sign of the full posting. */
+  readonly sign: -1 | 1;
+  /** Negative of the unwitnessed portions, ready to subtract from the full posting. */
+  readonly remainder: InventoryMeasurementTotals;
+}
+
 /** Reported portions and the normalized postings that bound them. */
 interface NormalizeUnwitnessedStockMovementsInput {
   /** Exact catalogue used by the event. */
@@ -1267,7 +1279,7 @@ function normalizeUnwitnessedStockMovements({
     throw new Error("Unwitnessed movement requires a transfer or scrap with a reported quantity.");
   }
   const movements: InventoryUnwitnessedStockMovement[] = [];
-  const effects = new Map<string, InventoryMeasurementVector>();
+  const effects = new Map<string, UnwitnessedPostingTotal>();
   for (const portion of rawMovements) {
     const from = normalizeInventoryStockPositionKey(portion.from);
     if (from.lotId !== undefined || from.serialId !== undefined || from.placementNodeId === undefined) {
@@ -1303,10 +1315,11 @@ function normalizeUnwitnessedStockMovements({
   const witnessedEffects = new Map<string, InventoryMeasurementVector>();
   for (const [id, portion] of effects) {
     const total = stockById.get(id);
-    if (total === undefined || primarySign(total) !== primarySign(portion)) {
+    if (total === undefined || primarySign(total) !== portion.sign) {
       throw new Error("Unwitnessed movement is missing its signed stock effect.");
     }
-    const witnessed = subtractInventoryMeasurements(total, portion);
+    addInventoryMeasurementTotals(portion.remainder, total);
+    const witnessed = materializeInventoryMeasurementTotals(portion.remainder, total.primary.axisId);
     assertInventoryMeasurementsFollowPrimarySign(witnessed, "Witnessed movement");
     if (!inventoryMeasurementsAreZero(witnessed) && primarySign(witnessed) !== primarySign(total)) {
       throw new Error("Unwitnessed movement exceeds its signed stock effect.");
@@ -1316,18 +1329,22 @@ function normalizeUnwitnessedStockMovements({
   return { movements, witnessedEffects };
 }
 
-/** Sum one explicitly signed part of an unwitnessed route by its exact position. */
+/** Subtract one signed unwitnessed part in wide digits at its exact position. */
 function addUnwitnessedEffect(
-  effects: Map<string, InventoryMeasurementVector>,
+  effects: Map<string, UnwitnessedPostingTotal>,
   position: InventoryStockPositionKey,
   measurements: InventoryMeasurementVector
 ): void {
   const id = inventoryStockPositionIdentity(position);
-  const current = effects.get(id);
-  if (current !== undefined && primarySign(current) !== primarySign(measurements)) {
+  const sign = primarySign(measurements);
+  let current = effects.get(id);
+  if (current === undefined) {
+    current = { sign, remainder: new Map() };
+    effects.set(id, current);
+  } else if (current.sign !== sign) {
     throw new Error("An unwitnessed position cannot be both source and destination in one movement.");
   }
-  effects.set(id, current === undefined ? measurements : addInventoryMeasurements(current, measurements));
+  addInventoryMeasurementTotals(current.remainder, measurements, -1n);
 }
 
 /** Validate conserved FIFO provenance transfers and return stable destination ordering. */
@@ -2275,74 +2292,33 @@ function assertEveryPrimarySign(
   }
 }
 
-/** Accumulate conservation totals without the safe-integer limit of stored quantities. */
-interface InventoryConservationTotal {
-  /** Signed net quantity at the current scale. */
-  minor: bigint;
-  /** Decimal places needed by the effects seen so far. */
-  decimals: number;
-}
-
 /** Require internal verbs to conserve every measurement axis inside each frozen item revision. */
 function assertInternalEventConservesEachItem(
   effects: readonly InventoryStockEffect[],
   kind: InventoryEventKind
 ): void {
   /** Normalization already checked the axis units against each frozen revision. */
-  const totalByItemRevision = new Map<string, Map<string, InventoryConservationTotal>>();
+  const totalByItemRevision = new Map<string, InventoryMeasurementTotals>();
   for (const effect of effects) {
     let totals = totalByItemRevision.get(effect.itemRevisionId);
     if (totals === undefined) {
       totals = new Map();
       totalByItemRevision.set(effect.itemRevisionId, totals);
     }
-    addInventoryConservationMeasurements(totals, effect.measurementsDelta);
+    addInventoryMeasurementTotals(totals, effect.measurementsDelta);
   }
   for (const [itemRevisionId, totals] of totalByItemRevision) {
-    if (!inventoryConservationTotalsAreZero(totals)) {
+    if (!inventoryMeasurementTotalsAreZero(totals)) {
       throw new Error(`Inventory event '${kind}' does not conserve item revision '${itemRevisionId}'.`);
     }
   }
-}
-
-/** Add all axes without narrowing intermediate sums to stored quantities. */
-function addInventoryConservationMeasurements(
-  totals: Map<string, InventoryConservationTotal>,
-  { primary, independent }: InventoryMeasurementVector
-): void {
-  addInventoryConservationQuantity(totals, primary.axisId, primary.quantity);
-  for (const axis of independent) addInventoryConservationQuantity(totals, axis.axisId, axis.quantity);
-}
-
-/** Report whether every measurement axis is balanced exactly. */
-function inventoryConservationTotalsAreZero(totals: ReadonlyMap<string, InventoryConservationTotal>): boolean {
-  for (const total of totals.values()) if (total.minor !== 0n) return false;
-  return true;
-}
-
-/** Add one normalized measurement to a temporary exact balance. */
-function addInventoryConservationQuantity(
-  totals: Map<string, InventoryConservationTotal>,
-  axisId: string,
-  quantity: Quantity
-): void {
-  const total = totals.get(axisId);
-  if (total === undefined) {
-    totals.set(axisId, { minor: BigInt(quantity.amountMinor), decimals: quantity.decimals });
-    return;
-  }
-  if (quantity.decimals > total.decimals) {
-    total.minor *= 10n ** BigInt(quantity.decimals - total.decimals);
-    total.decimals = quantity.decimals;
-  }
-  total.minor += integerAtDecimals(quantity, total.decimals);
 }
 
 /** Prevent generic reclassification from silently acting like pack/unpack. */
 function assertReclassificationPreservesPackagingBuckets(
   effects: readonly InventoryStockEffect[]
 ): void {
-  const totalByPackageBucket = new Map<string, Map<string, InventoryConservationTotal>>();
+  const totalByPackageBucket = new Map<string, InventoryMeasurementTotals>();
   for (const effect of effects) {
     const bucket = inventoryIntentFingerprint([
       effect.itemRevisionId,
@@ -2353,10 +2329,10 @@ function assertReclassificationPreservesPackagingBuckets(
       totals = new Map();
       totalByPackageBucket.set(bucket, totals);
     }
-    addInventoryConservationMeasurements(totals, effect.measurementsDelta);
+    addInventoryMeasurementTotals(totals, effect.measurementsDelta);
   }
   for (const [bucket, totals] of totalByPackageBucket) {
-    if (!inventoryConservationTotalsAreZero(totals)) {
+    if (!inventoryMeasurementTotalsAreZero(totals)) {
       throw new Error(
         `Inventory reclassification changes packaging bucket ${bucket}; use pack/unpack instead.`
       );

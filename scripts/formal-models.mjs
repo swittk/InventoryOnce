@@ -262,6 +262,7 @@ export const formalPositiveReachabilityChecks = Object.freeze([
   ["FungibilityPool", "FungibilityPoolStrandedHoldWitness", "AllocatedClaimNeverStrandedByTransfer"],
   ["RecordedDeficit", "RecordedDeficitMixedTransferWitness", "MixedTransferIsUnreachable"],
   ["RecordedDeficit", "RecordedDeficitPositiveUnlabelledWitness", "PositiveUnlabelledSettlementIsUnreachable"],
+  ["RecordedDeficit", "RecordedDeficitUnlabelledAllocationWitness", "PositiveUnlabelledAllocationIsUnreachable"],
   ["SnapshotSupersededWorkflow", "SnapshotSupersededWorkflowNonzeroWitness", "NonzeroSnapshotIsUnreachable"],
 ]);
 

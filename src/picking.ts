@@ -304,7 +304,11 @@ export function planInventoryAllocationInPool({
         }) !== undefined,
       });
       if (measured.allocations.length > 0 || canRecordWithoutWitness) {
-        allocated = measured;
+        // The unconstrained primary pass already ruled out a shortage caused by increments.
+        // Unused rows in this compatible partial plan can instead be blocked by measured axes.
+        allocated = measured.shortfall.amountMinor > 0 && canRecordPartial
+          ? { ...measured, incrementBlockedStock: false }
+          : measured;
         lines = buildLines(measured.allocations);
       }
     }

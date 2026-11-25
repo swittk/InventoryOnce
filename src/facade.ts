@@ -4271,21 +4271,23 @@ async function commitInventoryScopedMovement({
   const { storage, catalog, clock, deficitPolicy } = internals;
   const catalogSnapshot = inventoryCatalogSnapshot(catalog);
   if (inventoryStorageSupportsSegmentedStockPlanning(storage)) {
-    for (let attempt = 0; attempt < 8; attempt += 1) {
+    /** Replay from the scoped receipt, or use the canonical path when it holds the event. */
+    const readScopedReplay = async (): Promise<InventoryOnceEventResult | null | undefined> => {
       const existing = await storage.readOperation(operationId);
-      if (existing !== undefined) {
-        if (existing.intentFingerprint !== intentFingerprint) {
-          throw new Error("Inventory operationId was retried with changed intent.");
-        }
-        const alreadyCompleted = existing.state === InventoryDurableOperationState.Completed;
-        const receipt = alreadyCompleted ? existing.receipt : await resumeInventoryDurableOperation(storage, operationId);
-        const completed = alreadyCompleted ? existing : await storage.readOperation(operationId);
-        if (completed?.event !== undefined) {
-          return { receipt, event: completed.event, replayed: true };
-        }
-        // The canonical coordinator can resolve adapters that keep just receipts here.
-        break;
+      if (existing === undefined) return undefined;
+      if (existing.intentFingerprint !== intentFingerprint) {
+        throw new Error("Inventory operationId was retried with changed intent.");
       }
+      const alreadyCompleted = existing.state === InventoryDurableOperationState.Completed;
+      const receipt = alreadyCompleted ? existing.receipt : await resumeInventoryDurableOperation(storage, operationId);
+      const completed = alreadyCompleted ? existing : await storage.readOperation(operationId);
+      return completed?.event === undefined ? null : { receipt, event: completed.event, replayed: true };
+    };
+    let attempt = 0;
+    for (; attempt < 8; attempt += 1) {
+      const replay = await readScopedReplay();
+      if (replay === null) break;
+      if (replay !== undefined) return replay;
       const head = await storage.readSegmentedStockHead();
       const recordedAtEpochMs = clock.nowEpochMs();
       const source = segmentedPolicyStockSource(storage, recordedAtEpochMs);
@@ -4299,14 +4301,12 @@ async function commitInventoryScopedMovement({
         event = await plan(source, recordedAtEpochMs);
       } catch (error) {
         // The matching operation can publish before this head read, including before a catalogue update.
-        if ((await storage.readOperation(operationId)) !== undefined) {
-          if (attempt < 7) continue;
-          break;
-        }
+        const concurrent = await readScopedReplay();
+        if (concurrent === null) break;
+        if (concurrent !== undefined) return concurrent;
         // A shortfall or other domain error from mixed generations is not authoritative.
         if ((await storage.readSegmentedStockHead()).worldRevision !== head.worldRevision) {
-          if (attempt < 7) continue;
-          throw new Error(`Inventory operation '${operationId}' could not freeze a current stock revision.`);
+          continue;
         }
         throw error;
       }
@@ -4334,7 +4334,14 @@ async function commitInventoryScopedMovement({
       }
       // A competing publish invalidates the scoped plan. A stable decline requests canonical publication.
       if ((await storage.readSegmentedStockHead()).worldRevision === head.worldRevision) break;
-      if (attempt === 7) throw new Error(`Inventory operation '${operationId}' could not freeze a current stock revision.`);
+    }
+    if (attempt === 8) {
+      // The winning publish can occur between the final decline and head read.
+      const concurrent = await readScopedReplay();
+      if (concurrent === undefined) {
+        throw new Error(`Inventory operation '${operationId}' could not freeze a current stock revision.`);
+      }
+      if (concurrent !== null) return concurrent;
     }
   }
   return createInventoryOnceEventResult(await commitInventoryOperation({
