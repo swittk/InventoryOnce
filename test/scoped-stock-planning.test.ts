@@ -369,6 +369,32 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("records an exact measured shortfall after a FIFO prefix exceeds the storage scale", async () => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, pieces, occurredAtEpochMs] of [["first", "1.1", time0], ["second", "1.9", time1]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}-fractional`, occurredAtEpochMs,
+        to: { itemId: "measured", placementNodeId: "store", lotId },
+        amount: measuredStockAmount(pieces, "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+      });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "record-exact-after-fractional-prefix", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount(String(Number.MAX_SAFE_INTEGER), "piece", [{ axisId: "weight", value: "3", unit: "kg" }]),
+    });
+    const knownArrivals = result.event.stockEffects.filter((effect) =>
+      effect.position.placementNodeId === "destination" && effect.position.lotId !== undefined
+    );
+    expect(knownArrivals.map((effect) => effect.position.lotId).sort()).toEqual(["first", "second"]);
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: { amountMinor: Number.MAX_SAFE_INTEGER - 3, decimals: 0 } },
+        independent: [{ axisId: "weight", quantity: { amountMinor: 1 } }],
+      },
+    }]);
+  });
+
   it.each([
     { verb: "transfer", held: true },
     { verb: "scrap", held: true },

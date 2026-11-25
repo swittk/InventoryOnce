@@ -180,6 +180,27 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.incrementBlockedStock).toBe(blocked);
   });
 
+  it("compares an exact greedy prefix without storing its intermediate remainders", () => {
+    const requested = parseQuantity("9007199254740991", "kg");
+    const candidates = [
+      { lotId: "early", amount: "1.1", receivedAtEpochMs: time0 },
+      { lotId: "middle", amount: "1.9", receivedAtEpochMs: time1 },
+      { lotId: "last", amount: "9007199254740988", receivedAtEpochMs: time2 },
+    ].map(({ lotId, amount, receivedAtEpochMs }) => {
+      const quantity = parseQuantity(amount, "kg");
+      return candidate({
+        lotId, receivedAtEpochMs, expiresAtEpochMs: time3,
+        extra: { available: quantity, allocationIncrement: quantity },
+      });
+    });
+    const result = allocateInventory({
+      requested, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    });
+    expect(result.allocations.map((line) => line.quantity)).toEqual(candidates.map((row) => row.available));
+    expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
+    expect(result.incrementBlockedStock).toBe(false);
+  });
+
   it("rejects an invalid requested decimal scale before returning shortfall", () => {
     const requested = { ...parseQuantity("1", "piece"), decimals: 19 };
     expect(() =>

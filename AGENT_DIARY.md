@@ -1888,3 +1888,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Measured allocation stops exploring a branch once its remaining capacity cannot improve the best witness. It distinguishes stock blocked by an indivisible increment from exhausted stock and keeps the first FIFO or FEFO choice on ties.
 - A genuine primary shortage can be recorded without a compatible witness. Mixed-scale quantities retain their exact values, and event conservation uses temporary wide integers while each stored effect remains a safe-integer quantity.
 - Fallback subtree queries share resolved membership across parent paths without touching descendants outside the selected stock scope.
+
+## 2026-11-25 — exact FIFO remainders
+
+- Greedy picks and the exact allocator's FIFO prefix check keep temporary remainders as wide digits. Two fractional lots can leave an exactly storable shortfall even when the intermediate remainder after the first lot exceeds the storage scale.

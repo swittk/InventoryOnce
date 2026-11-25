@@ -5,7 +5,6 @@ import {
   type InventoryStockPositionKey,
 } from "./model.js";
 import {
-  addQuantity,
   compareQuantity,
   integerAtDecimals,
   positiveQuantity,
@@ -156,10 +155,14 @@ function allocateInventoryCandidates({
     });
     let incrementBlockedStock = false;
     if (unconstrainedExact === undefined) {
-      let eligibleCapacity = zeroQuantity(requested.unit, requested.decimals);
+      /** Capacity still needed to cover the request before applying increments. */
+      const uncovered: InventoryAllocationDigits = {
+        minor: BigInt(requested.amountMinor),
+        decimals: requested.decimals,
+      };
       for (const candidate of eligible) {
-        eligibleCapacity = addQuantity(eligibleCapacity, candidate.available);
-        if (compareQuantity(eligibleCapacity, requested) >= 0) {
+        subtractInventoryAllocationDigits(uncovered, BigInt(candidate.available.amountMinor), candidate.available.decimals);
+        if (uncovered.minor <= 0n) {
           incrementBlockedStock = true;
           break;
         }
@@ -174,44 +177,30 @@ function allocateInventoryCandidates({
     };
   }
 
-  let remaining = requested;
+  /** Intermediate remainders need extra digits even when all returned amounts fit. */
+  const remaining: InventoryAllocationDigits = {
+    minor: BigInt(requested.amountMinor),
+    decimals: requested.decimals,
+  };
   let incrementBlockedStock = false;
   const allocations: InventoryAllocation[] = [];
   for (const candidate of eligible) {
-    if (
-      compareQuantity(
-        remaining,
-        zeroQuantity(remaining.unit, remaining.decimals)
-      ) <= 0
-    ) {
-      break;
-    }
-    const maximum =
-      compareQuantity(candidate.available, remaining) <= 0
-        ? candidate.available
-        : remaining;
-    const allocated =
-      candidate.allocationIncrement === undefined
-        ? maximum
-        : floorQuantityToIncrement(maximum, candidate.allocationIncrement);
-    if (compareQuantity(allocated, maximum) < 0) {
-      incrementBlockedStock = true;
-    }
-    if (
-      compareQuantity(
-        allocated,
-        zeroQuantity(allocated.unit, allocated.decimals)
-      ) <= 0
-    ) {
-      incrementBlockedStock = true;
-      continue;
-    }
-    allocations.push({ position: candidate.position, quantity: allocated });
-    remaining = subtractInventoryAllocationQuantity(remaining, allocated);
+    if (remaining.minor === 0n) break;
+    const choice = takeGreedyInventoryAllocation(remaining, candidate);
+    if (choice.incrementBlocked) incrementBlockedStock = true;
+    if (choice.minor === 0n) continue;
+    allocations.push({
+      position: candidate.position,
+      quantity: inventoryAllocationQuantityAtStorableScale(
+        choice.minor, choice.decimals, requested.unit, "Greedy allocation quantity"
+      ),
+    });
   }
   return {
     allocations,
-    shortfall: remaining,
+    shortfall: inventoryAllocationQuantityAtStorableScale(
+      remaining.minor, remaining.decimals, requested.unit, "Allocation shortfall"
+    ),
     expiredStockWasExcluded,
     incrementBlockedStock,
     allocationConstraintBlockedStock: false,
@@ -232,8 +221,10 @@ function partialAllocationHasBlockedIncrement(
     if (increment === undefined) continue;
     const used = allocated.get(inventoryStockPositionIdentity(candidate.position));
     if (used !== undefined && compareQuantity(candidate.available, used) === 0) continue;
-    const unpicked = used === undefined ? candidate.available : subtractInventoryAllocationQuantity(candidate.available, used);
-    if (compareQuantity(assignment.shortfall, increment) < 0 || compareQuantity(unpicked, increment) < 0) {
+    const decimals = Math.max(candidate.available.decimals, used?.decimals ?? 0, increment.decimals);
+    const unpicked = integerAtDecimals(candidate.available, decimals) -
+      (used === undefined ? 0n : integerAtDecimals(used, decimals));
+    if (compareQuantity(assignment.shortfall, increment) < 0 || unpicked < integerAtDecimals(increment, decimals)) {
       return true;
     }
   }
@@ -379,13 +370,53 @@ export function inventoryAllocationQuantityAtStorableScale(
   return quantity({ amountMinor: safeNumber(digits, label), decimals, unit });
 }
 
-/** Subtract one selection without rejecting a remainder merely for trailing zeros. */
-function subtractInventoryAllocationQuantity(remaining: Quantity, picked: Quantity): Quantity {
-  const decimals = Math.max(remaining.decimals, picked.decimals);
-  return inventoryAllocationQuantityAtStorableScale(
-    integerAtDecimals(remaining, decimals) - integerAtDecimals(picked, decimals),
-    decimals, remaining.unit, "Allocation shortfall"
+/** Temporary exact digits on the allocation's common unit. */
+interface InventoryAllocationDigits {
+  /** Signed digits before the storage range is applied. */
+  minor: bigint;
+  /** Decimal places used by the digits. */
+  decimals: number;
+}
+
+/** Greedy selection at its natural scale before writing the result. */
+interface GreedyInventoryAllocationChoice extends InventoryAllocationDigits {
+  /** Whether an indivisible increment prevented taking the full available amount. */
+  readonly incrementBlocked: boolean;
+}
+
+/** Subtract a selection on a shared exact scale without narrowing an intermediate remainder. */
+function subtractInventoryAllocationDigits(
+  remaining: InventoryAllocationDigits,
+  pickedMinor: bigint,
+  pickedDecimals: number
+): void {
+  const decimals = Math.max(remaining.decimals, pickedDecimals);
+  remaining.minor = remaining.minor * (10n ** BigInt(decimals - remaining.decimals)) -
+    pickedMinor * (10n ** BigInt(decimals - pickedDecimals));
+  remaining.decimals = decimals;
+}
+
+/** Take the largest allowed amount from one ordered candidate and advance the exact remainder. */
+function takeGreedyInventoryAllocation(
+  remaining: InventoryAllocationDigits,
+  candidate: InventoryAllocationCandidate
+): GreedyInventoryAllocationChoice {
+  const increment = candidate.allocationIncrement;
+  const comparisonDecimals = Math.max(remaining.decimals, candidate.available.decimals, increment?.decimals ?? 0);
+  const pending = remaining.minor * (10n ** BigInt(comparisonDecimals - remaining.decimals));
+  const available = integerAtDecimals(candidate.available, comparisonDecimals);
+  const takeAvailable = available <= pending;
+  const maximum = takeAvailable ? available : pending;
+  const quantum = increment === undefined ? 1n : integerAtDecimals(increment, comparisonDecimals);
+  const taken = maximum - maximum % quantum;
+  /** Keep the normal scale of the limiting quantity and any increment used to round it. */
+  const decimals = Math.max(
+    takeAvailable ? candidate.available.decimals : remaining.decimals,
+    increment?.decimals ?? 0
   );
+  const minor = taken / (10n ** BigInt(comparisonDecimals - decimals));
+  if (minor > 0n) subtractInventoryAllocationDigits(remaining, minor, decimals);
+  return { minor, decimals, incrementBlocked: taken < maximum };
 }
 
 /** Convert one exact shared-scale choice vector into normal allocation rows. */
@@ -422,29 +453,18 @@ function exactAllocationsDoNotFollowGreedyPrefix(
       allocation.quantity
     );
   }
-  let remaining = requested;
+  /** A prefix can exceed the storage scale even when the whole allocation is exact. */
+  const remaining: InventoryAllocationDigits = {
+    minor: BigInt(requested.amountMinor),
+    decimals: requested.decimals,
+  };
   for (const candidate of candidates) {
-    if (
-      compareQuantity(
-        remaining,
-        zeroQuantity(remaining.unit, remaining.decimals)
-      ) <= 0
-    )
-      break;
-    const maximum =
-      compareQuantity(candidate.available, remaining) <= 0
-        ? candidate.available
-        : remaining;
-    const greedy =
-      candidate.allocationIncrement === undefined
-        ? maximum
-        : floorQuantityToIncrement(maximum, candidate.allocationIncrement);
-    const exact =
-      allocatedByPosition.get(
-        inventoryStockPositionIdentity(candidate.position)
-      ) ?? zeroQuantity(requested.unit, requested.decimals);
-    if (compareQuantity(greedy, exact) !== 0) return true;
-    remaining = subtractInventoryAllocationQuantity(remaining, greedy);
+    if (remaining.minor === 0n) break;
+    const greedy = takeGreedyInventoryAllocation(remaining, candidate);
+    const exact = allocatedByPosition.get(inventoryStockPositionIdentity(candidate.position));
+    const decimals = Math.max(greedy.decimals, exact?.decimals ?? 0);
+    const greedyMinor = greedy.minor * (10n ** BigInt(decimals - greedy.decimals));
+    if (greedyMinor !== (exact === undefined ? 0n : integerAtDecimals(exact, decimals))) return true;
   }
   return false;
 }
@@ -509,26 +529,4 @@ function compareOptionalExpiry(
   if (left === undefined) return 1;
   if (right === undefined) return -1;
   return left < right ? -1 : left > right ? 1 : 0;
-}
-
-/** Round one exact same-unit quantity down to a whole number of one increment. */
-function floorQuantityToIncrement(
-  value: Quantity,
-  increment: Quantity
-): Quantity {
-  if (value.unit !== increment.unit) {
-    throw new Error("Allocation quantity and increment units must match.");
-  }
-  const decimals = Math.max(value.decimals, increment.decimals);
-  const valueMinor = integerAtDecimals(value, decimals);
-  const incrementMinor = integerAtDecimals(increment, decimals);
-  const wholeMinor = (valueMinor / incrementMinor) * incrementMinor;
-  return quantity({
-    amountMinor: safeNumber(
-      wholeMinor,
-      "Rounded allocation quantity"
-    ),
-    decimals,
-    unit: value.unit,
-  });
 }
