@@ -774,7 +774,7 @@ describe("package and serial reservation granularity", () => {
       packageCount: 1,
     });
     expect((await inventory.read.reservationFeasibility(time2)).groups[0]).toMatchObject({
-      reservationIds: ["first-box-claim"], shortage: { amountMinor: 20 },
+      reservationIds: ["first-box-claim"], shortage: parseQuantity("20", "piece"),
     });
     expect((await inventory.read.reservation("first-box-claim"))?.allocations[0]?.position)
       .toEqual(position.key);

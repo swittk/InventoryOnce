@@ -9,6 +9,7 @@ import {
   type InventoryStockPositionKey,
 } from "../src/kernel.js";
 import { allocateInventoryUpTo, allocateWorkingInventory } from "../src/allocation.js";
+import { quantityWholeMultipleCount } from "../src/quantity.js";
 import { time0, time1, time2, time3 } from "./test-fixtures.js";
 
 /** Named fields for one revision-qualified allocation candidate fixture. */
@@ -46,6 +47,57 @@ function candidate({
 }
 
 describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
+  it.each([false, true])("accepts a small greedy pick from a large pool (predicate %s)", (predicate) => {
+    const available = parseQuantity("1", "piece");
+    const candidates = Array.from({ length: 5_001 }, (_, index) =>
+      candidate({ lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3, extra: { available } })
+    );
+    expect(allocateInventory({
+      requested: available, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+      ...(predicate ? { acceptAllocations: () => true } : {}),
+    })).toMatchObject({
+      allocations: [{ position: { lotId: "0" }, quantity: available }],
+      shortfall: parseQuantity("0", "piece"),
+    });
+  });
+
+  it("reports an increment that rounded an otherwise exact greedy pick", () => {
+    const candidates = [
+      candidate({ lotId: "early", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+        extra: { available: parseQuantity("4", "piece"), allocationIncrement: parseQuantity("2", "piece") } }),
+      candidate({ lotId: "late", receivedAtEpochMs: time1, expiresAtEpochMs: time3,
+        extra: { available: parseQuantity("1", "piece") } }),
+    ];
+    expect(allocateInventory({
+      requested: parseQuantity("3", "piece"), candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    })).toMatchObject({
+      allocations: [
+        { position: { lotId: "early" }, quantity: parseQuantity("2", "piece") },
+        { position: { lotId: "late" }, quantity: parseQuantity("1", "piece") },
+      ],
+      incrementBlockedStock: true,
+    });
+  });
+
+  it("keeps a valid package allocation when a relaxed trial cannot build its amounts", () => {
+    const candidates = ["2", "3"].map((lotId, index) => {
+      const capacity = parseQuantity(lotId, "piece");
+      return candidate({
+        lotId, receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+        extra: { available: capacity, allocationIncrement: capacity },
+      });
+    });
+    expect(allocateInventory({
+      requested: parseQuantity("3", "piece"), candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+      acceptAllocations: (allocations) => allocations.every((line) =>
+        quantityWholeMultipleCount(line.quantity, parseQuantity(line.position.lotId ?? "0", "piece")) > 0
+      ),
+    })).toMatchObject({
+      allocations: [{ position: { lotId: "3" }, quantity: parseQuantity("3", "piece") }],
+      shortfall: parseQuantity("0", "piece"), incrementBlockedStock: false,
+    });
+  });
+
   it.each([false, true])("returns all storable stock when a large pool cannot fill the request (predicate %s)", (predicate) => {
     const available = parseQuantity("1", "piece");
     const candidates = Array.from({ length: 5_001 }, (_, index) =>
@@ -373,8 +425,10 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       requested, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
     });
     expect(result.shortfall).toEqual(parseQuantity(unitRow ? "0" : "1", "piece"));
-    expect(result.allocations.map((line) => [line.position.lotId, line.quantity.amountMinor]))
-      .toEqual(unitRow ? [["early", 200002], ["unit", 1]] : [["early", 200002]]);
+    expect(result.allocations.map((line) => [line.position.lotId, line.quantity]))
+      .toEqual(unitRow
+        ? [["early", parseQuantity("200002", "piece")], ["unit", parseQuantity("1", "piece")]]
+        : [["early", parseQuantity("200002", "piece")]]);
   });
 
   it.each([

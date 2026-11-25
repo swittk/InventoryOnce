@@ -1338,6 +1338,7 @@ export class InMemoryInventoryDurableStorage
       );
     }
     this.assertNoApplyingMigrationFence();
+    assertInventoryReportedTransferReplayMatches(input.plan.event, input.intentFingerprint, input.plan.receipt.worldRevision);
     const validatedNextWorld = freezeInventoryPublishedWorld(
       validateInventoryDurablePlanAgainstBase(this.world, input.plan)
     );
@@ -1977,6 +1978,7 @@ export class InMemoryInventoryDurableStorage
     });
 
     const baseRevision = currentRevision;
+    assertInventoryReportedTransferReplayMatches(normalizedEvent, input.intentFingerprint, baseRevision + 1);
     const event = commitInventoryEvent(
       normalizedEvent,
       input.recordedAtEpochMs,
@@ -2455,10 +2457,8 @@ export class InMemoryInventoryDurableStorage
   }
 }
 
-/** Restore the exact original receipt from the journal when reopening a published world. */
-function retainedInventoryReportedTransferOperation(
-  event: InventoryCommittedEvent | undefined
-): InventoryDurableOperation | undefined {
+/** Read the replay evidence stored only on a plain reported transfer. */
+function inventoryReportedTransferReplayEvidence(event: InventoryEventDraft | undefined) {
   if (event?.kind !== InventoryEventKind.Transfer || event.transferLifecycle !== undefined) return undefined;
   const replay = event.metadata?.[inventoryReportedTransferReplayMetadataKey];
   if (typeof replay !== "object" || replay === null || !("intentFingerprint" in replay) || !("worldRevision" in replay)) {
@@ -2466,6 +2466,30 @@ function retainedInventoryReportedTransferOperation(
   }
   const { intentFingerprint, worldRevision } = replay;
   if (typeof intentFingerprint !== "string" || typeof worldRevision !== "number") return undefined;
+  return { intentFingerprint, worldRevision };
+}
+
+/** Bind reserved journal evidence to the actual receipt before publishing either write path. */
+function assertInventoryReportedTransferReplayMatches(
+  event: InventoryEventDraft | undefined,
+  intentFingerprint: string,
+  worldRevision: number,
+): void {
+  if (event?.kind !== InventoryEventKind.Transfer ||
+      event.metadata?.[inventoryReportedTransferReplayMetadataKey] === undefined) return;
+  const replay = inventoryReportedTransferReplayEvidence(event);
+  if (replay?.intentFingerprint !== intentFingerprint || replay.worldRevision !== worldRevision) {
+    throw new Error("Inventory reported transfer replay evidence must match its durable intent and revision.");
+  }
+}
+
+/** Restore the exact original receipt from the journal when reopening a published world. */
+function retainedInventoryReportedTransferOperation(
+  event: InventoryCommittedEvent | undefined
+): InventoryDurableOperation | undefined {
+  const replay = inventoryReportedTransferReplayEvidence(event);
+  if (event === undefined || replay === undefined) return undefined;
+  const { intentFingerprint, worldRevision } = replay;
   const { operationId, eventId, recordedAtEpochMs } = event;
   return {
     operationId,

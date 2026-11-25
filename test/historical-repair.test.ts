@@ -8,7 +8,7 @@ import {
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
-import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import { createInMemoryInventoryDurableStorage, createInMemoryInventorySegmentedPositionStore } from "../src/storage-api.js";
 import { applyInventoryCommittedEvent, projectInventoryEvents } from "../src/projection.js";
 import { createInventoryPlacementEvent } from "../src/commands.js";
 import { commitInventoryEvent } from "../src/events.js";
@@ -256,6 +256,7 @@ describe("late historical repair", () => {
       valid: false,
       conflict: { code: "negative-stock" },
     });
+
   });
 
   it("allows a Reject-policy correction that does not change a retained recorded deficit", async () => {
@@ -369,6 +370,18 @@ describe("late historical repair", () => {
       valid: false,
       conflict: { code: "negative-stock" },
     });
+    const before = await strictOnOpen.read.world();
+    const positions = await strictOnOpen.read.positions({ itemId: "item-a", placementNodeIds: ["ongoing-shortage"] });
+    const segment = createInMemoryInventorySegmentedPositionStore({ positions, revision: before.revision });
+    const event = commitInventoryEvent(improvement.event, time3, before.projection.lastRecordSequence + 1);
+    const expected = applyInventoryCommittedEvent({
+      catalog: createTabletCatalog(), state: before.projection, event, deficitPolicy: InventoryDeficitPolicy.Reject,
+    }).state;
+    expect(segment.applyStockEffects({
+      expectedRevision: before.revision, nextRevision: before.revision + 1, event,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    })).toMatchObject({ revision: before.revision + 1 });
+    expect(segment.materialize().positions).toEqual(expected.positions);
   });
 
   it("publishes eligible repair and correction envelopes without the canonical coordinator", async () => {

@@ -1,13 +1,14 @@
 import { positionHasUnfixedIndependentMeasuredContents as hasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
 import {
   allocateInventory,
+  inventoryAllocationCandidateCapacity,
   InventoryAllocationMethod,
   type InventoryAllocation,
   type InventoryAllocationCandidate,
+  type InventoryWorkingAllocationCandidate,
 } from "./allocation.js";
 import {
   resolveInventoryAmount,
-  stockAmount,
   type InventoryAmount,
 } from "./amounts.js";
 import {
@@ -42,9 +43,7 @@ import {
 import {
   inventoryAllocationPoolFromWorld,
   inventoryAmountForPrimaryAllocation,
-  planWorkingInventoryAllocation,
-  resolveAllocationItemAndSelector,
-  type InventoryPolicyAllocationLine,
+  prepareInventoryPolicyAllocationPool,
 } from "./picking.js";
 import {
   findInventoryPositions,
@@ -60,7 +59,6 @@ import {
   leastCommonQuantityMultiple,
   positiveQuantity,
   quantity,
-  quantityToDecimalString,
   type Quantity,
 } from "./quantity.js";
 import { addExactQuantityDigits, storableQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
@@ -328,10 +326,8 @@ interface InventoryFungibilityCandidateEvidence {
   readonly item: InventoryItemDefinitionRevision;
   /** Current exact physical position. */
   readonly position: InventoryStockPosition;
-  /** Exact source quantity available on the member primary axis. */
-  readonly memberAvailable: Quantity;
-  /** Normal single-item policy evidence used for ordering/use-by. */
-  readonly sourceLine: InventoryPolicyAllocationLine;
+  /** Single-item policy evidence used for ordering and use-by. */
+  readonly source: InventoryWorkingAllocationCandidate;
 }
 
 /** Plan cross-item FIFO/FEFO allocation while every selected line retains real item identity. */
@@ -400,20 +396,11 @@ function planInventoryFungibilityAllocationWithHolds({
       );
     }
     const selector = selectorForFungibilityMember(item, normalizedScope);
-    const physicalTotal = totalPositivePrimary(
-      world.projection,
-      selector,
-      item
-    );
-    if (physicalTotal.amountMinor === 0) continue;
-    const amount = stockAmount(quantityToDecimalString(physicalTotal), physicalTotal.unit);
-    const selection = resolveAllocationItemAndSelector(catalog, selector, amount, item.revisionId);
-    // Only the chosen lines and flags contribute to the common-basis plan.
-    const memberPlan = planWorkingInventoryAllocation({
+    const selection = { item, selector };
+    const { candidateResult, deficitAdjusted } = prepareInventoryPolicyAllocationPool({
       catalog,
       selection,
       pool: inventoryAllocationPoolFromWorld(world, selection, reservationAtEpochMs),
-      amount,
       method,
       atEpochMs,
       reservationAtEpochMs,
@@ -422,20 +409,23 @@ function planInventoryFungibilityAllocationWithHolds({
       ...(recording && !allowAllocatedStock ? { recordingAttempt: "prefer-unheld" } : {}),
     });
     expiredStockWasExcluded =
-      expiredStockWasExcluded || memberPlan.expiredStockWasExcluded;
-    incrementBlockedStock =
-      incrementBlockedStock || memberPlan.incrementBlockedStock;
+      expiredStockWasExcluded || deficitAdjusted.expiredStockWasExcluded;
     unallocatedReservationsPresent =
       unallocatedReservationsPresent ||
-      memberPlan.unallocatedReservationsPresent;
-    for (const sourceLine of memberPlan.lines) {
+      candidateResult.unallocatedReservationsPresent;
+    // Convert each eligible row separately. The sum is needed only by the common-basis allocator.
+    for (const source of deficitAdjusted.candidates) {
+      const capacity = inventoryAllocationCandidateCapacity(source);
+      incrementBlockedStock ||= capacity.incrementBlockedStock;
+      if (capacity.quantity.amountMinor === 0) continue;
       addFungibilityCandidate({
         catalog,
         world,
         definition,
         member,
         item,
-        sourceLine,
+        source,
+        memberAvailable: capacity.quantity,
         candidates,
         evidenceByPosition,
       });
@@ -506,10 +496,10 @@ function planInventoryFungibilityAllocationWithHolds({
       }),
       memberQuantity,
       poolQuantity: allocation.quantity,
-      layerStartedAtEpochMs: evidence.sourceLine.layerStartedAtEpochMs,
-      ...(evidence.sourceLine.expiresAtEpochMs === undefined
+      layerStartedAtEpochMs: evidence.source.receivedAtEpochMs,
+      ...(evidence.source.expiresAtEpochMs === undefined
         ? {}
-        : { expiresAtEpochMs: evidence.sourceLine.expiresAtEpochMs }),
+        : { expiresAtEpochMs: evidence.source.expiresAtEpochMs }),
     });
   }
   return {
@@ -820,8 +810,10 @@ interface AddFungibilityCandidateInput {
   readonly member: InventoryFungibilityMemberDefinition;
   /** Exact member item revision. */
   readonly item: InventoryItemDefinitionRevision;
-  /** Single-item policy line representing all currently eligible source capacity. */
-  readonly sourceLine: InventoryPolicyAllocationLine;
+  /** Signed-pool candidate carrying ordering and use-by evidence. */
+  readonly source: InventoryWorkingAllocationCandidate;
+  /** Largest storable legal pick from this one member position. */
+  readonly memberAvailable: Quantity;
   /** Mutable candidate array owned by the current planning call. */
   readonly candidates: InventoryAllocationCandidate[];
   /** Mutable evidence map owned by the current planning call. */
@@ -838,18 +830,18 @@ function addFungibilityCandidate({
   definition,
   member,
   item,
-  sourceLine,
+  source,
+  memberAvailable,
   candidates,
   evidenceByPosition,
 }: AddFungibilityCandidateInput): void {
-  const identity = inventoryStockPositionIdentity(sourceLine.position);
+  const identity = inventoryStockPositionIdentity(source.position);
   const position = world.projection.positions[identity];
   if (position === undefined) {
     throw new Error(
       "Fungibility member candidate disappeared from the reviewed world."
     );
   }
-  const memberAvailable = sourceLine.allocatedPrimary;
   const poolAvailable = convertQuantityByReferenceExact(
     memberAvailable,
     member.memberQuantity,
@@ -865,15 +857,15 @@ function addFungibilityCandidate({
     position,
     member,
     item,
-    memberAvailable,
+    fullPoolQuantity: poolAvailable,
   });
   const candidate: InventoryAllocationCandidate = {
-    position: sourceLine.position,
+    position: source.position,
     available: poolAvailable,
-    receivedAtEpochMs: sourceLine.layerStartedAtEpochMs,
-    ...(sourceLine.expiresAtEpochMs === undefined
+    receivedAtEpochMs: source.receivedAtEpochMs,
+    ...(source.expiresAtEpochMs === undefined
       ? {}
-      : { expiresAtEpochMs: sourceLine.expiresAtEpochMs }),
+      : { expiresAtEpochMs: source.expiresAtEpochMs }),
     allocationIncrement,
   };
   candidates.push(candidate);
@@ -881,8 +873,7 @@ function addFungibilityCandidate({
     member,
     item,
     position,
-    memberAvailable,
-    sourceLine,
+    source,
   });
 }
 
@@ -896,14 +887,9 @@ function fungibilityAllocationIncrement(input: {
   readonly member: InventoryFungibilityMemberDefinition;
   /** Exact member item revision. */
   readonly item: InventoryItemDefinitionRevision;
-  /** Exact currently eligible source amount. */
-  readonly memberAvailable: Quantity;
+  /** Exact converted capacity of this source in common-basis units. */
+  readonly fullPoolQuantity: Quantity;
 }): Quantity {
-  const fullPoolQuantity = convertQuantityByReferenceExact(
-    input.memberAvailable,
-    input.member.memberQuantity,
-    input.member.poolQuantity
-  );
   if (
     input.position.key.serialId !== undefined ||
     positionHasUnfixedIndependentMeasuredContents(
@@ -914,7 +900,7 @@ function fungibilityAllocationIncrement(input: {
   ) {
     return leastCommonQuantityMultiple(
       input.member.poolQuantity,
-      fullPoolQuantity
+      input.fullPoolQuantity
     );
   }
   const packagingRevisionId = input.position.key.packagingRevisionId;
@@ -969,24 +955,4 @@ function selectedFungibilityPositions(
   selector: InventoryStockSelector
 ): readonly InventoryStockPosition[] {
   return findInventoryPositions(projection, selector);
-}
-
-/** Sum positive physical primary quantities for one exact member revision/scope. */
-function totalPositivePrimary(
-  projection: InventoryProjectionState,
-  selector: InventoryStockSelector,
-  item: InventoryItemDefinitionRevision
-): Quantity {
-  const total: ExactQuantityDigits = { minor: 0n, decimals: 0 };
-  for (const position of selectedFungibilityPositions(projection, selector)) {
-    // Prepared/in-transit stock remains physical pool truth but is not ordinary allocation capacity.
-    if (position.key.transferId !== undefined) continue;
-    const measured = inventoryMeasurementAt(
-      position.measurements,
-      item.primaryAxis.axisId,
-      item.primaryAxis.unit
-    );
-    if (measured.amountMinor > 0) addExactQuantityDigits(total, BigInt(measured.amountMinor), measured.decimals);
-  }
-  return storeFungibilityTotal(total, item.primaryAxis.unit);
 }

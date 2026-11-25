@@ -257,7 +257,7 @@ function exactAllocationHasBlockedIncrement(
     /** Only an indivisible row gives the relaxed trial a different choice. */
     (candidate) => candidate.allocationIncrement !== undefined
   ) ||
-      !exactAllocationsDoNotFollowGreedyPrefix(input.requested, input.candidates, allocations)) return false;
+      !exactAllocationsHaveIncrementTrial(input.requested, input.candidates, allocations)) return false;
   const relaxed = searchInventoryAllocations({ ...input, acceptPartial: false, ignoreIncrements: true });
   if (relaxed === undefined) return false;
   /** Search results preserve each original candidate key, including its place in the policy order. */
@@ -323,8 +323,18 @@ interface SearchInventoryAllocationsInput {
 
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
 function searchInventoryAllocations({
-  requested, candidates, acceptAllocations, acceptPartial, ignoreIncrements = false, improveOnShortfall,
+  requested, candidates, acceptAllocations: predicate, acceptPartial, ignoreIncrements = false, improveOnShortfall,
 }: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
+  /** Relaxed trials can present fractional packages that a normal predicate cannot represent. */
+  const acceptAllocations = predicate === undefined || !ignoreIncrements ? predicate :
+    /** Discard an invalid synthetic trial without invalidating the accepted physical plan. */
+    (allocations: readonly InventoryAllocation[]): boolean => {
+      try {
+        return predicate(allocations);
+      } catch {
+        return false;
+      }
+    };
   let decimals = requested.decimals;
   for (const candidate of candidates) {
     decimals = Math.max(decimals, candidate.available.decimals);
@@ -381,6 +391,26 @@ function searchInventoryAllocations({
       )) {
         const allocations = materializeExactAllocations(candidates, wholePicks, decimals);
         if (acceptAllocations === undefined || acceptAllocations(allocations)) return { allocations, shortfall };
+      }
+    }
+  }
+  if (totalCapacity > requestedMinor) {
+    /** The first lexicographic plan fills in order without backtracking. */
+    const picks: bigint[] = [];
+    let remaining = requestedMinor;
+    for (let index = 0; index < candidates.length && remaining > 0n; index += 1) {
+      const capacity = capacityMinor[index] ?? 0n;
+      const increment = incrementMinor[index] ?? 1n;
+      const maximum = capacity < remaining ? capacity : remaining;
+      const take = maximum - maximum % increment;
+      if (storableQuantityScale(take, decimals) === undefined) break;
+      picks.push(take);
+      remaining -= take;
+    }
+    if (remaining === 0n) {
+      const allocations = materializeExactAllocations(candidates, picks, decimals);
+      if (acceptAllocations === undefined || acceptAllocations(allocations)) {
+        return { allocations, shortfall: zeroQuantity(requested.unit, requested.decimals) };
       }
     }
   }
@@ -606,6 +636,29 @@ export function inventoryAllocationQuantityIfStorable(
   return stored === undefined ? undefined : quantity({ ...stored, unit });
 }
 
+/** Capacity and increment evidence for one exact stock row. */
+interface InventoryAllocationCandidateCapacity {
+  /** Greatest legal storable pick at this row. */
+  readonly quantity: Quantity;
+  /** Whether rounding excluded any available stock. */
+  readonly incrementBlockedStock: boolean;
+}
+
+/** Narrow one row to its largest publishable capacity while respecting its increment. */
+export function inventoryAllocationCandidateCapacity(
+  candidate: InventoryWorkingAllocationCandidate
+): InventoryAllocationCandidateCapacity {
+  const { available, allocationIncrement } = candidate;
+  const decimals = Math.max(available.decimals, allocationIncrement?.decimals ?? 0);
+  const limit = workingQuantityAtDecimals(available, decimals);
+  const increment = allocationIncrement === undefined ? 1n : workingQuantityAtDecimals(allocationIncrement, decimals);
+  const take = largestStorableAllocationTake({ limit, increment }) ?? 0n;
+  return {
+    quantity: inventoryAllocationQuantityAtStorableScale(take, decimals, available.unit, "Allocation row capacity"),
+    incrementBlockedStock: limit % increment !== 0n,
+  };
+}
+
 /** Enforce the storage range for an amount that must be returned. */
 function inventoryAllocationQuantityAtStorableScale(
   digits: bigint, decimals: number, unit: Quantity["unit"], label: string
@@ -660,7 +713,7 @@ function materializeExactAllocations(
   decimals: number
 ): readonly InventoryAllocation[] {
   const allocations: InventoryAllocation[] = [];
-  for (let index = 0; index < candidates.length; index += 1) {
+  for (let index = 0; index < chosenMinor.length; index += 1) {
     const amountMinor = chosenMinor[index] ?? 0n;
     const candidate = candidates[index];
     if (amountMinor === 0n || candidate === undefined) continue;
@@ -674,8 +727,8 @@ function materializeExactAllocations(
   return allocations;
 }
 
-/** Return whether full exact allocation had to skip an earlier greedy increment choice. */
-function exactAllocationsDoNotFollowGreedyPrefix(
+/** Check whether rounding or backtracking might have skipped a better divisible plan. */
+function exactAllocationsHaveIncrementTrial(
   requested: Quantity,
   candidates: readonly InventoryWorkingAllocationCandidate[],
   allocations: readonly InventoryAllocation[]
@@ -695,6 +748,7 @@ function exactAllocationsDoNotFollowGreedyPrefix(
   for (const candidate of candidates) {
     if (remaining.minor === 0n) break;
     const greedy = takeGreedyInventoryAllocation(remaining, candidate);
+    if (greedy.incrementBlocked) return true;
     const exact = allocatedByPosition.get(inventoryStockPositionIdentity(candidate.position));
     const decimals = Math.max(greedy.decimals, exact?.decimals ?? 0);
     const greedyMinor = greedy.minor * (10n ** BigInt(decimals - greedy.decimals));

@@ -18,9 +18,10 @@ import {
   inventoryStockPositionIdentity,
   type InventoryStockPosition,
 } from "./model.js";
-import type {
-  InventoryCommittedEvent,
-  InventoryEventDraft,
+import {
+  InventoryEventKind,
+  type InventoryCommittedEvent,
+  type InventoryEventDraft,
 } from "./events.js";
 import {
   cloneInventoryRetainedData,
@@ -774,6 +775,9 @@ export class InMemoryInventorySegmentedPositionStore
   ): ApplyInventorySegmentedPositionDeltaResult {
     // Compute the complete changed set before mutating the published index.
     const nextRows = new Map<string, InventoryStockPosition | undefined>();
+    /** Validated historical revisions may improve an existing deficit without closing it. */
+    const requireNonNegative = input.deficitPolicy === InventoryDeficitPolicy.Reject &&
+      input.event.kind !== InventoryEventKind.Correction && input.event.kind !== InventoryEventKind.HistoricalRepair;
     for (const effect of input.event.stockEffects) {
       const positionId = inventoryStockPositionIdentity(effect.position);
       const earlier =
@@ -785,7 +789,7 @@ export class InMemoryInventorySegmentedPositionStore
         zeroInventoryMeasurements(effect.measurementsDelta);
       const measurements = addInventoryMeasurements(baseMeasurements, effect.measurementsDelta);
       assertInventoryMeasurementsFollowPrimarySign(measurements, `Stock position ${positionId}`);
-      if (input.deficitPolicy === InventoryDeficitPolicy.Reject) {
+      if (requireNonNegative) {
         nonNegativeInventoryMeasurements(measurements, `Stock position ${positionId}`);
       }
       nextRows.set(

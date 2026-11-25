@@ -3857,7 +3857,7 @@ function assertFungibilityMovementRequest(
     input.allowAllocatedStock === true
   ) {
     throw new Error(
-      "Only explicit fungibility scrap may select allocated stock."
+      "Only fungibility scrap may skip the preference for unallocated stock."
     );
   }
   if (kind === InventoryFungibilityMovementKind.Transfer) {
@@ -4367,37 +4367,46 @@ async function commitInventoryScopedMovement({
   }));
 }
 
+/** Working pool and exact positions indexed once for this view. */
+interface PolicyBatchPoolView {
+  /** Signed pool passed to the shared allocator. */
+  readonly pool: InventoryPolicyWorkingPool;
+  /** Same current rows keyed by their stable position identity. */
+  readonly rowsById: ReadonlyMap<string, InventoryPolicyWorkingRow>;
+}
+
 /** Overlay facts from earlier requests onto one distinct original batch pool. */
 interface PolicyPoolAfterPriorRequestsInput {
   /** Original published stock and claim facts for this pool. */
-  readonly pool: InventoryScopedStockPool;
+  readonly published: PolicyBatchPoolView;
   /** All exact rows changed by earlier requests in the batch. */
   readonly changed: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** Newly introduced deficit candidates for this revision and direct placement constraint. */
-  readonly addedDeficits: Iterable<InventoryPolicyWorkingRow>;
+  readonly addedDeficits: Iterable<[string, InventoryPolicyWorkingRow]>;
   /** Signed pool selector used to admit new rows. */
   readonly selector: InventoryStockSelector;
 }
 
 /** Apply shared ordered-request changes to one pool without copying unrelated positions. */
 function policyPoolAfterPriorRequests({
-  pool, changed, addedDeficits, selector,
-}: PolicyPoolAfterPriorRequestsInput): InventoryPolicyWorkingPool {
-  if (changed.size === 0) return pool;
+  published, changed, addedDeficits, selector,
+}: PolicyPoolAfterPriorRequestsInput): PolicyBatchPoolView {
+  if (changed.size === 0) return published;
   const positions: InventoryPolicyWorkingRow[] = [];
-  for (const row of pool.positions) {
-    const next = changed.get(inventoryStockPositionIdentity(row.position.key));
-    if (next === undefined) {
-      positions.push(row);
-      continue;
-    }
+  const rowsById = new Map<string, InventoryPolicyWorkingRow>();
+  for (const [id, row] of published.rowsById) {
+    const next = changed.get(id);
     // Prior requests change balances. The published pool still owns age and expiry.
-    positions.push({ ...row, position: next.position });
+    const current = next === undefined ? row : { ...row, position: next.position };
+    positions.push(current);
+    rowsById.set(id, current);
   }
-  for (const row of addedDeficits) {
-    if (inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) positions.push(row);
+  for (const [id, row] of addedDeficits) {
+    if (!inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) continue;
+    positions.push(row);
+    rowsById.set(id, row);
   }
-  return { positions, reservations: pool.reservations };
+  return { pool: { positions, reservations: published.pool.reservations }, rowsById };
 }
 
 /** Newly introduced batch deficits grouped by exact position and direct placement. */
@@ -4412,13 +4421,13 @@ interface PolicyBatchDeficitRows {
 function* policyBatchDeficitCandidates(
   deficits: PolicyBatchDeficitRows | undefined,
   placementNodeIds: readonly string[] | undefined
-): IterableIterator<InventoryPolicyWorkingRow> {
+): IterableIterator<[string, InventoryPolicyWorkingRow]> {
   if (deficits === undefined) return;
   if (placementNodeIds === undefined) {
-    yield* deficits.all.values();
+    yield* deficits.all.entries();
     return;
   }
-  for (const nodeId of placementNodeIds) yield* deficits.byPlacement.get(nodeId)?.values() ?? [];
+  for (const nodeId of placementNodeIds) yield* deficits.byPlacement.get(nodeId)?.entries() ?? [];
 }
 
 /** Apply a debit to one unpublished row. All individual axes stay exact until commit. */
@@ -4486,7 +4495,7 @@ async function commitInventoryPolicyBatch(
         `${kind} policy batch`
       );
       /** Keep each original pool once even when several requests share a bin and revision. */
-      const pools = new Map<string, InventoryScopedStockPool>();
+      const pools = new Map<string, PolicyBatchPoolView>();
       /** Exact rows changed by earlier requests in this same logical event. */
       const changed = new Map<string, InventoryPolicyWorkingRow>();
       /** Newly negative rows absent from the published pools, grouped by revision and placement. */
@@ -4502,12 +4511,15 @@ async function commitInventoryPolicyBatch(
         const poolId = inventoryStockSelectorIdentity(poolSelector);
         let initialPool = pools.get(poolId);
         if (initialPool === undefined) {
-          initialPool = await source.pool(selection);
+          const pool = await source.pool(selection);
+          const rowsById = new Map<string, InventoryPolicyWorkingRow>();
+          for (const row of pool.positions) rowsById.set(inventoryStockPositionIdentity(row.position.key), row);
+          initialPool = { pool, rowsById };
           pools.set(poolId, initialPool);
         }
         const revisionId = selection.item.revisionId;
-        const pool = policyPoolAfterPriorRequests({
-          pool: initialPool, changed, selector: poolSelector,
+        const { pool, rowsById: currentRows } = policyPoolAfterPriorRequests({
+          published: initialPool, changed, selector: poolSelector,
           addedDeficits: policyBatchDeficitCandidates(addedDeficits.get(revisionId), poolSelector.placementNodeIds),
         });
         const allocation = planInventoryAllocationForRecording({
@@ -4518,8 +4530,6 @@ async function commitInventoryPolicyBatch(
           reservationAtEpochMs: recordedAtEpochMs,
           ...(request.allowExpiredLots === undefined ? {} : { allowExpiredLots: request.allowExpiredLots }),
         });
-        const currentRows = new Map<string, InventoryPolicyWorkingRow>();
-        for (const row of pool.positions) currentRows.set(inventoryStockPositionIdentity(row.position.key), row);
         const deficit = await policyRecordedDeficit({
           catalog: internals.catalog,
           kind,
@@ -5593,7 +5603,7 @@ function assertPolicyMovementRequest(
     input.allowAllocatedStock === true
   ) {
     throw new Error(
-      "Only explicit physical scrap may select already-allocated stock."
+      "Only physical scrap may skip the preference for unallocated stock."
     );
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {

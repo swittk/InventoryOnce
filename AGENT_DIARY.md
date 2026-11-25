@@ -1940,3 +1940,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Exact allocation solves the current increment and suffix divisor together. A partial branch can skip a range when no reachable shortfall can fit storage, and the search budget includes pruning steps. A storage-driven FIFO deviation carries an increment diagnostic only if relaxing increments admits an earlier accepted plan.
 - Policy settlement uses the widened signed pool's expiry evidence for an existing positive row, including stock hidden by a lot selector. Ordered batches index newly introduced deficits by direct placement, and fungibility materializes only the quantities its plan returns.
+
+## 2026-11-26 — exact selection and receipt evidence
+
+- A storable greedy plan can fill a large candidate pool without recursive search. A relaxed increment trial that cannot build an exact movement line leaves the accepted physical plan usable.
+- Both storage write paths bind reported-transfer replay evidence to the actual intent and published revision. The segmented position reducer accepts the same signed balance changes as canonical projection after historical validation.
+- Policy batches reuse exact-position keys within each pool. Fungibility converts eligible member rows individually, so a small request can use stock even when the member's summed capacity cannot be stored.

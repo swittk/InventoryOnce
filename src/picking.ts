@@ -297,23 +297,10 @@ export function planWorkingInventoryAllocation({
     resolved.measurements.primary.quantity,
     "Inventory allocation request"
   );
-  const candidateResult = createPolicyAllocationCandidates({
-    catalog,
-    pool,
-    item: selected.item,
-    reservationAtEpochMs,
+  const { candidateResult, deficitAdjusted } = prepareInventoryPolicyAllocationPool({
+    catalog, pool, selection: selected, method, atEpochMs, reservationAtEpochMs, allowExpiredLots, allowAllocatedStock,
     ...(reservationId === undefined ? {} : { reservationId }),
-    allowAllocatedStock,
-    keepIndependentHoldsWhole: recordingAttempt === "prefer-unheld",
-  });
-  const deficitAdjusted = applyPolicyAllocationDeficitBurden({
-    selector: selected.selector,
-    item: selected.item,
-    method,
-    atEpochMs,
-    allowExpiredLots,
-    rowsById: candidateResult.rowsById,
-    poolCandidates: candidateResult.candidates,
+    ...(recordingAttempt === undefined ? {} : { recordingAttempt }),
   });
   /** Use the same eligible candidates and order for primary and measured selection. */
   const allocationInput: AllocateWorkingInventoryInput = {
@@ -404,6 +391,30 @@ export function planWorkingInventoryAllocation({
     unallocatedReservationsPresent:
       candidateResult.unallocatedReservationsPresent,
   };
+}
+
+/** Physical policy inputs shared with capacity-only member selection. */
+type PrepareInventoryPolicyAllocationPoolInput = Pick<
+  PlanWorkingInventoryAllocationInput,
+  "catalog" | "pool" | "selection" | "method" | "atEpochMs" | "reservationAtEpochMs" |
+  "allowExpiredLots" | "allowAllocatedStock" | "recordingAttempt" | "reservationId"
+>;
+
+/** Prepare eligible working rows without constructing a request for their combined capacity. */
+export function prepareInventoryPolicyAllocationPool({
+  catalog, pool, selection, method, atEpochMs, reservationAtEpochMs = atEpochMs,
+  allowExpiredLots = false, allowAllocatedStock = false, recordingAttempt, reservationId,
+}: PrepareInventoryPolicyAllocationPoolInput) {
+  const candidateResult = createPolicyAllocationCandidates({
+    catalog, pool, item: selection.item, reservationAtEpochMs, allowAllocatedStock,
+    ...(reservationId === undefined ? {} : { reservationId }),
+    keepIndependentHoldsWhole: recordingAttempt === "prefer-unheld",
+  });
+  const deficitAdjusted = applyPolicyAllocationDeficitBurden({
+    selector: selection.selector, item: selection.item, method, atEpochMs, allowExpiredLots,
+    rowsById: candidateResult.rowsById, poolCandidates: candidateResult.candidates,
+  });
+  return { candidateResult, deficitAdjusted };
 }
 
 /** Accepted whole witnesses and the remaining measured report. */

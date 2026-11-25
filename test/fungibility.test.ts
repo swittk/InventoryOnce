@@ -583,6 +583,34 @@ describe("derived pool summaries and exact member movements", () => {
     });
   });
 
+  it("selects a storable stock line when the member's total capacity cannot be stored", async () => {
+    const inventory = createInventoryOnce({
+      catalog: fungibilityCatalog(), storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
+      deficitPolicy: InventoryDeficitPolicy.Record,
+    });
+    for (const { lotId, quantity, occurredAtEpochMs } of [
+      { lotId: "OLDER", quantity: String(Number.MAX_SAFE_INTEGER), occurredAtEpochMs: time0 },
+      { lotId: "NEWER", quantity: "0.1", occurredAtEpochMs: time1 },
+    ]) {
+      await receiveMember({
+        inventory, operationId: lotId, itemId: "old-brand", itemRevisionId: "old-brand-v1",
+        lotId, quantity, occurredAtEpochMs,
+      });
+    }
+    const request = {
+      fungibilityRevisionId: "brand-pool-v1", requested: parseQuantity("1", "dose-equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+    };
+    expect((await inventory.fungibility.plan({ ...request, atEpochMs: time2 })).lines).toMatchObject([{
+      position: { lotId: "OLDER" }, memberQuantity: parseQuantity("1", "piece"),
+    }]);
+    expect((await inventory.fungibility.issue({
+      ...request, operationId: "wide-member-capacity", occurredAtEpochMs: time2,
+    })).event.stockEffects).toMatchObject([{
+      position: { lotId: "OLDER" }, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } },
+    }]);
+  });
+
   it("pins operations to the supplied revision even when a newer pool is active", async () => {
     const catalog = fungibilityCatalog("brand-pool-v2");
     const inventory = createInventoryOnce({
@@ -1050,8 +1078,8 @@ describe("derived pool summaries and exact member movements", () => {
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("0", "kg") }),
     ]));
     const physical = await inventory.fungibility.transfer({ ...command, operationId: "move-held-member" });
-    expect(physical.event.stockEffects.map((effect) => effect.measurementsDelta.independent[0]?.quantity.amountMinor))
-      .toEqual([8, -8]);
+    expect(physical.event.stockEffects.map((effect) => effect.measurementsDelta.independent[0]?.quantity))
+      .toEqual([parseQuantity("8", "kg"), parseQuantity("-8", "kg")]);
     expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual(expect.arrayContaining([
       expect.objectContaining({ reservationIds: ["outside-pool"], shortage: parseQuantity("1", "piece") }),
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("8", "kg") }),
@@ -1174,7 +1202,7 @@ describe("derived pool summaries and exact member movements", () => {
     });
     expect(await inventory.read.positions({ itemId: "old-brand" })).toEqual([]);
     expect((await inventory.read.reservationFeasibility(time3)).groups[0]).toMatchObject({
-      reservationIds: ["later-old-claim"], shortage: { amountMinor: 1 },
+      reservationIds: ["later-old-claim"], shortage: parseQuantity("1", "piece"),
     });
   });
 

@@ -11,6 +11,7 @@ import {
   InventoryOptionalIdentityConstraintKind,
   InventoryStockWhereaboutsState,
   InventoryTrackingRequirement,
+  inventoryCatalogSnapshot,
   inventoryStockSelector,
   measuredStockAmount,
   packageAmount,
@@ -24,6 +25,7 @@ import {
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
 import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
+import { inventoryReportedTransferReplayMetadataKey } from "../src/reported-transfer-replay.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -717,7 +719,7 @@ describe("indexed stock planning and availability", () => {
         }
       }
       const claim = (await inventory.read.reservationFeasibility(time2)).groups[0];
-      expect(claim).toMatchObject({ reservationIds: ["weight"], shortage: { amountMinor: 4 } });
+      expect(claim).toMatchObject({ reservationIds: ["weight"], shortage: parseQuantity("4", "kg") });
     }
   );
 
@@ -732,6 +734,7 @@ describe("indexed stock planning and availability", () => {
       operationId: "younger-labelled", occurredAtEpochMs: time1,
       to: loosePosition("store", { lotId: "young" }), amount: stockAmount("3", "piece"),
     });
+    const sourceBefore = await inventory.read.positions(selector);
     await expect(inventory.stock.transferManyByPolicy({
       operationId: "report-then-pick", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
       requests: [
@@ -747,7 +750,7 @@ describe("indexed stock planning and availability", () => {
       ],
     })).rejects.toThrow("outside the selected placement scope");
     expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })).toEqual([]);
-    expect((await inventory.read.positions(selector)).map((position) => position.measurements.primary.quantity.amountMinor).sort()).toEqual([3, 5]);
+    expect(await inventory.read.positions(selector)).toEqual(sourceBefore);
   });
 
   it.each(["transfer", "scrap"] as const)(
@@ -1491,6 +1494,41 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
+  it.each(["intent", "revision"])("rejects transfer replay evidence with a mismatched %s", async (mismatch) => {
+    const catalog = createTabletCatalog();
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog);
+    await inventory.stock.receive({
+      operationId: "replay-evidence-stock", occurredAtEpochMs: time0,
+      to: loosePosition("store"), amount: stockAmount("2", "piece"),
+    });
+    const before = storage.readSegmentedStockHead();
+    const intentFingerprint = "actual-transfer-intent";
+    const operationId = "mismatched-transfer-evidence";
+    const draft = createInventoryTransferManyEvent({
+      catalog, operationId, occurredAtEpochMs: time1,
+      lines: [{
+        from: loosePosition("store"), toPlacementNodeId: "destination", amount: stockAmount("1", "piece"),
+      }],
+    });
+    await expect(storage.commitSegmentedStockEvent({
+      catalog: inventoryCatalogSnapshot(catalog), operationId, intentFingerprint, recordedAtEpochMs: time2,
+      expectedWorldRevision: before.worldRevision, expectedRecordSequence: before.recordSequence,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+      event: {
+        ...draft,
+        metadata: {
+          [inventoryReportedTransferReplayMetadataKey]: {
+            intentFingerprint: mismatch === "intent" ? "different-transfer-intent" : intentFingerprint,
+            worldRevision: before.worldRevision + (mismatch === "revision" ? 2 : 1),
+          },
+        },
+      },
+    })).rejects.toThrow("replay evidence must match its durable intent and revision");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await storage.readOperation(operationId)).toBeUndefined();
+  });
+
   it("replays a serialized reported transfer after reopening the exact journal", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const serial = loosePosition("store", { serialId: "one" });
@@ -1677,10 +1715,14 @@ describe("indexed stock planning and availability", () => {
     });
     const input = issueCommand();
     input.requests.pop();
+    const firstRequest = input.requests[0];
+    if (firstRequest === undefined) throw new Error("Expected the retained request.");
     const executing = inventory.stock.issueManyByPolicy(input);
-    input.requests.push(...issueCommand().requests.slice(1));
+    firstRequest.amount = stockAmount("1", "piece");
     const result = await executing;
-    expect(result.allocations).toMatchObject([{ requestId: "first", lines: [{ position: { lotId: "young" } }] }]);
+    expect(result.allocations).toMatchObject([{
+      requestId: "first", lines: [{ position: { lotId: "young" }, allocatedPrimary: parseQuantity("2", "piece") }],
+    }]);
     expect(write).toHaveBeenCalledTimes(3);
     await expect(inventory.stock.issueManyByPolicy(input)).rejects.toThrow("changed intent");
     expect(readWorld).not.toHaveBeenCalled();
@@ -1801,14 +1843,6 @@ describe("indexed stock planning and availability", () => {
     });
     await expect(inventory.stock.transferManyByPolicy(command)).rejects.toThrow("reply lost");
     const reopened = createTestInventory(storage);
-    const replay = await reopened.stock.transferManyByPolicy(command);
-    expect(replay.replayed).toBe(true);
-    expect(replay.event.recordSequence).toBe(before.recordSequence + 1);
-    expect(replay.receipt.worldRevision).toBe(before.worldRevision + 1);
-    expect(replay.allocations).toMatchObject([
-      { requestId: "first", lines: [{ position: { lotId: "old" } }] },
-      { requestId: "second", lines: [{ position: { lotId: "young" } }] },
-    ]);
     const destinationSelector = inventoryStockSelector("item-a", { placementNodeIds: ["destination"] });
     const source = await reopened.read.positions(selector);
     const destination = await reopened.read.positions(destinationSelector);
@@ -1819,9 +1853,17 @@ describe("indexed stock planning and availability", () => {
       { key: { lotId: "old" }, measurements: { primary: { quantity: parseQuantity("2", "piece") } } },
       { key: { lotId: "young" }, measurements: { primary: { quantity: parseQuantity("1", "piece") } } },
     ]);
-    expect(await reopened.stock.transferManyByPolicy(command)).toEqual(replay);
+    const replay = await reopened.stock.transferManyByPolicy(command);
+    expect(replay.replayed).toBe(true);
+    expect(replay.event.recordSequence).toBe(before.recordSequence + 1);
+    expect(replay.receipt.worldRevision).toBe(before.worldRevision + 1);
+    expect(replay.allocations).toMatchObject([
+      { requestId: "first", lines: [{ position: { lotId: "old" } }] },
+      { requestId: "second", lines: [{ position: { lotId: "young" } }] },
+    ]);
     expect(await reopened.read.positions(selector)).toEqual(source);
     expect(await reopened.read.positions(destinationSelector)).toEqual(destination);
+    expect(await reopened.stock.transferManyByPolicy(command)).toEqual(replay);
     expect(write).toHaveBeenCalledTimes(2);
     expect(readWorld).not.toHaveBeenCalled();
   });
