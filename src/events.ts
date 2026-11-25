@@ -641,7 +641,7 @@ function normalizeInventoryHistoricalImpact(
   });
 }
 
-/** Validate, merge, and deterministically sort one event intent. */
+/** Validate and snapshot one event draft and its evidence for publication. */
 export function defineInventoryEvent({
   catalog,
   event,

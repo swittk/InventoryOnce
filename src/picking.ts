@@ -342,24 +342,24 @@ export function planWorkingInventoryAllocation({
       choices !== undefined && (!deferMeasuredShortfall || inventoryPolicyMovementRemainder({
         catalog, item: selected.item, report: resolved.measurements, lines: choices,
       }) !== undefined);
-    if (!acceptsLines(lines) && (lines === undefined || allocated.shortfall.amountMinor === 0 ||
-      (allowMeasuredShortfall && !allocated.incrementBlockedStock))) {
-      // Consider another assignment when the primary-first trial cannot produce exact evidence.
-      const canRecordPartial = deferMeasuredShortfall && allowMeasuredShortfall && !allocated.incrementBlockedStock;
-      // With a genuine primary shortage, no matching recorded row may exist at all.
-      const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0;
-      const findWitness = canRecordPartial ? allocateInventoryUpTo : allocateWorkingInventory;
-      const measured = findWitness({
+    const canRecordPartial = deferMeasuredShortfall && allowMeasuredShortfall;
+    // A genuine physical shortage may leave no usable witness, including when a whole pick cannot leave a storable remainder.
+    const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0 &&
+      (!allocated.incrementBlockedStock || !policyPrimaryCapacityCoversRequest(allocationInput));
+    // A compatible greedy prefix can still leave a larger gap than a different whole assignment.
+    const couldImprovePartial = canRecordPartial && allocated.shortfall.amountMinor > 0 && allocated.incrementBlockedStock;
+    if (couldImprovePartial || (!acceptsLines(lines) &&
+      (lines === undefined || allocated.shortfall.amountMinor === 0 || canRecordPartial))) {
+      const measuredInput: AllocateWorkingInventoryInput = {
         ...allocationInput,
         /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
         acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && acceptsLines(buildLines(choices)),
-      });
+      };
+      const measured = canRecordPartial
+        ? allocateInventoryUpTo({ ...measuredInput, assessIncrementBlockage: false })
+        : allocateWorkingInventory(measuredInput);
       if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
-        // The unconstrained primary pass already ruled out a shortage caused by increments.
-        // Unused rows in this compatible partial plan can instead be blocked by measured axes.
-        allocated = measured.shortfall.amountMinor > 0 && canRecordPartial
-          ? { ...measured, incrementBlockedStock: false }
-          : measured;
+        allocated = measured;
         lines = buildLines(measured.allocations);
       }
     }
@@ -392,6 +392,17 @@ export function planWorkingInventoryAllocation({
     unallocatedReservationsPresent:
       candidateResult.unallocatedReservationsPresent,
   };
+}
+
+/** Check whether all eligible primary stock could cover the report before considering indivisible rows. */
+function policyPrimaryCapacityCoversRequest({ requested, candidates }: AllocateWorkingInventoryInput): boolean {
+  /** Working primary shortage at the widest scale seen so far. */
+  const remaining: ExactQuantityDigits = { minor: BigInt(requested.amountMinor), decimals: requested.decimals };
+  for (const { available } of candidates) {
+    addExactQuantityDigits(remaining, -BigInt(available.amountMinor), available.decimals);
+    if (remaining.minor <= 0n) return true;
+  }
+  return false;
 }
 
 /** Exact selections and their evidence at the planner's published revision. */

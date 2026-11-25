@@ -138,10 +138,18 @@ describe("indexed stock planning and availability", () => {
       }
     };
     const first = await execute();
-    const polarized = first.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity.amountMinor);
-    const expected = verb === "receive" ? [Number(total)] :
-      verb.endsWith("transfer") ? [Number(total), -Number(total)] : [-Number(total)];
+    const polarized = first.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity);
+    const positive = parseQuantity(total, "kg");
+    const negative = parseQuantity(`-${total}`, "kg");
+    const expected = verb === "receive" ? [positive] : verb.endsWith("transfer") ? [positive, negative] : [negative];
     expect(polarized).toEqual(expected);
+    const publishedSource = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["store"] });
+    expect(publishedSource.map((position) => position.measurements.primary.quantity))
+      .toEqual(verb === "receive" ? [positive] : []);
+    if (verb.endsWith("transfer")) {
+      const publishedDestination = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
+      expect(publishedDestination.map((position) => position.measurements.primary.quantity)).toEqual([positive]);
+    }
     expect(await execute()).toEqual({ ...first, replayed: true });
   });
 
@@ -415,13 +423,18 @@ describe("indexed stock planning and availability", () => {
       .toEqual([Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER]);
   });
 
-  it.each([InventoryAllocationMethod.Fifo, InventoryAllocationMethod.Fefo])(
-    "records a compatible measured shortage with %s even when unused rows have larger increments", async (method) => {
+  it.each([
+    { method: InventoryAllocationMethod.Fifo, requested: "6", lastCount: "4", remaining: "2" },
+    { method: InventoryAllocationMethod.Fefo, requested: "6", lastCount: "4", remaining: "2" },
+    { method: InventoryAllocationMethod.Fifo, requested: "7", lastCount: "8", remaining: "3" },
+    { method: InventoryAllocationMethod.Fefo, requested: "7", lastCount: "8", remaining: "3" },
+  ])(
+    "records a compatible measured shortage of $remaining pieces with $method", async ({ method, requested, lastCount, remaining }) => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
     for (const { lotId, count, weight, expiresAtEpochMs } of [
       { lotId: "a", count: "4", weight: "4", expiresAtEpochMs: time3 + 200 },
       { lotId: "b", count: "2", weight: "4", expiresAtEpochMs: time3 + 100 },
-      { lotId: "c", count: "4", weight: "10", expiresAtEpochMs: time3 },
+      { lotId: "c", count: lastCount, weight: "10", expiresAtEpochMs: time3 },
     ]) {
       await inventory.stock.receive({
         operationId: `receive-measured-${lotId}`, occurredAtEpochMs: time0,
@@ -431,13 +444,37 @@ describe("indexed stock planning and availability", () => {
       });
     }
     const result = await inventory.stock.transferByPolicy({
-      operationId: "transfer-six-weighed-pieces", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      operationId: "transfer-weighed-pieces", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
       selector: { itemId: "measured", placementNodeIds: ["store"] }, method,
-      amount: measuredStockAmount("6", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
+      amount: measuredStockAmount(requested, "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
     });
     expect(result.event.positiveLayerProvenanceTransfers).toMatchObject([{ from: { lotId: "a" } }]);
     expect(result.event.unwitnessedStockMovements?.map((portion) => portion.measurements)).toEqual([{
-      primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") },
+      primary: { axisId: "pieces", quantity: parseQuantity(remaining, "piece") },
+      independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
+    }]);
+  });
+
+  it("picks a larger compatible witness when a whole measured FIFO prefix leaves an increment gap", async () => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, count, weight, occurredAtEpochMs] of [
+      ["older", "5", "4", time0], ["later-a", "3", "2", time1], ["later-b", "3", "2", time1],
+    ] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}`, occurredAtEpochMs,
+        to: { itemId: "measured", lotId, placementNodeId: "store" },
+        amount: measuredStockAmount(count, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
+      });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "report-seven-measured-pieces", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("7", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
+    });
+    expect(result.event.positiveLayerProvenanceTransfers?.map((line) => line.from.lotId))
+      .toEqual(["later-a", "later-b"]);
+    expect(result.event.unwitnessedStockMovements?.map((portion) => portion.measurements)).toEqual([{
+      primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
       independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
     }]);
   });

@@ -26,7 +26,7 @@ export interface InventoryScopedStockPool {
   readonly reservations: readonly InventoryReservation[];
 }
 
-/** Apply the existing stock selector with this position's real ancestry. */
+/** Apply a normalized stock selector with this position's real ancestry. */
 export function inventoryScopedStockMatches(
   position: InventoryStockPositionKey,
   selector: InventoryStockSelector,
@@ -80,8 +80,11 @@ export function candidateSubtreePositionIds(
 ): readonly string[] | undefined {
   // With small item scopes, filtering a few rows is cheaper than graph work.
   if (itemCandidateCount < 128) return undefined;
+  /** Completed placement nodes, counted once even when roots overlap. */
   const visitedNodes = new Set<string>();
+  /** Placement nodes on the active path, counted in the traversal budget. */
   const ancestors = new Set<string>();
+  /** Exact stock postings collected across the visited subtree. */
   const candidates: string[] = [];
   for (const rootNodeId of rootNodeIds) {
     const pending: InventorySubtreeCandidateVisit[] = [

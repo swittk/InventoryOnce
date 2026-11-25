@@ -40,14 +40,16 @@ describe("late historical repair", () => {
       operationId: "historical-mixed-transfer", occurredAtEpochMs: time1,
       from, toPlacementNodeId: "historical-transfer-destination", amount: stockAmount("3", "piece"),
     });
-    expect(transfer.event.unwitnessedStockMovements).toMatchObject([{ measurements: { primary: { quantity: { amountMinor: 1 } } } }]);
+    expect(transfer.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: { primary: { quantity: parseQuantity("1", "piece") } },
+    }]);
     const correction = await inventory.stock.correct({
       operationId: "historical-transfer-receipt-correction", occurredAtEpochMs: time2,
       reason: "The receipt was one piece smaller than recorded.", correctsEventId: receipt.event.eventId,
       replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: from, amount: stockAmount("1", "piece") }),
     });
     expect(correction.event.historicalImpact?.deficits).toMatchObject([{
-      position: { lotId: from.lotId }, maximumDeficit: { primary: { quantity: { amountMinor: 1 } } },
+      position: { lotId: from.lotId }, maximumDeficit: { primary: { quantity: parseQuantity("1", "piece") } },
     }]);
     const world = await inventory.read.world();
     expect(world.projection.events[transfer.event.eventId]).toEqual(transfer.event);
@@ -55,7 +57,7 @@ describe("late historical repair", () => {
       selector: { itemId: from.itemId, lotIds: ["TRANSFER-LOT"], placementNodeIds: ["historical-transfer-destination"] },
       amount: stockAmount("2", "piece"), method: InventoryAllocationMethod.Fifo, atEpochMs: time2,
     });
-    expect(destination.lines).toMatchObject([{ layerStartedAtEpochMs: time0, allocatedPrimary: { amountMinor: 2 } }]);
+    expect(destination.lines).toMatchObject([{ layerStartedAtEpochMs: time0, allocatedPrimary: parseQuantity("2", "piece") }]);
   });
   /** A later redundant move still contributes its retained parent-node definition. */
   it("preserves placement metadata when an earlier correction makes a later move redundant", () => {

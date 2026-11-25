@@ -183,6 +183,23 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.incrementBlockedStock).toBe(blocked);
   });
 
+  it.each([false, true])("attributes a partial shortage to increments only if the relaxed plan is accepted (%s)", (acceptsThree) => {
+    const result = allocateInventoryUpTo({
+      requested: parseQuantity("3", "piece"),
+      candidates: [candidate({
+        lotId: "counted", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+        extra: { available: parseQuantity("4", "piece"), allocationIncrement: parseQuantity("2", "piece") },
+      })],
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time1,
+      /** Model an independent constraint on the selected quantity. */
+      acceptAllocations: (choices) => acceptsThree || (choices[0]?.quantity.amountMinor ?? 0) <= 2,
+    });
+    expect(result.allocations.map((line) => line.quantity)).toEqual([parseQuantity("2", "piece")]);
+    expect(result.shortfall).toEqual(parseQuantity("1", "piece"));
+    expect(result.incrementBlockedStock).toBe(acceptsThree);
+  });
+
   it("compares an exact greedy prefix without storing its intermediate remainders", () => {
     const requested = parseQuantity("9007199254740991", "kg");
     const candidates = [

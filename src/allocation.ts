@@ -13,7 +13,6 @@ import {
 } from "./quantity.js";
 import {
   addExactQuantityDigits,
-  compareWorkingQuantities,
   MAXIMUM_STORED_QUANTITY_MINOR,
   storableQuantityDigits,
   storableQuantityScale,
@@ -79,6 +78,12 @@ export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInp
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
 }
 
+/** Inputs for selecting a partial witness with an optional primary-increment diagnosis. */
+interface AllocateInventoryUpToInput extends AllocateWorkingInventoryInput {
+  /** Skip relaxed trials when measured evidence cannot be inferred for a split. */
+  readonly assessIncrementBlockage?: boolean;
+}
+
 /** One exact position/quantity chosen by automatic allocation. */
 export interface InventoryAllocation {
   /** Exact chosen stock position. */
@@ -113,7 +118,7 @@ export function allocateInventory(input: AllocateInventoryInput): InventoryAlloc
 }
 
 /** Find the largest accepted witness, keeping the first FIFO/FEFO choice on ties. */
-export function allocateInventoryUpTo(input: AllocateWorkingInventoryInput): InventoryAllocationResult {
+export function allocateInventoryUpTo(input: AllocateInventoryUpToInput): InventoryAllocationResult {
   return allocateInventoryCandidates(input, true);
 }
 
@@ -130,7 +135,8 @@ function allocateInventoryCandidates({
   nowEpochMs,
   allowExpired = false,
   acceptAllocations,
-}: AllocateWorkingInventoryInput, acceptPartial: boolean): InventoryAllocationResult {
+  assessIncrementBlockage = true,
+}: AllocateInventoryUpToInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
   let expiredStockWasExcluded = false;
@@ -152,25 +158,26 @@ function allocateInventoryCandidates({
   ): number => compareWorkingAllocationCandidates(left, right, method);
   eligible.sort(compareEligibleCandidates);
 
-  // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
-  const assignment = searchInventoryAllocations({
+  /** Share the accepted assignments and the exact candidate domain with the shortage diagnostic. */
+  const searchInput = {
     requested,
     candidates: eligible,
     ...(acceptAllocations === undefined ? {} : { acceptAllocations }),
-    acceptPartial,
-  });
+  };
+  // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
+  const assignment = searchInventoryAllocations({ ...searchInput, acceptPartial });
   if (assignment !== undefined) {
     return {
       allocations: assignment.allocations,
       shortfall: assignment.shortfall,
       expiredStockWasExcluded,
-      incrementBlockedStock: assignment.shortfall.amountMinor > 0
-        ? partialAllocationHasBlockedIncrement(eligible, assignment)
+      incrementBlockedStock: assessIncrementBlockage && (assignment.shortfall.amountMinor > 0
+        ? partialAllocationHasBlockedIncrement(searchInput, assignment.shortfall)
         : eligible.some(
             /** Only an indivisible increment can make an exact-plan deviation increment-driven. */
             (candidate) => candidate.allocationIncrement !== undefined
           ) &&
-          exactAllocationsDoNotFollowGreedyPrefix(requested, eligible, assignment.allocations),
+          exactAllocationsDoNotFollowGreedyPrefix(requested, eligible, assignment.allocations)),
       allocationConstraintBlockedStock: false,
     };
   }
@@ -182,7 +189,7 @@ function allocateInventoryCandidates({
       acceptPartial: false,
     });
     // Raw capacity can cover the request even when no storable split exists.
-    const incrementBlockedStock = unconstrainedExact === undefined &&
+    const incrementBlockedStock = assessIncrementBlockage && unconstrainedExact === undefined &&
       eligible.some(
         /** A divisible pool cannot have an increment-caused failure. */
         (candidate) => candidate.allocationIncrement !== undefined
@@ -231,7 +238,7 @@ function allocateInventoryCandidates({
       allocations: storable.allocations,
       shortfall: storable.shortfall,
       expiredStockWasExcluded,
-      incrementBlockedStock: partialAllocationHasBlockedIncrement(eligible, storable),
+      incrementBlockedStock: partialAllocationHasBlockedIncrement(searchInput, storable.shortfall),
       allocationConstraintBlockedStock: false,
     };
   }
@@ -244,28 +251,20 @@ function allocateInventoryCandidates({
   };
 }
 
-/** Distinguish an exhausted row from remaining stock that cannot supply one legal increment. */
+/** Report increment blockage only if relaxing increments improves an accepted, storable assignment. */
 function partialAllocationHasBlockedIncrement(
-  candidates: readonly InventoryWorkingAllocationCandidate[],
-  assignment: InventoryAllocationAssignment
+  input: Pick<SearchInventoryAllocationsInput, "requested" | "candidates" | "acceptAllocations">,
+  shortfall: Quantity
 ): boolean {
-  const allocated = new Map<string, Quantity>();
-  for (const line of assignment.allocations) {
-    allocated.set(inventoryStockPositionIdentity(line.position), line.quantity);
-  }
-  for (const candidate of candidates) {
-    const increment = candidate.allocationIncrement;
-    if (increment === undefined) continue;
-    const used = allocated.get(inventoryStockPositionIdentity(candidate.position));
-    if (used !== undefined && compareWorkingQuantities(candidate.available, used) === 0) continue;
-    const decimals = Math.max(candidate.available.decimals, used?.decimals ?? 0, increment.decimals);
-    const unpicked = workingQuantityAtDecimals(candidate.available, decimals) -
-      (used === undefined ? 0n : integerAtDecimals(used, decimals));
-    if (compareWorkingQuantities(assignment.shortfall, increment) < 0 || unpicked < workingQuantityAtDecimals(increment, decimals)) {
-      return true;
-    }
-  }
-  return false;
+  return shortfall.amountMinor > 0 && input.candidates.some(
+    /** With fully divisible candidates there is no increment to relax. */
+    (candidate) => candidate.allocationIncrement !== undefined
+  ) && searchInventoryAllocations({
+    ...input,
+    acceptPartial: true,
+    ignoreIncrements: true,
+    improveOnShortfall: shortfall,
+  }) !== undefined;
 }
 
 /** An accepted exact assignment and the primary amount left unwitnessed. */
@@ -288,11 +287,13 @@ interface SearchInventoryAllocationsInput {
   readonly acceptPartial: boolean;
   /** Test whether relaxing indivisible increments admits a storable split. */
   readonly ignoreIncrements?: boolean;
+  /** Stop a diagnostic trial at the first accepted remainder strictly below this one. */
+  readonly improveOnShortfall?: Quantity;
 }
 
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
 function searchInventoryAllocations({
-  requested, candidates, acceptAllocations, acceptPartial, ignoreIncrements = false,
+  requested, candidates, acceptAllocations, acceptPartial, ignoreIncrements = false, improveOnShortfall,
 }: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
   let decimals = requested.decimals;
   for (const candidate of candidates) {
@@ -330,6 +331,7 @@ function searchInventoryAllocations({
   }
   if (!acceptPartial && (suffixCapacity[0] ?? 0n) < requestedMinor) return undefined;
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
+    if (improveOnShortfall !== undefined) return undefined;
     throw new Error(
       "Exact allocation exceeded its safe search bound; narrow the candidates or request."
     );
@@ -342,9 +344,14 @@ function searchInventoryAllocations({
   let exploredChoices = 0;
   /** Best coherent result so far. Equal quantities keep the first policy choice. */
   let bestAssignment: InventoryAllocationAssignment | undefined;
-  let bestRemainingMinor = requestedMinor + 1n;
+  // A smaller remainder must also fit storage. Skip fractional bands that cannot improve the diagnostic.
+  let bestRemainingMinor = improveOnShortfall === undefined
+    ? requestedMinor + 1n
+    : (largestStorableAllocationTake({
+        limit: integerAtDecimals(improveOnShortfall, decimals) - 1n, increment: 1n,
+      }) ?? 0n) + 1n;
 
-  /** Search larger amounts from earlier rows first, giving deterministic FIFO/FEFO preference. */
+  /** Search in policy order until an exact plan or the requested diagnostic improvement is found. */
   const findExactSuffix = (index: number, remainingMinor: bigint): boolean => {
     const complete = remainingMinor === 0n;
     if (complete || index >= candidates.length) {
@@ -358,7 +365,7 @@ function searchInventoryAllocations({
       if (acceptAllocations !== undefined && !acceptAllocations(allocations)) return false;
       bestRemainingMinor = remainingMinor;
       bestAssignment = { allocations, shortfall };
-      return complete;
+      return complete || improveOnShortfall !== undefined;
     }
     const capacityFromHere = suffixCapacity[index] ?? 0n;
     const divisorFromHere = suffixDivisor[index] ?? 0n;
@@ -394,6 +401,8 @@ function searchInventoryAllocations({
       if (acceptPartial ? unfillable >= bestRemainingMinor : unfillable > 0n) break;
       exploredChoices += 1;
       if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
+        // A diagnostic without a proven improvement must leave the accepted plan usable.
+        if (improveOnShortfall !== undefined) return true;
         throw new Error(
           "Exact allocation exceeded its safe search bound; narrow the candidates or request."
         );

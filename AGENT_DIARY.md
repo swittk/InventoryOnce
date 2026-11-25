@@ -1930,3 +1930,8 @@ The R105 portable-current-input authority and final publication both continue to
 - Exact reported transfers retain the original intent and receipt revision in the journal. Reopening a published snapshot lets a retry match that evidence before reading the consumed source.
 - Mixed transfer batches keep witnessed and unwitnessed portions in one working total until each posting is complete. FIFO validation compares the witnessed portions without storing them separately.
 - Partial allocation uses the common divisor of the remaining selectable increments to rule out unreachable amounts. A held row can still supply expiry evidence when both physical picks leave the same shortfall.
+
+## 2026-11-25 — measured witnesses and increment diagnostics
+
+- A partial allocation reports an increment blocker only when a bounded trial with relaxed increments finds a better storable assignment under the same acceptance rule.
+- A measured report can retain a compatible whole witness and record its exact remainder when another measured row is too large to witness the remainder. The picker leaves that row whole and does not infer fractional measurements.
