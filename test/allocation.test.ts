@@ -3,6 +3,7 @@ import {
   InventoryAllocationMethod,
   MAXIMUM_EXACT_ALLOCATION_STATES,
   allocateInventory,
+  compareInventoryAllocationCandidates,
   parseQuantity,
   type InventoryAllocationCandidate,
   type InventoryStockPositionKey,
@@ -83,6 +84,8 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     });
     expect(fifo.allocations[0]?.position.lotId).toBe("old");
     expect(fefo.allocations[0]?.position.lotId).toBe("early-expiry");
+    expect(compareInventoryAllocationCandidates(oldReceipt, earlyExpiry, InventoryAllocationMethod.Fifo)).toBeLessThan(0);
+    expect(compareInventoryAllocationCandidates(oldReceipt, earlyExpiry, InventoryAllocationMethod.Fefo)).toBeGreaterThan(0);
   });
 
   it("applies explicit priority before date order", () => {

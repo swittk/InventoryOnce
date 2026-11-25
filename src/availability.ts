@@ -4,10 +4,12 @@ import type {
   InventoryItemDefinitionRevision,
 } from "./catalog.js";
 import {
-  applyInventoryDeficitBurdenToPositions,
+  applyInventoryWorkingDeficitBurdenToPositions,
   inventoryRecordedDeficitPoolSelector,
   inventoryPositionDeficitMeasurements,
   inventoryPositionIsDeficit,
+  storeInventoryDeficitQuantity,
+  type InventoryWorkingDeficitCapacityLine,
 } from "./deficits.js";
 import {
   addInventoryMeasurements,
@@ -30,6 +32,12 @@ import {
 } from "./projection.js";
 import { inventoryStockPoolRowsFromProjection } from "./picking.js";
 import {
+  addExactQuantityDigits,
+  subtractWorkingQuantity,
+  type ExactQuantityDigits,
+  type InventoryWorkingQuantity,
+} from "./quantity-storage.js";
+import {
   inventoryScopedStockMatches,
   type InventoryScopedStockPool,
 } from "./stock-scope.js";
@@ -37,7 +45,6 @@ import {
   addQuantity,
   compareQuantity,
   parseQuantity,
-  subtractQuantity,
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
@@ -392,7 +399,7 @@ export function summarizeInventoryPhysicalAvailability({
         : zeroQuantity(reservationAxis.unit, physicalCapacity.decimals);
     const rawUnallocated = !ordinarilyUsable
       ? zeroQuantity(reservationAxis.unit)
-      : nonNegativeQuantityDifference(
+      : unheldWorkingCapacity(
           positiveCapacity,
           exactAllocations.quantity
         );
@@ -419,12 +426,8 @@ export function summarizeInventoryPhysicalAvailability({
     });
   }
 
-  const positiveCapacityLines: Array<{
-    /** Exact positive stock position carrying allocation capacity. */
-    readonly position: InventoryStockPosition["key"];
-    /** Positive capacity remaining after exact reservation evidence. */
-    readonly capacity: Quantity;
-  }> = [];
+  /** Exact usable capacity in the entire direct-placement pool before narrowing the read. */
+  const positiveCapacityLines: InventoryWorkingDeficitCapacityLine[] = [];
   for (const position of poolPositions) {
     if (inventoryPositionIsDeficit(position)) continue;
     if (
@@ -454,17 +457,17 @@ export function summarizeInventoryPhysicalAvailability({
         quantity: zeroQuantity(reservationAxis.unit),
         reservationIds: [],
       };
-    const rawUnallocated = nonNegativeQuantityDifference(
+    const rawUnallocated = unheldWorkingCapacity(
       physicalCapacity,
       exactAllocations.quantity
     );
-    if (rawUnallocated.amountMinor <= 0) continue;
+    if (rawUnallocated.amountMinor <= 0n) continue;
     positiveCapacityLines.push({
       position: position.key,
       capacity: rawUnallocated,
     });
   }
-  const burden = applyInventoryDeficitBurdenToPositions({
+  const burden = applyInventoryWorkingDeficitBurdenToPositions({
     positions: poolPositions,
     itemRevisionId: revisionId,
     axisId: reservationAxis.axisId,
@@ -495,20 +498,19 @@ export function summarizeInventoryPhysicalAvailability({
     usablePhysicalOnHand,
     usableDeficit
   );
-  let unallocatedUsablePhysical = zeroQuantity(reservationAxis.unit);
+  /** Accumulate only selected position capacities before returning their total. */
+  const unallocatedUsablePhysical: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   const positionSummaries: InventoryPositionAvailability[] = [];
   for (const pending of pendingPositions) {
     const identity = inventoryStockPositionIdentity(pending.position.key);
-    const adjusted =
+    const capacity =
       burden.capacityByPositionIdentity.get(identity) ??
       zeroQuantity(
         reservationAxis.unit,
         pending.rawUnallocatedUsablePhysical.decimals
       );
-    unallocatedUsablePhysical = addQuantity(
-      unallocatedUsablePhysical,
-      adjusted
-    );
+    const adjusted = storeInventoryDeficitQuantity(capacity);
+    addExactQuantityDigits(unallocatedUsablePhysical, BigInt(adjusted.amountMinor), adjusted.decimals);
     const { rawUnallocatedUsablePhysical: _raw, ...publicPosition } = pending;
     positionSummaries.push({
       ...publicPosition,
@@ -529,7 +531,11 @@ export function summarizeInventoryPhysicalAvailability({
     reservationAxisId: reservationAxis.axisId,
     exactlyAllocatedUsable,
     exactlyAllocatedExpired,
-    unallocatedUsablePhysical,
+    unallocatedUsablePhysical: storeInventoryDeficitQuantity({
+      amountMinor: unallocatedUsablePhysical.minor,
+      decimals: unallocatedUsablePhysical.decimals,
+      unit: reservationAxis.unit,
+    }),
     positions: positionSummaries,
   };
 }
@@ -538,7 +544,7 @@ export function summarizeInventoryPhysicalAvailability({
 interface MutableInventoryPositionAvailability
   extends Omit<InventoryPositionAvailability, "unallocatedUsablePhysical"> {
   /** Positive claim-adjusted capacity before direct-placement-pool deficit burden. */
-  readonly rawUnallocatedUsablePhysical: Quantity;
+  readonly rawUnallocatedUsablePhysical: InventoryWorkingQuantity;
 }
 
 /** Inputs for attributing one direct-placement-pool deficit to a selected physical subset. */
@@ -678,7 +684,7 @@ function availabilitySelectedDeficitAxisBurden({
     capacityByPositionIdentity.set(identity, capacity);
     lines.push({ position: position.key, capacity });
   }
-  const burden = applyInventoryDeficitBurdenToPositions({
+  const burden = applyInventoryWorkingDeficitBurdenToPositions({
     positions: poolPositions,
     itemRevisionId,
     axisId,
@@ -686,17 +692,16 @@ function availabilitySelectedDeficitAxisBurden({
     placementNodeIds: [],
     lines,
   });
-  let selectedBurden = zeroQuantity(unit);
+  /** The adjusted capacity can be wide even when the charge assigned to this row fits. */
+  const selectedBurden: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   for (const identity of selectedPositionIds) {
     const capacity = capacityByPositionIdentity.get(identity);
     const adjusted = burden.capacityByPositionIdentity.get(identity);
     if (capacity === undefined || adjusted === undefined) continue;
-    selectedBurden = addQuantity(
-      selectedBurden,
-      subtractQuantity(capacity, adjusted)
-    );
+    const absorbed = subtractWorkingQuantity(capacity, adjusted);
+    addExactQuantityDigits(selectedBurden, BigInt(absorbed.amountMinor), absorbed.decimals);
   }
-  return selectedBurden;
+  return storeInventoryDeficitQuantity({ amountMinor: selectedBurden.minor, decimals: selectedBurden.decimals, unit });
 }
 
 /** Sum deficits in selected placement/whereabouts pools without narrowing by lot or owner. */
@@ -906,18 +911,18 @@ function availabilityClaimTotals({
   };
 }
 
-/** Return exact non-negative physical capacity after exact allocations. */
-function nonNegativeQuantityDifference(
+/** Keep physical capacity after exact allocations non-negative and full precision. */
+function unheldWorkingCapacity(
   physical: Quantity,
   allocated: Quantity
-): Quantity {
+): InventoryWorkingQuantity {
   if (compareQuantity(physical, allocated) <= 0) {
     return zeroQuantity(
       physical.unit,
       Math.max(physical.decimals, allocated.decimals)
     );
   }
-  return subtractQuantity(physical, allocated);
+  return subtractWorkingQuantity(physical, allocated);
 }
 
 /** Return whether one broad claim can use at least one selected current position. */

@@ -15,17 +15,21 @@ import {
 } from "./projection.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
+  addExactQuantityDigits,
+  compareWorkingQuantities,
+  storableQuantityDigits,
+  subtractWorkingQuantity,
+  workingQuantityAtDecimals,
+  type ExactQuantityDigits,
+  type InventoryWorkingQuantity,
+} from "./quantity-storage.js";
+import {
   inventoryStockSelector,
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
-  addQuantity,
   compareQuantity,
-  integerAtDecimals,
-  negateQuantity,
   quantity,
-  safeNumber,
-  subtractQuantity,
   zeroQuantity,
   type Quantity,
   type UnitCode,
@@ -145,10 +149,19 @@ export function applyInventoryRecordedDeficitBurden({
   projection,
   ...input
 }: ApplyInventoryRecordedDeficitBurdenInput): InventoryDeficitCapacityAdjustment {
-  return applyInventoryDeficitBurdenToPositions({
+  const burden = applyInventoryWorkingDeficitBurdenToPositions({
     ...input,
     positions: inventoryDeficitRevisionRows(projection, input.itemRevisionId),
   });
+  const capacityByPositionIdentity = new Map<string, Quantity>();
+  for (const [id, capacity] of burden.capacityByPositionIdentity) {
+    capacityByPositionIdentity.set(id, storeInventoryDeficitQuantity(capacity));
+  }
+  return {
+    capacityByPositionIdentity,
+    recordedDeficit: storeInventoryDeficitQuantity(burden.recordedDeficit),
+    uncoveredDeficit: storeInventoryDeficitQuantity(burden.uncoveredDeficit),
+  };
 }
 
 /** Read signed rows for one exact revision through the canonical projection index. */
@@ -171,36 +184,103 @@ function* inventoryDeficitRevisionRows(
 }
 
 /** Deficit reducer inputs with all signed rows supplied by the caller's physical pool. */
-interface ApplyInventoryDeficitBurdenToPositionsInput
-  extends Omit<ApplyInventoryRecordedDeficitBurdenInput, "projection"> {
+interface ApplyInventoryWorkingDeficitBurdenToPositionsInput
+  extends Omit<ApplyInventoryRecordedDeficitBurdenInput, "projection" | "lines"> {
   /** Signed position rows of this revision from every selected pool. */
   readonly positions: Iterable<InventoryStockPosition>;
+  /** Working capacity in the order that bears each pool's deficit. */
+  readonly lines: readonly InventoryWorkingDeficitCapacityLine[];
 }
 
-/** Reduce candidate capacities using the exact signed deficit of each supplied pool. */
-export function applyInventoryDeficitBurdenToPositions({
+/** Attribute deficit to working capacities using the supplied published signs. */
+export function applyInventoryWorkingDeficitBurdenToPositions({
   positions,
-  itemRevisionId,
+  lines,
   axisId,
+  unit,
+  ...scope
+}: ApplyInventoryWorkingDeficitBurdenToPositionsInput): InventoryWorkingDeficitBurden {
+  return applyInventoryWorkingDeficitBurden({
+    ...scope, unit, lines, deficits: inventorySignedDeficitRows(positions, axisId, unit),
+  });
+}
+
+/** Narrow a returned deficit or capacity exactly at the published read boundary. */
+export function storeInventoryDeficitQuantity(value: InventoryWorkingQuantity): Quantity {
+  const stored = storableQuantityDigits(BigInt(value.amountMinor), value.decimals);
+  if (stored === undefined) throw new Error("Inventory deficit quantity exceeds the safe integer storage range.");
+  return quantity({ ...stored, unit: value.unit });
+}
+
+/** One negative measurement in a signed stock pool. */
+export interface InventorySignedDeficitRow {
+  /** Exact position that owns the negative balance. */
+  readonly position: InventoryStockPositionKey;
+  /** Signed deficit measurement on the selected axis. */
+  readonly signed: InventoryWorkingQuantity;
+}
+
+/** Read only negative selected-axis measurements from the published signed rows. */
+function* inventorySignedDeficitRows(
+  positions: Iterable<InventoryStockPosition>,
+  axisId: string,
+  unit: UnitCode,
+): Iterable<InventorySignedDeficitRow> {
+  for (const position of positions) {
+    if (!inventoryPositionIsDeficit(position)) continue;
+    const signed = inventoryMeasurementAt(position.measurements, axisId, unit);
+    if (signed.amountMinor < 0) yield { position: position.key, signed };
+  }
+}
+
+/** Ordered positive capacity on the selected axis before narrowing to a published read result. */
+export interface InventoryWorkingDeficitCapacityLine extends Omit<InventoryDeficitCapacityLine, "capacity" | "allocationIncrement"> {
+  /** Exact positive capacity, after any reservation holds. */
+  readonly capacity: InventoryWorkingQuantity;
+  /** Smallest legal pick from this physical row. */
+  readonly allocationIncrement?: InventoryWorkingQuantity;
+}
+
+/** Signed pool rows and ordered positive capacities on a single working axis. */
+interface ApplyInventoryWorkingDeficitBurdenInput extends Omit<ApplyInventoryRecordedDeficitBurdenInput, "projection" | "axisId" | "lines"> {
+  /** Negative balances from the selected signed pool. */
+  readonly deficits: Iterable<InventorySignedDeficitRow>;
+  /** Positive capacity in the order that supplies deficit. */
+  readonly lines: readonly InventoryWorkingDeficitCapacityLine[];
+}
+
+/** Full-precision result of charging each signed pool's deficit to its capacity. */
+interface InventoryWorkingDeficitBurden {
+  /** Exact remaining capacity by position identity. */
+  readonly capacityByPositionIdentity: ReadonlyMap<string, InventoryWorkingQuantity>;
+  /** Exact total deficit in every selected pool. */
+  readonly recordedDeficit: InventoryWorkingQuantity;
+  /** Exact deficit left after the available capacity is used. */
+  readonly uncoveredDeficit: InventoryWorkingQuantity;
+}
+
+/** Reduce published or unpublished capacity with the same per-pool liability rule. */
+export function applyInventoryWorkingDeficitBurden({
+  deficits,
+  itemRevisionId,
   unit,
   placementNodeIds,
   lines,
-}: ApplyInventoryDeficitBurdenToPositionsInput): InventoryDeficitCapacityAdjustment {
+}: ApplyInventoryWorkingDeficitBurdenInput): InventoryWorkingDeficitBurden {
   const selectedLocations = normalizePlacementNodeIds(placementNodeIds);
   const allLocationsSelected = selectedLocations.size === 0;
   const deficitByLocation = recordedDeficitByLocation(
-    positions,
-    axisId,
-    unit,
+    deficits,
     allLocationsSelected ? undefined : selectedLocations
   );
-  let recordedDeficit = zeroQuantity(unit);
+  /** Aggregate all pools before materializing any reported quantity. */
+  const recordedDeficit: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   for (const deficit of deficitByLocation.values()) {
-    recordedDeficit = addQuantity(recordedDeficit, deficit);
+    addExactQuantityDigits(recordedDeficit, deficit.minor, deficit.decimals);
   }
 
-  const capacityByPositionIdentity = new Map<string, Quantity>();
-  const linesByLocation = new Map<string, InventoryDeficitCapacityLine[]>();
+  const capacityByPositionIdentity = new Map<string, InventoryWorkingQuantity>();
+  const linesByLocation = new Map<string, InventoryWorkingDeficitCapacityLine[]>();
   for (const line of lines) {
     if (line.position.itemRevisionId !== itemRevisionId) {
       throw new Error(
@@ -247,13 +327,17 @@ export function applyInventoryDeficitBurdenToPositions({
     burdenLocations = new Set([...allLocations].sort());
   }
 
-  let uncoveredDeficit = zeroQuantity(unit);
+  /** Accumulate debt left after all usable capacity has been attributed. */
+  const uncoveredDeficit: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   for (const placementNodeId of burdenLocations) {
-    let remaining = deficitByLocation.get(placementNodeId) ?? zeroQuantity(unit);
+    const poolDeficit = deficitByLocation.get(placementNodeId);
+    if (poolDeficit === undefined) continue;
+    /** Keep debt exact while every position in this pool absorbs its share. */
+    let remaining: InventoryWorkingQuantity = { amountMinor: poolDeficit.minor, decimals: poolDeficit.decimals, unit };
     const locationLines = linesByLocation.get(placementNodeId) ?? [];
     for (const line of locationLines) {
       if (
-        compareQuantity(remaining, zeroQuantity(unit, remaining.decimals)) <= 0
+        remaining.amountMinor <= 0n
       ) {
         break;
       }
@@ -272,43 +356,34 @@ export function applyInventoryDeficitBurdenToPositions({
       capacityByPositionIdentity.set(identity, adjusted.capacity);
       remaining = adjusted.remainingDeficit;
     }
-    uncoveredDeficit = addQuantity(uncoveredDeficit, remaining);
+    addExactQuantityDigits(uncoveredDeficit, BigInt(remaining.amountMinor), remaining.decimals);
   }
   return {
     capacityByPositionIdentity,
-    recordedDeficit,
-    uncoveredDeficit,
+    recordedDeficit: { amountMinor: recordedDeficit.minor, decimals: recordedDeficit.decimals, unit },
+    uncoveredDeficit: { amountMinor: uncoveredDeficit.minor, decimals: uncoveredDeficit.decimals, unit },
   };
 }
 
 /** Collect positive deficit magnitude by exact direct placement without assigning it to lots. */
 function recordedDeficitByLocation(
-  positions: Iterable<InventoryStockPosition>,
-  axisId: string,
-  unit: UnitCode,
+  deficits: Iterable<InventorySignedDeficitRow>,
   selectedLocations: ReadonlySet<string> | undefined
-): ReadonlyMap<string, Quantity> {
-  const result = new Map<string, Quantity>();
-  for (const position of positions) {
+): ReadonlyMap<string, ExactQuantityDigits> {
+  const result = new Map<string, ExactQuantityDigits>();
+  for (const { position, signed } of deficits) {
     if (
       selectedLocations !== undefined &&
-      (position.key.placementNodeId === undefined ||
-        !selectedLocations.has(position.key.placementNodeId))
+      (position.placementNodeId === undefined ||
+        !selectedLocations.has(position.placementNodeId))
     ) continue;
-    if (!inventoryPositionIsDeficit(position)) continue;
-    const signed = inventoryMeasurementAt(position.measurements, axisId, unit);
-    if (compareQuantity(signed, zeroQuantity(unit, signed.decimals)) >= 0) {
-      continue;
-    }
-    const magnitude = negateQuantity(signed);
     const poolIdentity =
       selectedLocations === undefined
-        ? inventoryDeficitPhysicalPoolIdentity(position.key)
-        : position.key.placementNodeId!;
-    result.set(
-      poolIdentity,
-      addQuantity(result.get(poolIdentity) ?? zeroQuantity(unit), magnitude)
-    );
+        ? inventoryDeficitPhysicalPoolIdentity(position)
+        : position.placementNodeId!;
+    const total = result.get(poolIdentity);
+    if (total === undefined) result.set(poolIdentity, { minor: -BigInt(signed.amountMinor), decimals: signed.decimals });
+    else addExactQuantityDigits(total, -BigInt(signed.amountMinor), signed.decimals);
   }
   return result;
 }
@@ -328,22 +403,22 @@ function inventoryDeficitPhysicalPoolIdentity(
 
 /** Reduce one positive capacity by deficit while respecting intact allocation increments. */
 function capacityAfterDeficit(
-  capacity: Quantity,
-  deficit: Quantity,
-  allocationIncrement: Quantity | undefined
+  capacity: InventoryWorkingQuantity,
+  deficit: InventoryWorkingQuantity,
+  allocationIncrement: InventoryWorkingQuantity | undefined
 ): {
   /** Capacity remaining after applying as much deficit as this line can absorb. */
-  readonly capacity: Quantity;
+  readonly capacity: InventoryWorkingQuantity;
   /** Deficit still requiring attribution to later positive capacity lines. */
-  readonly remainingDeficit: Quantity;
+  readonly remainingDeficit: InventoryWorkingQuantity;
 } {
-  if (compareQuantity(capacity, deficit) <= 0) {
+  if (compareWorkingQuantities(capacity, deficit) <= 0) {
     return {
       capacity: zeroQuantity(capacity.unit, capacity.decimals),
-      remainingDeficit: subtractQuantity(deficit, capacity),
+      remainingDeficit: subtractWorkingQuantity(deficit, capacity),
     };
   }
-  const exactRemainder = subtractQuantity(capacity, deficit);
+  const exactRemainder = subtractWorkingQuantity(capacity, deficit);
   if (allocationIncrement === undefined) {
     return {
       capacity: exactRemainder,
@@ -359,22 +434,19 @@ function capacityAfterDeficit(
 
 /** Floor one non-negative quantity to an exact positive same-unit increment. */
 function floorQuantityToIncrement(
-  value: Quantity,
-  increment: Quantity
-): Quantity {
+  value: InventoryWorkingQuantity,
+  increment: InventoryWorkingQuantity
+): InventoryWorkingQuantity {
   const decimals = Math.max(value.decimals, increment.decimals);
-  const valueMinor = integerAtDecimals(value, decimals);
-  const incrementMinor = integerAtDecimals(increment, decimals);
+  const valueMinor = workingQuantityAtDecimals(value, decimals);
+  const incrementMinor = workingQuantityAtDecimals(increment, decimals);
   // BigInt division truncates exactly; non-negative operands therefore floor without Number conversion.
   const floored = (valueMinor / incrementMinor) * incrementMinor;
-  return quantity({
-    amountMinor: safeNumber(
-      floored,
-      "Inventory deficit adjusted capacity"
-    ),
+  return {
+    amountMinor: floored,
     decimals,
     unit: value.unit,
-  });
+  };
 }
 
 /** Normalize, sort, and reject duplicate/empty direct-placement identities. */
@@ -398,14 +470,14 @@ function normalizePlacementNodeIds(values: readonly string[]): ReadonlySet<strin
 
 /** Require a positive same-unit capacity before arithmetic starts. */
 function requirePositiveCapacity(
-  value: Quantity,
+  value: InventoryWorkingQuantity,
   unit: UnitCode,
   label: string
 ): void {
   if (value.unit !== unit) {
     throw new Error(`${label} uses a different unit.`);
   }
-  if (compareQuantity(value, zeroQuantity(unit, value.decimals)) <= 0) {
+  if (value.amountMinor <= 0n) {
     throw new Error(`${label} must be positive.`);
   }
 }

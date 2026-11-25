@@ -2,7 +2,6 @@ import { createInventoryRecordedMovement, type InventoryUnwitnessedMovementLine 
 import {
   inventoryScopedStockMatches,
   type InventoryScopedStockPool,
-  type InventoryScopedStockPosition,
 } from "./stock-scope.js";
 import { assertInventoryAmountKind } from "./stock-amount-rules.js";
 import { compareInventoryIdentityText } from "./ordering.js";
@@ -258,13 +257,19 @@ import {
   inventoryAllocationPoolFromWorld,
   inventoryAllocationPoolSelector,
   inventoryPolicyMovementRemainder,
+  inventoryPolicyPositionMeasurement,
   planInventoryAllocationInPool,
+  planWorkingInventoryAllocation,
   resolveAllocationItemAndSelector,
   type ResolvedAllocationSelection,
-  type PlanInventoryAllocationInPoolInput,
+  type PlanWorkingInventoryAllocationInput,
   type InventoryAllocationPolicyRequest,
   type InventoryPolicyAllocationLine,
   type InventoryPolicyAllocationPlan,
+  type InventoryPolicyWorkingPool,
+  type InventoryPolicyWorkingPosition,
+  type InventoryPolicyWorkingRow,
+  type InventoryWorkingPolicyAllocationPlan,
 } from "./picking.js";
 import {
   allocateInventoryReservation,
@@ -4353,9 +4358,9 @@ interface PolicyPoolAfterPriorRequestsInput {
   /** Original published stock and claim facts for this pool. */
   readonly pool: InventoryScopedStockPool;
   /** All exact rows changed by earlier requests in the batch. */
-  readonly changed: ReadonlyMap<string, InventoryScopedStockPosition>;
+  readonly changed: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** Newly introduced deficit rows for this pool's revision. */
-  readonly addedDeficits: ReadonlyMap<string, InventoryScopedStockPosition> | undefined;
+  readonly addedDeficits: ReadonlyMap<string, InventoryPolicyWorkingRow> | undefined;
   /** Signed pool selector used to admit new rows. */
   readonly selector: InventoryStockSelector;
 }
@@ -4363,9 +4368,9 @@ interface PolicyPoolAfterPriorRequestsInput {
 /** Apply shared ordered-request changes to one pool without copying unrelated positions. */
 function policyPoolAfterPriorRequests({
   pool, changed, addedDeficits, selector,
-}: PolicyPoolAfterPriorRequestsInput): InventoryScopedStockPool {
+}: PolicyPoolAfterPriorRequestsInput): InventoryPolicyWorkingPool {
   if (changed.size === 0) return pool;
-  const positions: InventoryScopedStockPosition[] = [];
+  const positions: InventoryPolicyWorkingRow[] = [];
   for (const row of pool.positions) {
     const next = changed.get(inventoryStockPositionIdentity(row.position.key));
     if (next === undefined) {
@@ -4373,18 +4378,28 @@ function policyPoolAfterPriorRequests({
       continue;
     }
     // Prior requests change balances. The published pool still owns age and expiry.
-    const { layerStartedAtEpochMs, ...published } = row;
-    positions.push({
-      ...published,
-      position: next.position,
-      ...(next.position.measurements.primary.quantity.amountMinor > 0 && layerStartedAtEpochMs !== undefined
-        ? { layerStartedAtEpochMs } : {}),
-    });
+    positions.push({ ...row, position: next.position });
   }
   for (const row of addedDeficits?.values() ?? []) {
     if (inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) positions.push(row);
   }
   return { positions, reservations: pool.reservations };
+}
+
+/** Apply a debit to one unpublished row. All individual axes stay exact until commit. */
+function debitPolicyBatchPosition(
+  position: InventoryPolicyWorkingRow["position"] | undefined,
+  key: InventoryStockPositionKey,
+  amount: InventoryMeasurementVector,
+): InventoryPolicyWorkingPosition {
+  // Only the first debit needs to copy the published vector into working totals.
+  const totals: InventoryMeasurementTotals = position !== undefined && "totals" in position
+    ? position.totals : new Map();
+  if (position !== undefined && "measurements" in position) {
+    addInventoryMeasurementTotals(totals, position.measurements);
+  }
+  addInventoryMeasurementTotals(totals, amount, -1n);
+  return { key, totals };
 }
 
 /** Plan every request against one evolving world and publish one durable event. */
@@ -4438,9 +4453,9 @@ async function commitInventoryPolicyBatch(
       /** Keep each original pool once even when several requests share a bin and revision. */
       const pools = new Map<string, InventoryScopedStockPool>();
       /** Exact rows changed by earlier requests in this same logical event. */
-      const changed = new Map<string, InventoryScopedStockPosition>();
+      const changed = new Map<string, InventoryPolicyWorkingRow>();
       /** Newly negative rows not present in the original pool, grouped by item revision. */
-      const addedDeficits = new Map<string, Map<string, InventoryScopedStockPosition>>();
+      const addedDeficits = new Map<string, Map<string, InventoryPolicyWorkingRow>>();
       const allocations: InventoryOncePolicyBatchAllocation[] = [];
       const selectedLines: InventoryPolicyAllocationLine[] = [];
       const deficitLines: CreateInventoryIssueManyInput["lines"][number][] = [];
@@ -4467,7 +4482,7 @@ async function commitInventoryPolicyBatch(
           reservationAtEpochMs: recordedAtEpochMs,
           ...(request.allowExpiredLots === undefined ? {} : { allowExpiredLots: request.allowExpiredLots }),
         });
-        const currentRows = new Map<string, InventoryScopedStockPosition>();
+        const currentRows = new Map<string, InventoryPolicyWorkingRow>();
         for (const row of pool.positions) currentRows.set(inventoryStockPositionIdentity(row.position.key), row);
         const deficit = await policyRecordedDeficit({
           catalog: internals.catalog,
@@ -4475,8 +4490,13 @@ async function commitInventoryPolicyBatch(
           deficitPolicy: internals.deficitPolicy,
           input: policyMovementInputFromBatchRequest(input, request),
           allocation,
-          /** A prior pick/deficit takes precedence over the originally published stock row. */
-          position: (id) => changed.get(id)?.position ?? currentRows.get(id)?.position ?? source.position(id),
+          /** Test the current deficit bucket without materializing any unpublished axes. */
+          hasPositivePrimary: async (id) => {
+            const position = changed.get(id)?.position ?? currentRows.get(id)?.position ?? await source.position(id);
+            return position !== undefined &&
+              inventoryPolicyPositionMeasurement(position, selection.item.primaryAxis.axisId,
+                selection.item.primaryAxis.unit).amountMinor > 0n;
+          },
           ancestry: source.ancestry,
         });
         allocations.push(
@@ -4489,13 +4509,8 @@ async function commitInventoryPolicyBatch(
           if (row === undefined) throw new Error(`Inventory policy allocation lost position '${id}'.`);
           changed.set(id, {
             ...row,
-            position: {
-              key: row.position.key,
-              measurements: subtractInventoryMeasurements(
-                row.position.measurements,
-                resolveInventoryAmount(internals.catalog, selection.item, line.amount).measurements
-              ),
-            },
+            position: debitPolicyBatchPosition(row.position, row.position.key,
+              resolveInventoryAmount(internals.catalog, selection.item, line.amount).measurements),
           });
         }
         if (deficit !== undefined) {
@@ -4505,19 +4520,12 @@ async function commitInventoryPolicyBatch(
           const prior = changed.get(id) ?? currentRows.get(id);
           const published = prior?.position ?? await source.position(id);
           const measurements = resolveInventoryAmount(internals.catalog, selection.item, deficit.evidence.amount).measurements;
-          const balance = published === undefined
-            ? negateInventoryMeasurements(measurements)
-            : subtractInventoryMeasurements(published.measurements, measurements);
-          // An unwitnessed debit can leave a positive remainder in the
-          // existing row. Its original FIFO and expiry facts still apply.
-          const deficitRow: InventoryScopedStockPosition = {
-            position: { key: position, measurements: balance },
+          // An unwitnessed debit may leave positive stock with its original FIFO and expiry facts.
+          const deficitRow: InventoryPolicyWorkingRow = {
+            ...prior,
+            position: debitPolicyBatchPosition(published, position, measurements),
             ancestry: prior?.ancestry ?? (position.placementNodeId === undefined
-              ? []
-              : await source.ancestry(position.placementNodeId)),
-            ...(balance.primary.quantity.amountMinor > 0 && prior?.layerStartedAtEpochMs !== undefined
-              ? { layerStartedAtEpochMs: prior.layerStartedAtEpochMs } : {}),
-            ...(prior?.effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs: prior.effectiveUseByEpochMs }),
+              ? [] : await source.ancestry(position.placementNodeId)),
           };
           changed.set(id, deficitRow);
           if (published === undefined || addedDeficits.get(revisionId)?.has(id)) {
@@ -5418,7 +5426,8 @@ async function commitInventoryPolicyMovement(
         deficitPolicy: internals.deficitPolicy,
         input,
         allocation,
-        position: source.position,
+        /** A single operation only needs the published deficit bucket sign. */
+        hasPositivePrimary: async (id) => ((await source.position(id))?.measurements.primary.quantity.amountMinor ?? 0) > 0,
         ancestry: source.ancestry,
       });
       return createPolicyMovementEvent(
@@ -5438,16 +5447,16 @@ async function commitInventoryPolicyMovement(
 
 /** Prefer stock free of exact holds, then use actual held stock if it covers more of the physical report. */
 function planInventoryAllocationForRecording(
-  input: PlanInventoryAllocationInPoolInput
-): InventoryPolicyAllocationPlan {
-  const preferred = planInventoryAllocationInPool({
+  input: PlanWorkingInventoryAllocationInput
+): InventoryWorkingPolicyAllocationPlan {
+  const preferred = planWorkingInventoryAllocation({
     ...input,
     recordingAttempt: input.allowAllocatedStock ? "all-physical" : "prefer-unheld",
   });
   const measured = input.amount.independent.length !== 0;
   const item = input.selection.item;
   /** Calculate the remaining reported axes for one measured witness plan. */
-  const remainderOf = (plan: InventoryPolicyAllocationPlan): InventoryMeasurementVector | undefined =>
+  const remainderOf = (plan: InventoryWorkingPolicyAllocationPlan): InventoryMeasurementVector | undefined =>
     inventoryPolicyMovementRemainder({
       catalog: input.catalog, item, report: plan.requestedMeasurements, lines: plan.lines,
     });
@@ -5455,7 +5464,7 @@ function planInventoryAllocationForRecording(
   let residual = measured ? remainderOf(preferred) : undefined;
   if (!input.allowAllocatedStock && (preferred.shortfall.amountMinor !== 0 ||
     (measured && residual === undefined))) {
-    const physical = planInventoryAllocationInPool({
+    const physical = planWorkingInventoryAllocation({
       ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
     });
     const physicalResidual = measured ? remainderOf(physical) : undefined;
@@ -5552,7 +5561,8 @@ function assertPolicyMovementRequest(
 
 /** Fail closed instead of inventing negative/untracked stock on policy shortfall. */
 function assertPolicyAllocationComplete(
-  plan: InventoryPolicyAllocationPlan
+  plan: Pick<InventoryPolicyAllocationPlan, "shortfall" | "expiredStockWasExcluded" |
+    "allocationConstraintBlockedStock" | "incrementBlockedStock">
 ): void {
   if (plan.shortfall.amountMinor === 0) return;
   const shortfall = `${quantityToDecimalString(plan.shortfall)} ${
@@ -5589,9 +5599,9 @@ interface PolicyRecordedDeficitInput {
   /** Caller command including optional explicit deficit position. */
   readonly input: InventoryOncePolicyMovementInput;
   /** Exact native allocation/shortfall result. */
-  readonly allocation: InventoryPolicyAllocationPlan;
-  /** Look up the dedicated Issue deficit position before assigning a signed liability. */
-  readonly position: InventoryPolicyStockSource["position"];
+  readonly allocation: InventoryWorkingPolicyAllocationPlan;
+  /** Look up the sign of the ordinary Issue deficit bucket's primary balance. */
+  hasPositivePrimary(positionId: string): Promise<boolean>;
   /** Resolve exact placement ancestry from the signed planning view. */
   readonly ancestry: InventoryPolicyStockSource["ancestry"];
 }
@@ -5603,7 +5613,7 @@ async function policyRecordedDeficit({
   deficitPolicy,
   input,
   allocation,
-  position: readPosition,
+  hasPositivePrimary,
   ancestry: readAncestry,
 }: PolicyRecordedDeficitInput): Promise<InventoryPolicyRecordedDeficit | undefined> {
   if (allocation.shortfall.amountMinor === 0) return undefined;
@@ -5650,11 +5660,8 @@ async function policyRecordedDeficit({
   }
   // Policy Issue uses a dedicated deficit bucket. Transfer and scrap use
   // the unlabelled stock key itself, so their signed posting may settle there.
-  if (!unwitnessed) {
-    const existing = await readPosition(inventoryStockPositionIdentity(position));
-    if (existing !== undefined && existing.measurements.primary.quantity.amountMinor > 0) {
-      throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
-    }
+  if (!unwitnessed && await hasPositivePrimary(inventoryStockPositionIdentity(position))) {
+    throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
   }
   const { itemRevisionId, ...exactFrom } = position;
   return {
@@ -5722,7 +5729,7 @@ function policyDeficitMetadataValue(
 
 /** Preserve ambiguity errors while allowing only genuine lack of stock to become deficit. */
 function assertPolicyShortfallIsRecordable(
-  allocation: InventoryPolicyAllocationPlan
+  allocation: InventoryWorkingPolicyAllocationPlan
 ): void {
   if (allocation.expiredStockWasExcluded) {
     assertPolicyAllocationComplete(allocation);

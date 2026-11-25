@@ -1913,3 +1913,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Batch movement commands group exact positions before storing their final measurements. Policy batches reuse that grouping, and per-request evidence verifies the same total in wide digits. Fungibility totals and measured remainders share exact digit alignment and storage narrowing.
 - The canonical coordinator checks for an exact replay after the last revision conflict, as the scoped stock writer does.
+
+## 2026-11-25 — exact ordered policy balances
+
+- Ordered policy requests keep their touched stock and deficit balances in exact working digits. FIFO/FEFO and deficit allocation use the same signed pool rules before the event stores its final positions.
+- A whole measured row whose temporary axes cannot form an exact line is ineligible for that trial. The same bounded search can select another coherent witness.
+- Availability stores the selected capacities and their assigned deficit after attributing the whole pool in exact digits.

@@ -96,10 +96,13 @@ describe("indexed stock planning and availability", () => {
     { verb: "issue", values: ["0.9", "9007199254740990", "0.1"] },
     { verb: "policy transfer", values: ["9007199254740990", "0.1", "0.9"] },
     { verb: "policy issue", values: ["9007199254740990", "0.9", "0.1"] },
-  ])("stores only the exact final total of duplicate $verb lines", async ({ verb, values }) => {
+    { verb: "policy transfer", values: ["0.1", "0.9", "9007199254740990"] },
+    { verb: "policy issue", values: ["0.9", "0.1", "9007199254740990"], canonical: true },
+  ])("stores the exact final total of duplicate $verb lines in order $values", async ({ verb, values, canonical }) => {
     const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
     const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
-    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const storage = canonical ? createInMemoryInventoryDurableStorage({ failpoint: () => undefined }) : undefined;
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
     const source = { itemId: item.itemId, placementNodeId: "store" };
     // An independent tenths calculation fixes the expected durable quantity for every ordering.
     const tenths = values.reduce((sum, value) => {
@@ -118,13 +121,20 @@ describe("indexed stock planning and availability", () => {
       method: index === 1 ? InventoryAllocationMethod.Fefo : InventoryAllocationMethod.Fifo,
       selector: { itemId: item.itemId, placementNodeIds: ["store"] } }));
     /** Submit or replay the same public batch. */
-    const execute = () => {
+    const execute = async () => {
       switch (verb) {
         case "receive": return inventory.stock.receiveMany({ ...header, lines: amounts.map((amount) => ({ to: source, amount })) });
         case "transfer": return inventory.stock.transferMany({ ...header, lines: amounts.map((amount) => ({ from: source, amount, toPlacementNodeId: "destination" })) });
         case "issue": return inventory.stock.issueMany({ ...header, lines: amounts.map((amount) => ({ from: source, amount })) });
-        case "policy transfer": return inventory.stock.transferManyByPolicy({ ...header, requests, toPlacementNodeId: "destination" });
-        default: return inventory.stock.issueManyByPolicy({ ...header, requests });
+        default: {
+          const result = verb === "policy transfer"
+            ? await inventory.stock.transferManyByPolicy({ ...header, requests, toPlacementNodeId: "destination" })
+            : await inventory.stock.issueManyByPolicy({ ...header, requests });
+          expect(result.allocations.map((allocation) => allocation.lines.map((line) => line.allocatedPrimary)))
+            .toEqual(values.map((value) => [parseQuantity(value, "kg")]));
+          expect(result.allocations.every((allocation) => allocation.deficit === undefined)).toBe(true);
+          return result;
+        }
       }
     };
     const first = await execute();
@@ -133,6 +143,132 @@ describe("indexed stock planning and availability", () => {
       verb.endsWith("transfer") ? [Number(total), -Number(total)] : [-Number(total)];
     expect(polarized).toEqual(expected);
     expect(await execute()).toEqual({ ...first, replayed: true });
+  });
+
+  it("keeps a temporarily unstorable signed deficit exact and rejects an unstorable final balance", async () => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const deficitPosition = { itemId: item.itemId, placementNodeId: "store", lotId: "recorded-shortfall" };
+    const baseRequest = {
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      method: InventoryAllocationMethod.Fefo, deficitPosition,
+    };
+    await inventory.stock.issueByPolicy({
+      ...baseRequest, operationId: "large-existing-deficit", occurredAtEpochMs: time0, amount: stockAmount("9007199254740990", "kg"),
+    });
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const before = storage.readSegmentedStockHead();
+    /** Submit these ordered amounts against the same signed deficit row. */
+    const issue = (operationId: string, values: readonly string[]) => inventory.stock.issueManyByPolicy({
+      operationId, occurredAtEpochMs: time1,
+      requests: values.map((value) => ({ ...baseRequest, requestId: value, amount: stockAmount(value, "kg") })),
+    });
+    await expect(issue("unstorable-final-deficit", ["0.1"])).rejects.toThrow("safe integer storage range");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await storage.readOperation("unstorable-final-deficit")).toBeUndefined();
+    const result = await issue("storable-final-deficit", ["0.1", "0.9"]);
+    expect(result.allocations.map((allocation) => allocation.deficit?.primary))
+      .toEqual(["0.1", "0.9"].map((value) => parseQuantity(value, "kg")));
+    expect(await inventory.read.positions(baseRequest.selector)).toMatchObject([{
+      key: deficitPosition,
+      measurements: { primary: { quantity: parseQuantity("-9007199254740991", "kg") } },
+    }]);
+    expect(await issue("storable-final-deficit", ["0.1", "0.9"])).toEqual({ ...result, replayed: true });
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("uses exact unheld capacity when the physical balance and its hold have different scales", async () => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog);
+    const position = { itemId: item.itemId, placementNodeId: "store" };
+    const scope = { itemId: item.itemId, placementNodeIds: ["store"] };
+    const held = parseQuantity("0.1", "kg");
+    const method = InventoryAllocationMethod.Fifo;
+    await inventory.stock.receive({ operationId: "large-held-position", occurredAtEpochMs: time0,
+      to: position, amount: stockAmount("9007199254740991", "kg") });
+    await inventory.reservations.reserve({
+      operationId: "hold-fractional-quantity", reservationId: "fractional", itemRevisionId: item.revisionId,
+      selector: scope, requested: held, createdAtEpochMs: time1,
+    });
+    await inventory.reservations.allocateByPolicy({
+      operationId: "allocate-fractional-quantity", reservationId: "fractional", method, occurredAtEpochMs: time1,
+    });
+    const preview = await inventory.read.planAllocation({
+      selector: scope, amount: stockAmount("0.9", "kg"), method, atEpochMs: time2,
+    });
+    expect(preview.lines.map((line) => line.allocatedPrimary)).toEqual([parseQuantity("0.9", "kg")]);
+    const result = await inventory.stock.issueManyByPolicy({
+      operationId: "issue-separate-from-fractional-hold", occurredAtEpochMs: time2,
+      requests: ["0.9", "0.1"].map((value) => ({
+        requestId: value, selector: scope, amount: stockAmount(value, "kg"), method,
+      })),
+    });
+    expect(result.allocations.map((allocation) => allocation.lines.map((line) => line.allocatedPrimary)))
+      .toEqual([[parseQuantity("0.9", "kg")], [held]]);
+    expect((await inventory.read.reservation("fractional"))?.allocations.map((allocation) => allocation.quantity))
+      .toEqual([held]);
+  });
+
+  it("returns the selected lot when an unselected lot absorbs a fractional deficit", async () => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const position = { itemId: item.itemId, placementNodeId: "store" };
+    for (const [lotId, value] of [["a-large", "9007199254740991"], ["b-selected", "1"]] as const) {
+      await inventory.stock.receive({ operationId: lotId, occurredAtEpochMs: time0,
+        to: { ...position, lotId }, amount: stockAmount(value, "kg") });
+    }
+    await inventory.stock.issue({ operationId: "fractional-pool-shortfall", occurredAtEpochMs: time1,
+      from: { ...position, lotId: "debt" }, amount: stockAmount("0.1", "kg") });
+    const selector = inventoryStockSelector(item.itemId, { placementNodeIds: ["store"], lotIds: ["b-selected"] });
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const result = await readInventoryScopedStockAvailability({
+      storage, catalog, selector, itemRevisionId: item.revisionId, atEpochMs: time2,
+    });
+    expect(result).toMatchObject({
+      unallocatedUsablePhysical: parseQuantity("1", "kg"),
+      deficit: { primary: { quantity: parseQuantity("0", "kg") } },
+      positions: [{ position: { key: { lotId: "b-selected" } }, unallocatedUsablePhysical: parseQuantity("1", "kg") }],
+    });
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("considers a later measured witness when a private row cannot supply a storable whole amount", async () => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    /** Resolve one report in pieces and independently measured kilograms. */
+    const amount = (pieces: string, weight: string) =>
+      measuredStockAmount(pieces, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]);
+    const unlabelled = { itemId: "measured", placementNodeId: "store" };
+    const labelled = { ...unlabelled, lotId: "witness" };
+    await inventory.stock.receive({ operationId: "large-measured-row", occurredAtEpochMs: time0,
+      to: unlabelled, amount: amount("3", "9007199254740991") });
+    await inventory.stock.receive({ operationId: "smaller-measured-row", occurredAtEpochMs: time1,
+      to: labelled, amount: amount("2", "1") });
+    const allLots = { itemId: "measured", placementNodeIds: ["store"] };
+    const missingLot = { ...allLots, lotIds: ["unwitnessed"] };
+    const method = InventoryAllocationMethod.Fifo;
+    const result = await inventory.stock.transferManyByPolicy({
+      operationId: "ordered-measured-witness", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      requests: [
+        { requestId: "first", amount: amount("1", "0.1"), method, selector: missingLot },
+        { requestId: "known", amount: amount("2", "1"), method, selector: allLots },
+        { requestId: "last", amount: amount("1", "0.9"), method, selector: missingLot },
+      ],
+    });
+    expect(result.allocations.map((allocation) => allocation.lines.map((line) => line.position.lotId)))
+      .toEqual([[], ["witness"], []]);
+    expect(result.event.positiveLayerProvenanceTransfers).toMatchObject([{ from: labelled }]);
+    expect(await inventory.read.positions(allLots)).toMatchObject([{
+      key: unlabelled,
+      measurements: {
+        primary: { quantity: parseQuantity("1", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("9007199254740990", "kg") }],
+      },
+    }]);
   });
 
   it("rejects a duplicate receipt whose completed posting cannot be stored", async () => {

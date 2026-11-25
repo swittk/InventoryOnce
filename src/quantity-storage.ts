@@ -1,3 +1,5 @@
+import type { Quantity } from "./quantity.js";
+
 /** Largest absolute digit allowed in a stored quantity. */
 export const MAXIMUM_STORED_QUANTITY_MINOR = BigInt(Number.MAX_SAFE_INTEGER);
 
@@ -7,6 +9,36 @@ export interface ExactQuantityDigits {
   minor: bigint;
   /** Number of fractional decimal places. */
   decimals: number;
+}
+
+/** Stored or private working quantity used before a value must fit the storage range. */
+export interface InventoryWorkingQuantity {
+  /** Exact signed digits at the given scale. */
+  readonly amountMinor: number | bigint;
+  /** Number of fractional decimal places. */
+  readonly decimals: number;
+  /** Unit frozen by the resolved measurement schema. */
+  readonly unit: Quantity["unit"];
+}
+
+/** Align working digits to a common scale without narrowing them. */
+export function workingQuantityAtDecimals(value: InventoryWorkingQuantity, decimals: number): bigint {
+  return BigInt(value.amountMinor) * 10n ** BigInt(decimals - value.decimals);
+}
+
+/** Compare same-unit working balances without narrowing either one. */
+export function compareWorkingQuantities(left: InventoryWorkingQuantity, right: InventoryWorkingQuantity): -1 | 0 | 1 {
+  if (left.unit !== right.unit) throw new Error("Quantity units must match.");
+  const decimals = Math.max(left.decimals, right.decimals);
+  const difference = workingQuantityAtDecimals(left, decimals) - workingQuantityAtDecimals(right, decimals);
+  return difference < 0n ? -1 : difference > 0n ? 1 : 0;
+}
+
+/** Subtract a known same-unit amount from a private working balance. */
+export function subtractWorkingQuantity(left: InventoryWorkingQuantity, right: InventoryWorkingQuantity): InventoryWorkingQuantity {
+  const total: ExactQuantityDigits = { minor: BigInt(left.amountMinor), decimals: left.decimals };
+  addExactQuantityDigits(total, -BigInt(right.amountMinor), right.decimals);
+  return { amountMinor: total.minor, decimals: total.decimals, unit: left.unit };
 }
 
 /** Add signed digits at the least scale that retains both quantities exactly. */

@@ -5,7 +5,6 @@ import {
   type InventoryStockPositionKey,
 } from "./model.js";
 import {
-  compareQuantity,
   integerAtDecimals,
   positiveQuantity,
   quantity,
@@ -14,10 +13,13 @@ import {
 } from "./quantity.js";
 import {
   addExactQuantityDigits,
+  compareWorkingQuantities,
   MAXIMUM_STORED_QUANTITY_MINOR,
   storableQuantityDigits,
   storableQuantityScale,
+  workingQuantityAtDecimals,
   type ExactQuantityDigits,
+  type InventoryWorkingQuantity,
 } from "./quantity-storage.js";
 
 /** Supported deterministic automatic stock-picking orders. */
@@ -62,6 +64,21 @@ export interface AllocateInventoryInput {
   ) => boolean;
 }
 
+/** Candidate over stored or unpublished stock balances. The selected line still needs a stored quantity. */
+export interface InventoryWorkingAllocationCandidate
+  extends Omit<InventoryAllocationCandidate, "available" | "allocationIncrement"> {
+  /** Exact free capacity before selecting a storable line. */
+  readonly available: InventoryWorkingQuantity;
+  /** Exact indivisible increment, including a whole unpublished row. */
+  readonly allocationIncrement?: InventoryWorkingQuantity;
+}
+
+/** Shared allocation input whose candidate capacities need not fit the storage limit. */
+export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInput, "candidates"> {
+  /** Eligible stock with exact private or published capacities. */
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+}
+
 /** One exact position/quantity chosen by automatic allocation. */
 export interface InventoryAllocation {
   /** Exact chosen stock position. */
@@ -92,12 +109,17 @@ const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
 
 /** Pick FIFO/FEFO stock without inventing synthetic lots or hiding expiry/shortfall policy. */
 export function allocateInventory(input: AllocateInventoryInput): InventoryAllocationResult {
-  return allocateInventoryCandidates(input, false);
+  return allocateWorkingInventory(input);
 }
 
 /** Find the largest accepted witness, including a partial witness for measured recording. */
-export function allocateInventoryUpTo(input: AllocateInventoryInput): InventoryAllocationResult {
+export function allocateInventoryUpTo(input: AllocateWorkingInventoryInput): InventoryAllocationResult {
   return allocateInventoryCandidates(input, true);
+}
+
+/** Pick from exact working capacities while storing only completed allocation lines. */
+export function allocateWorkingInventory(input: AllocateWorkingInventoryInput): InventoryAllocationResult {
+  return allocateInventoryCandidates(input, false);
 }
 
 /** Share the ordered, bounded search without changing the public full-plan constraint. */
@@ -108,11 +130,11 @@ function allocateInventoryCandidates({
   nowEpochMs,
   allowExpired = false,
   acceptAllocations,
-}: AllocateInventoryInput, acceptPartial: boolean): InventoryAllocationResult {
+}: AllocateWorkingInventoryInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
   let expiredStockWasExcluded = false;
-  const eligible: InventoryAllocationCandidate[] = [];
+  const eligible: InventoryWorkingAllocationCandidate[] = [];
   for (const candidate of candidates) {
     validateAllocationCandidate(candidate, requested);
     const expired =
@@ -125,9 +147,9 @@ function allocateInventoryCandidates({
   }
   /** Keep the caller's chosen FIFO/FEFO method inside this one sort. */
   const compareEligibleCandidates = (
-    left: InventoryAllocationCandidate,
-    right: InventoryAllocationCandidate
-  ): number => compareInventoryAllocationCandidates(left, right, method);
+    left: InventoryWorkingAllocationCandidate,
+    right: InventoryWorkingAllocationCandidate
+  ): number => compareWorkingAllocationCandidates(left, right, method);
   eligible.sort(compareEligibleCandidates);
 
   // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
@@ -230,7 +252,7 @@ function allocateInventoryCandidates({
 
 /** Distinguish an exhausted row from remaining stock that cannot supply one legal increment. */
 function partialAllocationHasBlockedIncrement(
-  candidates: readonly InventoryAllocationCandidate[],
+  candidates: readonly InventoryWorkingAllocationCandidate[],
   assignment: InventoryAllocationAssignment
 ): boolean {
   const allocated = new Map<string, Quantity>();
@@ -241,11 +263,11 @@ function partialAllocationHasBlockedIncrement(
     const increment = candidate.allocationIncrement;
     if (increment === undefined) continue;
     const used = allocated.get(inventoryStockPositionIdentity(candidate.position));
-    if (used !== undefined && compareQuantity(candidate.available, used) === 0) continue;
+    if (used !== undefined && compareWorkingQuantities(candidate.available, used) === 0) continue;
     const decimals = Math.max(candidate.available.decimals, used?.decimals ?? 0, increment.decimals);
-    const unpicked = integerAtDecimals(candidate.available, decimals) -
+    const unpicked = workingQuantityAtDecimals(candidate.available, decimals) -
       (used === undefined ? 0n : integerAtDecimals(used, decimals));
-    if (compareQuantity(assignment.shortfall, increment) < 0 || unpicked < integerAtDecimals(increment, decimals)) {
+    if (compareWorkingQuantities(assignment.shortfall, increment) < 0 || unpicked < workingQuantityAtDecimals(increment, decimals)) {
       return true;
     }
   }
@@ -265,7 +287,7 @@ interface SearchInventoryAllocationsInput {
   /** Total requested primary quantity. */
   readonly requested: Quantity;
   /** Eligible candidates in FIFO or FEFO order. */
-  readonly candidates: readonly InventoryAllocationCandidate[];
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
   /** Extra exact evidence a complete or partial assignment must satisfy. */
   readonly acceptAllocations?: AllocateInventoryInput["acceptAllocations"];
   /** Whether a coherent assignment can leave part of the request unwitnessed. */
@@ -286,14 +308,14 @@ function searchInventoryAllocations({
   const requestedMinor = integerAtDecimals(requested, decimals);
   const capacityMinor = candidates.map(
     /** Put every candidate capacity on one exact integer scale for the bounded search. */
-    (candidate) => integerAtDecimals(candidate.available, decimals)
+    (candidate) => workingQuantityAtDecimals(candidate.available, decimals)
   );
   const incrementMinor = candidates.map(
     /** Divisible rows use the smallest exact digit on the shared scale. */
     (candidate) =>
       candidate.allocationIncrement === undefined
         ? 1n
-        : integerAtDecimals(candidate.allocationIncrement, decimals)
+        : workingQuantityAtDecimals(candidate.allocationIncrement, decimals)
   );
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
@@ -506,15 +528,15 @@ function subtractInventoryAllocationDigits(
 /** Take the largest allowed amount from one ordered candidate and advance the exact remainder. */
 function takeGreedyInventoryAllocation(
   remaining: ExactQuantityDigits,
-  candidate: InventoryAllocationCandidate
+  candidate: InventoryWorkingAllocationCandidate
 ): GreedyInventoryAllocationChoice {
   const increment = candidate.allocationIncrement;
   const comparisonDecimals = Math.max(remaining.decimals, candidate.available.decimals, increment?.decimals ?? 0);
   const pending = remaining.minor * (10n ** BigInt(comparisonDecimals - remaining.decimals));
-  const available = integerAtDecimals(candidate.available, comparisonDecimals);
+  const available = workingQuantityAtDecimals(candidate.available, comparisonDecimals);
   const takeAvailable = available <= pending;
   const maximum = takeAvailable ? available : pending;
-  const quantum = increment === undefined ? 1n : integerAtDecimals(increment, comparisonDecimals);
+  const quantum = increment === undefined ? 1n : workingQuantityAtDecimals(increment, comparisonDecimals);
   const taken = maximum - maximum % quantum;
   /** Keep the normal scale of the limiting quantity and any increment used to round it. */
   const decimals = Math.max(
@@ -528,7 +550,7 @@ function takeGreedyInventoryAllocation(
 
 /** Convert one exact shared-scale choice vector into normal allocation rows. */
 function materializeExactAllocations(
-  candidates: readonly InventoryAllocationCandidate[],
+  candidates: readonly InventoryWorkingAllocationCandidate[],
   chosenMinor: readonly bigint[],
   decimals: number
 ): readonly InventoryAllocation[] {
@@ -550,7 +572,7 @@ function materializeExactAllocations(
 /** Return whether full exact allocation had to skip an earlier greedy increment choice. */
 function exactAllocationsDoNotFollowGreedyPrefix(
   requested: Quantity,
-  candidates: readonly InventoryAllocationCandidate[],
+  candidates: readonly InventoryWorkingAllocationCandidate[],
   allocations: readonly InventoryAllocation[]
 ): boolean {
   const allocatedByPosition = new Map<string, Quantity>();
@@ -578,13 +600,12 @@ function exactAllocationsDoNotFollowGreedyPrefix(
 
 /** Validate one candidate's exact units, times, priority, and optional increment. */
 function validateAllocationCandidate(
-  candidate: InventoryAllocationCandidate,
+  candidate: InventoryWorkingAllocationCandidate,
   requested: Quantity
 ): void {
-  positiveQuantity(
-    candidate.available,
-    "Allocation candidate available quantity"
-  );
+  if (candidate.available.amountMinor <= 0n) {
+    throw new Error("Allocation candidate available quantity must be greater than zero.");
+  }
   if (candidate.available.unit !== requested.unit) {
     throw new Error("Allocation candidate unit must match requested unit.");
   }
@@ -599,7 +620,9 @@ function validateAllocationCandidate(
     throw new Error("Allocation candidate priority must be a safe integer.");
   }
   if (candidate.allocationIncrement !== undefined) {
-    positiveQuantity(candidate.allocationIncrement, "Allocation increment");
+    if (candidate.allocationIncrement.amountMinor <= 0n) {
+      throw new Error("Allocation increment must be greater than zero.");
+    }
     if (candidate.allocationIncrement.unit !== requested.unit) {
       throw new Error("Allocation increment unit must match requested unit.");
     }
@@ -610,6 +633,15 @@ function validateAllocationCandidate(
 export function compareInventoryAllocationCandidates(
   left: InventoryAllocationCandidate,
   right: InventoryAllocationCandidate,
+  method: InventoryAllocationMethod
+): number {
+  return compareWorkingAllocationCandidates(left, right, method);
+}
+
+/** Compare published and unpublished candidates by the same policy order. */
+export function compareWorkingAllocationCandidates(
+  left: InventoryWorkingAllocationCandidate,
+  right: InventoryWorkingAllocationCandidate,
   method: InventoryAllocationMethod
 ): number {
   const priorityOrder = (left.priority ?? 0) - (right.priority ?? 0);

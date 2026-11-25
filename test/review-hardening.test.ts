@@ -11,6 +11,7 @@ import {
   packageAmount,
   parseQuantity,
   stockAmount,
+  subtractQuantity,
   unitCode,
   type InventoryMetadataValue,
 } from "../src/index.js";
@@ -62,7 +63,7 @@ import {
   time3,
 } from "./test-fixtures.js";
 
-describe("quantity parser input bounds", () => {
+describe("quantity storage bounds", () => {
   it("rejects oversized significant digit text while preserving leading zeros", () => {
     expect(parseQuantity("0000000000000000000000001", "piece")).toMatchObject({
       amountMinor: 1,
@@ -71,6 +72,12 @@ describe("quantity parser input bounds", () => {
     expect(() => parseQuantity(`1${"0".repeat(10_000)}`, "piece")).toThrow(
       "Quantity text exceeds the safe integer storage range."
     );
+  });
+
+  it("narrows an exact public subtraction and rejects a nonzero digit that cannot fit", () => {
+    const largest = parseQuantity("9007199254740991", "kg");
+    expect(subtractQuantity(largest, parseQuantity("1.0", "kg"))).toEqual(parseQuantity("9007199254740990", "kg"));
+    expect(() => subtractQuantity(largest, parseQuantity("0.1", "kg"))).toThrow("safe integer storage range");
   });
 });
 

@@ -1,13 +1,13 @@
-import { assertInventoryAmountKind, positionHasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
+import { assertInventoryAmountKind, itemHasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
 import {
-  allocateInventory,
   allocateInventoryUpTo,
-  compareInventoryAllocationCandidates,
+  allocateWorkingInventory,
+  compareWorkingAllocationCandidates,
   inventoryAllocationQuantityIfStorable,
   InventoryAllocationMethod,
-  type AllocateInventoryInput,
+  type AllocateWorkingInventoryInput,
   type InventoryAllocation,
-  type InventoryAllocationCandidate,
+  type InventoryWorkingAllocationCandidate,
 } from "./allocation.js";
 import {
   InventoryAmountKind,
@@ -24,8 +24,10 @@ import {
   type InventoryItemDefinitionRevision,
 } from "./catalog.js";
 import {
-  applyInventoryDeficitBurdenToPositions,
+  applyInventoryWorkingDeficitBurden,
   inventoryRecordedDeficitPoolSelector,
+  storeInventoryDeficitQuantity,
+  type InventorySignedDeficitRow,
 } from "./deficits.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
@@ -33,6 +35,7 @@ import {
   inventoryMeasurementAt,
   type InventoryMeasurementVector,
 } from "./measurements.js";
+import type { InventoryMeasurementTotals } from "./measurement-totals.js";
 import {
   inventoryStockPositionIdentity,
   type InventoryStockPosition,
@@ -41,21 +44,25 @@ import {
 } from "./model.js";
 import { findInventoryPositions, type InventoryProjectionState } from "./projection.js";
 import { inventoryPlacementAncestry } from "./placement.js";
-import { addExactQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
+import {
+  addExactQuantityDigits,
+  compareWorkingQuantities,
+  subtractWorkingQuantity,
+  type ExactQuantityDigits,
+  type InventoryWorkingQuantity,
+} from "./quantity-storage.js";
 import {
   inventoryScopedStockMatches,
   type InventoryScopedStockPool,
   type InventoryScopedStockPosition,
 } from "./stock-scope.js";
 import {
-  addQuantity,
   compareQuantity,
   positiveQuantity,
   quantity,
   quantityEq,
   quantityToDecimalString,
   quantityWholeMultipleCount,
-  subtractQuantity,
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
@@ -215,14 +222,58 @@ export interface PlanInventoryAllocationInPoolInput
   readonly selection: ResolvedAllocationSelection;
   /** Complete signed pool rows and claim states at the requested reservation time. */
   readonly pool: InventoryScopedStockPool;
+}
+
+/** One exact unpublished stock position in an ordered policy batch. */
+export interface InventoryPolicyWorkingPosition {
+  /** Exact signed position receiving the ordered debits. */
+  readonly key: InventoryStockPositionKey;
+  /** Affected measurement balances before the enclosing event is published. */
+  readonly totals: InventoryMeasurementTotals;
+}
+
+/** Published policy evidence with either a published or an unpublished balance. */
+export interface InventoryPolicyWorkingRow extends Omit<InventoryScopedStockPosition, "position"> {
+  /** Current exact stock row at the current point in the ordered batch. */
+  readonly position: InventoryStockPosition | InventoryPolicyWorkingPosition;
+}
+
+/** Signed stock and claims read at one fence with ordered balance changes applied. */
+export interface InventoryPolicyWorkingPool extends Omit<InventoryScopedStockPool, "positions"> {
+  /** Positions over which the policy reducer may plan. */
+  readonly positions: readonly InventoryPolicyWorkingRow[];
+}
+
+/** Picker input shared by published previews and physical movement planning. */
+export interface PlanWorkingInventoryAllocationInput extends Omit<PlanInventoryAllocationInPoolInput, "pool"> {
+  /** Complete physical pool with any preceding requests' unpublished debits. */
+  readonly pool: InventoryPolicyWorkingPool;
   /** A physical attempt defers measured residuals until the witness plan is chosen. */
   readonly recordingAttempt?: "prefer-unheld" | "all-physical";
   /** Record mode can keep a compatible partial witness and post the measured remainder. */
   readonly allowMeasuredShortfall?: boolean;
 }
 
+/** Internal picker result before a caller asks for separately materialized deficit totals. */
+export interface InventoryWorkingPolicyAllocationPlan extends Omit<InventoryPolicyAllocationPlan, "recordedDeficit" | "uncoveredDeficit"> {
+  /** Exact deficit in the selected pools, retained in working digits while recording. */
+  readonly recordedDeficit: InventoryWorkingQuantity;
+  /** Exact deficit left after every selected pool contributes capacity. */
+  readonly uncoveredDeficit: InventoryWorkingQuantity;
+}
+
 /** Plan exact FIFO/FEFO picks over one complete signed stock pool. */
-export function planInventoryAllocationInPool({
+export function planInventoryAllocationInPool(input: PlanInventoryAllocationInPoolInput): InventoryPolicyAllocationPlan {
+  const result = planWorkingInventoryAllocation(input);
+  return {
+    ...result,
+    recordedDeficit: storeInventoryDeficitQuantity(result.recordedDeficit),
+    uncoveredDeficit: storeInventoryDeficitQuantity(result.uncoveredDeficit),
+  };
+}
+
+/** Plan over private balances without storing temporary capacities or deficit totals. */
+export function planWorkingInventoryAllocation({
   catalog,
   selection: selected,
   pool,
@@ -235,7 +286,7 @@ export function planInventoryAllocationInPool({
   recordingAttempt,
   allowMeasuredShortfall = false,
   reservationAtEpochMs = atEpochMs,
-}: PlanInventoryAllocationInPoolInput): InventoryPolicyAllocationPlan {
+}: PlanWorkingInventoryAllocationInput): InventoryWorkingPolicyAllocationPlan {
   assertInventoryEpochMilliseconds(atEpochMs, "inventory allocation authority time");
   assertInventoryEpochMilliseconds(
     reservationAtEpochMs,
@@ -265,7 +316,7 @@ export function planInventoryAllocationInPool({
     poolCandidates: candidateResult.candidates,
   });
   /** Use the same eligible candidates and order for primary and measured selection. */
-  const allocationInput: AllocateInventoryInput = {
+  const allocationInput: AllocateWorkingInventoryInput = {
     requested: requestedPrimary,
     candidates: deficitAdjusted.candidates,
     method,
@@ -273,9 +324,9 @@ export function planInventoryAllocationInPool({
     // Expired rows were removed before assigning the direct-placement-pool deficit burden.
     allowExpired: true,
   };
-  let allocated = allocateInventory(allocationInput);
+  let allocated = allocateWorkingInventory(allocationInput);
   /** The exact current witnesses at each selected quantity. */
-  const buildLines = (allocations: readonly InventoryAllocation[]): InventoryPolicyAllocationLine[] =>
+  const buildLines = (allocations: readonly InventoryAllocation[]): InventoryPolicyAllocationLine[] | undefined =>
     inventoryPolicyAllocationLines({
       catalog,
       item: selected.item,
@@ -285,25 +336,25 @@ export function planInventoryAllocationInPool({
     });
   let lines = buildLines(allocated.allocations);
   const deferMeasuredShortfall = recordingAttempt !== undefined && amount.independent.length > 0;
-  if (deferMeasuredShortfall) {
-    const residual = inventoryPolicyMovementRemainder({
-      catalog, item: selected.item, report: resolved.measurements, lines,
-    });
-    if (residual === undefined && (allocated.shortfall.amountMinor === 0 ||
+  if (lines === undefined || deferMeasuredShortfall) {
+    /** Check all selected axes before accepting a trial as immutable movement evidence. */
+    const acceptsLines = (choices: readonly InventoryPolicyAllocationLine[] | undefined): boolean =>
+      choices !== undefined && (!deferMeasuredShortfall || inventoryPolicyMovementRemainder({
+        catalog, item: selected.item, report: resolved.measurements, lines: choices,
+      }) !== undefined);
+    if (!acceptsLines(lines) && (lines === undefined || allocated.shortfall.amountMinor === 0 ||
       (allowMeasuredShortfall && !allocated.incrementBlockedStock))) {
-      // Read other assignments only when the primary-first witness contradicts the report.
-      const canRecordPartial = allowMeasuredShortfall && !allocated.incrementBlockedStock;
+      // Consider another assignment when the primary-first trial cannot produce exact evidence.
+      const canRecordPartial = deferMeasuredShortfall && allowMeasuredShortfall && !allocated.incrementBlockedStock;
       // With a genuine primary shortage, no matching recorded row may exist at all.
       const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0;
-      const findWitness = canRecordPartial ? allocateInventoryUpTo : allocateInventory;
+      const findWitness = canRecordPartial ? allocateInventoryUpTo : allocateWorkingInventory;
       const measured = findWitness({
         ...allocationInput,
         /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
-        acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && inventoryPolicyMovementRemainder({
-          catalog, item: selected.item, report: resolved.measurements, lines: buildLines(choices),
-        }) !== undefined,
+        acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && acceptsLines(buildLines(choices)),
       });
-      if (measured.allocations.length > 0 || canRecordWithoutWitness) {
+      if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
         // The unconstrained primary pass already ruled out a shortage caused by increments.
         // Unused rows in this compatible partial plan can instead be blocked by measured axes.
         allocated = measured.shortfall.amountMinor > 0 && canRecordPartial
@@ -313,6 +364,7 @@ export function planInventoryAllocationInPool({
       }
     }
   }
+  if (lines === undefined) throw new Error("Accepted allocation cannot store its measured lines.");
   return {
     selector: selected.selector,
     itemRevisionId: selected.item.revisionId,
@@ -351,15 +403,15 @@ interface InventoryPolicyAllocationLinesInput {
   /** Exact quantities assigned in picking order. */
   readonly allocations: readonly InventoryAllocation[];
   /** Eligible candidates with FIFO origin and expiry. */
-  readonly candidates: ReadonlyMap<string, InventoryAllocationCandidate>;
+  readonly candidates: ReadonlyMap<string, InventoryWorkingAllocationCandidate>;
   /** Current signed stock rows with the exact measurements. */
-  readonly rows: ReadonlyMap<string, InventoryScopedStockPosition>;
+  readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
 }
 
 /** Materialize exact movement lines from allocations and the frozen source rows. */
 function inventoryPolicyAllocationLines({
   catalog, item, allocations, candidates, rows,
-}: InventoryPolicyAllocationLinesInput): InventoryPolicyAllocationLine[] {
+}: InventoryPolicyAllocationLinesInput): InventoryPolicyAllocationLine[] | undefined {
   // Final allocation lines assembled from the reviewed candidate/result pairing.
   const lines: InventoryPolicyAllocationLine[] = [];
   for (const allocation of allocations) {
@@ -374,14 +426,14 @@ function inventoryPolicyAllocationLines({
     if (currentPosition === undefined) {
       throw new Error("Inventory allocation candidate disappeared from its reviewed stock pool.");
     }
+    const amount = inventoryAmountForWorkingPrimaryAllocation({
+      catalog, itemRevisionId: item.revisionId, position: currentPosition, allocatedPrimary: allocation.quantity,
+    });
+    // A whole working row can have an independent axis that cannot be used in a durable line.
+    if (amount === undefined) return undefined;
     lines.push({
       position: allocation.position,
-      amount: inventoryAmountForPrimaryAllocation({
-        catalog,
-        itemRevisionId: item.revisionId,
-        position: currentPosition,
-        allocatedPrimary: allocation.quantity,
-      }),
+      amount,
       allocatedPrimary: allocation.quantity,
       layerStartedAtEpochMs: candidate.receivedAtEpochMs,
       ...(candidate.expiresAtEpochMs === undefined
@@ -459,9 +511,9 @@ export interface ResolvedAllocationSelection {
 /** Candidate collection plus lookup/evidence needed to materialize public movement lines. */
 interface PolicyAllocationCandidates {
   /** Exact physical candidates accepted by the generic allocation algorithm. */
-  readonly candidates: readonly InventoryAllocationCandidate[];
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
   /** Exact current signed rows, including ancestry and layer evidence. */
-  readonly rowsById: ReadonlyMap<string, InventoryScopedStockPosition>;
+  readonly rowsById: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** True when at least one active same-revision claim is still broad/unallocated. */
   readonly unallocatedReservationsPresent: boolean;
 }
@@ -469,16 +521,16 @@ interface PolicyAllocationCandidates {
 /** Positive policy candidates after durable deficit has first claim on each direct-placement pool. */
 interface DeficitAdjustedPolicyAllocationCandidates {
   /** Remaining positive physical candidates in deterministic policy order. */
-  readonly candidates: readonly InventoryAllocationCandidate[];
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
   /** Adjusted candidate lookup keyed by exact position identity. */
   readonly byPositionIdentity: ReadonlyMap<
     string,
-    InventoryAllocationCandidate
+    InventoryWorkingAllocationCandidate
   >;
   /** Existing deficit magnitude in all selected direct-placement pools. */
-  readonly recordedDeficit: Quantity;
+  readonly recordedDeficit: InventoryWorkingQuantity;
   /** Existing deficit still unbacked after every eligible pool candidate. */
-  readonly uncoveredDeficit: Quantity;
+  readonly uncoveredDeficit: InventoryWorkingQuantity;
   /** True when at least one caller-selected row was removed for expiry policy. */
   readonly expiredStockWasExcluded: boolean;
 }
@@ -486,7 +538,7 @@ interface DeficitAdjustedPolicyAllocationCandidates {
 /** Inputs for reducing positive policy candidates by signed recorded deficit. */
 interface ApplyPolicyAllocationDeficitBurdenInput {
   /** All signed rows in the affected pools and their ancestry. */
-  readonly rowsById: ReadonlyMap<string, InventoryScopedStockPosition>;
+  readonly rowsById: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** Exact caller selector applied after the direct-placement pool pays its deficit once. */
   readonly selector: InventoryStockSelector;
   /** Exact item revision/primary axis. */
@@ -498,7 +550,7 @@ interface ApplyPolicyAllocationDeficitBurdenInput {
   /** Whether expired rows may back deficit and remain allocatable. */
   readonly allowExpiredLots: boolean;
   /** Positive claim-adjusted candidates across the whole direct-placement pool. */
-  readonly poolCandidates: readonly InventoryAllocationCandidate[];
+  readonly poolCandidates: readonly InventoryWorkingAllocationCandidate[];
 }
 
 /**
@@ -517,9 +569,10 @@ function applyPolicyAllocationDeficitBurden({
 }: ApplyPolicyAllocationDeficitBurdenInput): DeficitAdjustedPolicyAllocationCandidates {
   // A selector can narrow by lot or owner only after the entire pool bears its deficit.
   const selectedIds = new Set<string>();
-  const positions: InventoryStockPosition[] = [];
+  const deficits: InventorySignedDeficitRow[] = [];
   for (const [positionId, row] of rowsById) {
-    positions.push(row.position);
+    const signed = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
+    if (signed.amountMinor < 0n) deficits.push({ position: row.position.key, signed });
     if (inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) {
       selectedIds.add(positionId);
     }
@@ -527,7 +580,7 @@ function applyPolicyAllocationDeficitBurden({
   // Remember whether policy filtering hid otherwise selector-matching expired stock.
   let expiredStockWasExcluded = false;
   // Candidate buffer retained in policy order before direct-placement deficit burden is applied.
-  const ordered: InventoryAllocationCandidate[] = [];
+  const ordered: InventoryWorkingAllocationCandidate[] = [];
   for (const candidate of poolCandidates) {
     const expired =
       candidate.expiresAtEpochMs !== undefined && candidate.expiresAtEpochMs <= atEpochMs;
@@ -541,12 +594,11 @@ function applyPolicyAllocationDeficitBurden({
   }
   ordered.sort(
     /** Use the same exact ordering as the eventual allocator. */
-    (left, right) => compareInventoryAllocationCandidates(left, right, method)
+    (left, right) => compareWorkingAllocationCandidates(left, right, method)
   );
-  const burden = applyInventoryDeficitBurdenToPositions({
-    positions,
+  const burden = applyInventoryWorkingDeficitBurden({
+    deficits,
     itemRevisionId: item.revisionId,
-    axisId: item.primaryAxis.axisId,
     unit: item.primaryAxis.unit,
     placementNodeIds: [],
     lines: ordered.map(
@@ -561,9 +613,9 @@ function applyPolicyAllocationDeficitBurden({
     ),
   });
   // Candidate buffer after selector matching and one-time direct-placement deficit burden.
-  const adjusted: InventoryAllocationCandidate[] = [];
+  const adjusted: InventoryWorkingAllocationCandidate[] = [];
   // Exact lookup used to reconcile allocator output back to the adjusted candidate metadata.
-  const byPositionIdentity = new Map<string, InventoryAllocationCandidate>();
+  const byPositionIdentity = new Map<string, InventoryWorkingAllocationCandidate>();
   for (const candidate of ordered) {
     const identity = inventoryStockPositionIdentity(candidate.position);
     if (!selectedIds.has(identity)) continue;
@@ -573,12 +625,7 @@ function applyPolicyAllocationDeficitBurden({
         `Inventory deficit adjustment lost policy candidate '${identity}'.`
       );
     }
-    if (
-      compareQuantity(
-        available,
-        zeroQuantity(available.unit, available.decimals)
-      ) <= 0
-    ) {
+    if (available.amountMinor <= 0n) {
       continue;
     }
     const value = { ...candidate, available };
@@ -599,7 +646,7 @@ interface CreatePolicyAllocationCandidatesInput {
   /** Frozen catalogue. */
   readonly catalog: InventoryCatalog;
   /** Complete signed position pool and relevant claim states. */
-  readonly pool: InventoryScopedStockPool;
+  readonly pool: InventoryPolicyWorkingPool;
   /** Exact item revision and reservation axis policy. */
   readonly item: InventoryItemDefinitionRevision;
   /** Claim-book authority time used to reconstruct active reservations. */
@@ -706,11 +753,11 @@ function createPolicyAllocationCandidates({
   allowAllocatedStock,
   keepIndependentHoldsWhole,
 }: CreatePolicyAllocationCandidatesInput): PolicyAllocationCandidates {
-  const rowsById = new Map<string, InventoryScopedStockPosition>();
+  const rowsById = new Map<string, InventoryPolicyWorkingRow>();
   for (const row of pool.positions) {
     rowsById.set(inventoryStockPositionIdentity(row.position.key), row);
   }
-  const candidates: InventoryAllocationCandidate[] = [];
+  const candidates: InventoryWorkingAllocationCandidate[] = [];
   const reservationSummary = createExactPrimaryReservationSummary({
     reservations: pool.reservations,
     positions: rowsById,
@@ -725,28 +772,11 @@ function createPolicyAllocationCandidates({
     const position = row.position;
     // Prepared, in-transit, detached and missing stock cannot supply an ordinary pick.
     if (position.key.transferId !== undefined || position.key.placementNodeId === undefined) continue;
-    const onHand = inventoryMeasurementAt(
-      position.measurements,
-      item.primaryAxis.axisId,
-      item.primaryAxis.unit
-    );
-    if (
-      compareQuantity(onHand, zeroQuantity(onHand.unit, onHand.decimals)) <= 0
-    )
-      continue;
-    const exactReserved = allowAllocatedStock
-      ? zeroQuantity(item.primaryAxis.unit)
-      : reservationSummary.reservedPrimaryByPositionIdentity.get(
-          positionIdentity
-        ) ?? zeroQuantity(item.primaryAxis.unit);
-    const available = subtractQuantity(onHand, exactReserved);
-    if (
-      compareQuantity(
-        available,
-        zeroQuantity(available.unit, available.decimals)
-      ) <= 0
-    )
-      continue;
+    const onHand = inventoryPolicyPositionMeasurement(position, item.primaryAxis.axisId, item.primaryAxis.unit);
+    if (onHand.amountMinor <= 0n) continue;
+    const exactReserved = reservationSummary.reservedPrimaryByPositionIdentity.get(positionIdentity);
+    const available = exactReserved === undefined ? onHand : subtractWorkingQuantity(onHand, exactReserved);
+    if (available.amountMinor <= 0n) continue;
     const receivedAtEpochMs =
       row.layerStartedAtEpochMs;
     if (receivedAtEpochMs === undefined) {
@@ -755,12 +785,12 @@ function createPolicyAllocationCandidates({
       );
     }
     const expiresAtEpochMs = row.effectiveUseByEpochMs;
-    const candidate: InventoryAllocationCandidate = {
+    const candidate: InventoryWorkingAllocationCandidate = {
       position: position.key,
       available,
       receivedAtEpochMs,
       ...(expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs }),
-      ...allocationIncrementForPosition(catalog, position, item),
+      ...allocationIncrementForPosition(catalog, position, item, onHand),
     };
     candidates.push(candidate);
   }
@@ -772,10 +802,33 @@ function createPolicyAllocationCandidates({
   };
 }
 
+/** Read one exact axis without storing the batch's entire private row. */
+export function inventoryPolicyPositionMeasurement(
+  position: InventoryPolicyWorkingRow["position"],
+  axisId: string,
+  unit: Quantity["unit"],
+): InventoryWorkingQuantity {
+  if ("measurements" in position) return inventoryMeasurementAt(position.measurements, axisId, unit);
+  const total = position.totals.get(axisId);
+  return total === undefined ? zeroQuantity(unit) : { amountMinor: total.minor, decimals: total.decimals, unit: total.unit };
+}
+
+/** Test whether a private or published row must be picked whole to retain its measured axes. */
+function policyPositionHasUnfixedContents(
+  position: InventoryPolicyWorkingRow["position"],
+  item: InventoryItemDefinitionRevision,
+  packaging?: ReturnType<InventoryCatalog["packagingRevision"]>,
+): boolean {
+  return itemHasUnfixedIndependentMeasuredContents(item, packaging,
+    /** Optional measured axes matter only when the position actually contains them. */
+    (axis) => BigInt(inventoryPolicyPositionMeasurement(position, axis.axisId, axis.unit).amountMinor) !== 0n,
+  );
+}
+
 /** Exact reservation pressure precomputed once for one revision-frozen policy plan. */
 interface ExactPrimaryReservationSummary {
   /** Active exact claim quantity keyed by exact stock-position identity. */
-  readonly reservedPrimaryByPositionIdentity: ReadonlyMap<string, Quantity>;
+  readonly reservedPrimaryByPositionIdentity: ReadonlyMap<string, InventoryWorkingQuantity>;
   /** True when an active same-revision claim remains broad rather than position-bound. */
   readonly unallocatedReservationsPresent: boolean;
 }
@@ -785,7 +838,7 @@ interface CreateExactPrimaryReservationSummaryInput {
   /** Reservation rows reconstructed at the claim-book authority time. */
   readonly reservations: readonly InventoryReservation[];
   /** Exact signed rows of this selected pool, keyed by position. */
-  readonly positions: ReadonlyMap<string, InventoryScopedStockPosition>;
+  readonly positions: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** Exact item revision whose primary candidates are being planned. */
   readonly item: InventoryItemDefinitionRevision;
   /** Claim-book authority time used to decide whether each row still protects stock. */
@@ -809,7 +862,7 @@ function createExactPrimaryReservationSummary({
   keepIndependentHoldsWhole,
 }: CreateExactPrimaryReservationSummaryInput): ExactPrimaryReservationSummary {
   // Exact primary-axis pressure accumulated once per bound stock position.
-  const reservedPrimaryByPositionIdentity = new Map<string, Quantity>();
+  const reservedPrimaryByPositionIdentity = new Map<string, InventoryWorkingQuantity>();
   // Remember whether any active broad claim still needs global feasibility protection.
   let unallocatedReservationsPresent = false;
   for (const reservation of reservations) {
@@ -829,19 +882,24 @@ function createExactPrimaryReservationSummary({
       if (item.reservationAxisId !== item.primaryAxis.axisId) {
         if (keepIndependentHoldsWhole) {
           // One primary count cannot be inferred from an independently measured hold.
-          reservedPrimaryByPositionIdentity.set(positionIdentity, row.position.measurements.primary.quantity);
+          reservedPrimaryByPositionIdentity.set(positionIdentity,
+            inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit));
           continue;
         }
         throw new Error(
           "Automatic primary-quantity picking cannot subtract an exact reservation on an independent axis; use explicit fulfillment lines."
         );
       }
-      const existing =
-        reservedPrimaryByPositionIdentity.get(positionIdentity) ??
-        zeroQuantity(item.primaryAxis.unit);
+      const existing = reservedPrimaryByPositionIdentity.get(positionIdentity);
+      if (existing === undefined) {
+        reservedPrimaryByPositionIdentity.set(positionIdentity, allocation.quantity);
+        continue;
+      }
+      const reserved = { minor: BigInt(existing.amountMinor), decimals: existing.decimals };
+      addExactQuantityDigits(reserved, BigInt(allocation.quantity.amountMinor), allocation.quantity.decimals);
       reservedPrimaryByPositionIdentity.set(
         positionIdentity,
-        addQuantity(existing, allocation.quantity)
+        { amountMinor: reserved.minor, decimals: reserved.decimals, unit: existing.unit }
       );
     }
   }
@@ -854,24 +912,20 @@ function createExactPrimaryReservationSummary({
 /** Mark serial, measured, and intact-package rows with the smallest legal automatic issue increment. */
 function allocationIncrementForPosition(
   catalog: InventoryCatalog,
-  position: InventoryStockPosition,
-  item: InventoryItemDefinitionRevision
-): Pick<InventoryAllocationCandidate, "allocationIncrement"> {
-  const capacity = inventoryMeasurementAt(
-    position.measurements,
-    item.primaryAxis.axisId,
-    item.primaryAxis.unit
-  );
+  position: InventoryPolicyWorkingRow["position"],
+  item: InventoryItemDefinitionRevision,
+  capacity: InventoryWorkingQuantity,
+): Pick<InventoryWorkingAllocationCandidate, "allocationIncrement"> {
   if (position.key.serialId !== undefined)
     return { allocationIncrement: capacity };
   const packagingRevisionId = position.key.packagingRevisionId;
   if (packagingRevisionId === undefined) {
-    return positionHasUnfixedIndependentMeasuredContents(position, item)
+    return policyPositionHasUnfixedContents(position, item)
       ? { allocationIncrement: capacity }
       : {};
   }
   const packaging = catalog.packagingRevision(packagingRevisionId);
-  if (positionHasUnfixedIndependentMeasuredContents(position, item, packaging)) {
+  if (policyPositionHasUnfixedContents(position, item, packaging)) {
     return { allocationIncrement: capacity };
   }
   return {
@@ -955,11 +1009,37 @@ export interface InventoryAmountForPrimaryAllocationInput {
 
 /** Convert one exact primary allocation into a normal public amount or fail on lossy measured splitting. */
 export function inventoryAmountForPrimaryAllocation({
+  catalog, itemRevisionId, position, allocatedPrimary,
+}: InventoryAmountForPrimaryAllocationInput): InventoryAmount {
+  const amount = inventoryAmountForWorkingPrimaryAllocation({ catalog, itemRevisionId, position, allocatedPrimary });
+  if (amount === undefined) throw new Error("Selected inventory measurement exceeds the safe integer storage range.");
+  return amount;
+}
+
+/** Exact line construction over either a published or ordered-batch working row. */
+interface InventoryAmountForWorkingPrimaryAllocationInput extends Omit<InventoryAmountForPrimaryAllocationInput, "position"> {
+  /** Current exact source and all its measured axes. */
+  readonly position: InventoryPolicyWorkingRow["position"];
+}
+
+/** Read the selected independent axis when it is about to become durable movement evidence. */
+function measuredAllocationAxis(
+  position: InventoryPolicyWorkingRow["position"],
+  axisId: string,
+  unit: Quantity["unit"],
+): Quantity | undefined {
+  if ("measurements" in position) return inventoryMeasurementAt(position.measurements, axisId, unit);
+  const working = inventoryPolicyPositionMeasurement(position, axisId, unit);
+  return inventoryAllocationQuantityIfStorable(BigInt(working.amountMinor), working.decimals, unit);
+}
+
+/** Construct the same exact public line even if an unused part of the pool exceeds storage scale. */
+function inventoryAmountForWorkingPrimaryAllocation({
   catalog,
   itemRevisionId,
   position,
   allocatedPrimary,
-}: InventoryAmountForPrimaryAllocationInput): InventoryAmount {
+}: InventoryAmountForWorkingPrimaryAllocationInput): InventoryAmount | undefined {
   const item = catalog.itemRevision(itemRevisionId);
   if (
     position.key.itemRevisionId !== itemRevisionId ||
@@ -970,24 +1050,20 @@ export function inventoryAmountForPrimaryAllocation({
     );
   }
   positiveQuantity(allocatedPrimary, "Primary allocation quantity");
-  const fullPrimary = inventoryMeasurementAt(
-    position.measurements,
-    item.primaryAxis.axisId,
-    item.primaryAxis.unit
-  );
-  if (compareQuantity(allocatedPrimary, fullPrimary) > 0) {
+  const fullPrimary = inventoryPolicyPositionMeasurement(position, item.primaryAxis.axisId, item.primaryAxis.unit);
+  const comparedWithFullPosition = compareWorkingQuantities(allocatedPrimary, fullPrimary);
+  if (comparedWithFullPosition > 0) {
     throw new Error(
       "Primary allocation exceeds current stock at its exact position."
     );
   }
-  const takesWholePosition =
-    compareQuantity(allocatedPrimary, fullPrimary) === 0;
+  const takesWholePosition = comparedWithFullPosition === 0;
   const packagingRevisionId = position.key.packagingRevisionId;
   if (packagingRevisionId !== undefined) {
     const packaging = catalog.packagingRevision(packagingRevisionId);
     if (
       !takesWholePosition &&
-      positionHasUnfixedIndependentMeasuredContents(position, item, packaging)
+      policyPositionHasUnfixedContents(position, item, packaging)
     ) {
       throw new Error(
         "Automatic picking cannot split a package position with independently measured contents; select exact measured lines."
@@ -1010,11 +1086,8 @@ export function inventoryAmountForPrimaryAllocation({
     const independent: InventoryIndependentAmountInput[] = [];
     for (const axis of item.independentAxes) {
       if (fixedAxes.has(axis.axisId)) continue;
-      const measured = inventoryMeasurementAt(
-        position.measurements,
-        axis.axisId,
-        axis.unit
-      );
+      const measured = measuredAllocationAxis(position, axis.axisId, axis.unit);
+      if (measured === undefined) return undefined;
       const preservesIndependentMeasurement =
         axis.requirement === InventoryMeasurementRequirement.Required ||
         compareQuantity(
@@ -1038,7 +1111,7 @@ export function inventoryAmountForPrimaryAllocation({
     );
   }
   if (!takesWholePosition) {
-    if (positionHasUnfixedIndependentMeasuredContents(position, item)) {
+    if (policyPositionHasUnfixedContents(position, item)) {
       throw new Error(
         "Automatic picking cannot proportionally split independently measured stock; select exact measured lines."
       );
@@ -1050,11 +1123,8 @@ export function inventoryAmountForPrimaryAllocation({
   }
   const independent: InventoryIndependentAmountInput[] = [];
   for (const axis of item.independentAxes) {
-    const measured = inventoryMeasurementAt(
-      position.measurements,
-      axis.axisId,
-      axis.unit
-    );
+    const measured = measuredAllocationAxis(position, axis.axisId, axis.unit);
+    if (measured === undefined) return undefined;
     if (
       axis.requirement === InventoryMeasurementRequirement.Required ||
       compareQuantity(measured, zeroQuantity(axis.unit, measured.decimals)) !==
