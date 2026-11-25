@@ -1,5 +1,5 @@
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { captureConservedPositiveLayerStarts } from "./stock-age.js";
+import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -1089,6 +1089,9 @@ function applyInventoryCommittedEventInternal(
       position === undefined ||
       !quantityIsPositive(position.measurements.primary.quantity)
     ) {
+      // The exact transfer still witnessed this route. All incoming stock
+      // paid down the signed balance, leaving no current layer to age.
+      if (inventoryConservedArrivalCanSettleDeficit(normalizedEvent)) continue;
       throw new Error(
         `Conserved FIFO provenance destination ${identity} is not positive after its event.`
       );

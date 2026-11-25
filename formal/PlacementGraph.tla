@@ -23,12 +23,18 @@ vars == <<parent, acceptsPlacement, stockAnchor,
           lastAction, anchorsBeforeLastMove, lastMovedNode,
           contentsBeforeLastEmbodimentTermination>>
 
-\* A finite functional parent graph is acyclic iff every nonempty node subset
-\* has at least one member whose parent escapes that subset.
-PlacementForest(p) ==
-  /\ p[NoParent] = NoParent
-  /\ \A subset \in SUBSET Nodes:
-       subset # {} => \E node \in subset: p[node] \notin subset
+\* Four parent steps suffice to reach the root in this finite forest.
+\* Reuse the constant set of valid parent maps across movement candidates.
+RECURSIVE FollowParent(_, _, _)
+FollowParent(p, node, steps) ==
+  IF steps = 0 THEN node ELSE FollowParent(p, p[node], steps - 1)
+
+ValidParentForests ==
+  {p \in [ParentDomain -> ParentDomain]:
+    p[NoParent] = NoParent /\
+    \A node \in Nodes: FollowParent(p, node, Cardinality(Nodes)) = NoParent}
+
+PlacementForest(p) == p \in ValidParentForests
 
 EmbodiedNodesFor(resource, embodiment) ==
   {node \in Nodes: embodiment[node] = resource}
@@ -223,10 +229,12 @@ MoveDirectContents(source, destination, splitEmbodiment) ==
         IF resource \in activeResources /\ resourcePlacement[resource] = source /\
            ~(splitEmbodiment /\ ResourceIsEmbodied(resource, embodimentByNode))
         THEN destination ELSE resourcePlacement[resource]]
+    \* An ancestor move's saved anchor snapshot has no meaning after a new direct move.
+    /\ anchorsBeforeLastMove' = stockAnchor'
     /\ lastAction' = "move-direct-contents"
     /\ lastMovedNode' = source
     /\ UNCHANGED <<acceptsPlacement, activeResources, retiredResources, genericUnits,
-                    embodimentByNode, retiredNodes, anchorsBeforeLastMove,
+                    embodimentByNode, retiredNodes,
                     contentsBeforeLastEmbodimentTermination>>
 
 Next(splitEmbodiment) ==

@@ -77,7 +77,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 | `ResourceDimensions` | 180,145 | 12,816 | 14 |
 | `ReservationScope` | 6,753 | 1,302 | 9 |
 | `ReservationScopeAllocationReplacement` | 2,361 | 548 | 7 |
-| `PlacementGraph` | 87,339,921 | 20,116 | 16 |
+| `PlacementGraph` | 6,755,789 | 428,012 | 13 |
 | `TraceabilityAssociation` | 49,153 | 4,096 | 13 |
 | `TraceabilityGraph` | 1,729 | 320 | 10 |
 | `PhysicalCount` | 5,272 | 1,794 | 16 |
@@ -88,7 +88,7 @@ The exact seed and fingerprint values vary by run. The latest complete run explo
 | `DurableTransferRefinement` | 7 | 6 | 5 |
 | `TransferLifecycle` | 4,321 | 929 | 7 |
 | `RepairLiveness` | 540 | 265 | 13 |
-| `RecordedDeficit` | 21,342 | 2,313 | 8 |
+| `RecordedDeficit` | 12,728,078 | 383,865 | 8 |
 | `SnapshotSupersededWorkflow` | 162 | 75 | 10 |
 | `InventoryOperation` | 22,689 | 3,889 | 11 |
 | `ImplementationConformance` | 172,510 | 6,481 | 5 |
@@ -211,7 +211,7 @@ revision or exact substitute; normal stock events continue to record the item ac
 
 ### Recorded deficits
 
-`RecordedDeficit.tla` distinguishes allocatable physical stock from a signed recorded liability. Its bounded operation model covers Record and Reject for issue, transfer, and scrap, receipts after a deficit, frozen operation intent/result shortfall, exact replay, and changed-intent rejection. Checked invariants require signed net to equal physical minus deficit, bound each physical decrement by pre-step available capacity, and require transfer arrival to match the witnessed decrement plus the unlabelled shortfall in the same step. The fabricated-arrival mutation credits the entire transfer to witnessed stock and must fail `TransferArrivalsMatchSeparateWitnesses`. A positive reachability witness requires a mixed transfer to occur in the ordinary model.
+`RecordedDeficit.tla` distinguishes witnessed lot stock, the policy Issue liability, and the signed unlabelled balance. A negative unlabelled balance reduces policy availability in the affected pool. Exact transfers witness at most the selected lot's balance. The source's signed net counts every debit once, and transfer arrivals match the witnessed decrement plus the unwitnessed shortfall in the same step. Replays return the frozen shortfall. The fabricated-arrival mutation credits the entire transfer to witnessed stock and fails `TransferArrivalsMatchSeparateWitnesses`. Positive reachability checks cover a mixed transfer and an unwitnessed debit that leaves a positive unlabelled balance.
 
 Executable refinement in the TypeScript façade reconstructs `InventoryOnceEventResult.deficit` from immutable event metadata/effects and checks it after restart with the memory reference adapter. Migration uses the same signed Issue semantics for coherent negative `__untracked__` rows rather than inventing opening receipts. Mongo/SQLite adapter checks belong to the backend/data slice.
 

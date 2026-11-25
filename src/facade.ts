@@ -850,9 +850,9 @@ export interface InventoryOncePolicyBatchAllocationLine {
   readonly expiresAtEpochMs?: number;
 }
 
-/** Exact durable shortfall recorded at a signed, non-allocatable source. */
+/** Exact durable shortfall posted as a signed debit at its source. */
 export interface InventoryOnceRecordedDeficit {
-  /** Exact position receiving the negative shortfall effect. */
+  /** Exact position receiving the negative shortfall effect, which can settle against an existing balance. */
   readonly position: InventoryStockPositionKey;
   /** Positive reported amount that the negative posting represents. */
   readonly amount: InventoryAmount;
@@ -4146,15 +4146,10 @@ async function planRecordedExactTransfer(
     if (from.serialId !== undefined) {
       throw new Error("Unwitnessed transfer cannot claim a serial identity.");
     }
-    const { lotId: witnessedLot, ...unlabelledSource } = from;
+    // The ledger nets signed postings at the real unlabelled key. The typed
+    // portion preserves the exact report even when the row stays positive.
+    const { lotId: _witnessedLot, ...unlabelledSource } = from;
     const unknownSource = { ...unlabelledSource, itemRevisionId };
-    if (witnessedLot !== undefined) {
-      const unlabelledId = inventoryStockPositionIdentity(unknownSource);
-      const unlabelled = await readPosition(unlabelledId);
-      if ((unlabelled?.measurements.primary.quantity.amountMinor ?? 0) > 0 && !sourceEffects.has(unlabelledId)) {
-        throw new Error("An exact lot shortage cannot consume existing unlabelled physical stock.");
-      }
-    }
     const remainder = witnessedMeasurements === undefined ? requested :
       subtractInventoryMeasurements(requested, witnessedMeasurements);
     unknown.push({
@@ -4464,16 +4459,19 @@ async function commitInventoryPolicyBatch(
           const prior = changed.get(id) ?? currentRows.get(id);
           const published = prior?.position ?? await source.position(id);
           const measurements = resolveInventoryAmount(internals.catalog, selection.item, deficit.evidence.amount).measurements;
-          const deficitRow = {
-            position: {
-              key: position,
-              measurements: published === undefined
-                ? negateInventoryMeasurements(measurements)
-                : subtractInventoryMeasurements(published.measurements, measurements),
-            },
+          const balance = published === undefined
+            ? negateInventoryMeasurements(measurements)
+            : subtractInventoryMeasurements(published.measurements, measurements);
+          // An unwitnessed debit can leave a positive remainder in the
+          // existing row. Its original FIFO and expiry facts still apply.
+          const deficitRow: InventoryScopedStockPosition = {
+            position: { key: position, measurements: balance },
             ancestry: prior?.ancestry ?? (position.placementNodeId === undefined
               ? []
               : await source.ancestry(position.placementNodeId)),
+            ...(balance.primary.quantity.amountMinor > 0 && prior?.layerStartedAtEpochMs !== undefined
+              ? { layerStartedAtEpochMs: prior.layerStartedAtEpochMs } : {}),
+            ...(prior?.effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs: prior.effectiveUseByEpochMs }),
           };
           changed.set(id, deficitRow);
           if (published === undefined || addedDeficits.get(revisionId)?.has(id)) {
@@ -5678,7 +5676,7 @@ interface PolicyRecordedDeficitInput {
   readonly input: InventoryOncePolicyMovementInput;
   /** Exact native allocation/shortfall result. */
   readonly allocation: InventoryPolicyAllocationPlan;
-  /** Look up the exact current deficit position to prevent collision with positive physical stock. */
+  /** Look up the dedicated Issue deficit position before assigning a signed liability. */
   readonly position: InventoryPolicyStockSource["position"];
 }
 
@@ -5724,19 +5722,11 @@ async function policyRecordedDeficit({
       : { packagingRevisionId: resolved.packaging.revisionId }),
   });
   assertPositionMatchesItem(item, position);
-  const identity = inventoryStockPositionIdentity(position);
-  const existing = await readPosition(identity);
-  if (existing !== undefined) {
-    let primary = existing.measurements.primary.quantity;
-    if (unwitnessed) {
-      // An unlabelled bucket may contain a witnessed pick followed by an unknown remainder.
-      for (const line of allocation.lines) {
-        if (inventoryStockPositionIdentity(line.position) === identity) {
-          primary = subtractQuantity(primary, line.allocatedPrimary);
-        }
-      }
-    }
-    if (primary.amountMinor > 0) {
+  // Policy Issue uses a dedicated deficit bucket. Transfer and scrap use
+  // the unlabelled stock key itself, so their signed posting may settle there.
+  if (!unwitnessed) {
+    const existing = await readPosition(inventoryStockPositionIdentity(position));
+    if (existing !== undefined && existing.measurements.primary.quantity.amountMinor > 0) {
       throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
     }
   }

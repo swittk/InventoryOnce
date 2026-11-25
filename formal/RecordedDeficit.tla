@@ -3,7 +3,9 @@ EXTENDS Integers, FiniteSets
 
 MaxQuantity == 3
 MovementQuantities == 1..2
-Verbs == {"issue", "scrap", "transfer"}
+PolicyVerbs == {"issue", "scrap", "transfer"}
+Verbs == PolicyVerbs \union {"exact-transfer"}
+TransferVerbs == {"transfer", "exact-transfer"}
 NoVerb == "none"
 NoArrivals == <<0, 0>>
 OperationIds == {"op-a", "op-b"}
@@ -17,16 +19,19 @@ Outcomes == {"none", "receipt", "record-full", "record-shortage",
 
 Min(left, right) == IF left <= right THEN left ELSE right
 Max(left, right) == IF left >= right THEN left ELSE right
-Available(physicalValue, deficitValue) == Max(physicalValue - deficitValue, 0)
+Available(physicalValue, issueDeficit, unlabelled) ==
+  Max(physicalValue - issueDeficit - Max(-unlabelled, 0), 0)
 Intent(mode, quantity, verb) == <<mode, quantity, verb>>
 
 VARIABLES physical, deficit, signedNet, beforePhysical, beforeDeficit,
-          beforeSignedNet, intentByOperation, resultShortfallByOperation,
+          beforeSignedNet, unlabelledNet, beforeUnlabelledNet,
+          intentByOperation, resultShortfallByOperation,
           lastOperation, lastMode, lastRequested, lastShortfall, lastOutcome,
           lastReplayed, lastChangedIntentRejected, lastVerb, arrivals, beforeArrivals
 
 vars == <<physical, deficit, signedNet, beforePhysical, beforeDeficit,
-          beforeSignedNet, intentByOperation, resultShortfallByOperation,
+          beforeSignedNet, unlabelledNet, beforeUnlabelledNet,
+          intentByOperation, resultShortfallByOperation,
           lastOperation, lastMode, lastRequested, lastShortfall, lastOutcome,
           lastReplayed, lastChangedIntentRejected, lastVerb, arrivals, beforeArrivals>>
 
@@ -35,10 +40,13 @@ Seen(op) == intentByOperation[op] # NoIntent
 Init ==
   /\ physical = 0
   /\ deficit = 0
-  /\ signedNet = 0
+  \* A source can already have positive stock in the same unlabelled row.
+  /\ unlabelledNet \in 0..MaxQuantity
+  /\ signedNet = unlabelledNet
   /\ beforePhysical = 0
   /\ beforeDeficit = 0
-  /\ beforeSignedNet = 0
+  /\ beforeSignedNet = signedNet
+  /\ beforeUnlabelledNet = unlabelledNet
   /\ intentByOperation = [op \in OperationIds |-> NoIntent]
   /\ resultShortfallByOperation = [op \in OperationIds |-> 0]
   /\ lastOperation = NoOperation
@@ -64,9 +72,10 @@ Receipt(quantity) ==
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
   /\ beforeSignedNet' = signedNet
+  /\ beforeUnlabelledNet' = unlabelledNet
   /\ physical' = physical + quantity
   /\ deficit' = deficit
-  /\ signedNet' = physical' - deficit'
+  /\ signedNet' = physical' - deficit' + unlabelledNet
   /\ lastOperation' = NoOperation
   /\ lastMode' = NoMode
   /\ lastVerb' = NoVerb
@@ -77,22 +86,27 @@ Receipt(quantity) ==
   /\ lastOutcome' = "receipt"
   /\ lastReplayed' = FALSE
   /\ lastChangedIntentRejected' = FALSE
-  /\ UNCHANGED <<intentByOperation, resultShortfallByOperation>>
+  /\ UNCHANGED <<unlabelledNet, intentByOperation, resultShortfallByOperation>>
 
 RecordMovement(op, quantity, verb, fabricate) ==
-  LET available == Available(physical, deficit)
+  LET available == IF verb = "exact-transfer" THEN physical
+                   ELSE Available(physical, deficit, unlabelledNet)
       allocated == Min(quantity, available)
       shortfall == quantity - allocated
   IN
     /\ Fresh(op)
     /\ quantity \in MovementQuantities
-    /\ deficit + shortfall <= MaxQuantity
+    /\ IF verb = "issue" THEN deficit + shortfall <= MaxQuantity
+                       ELSE unlabelledNet - shortfall >= -MaxQuantity
     /\ beforePhysical' = physical
     /\ beforeDeficit' = deficit
     /\ beforeSignedNet' = signedNet
+    /\ beforeUnlabelledNet' = unlabelledNet
     /\ physical' = physical - allocated
-    /\ deficit' = deficit + shortfall
-    /\ signedNet' = physical' - deficit'
+    /\ deficit' = IF verb = "issue" THEN deficit + shortfall ELSE deficit
+    /\ unlabelledNet' = IF verb = "issue" THEN unlabelledNet
+                         ELSE unlabelledNet - shortfall
+    /\ signedNet' = physical' - deficit' + unlabelledNet'
     /\ intentByOperation' = [intentByOperation EXCEPT
          ![op] = Intent("record", quantity, verb)]
     /\ resultShortfallByOperation' = [resultShortfallByOperation EXCEPT
@@ -101,7 +115,7 @@ RecordMovement(op, quantity, verb, fabricate) ==
     /\ lastMode' = "record"
     /\ lastVerb' = verb
     /\ beforeArrivals' = arrivals
-    /\ arrivals' = IF verb = "transfer"
+    /\ arrivals' = IF verb \in TransferVerbs
                       THEN IF fabricate
                            THEN <<arrivals[1] + quantity, arrivals[2]>>
                            ELSE <<arrivals[1] + allocated, arrivals[2] + shortfall>>
@@ -114,7 +128,7 @@ RecordMovement(op, quantity, verb, fabricate) ==
     /\ lastChangedIntentRejected' = FALSE
 
 RejectMovement(op, quantity, verb) ==
-  LET available == Available(physical, deficit)
+  LET available == Available(physical, deficit, unlabelledNet)
       shortfall == Max(quantity - available, 0)
   IN
     /\ Fresh(op)
@@ -122,7 +136,9 @@ RejectMovement(op, quantity, verb) ==
     /\ beforePhysical' = physical
     /\ beforeDeficit' = deficit
     /\ beforeSignedNet' = signedNet
+    /\ beforeUnlabelledNet' = unlabelledNet
     /\ lastMode' = "reject"
+    /\ UNCHANGED unlabelledNet
     /\ lastVerb' = verb
     /\ beforeArrivals' = arrivals
     /\ arrivals' = IF verb = "transfer" /\ shortfall = 0
@@ -135,7 +151,7 @@ RejectMovement(op, quantity, verb) ==
     /\ IF shortfall = 0
           THEN /\ physical' = physical - quantity
                /\ deficit' = deficit
-               /\ signedNet' = physical' - deficit'
+               /\ signedNet' = physical' - deficit' + unlabelledNet'
                /\ intentByOperation' = [intentByOperation EXCEPT
                     ![op] = Intent("reject", quantity, verb)]
                /\ resultShortfallByOperation' = [resultShortfallByOperation EXCEPT
@@ -157,6 +173,7 @@ Replay(op, mode, quantity, verb) ==
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
   /\ beforeSignedNet' = signedNet
+  /\ beforeUnlabelledNet' = unlabelledNet
   /\ lastOperation' = op
   /\ lastMode' = mode
   /\ lastVerb' = verb
@@ -167,7 +184,7 @@ Replay(op, mode, quantity, verb) ==
   /\ lastOutcome' = "replay"
   /\ lastReplayed' = TRUE
   /\ lastChangedIntentRejected' = FALSE
-  /\ UNCHANGED <<physical, deficit, signedNet, intentByOperation,
+  /\ UNCHANGED <<physical, deficit, signedNet, unlabelledNet, intentByOperation,
                   resultShortfallByOperation>>
 
 RejectChangedIntent(op, mode, quantity, verb) ==
@@ -177,6 +194,7 @@ RejectChangedIntent(op, mode, quantity, verb) ==
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
   /\ beforeSignedNet' = signedNet
+  /\ beforeUnlabelledNet' = unlabelledNet
   /\ lastOperation' = op
   /\ lastMode' = mode
   /\ lastVerb' = verb
@@ -187,14 +205,14 @@ RejectChangedIntent(op, mode, quantity, verb) ==
   /\ lastOutcome' = "changed-intent"
   /\ lastReplayed' = FALSE
   /\ lastChangedIntentRejected' = TRUE
-  /\ UNCHANGED <<physical, deficit, signedNet, intentByOperation,
+  /\ UNCHANGED <<physical, deficit, signedNet, unlabelledNet, intentByOperation,
                   resultShortfallByOperation>>
 
 Next(fabricate) ==
   \/ \E quantity \in MovementQuantities: Receipt(quantity)
   \/ \E op \in OperationIds, quantity \in MovementQuantities, verb \in Verbs:
        RecordMovement(op, quantity, verb, fabricate)
-  \/ \E op \in OperationIds, quantity \in MovementQuantities, verb \in Verbs:
+  \/ \E op \in OperationIds, quantity \in MovementQuantities, verb \in PolicyVerbs:
        RejectMovement(op, quantity, verb)
   \/ \E op \in OperationIds, mode \in Modes,
         quantity \in MovementQuantities, verb \in Verbs: Replay(op, mode, quantity, verb)
@@ -207,10 +225,12 @@ FabricatedTransferMutationSpec == Init /\ [][Next(TRUE)]_vars
 TypeOK ==
   /\ physical \in 0..MaxQuantity
   /\ deficit \in 0..MaxQuantity
-  /\ signedNet \in (-MaxQuantity)..MaxQuantity
+  /\ signedNet \in (-2 * MaxQuantity)..(2 * MaxQuantity)
   /\ beforePhysical \in 0..MaxQuantity
   /\ beforeDeficit \in 0..MaxQuantity
-  /\ beforeSignedNet \in (-MaxQuantity)..MaxQuantity
+  /\ beforeSignedNet \in (-2 * MaxQuantity)..(2 * MaxQuantity)
+  /\ unlabelledNet \in (-MaxQuantity)..MaxQuantity
+  /\ beforeUnlabelledNet \in (-MaxQuantity)..MaxQuantity
   /\ intentByOperation \in [OperationIds -> IntentValues]
   /\ resultShortfallByOperation \in [OperationIds -> 0..MaxQuantity]
   /\ lastOperation \in OperationIds \union {NoOperation}
@@ -224,18 +244,20 @@ TypeOK ==
   /\ arrivals \in (0..4) \X (0..4)
   /\ beforeArrivals \in (0..4) \X (0..4)
 
-SignedNetIsPhysicalMinusDeficit == signedNet = physical - deficit
+SignedNetIsPhysicalMinusDeficit == signedNet = physical - deficit + unlabelledNet
 
 RecordedDeficitNeverBecomesPhysical ==
-  /\ Available(physical, deficit) >= 0
-  /\ Available(physical, deficit) <= physical
-  /\ deficit > 0 => Available(physical, deficit) < physical \/ physical = 0
+  /\ Available(physical, deficit, unlabelledNet) >= 0
+  /\ Available(physical, deficit, unlabelledNet) <= physical
+  /\ (deficit > 0 \/ unlabelledNet < 0) => Available(physical, deficit, unlabelledNet) < physical \/ physical = 0
 
 \* Issue transitions may consume only capacity available before the step;
 \* recorded deficit is a liability and can never fund physical allocation.
 IssueConsumesOnlyAvailableCapacity ==
   ~(lastOutcome \in {"record-full", "record-shortage", "reject-full"}) \/
-    beforePhysical - physical <= Available(beforePhysical, beforeDeficit)
+    beforePhysical - physical <=
+      IF lastVerb = "exact-transfer" THEN beforePhysical
+      ELSE Available(beforePhysical, beforeDeficit, beforeUnlabelledNet)
 
 \* Scope: Seen(op) is defined by intentByOperation[op] # NoIntent; the first
 \* conjunct below records that representation invariant rather than adding a new transition check.
@@ -263,7 +285,7 @@ RecordShortageIsExplicit ==
     /\ lastShortfall > 0
     /\ intentByOperation[lastOperation] = Intent(lastMode, lastRequested, lastVerb)
     /\ resultShortfallByOperation[lastOperation] = lastShortfall
-    /\ deficit = beforeDeficit + lastShortfall
+    /\ deficit = IF lastVerb = "issue" THEN beforeDeficit + lastShortfall ELSE beforeDeficit
     /\ signedNet = beforeSignedNet - lastRequested
 
 RejectShortagePreservesTruth ==
@@ -311,7 +333,7 @@ ChangedIntentRejectsAndStutters ==
 \* A transfer publishes the two arrival portions with the signed source in one step.
 \* Other verbs, rejected attempts, and retries cannot add destination stock.
 TransferArrivalsMatchSeparateWitnesses ==
-  IF lastVerb = "transfer" /\ lastOutcome \in {"record-full", "record-shortage", "reject-full"}
+  IF lastVerb \in TransferVerbs /\ lastOutcome \in {"record-full", "record-shortage", "reject-full"}
   THEN /\ arrivals[1] - beforeArrivals[1] = beforePhysical - physical
        /\ arrivals[2] - beforeArrivals[2] = lastShortfall
        /\ arrivals[1] + arrivals[2] - beforeArrivals[1] - beforeArrivals[2]
@@ -320,7 +342,17 @@ TransferArrivalsMatchSeparateWitnesses ==
 
 \* The ordinary model must admit one witnessed transfer mixed with unknown arrival.
 MixedTransferIsUnreachable ==
-  ~(lastVerb = "transfer" /\ lastOutcome = "record-shortage" /\
+  ~(lastVerb \in TransferVerbs /\ lastOutcome = "record-shortage" /\
     arrivals[1] > beforeArrivals[1] /\ arrivals[2] > beforeArrivals[2])
+
+\* A signed unlabelled posting can settle against a row already on hand.
+UnlabelledSourceChangesByReportedRemainder ==
+  unlabelledNet = beforeUnlabelledNet -
+    (IF lastOutcome = "record-shortage" /\ lastVerb # "issue"
+     THEN lastShortfall ELSE 0)
+
+PositiveUnlabelledSettlementIsUnreachable ==
+  ~(lastVerb = "exact-transfer" /\ lastOutcome = "record-shortage" /\
+    beforePhysical > physical /\ beforeUnlabelledNet > unlabelledNet /\ unlabelledNet > 0)
 
 =============================================================================

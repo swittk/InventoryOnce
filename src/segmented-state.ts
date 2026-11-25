@@ -1,6 +1,6 @@
 import type { InMemoryInventorySegmentedPlacementStore } from "./segmented-placement.js";
 import { candidateSubtreePositionIds, inventoryScopedStockMatches } from "./stock-scope.js";
-import { captureConservedPositiveLayerStarts } from "./stock-age.js";
+import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import type { InventoryCatalogSnapshot } from "./catalog.js";
 import { inventorySha256 } from "./digest.js";
@@ -767,7 +767,11 @@ export class InMemoryInventorySegmentedPositionStore
       const positive = position !== undefined && position.measurements.primary.quantity.amountMinor > 0;
       if (positiveLayerStarts.has(positionId)) {
         if (!positive) {
-          throw new Error(`Conserved FIFO provenance destination ${positionId} is not positive after its event.`);
+          if (!inventoryConservedArrivalCanSettleDeficit(input.event)) {
+            throw new Error(`Conserved FIFO provenance destination ${positionId} is not positive after its event.`);
+          }
+          // No live stock remains to carry an age after the exact debit settles.
+          positiveLayerStarts.delete(positionId);
         }
       } else if (positive && !this.positiveLayerStarts.has(positionId)) {
         positiveLayerStarts.set(positionId, input.event.occurredAtEpochMs);

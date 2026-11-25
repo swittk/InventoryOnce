@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
+  InventoryOptionalIdentityConstraintKind,
   inventoryStockSelector,
+  packageAmount,
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
@@ -55,6 +57,133 @@ function issueCommand() {
 }
 
 describe("indexed stock planning and availability", () => {
+  it.each(["exact transfer", "policy transfer", "policy scrap"])(
+    "settles an unlabelled remainder against one signed row for %s",
+    async (verb) => {
+      for (const storage of [createInMemoryInventoryDurableStorage(), createInMemoryInventoryDurableStorage({ failpoint: () => undefined })]) {
+        const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+        await receiveKnownLots(inventory);
+        await inventory.stock.receive({
+          operationId: "receive-unlabelled", occurredAtEpochMs: time1,
+          to: loosePosition("store"), amount: stockAmount("5", "piece"),
+        });
+        const command = {
+          operationId: "reported-with-unlabelled", occurredAtEpochMs: time2, amount: stockAmount("4", "piece"),
+        };
+        const policy = {
+          ...command, method: InventoryAllocationMethod.Fifo,
+          selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], lotIds: ["old"] }),
+        };
+        const result = verb === "exact transfer" ? await inventory.stock.transfer({
+          ...command, from: loosePosition("store", { lotId: "old" }), toPlacementNodeId: "destination",
+        }) : verb === "policy transfer" ? await inventory.stock.transferByPolicy({
+          ...policy, toPlacementNodeId: "destination",
+        }) : await inventory.stock.scrapByPolicy({ ...policy, reason: "Destroyed stock" });
+        expect(result.event.unwitnessedStockMovements).toHaveLength(1);
+        const portion = result.event.unwitnessedStockMovements?.[0];
+        expect(portion?.measurements.primary.quantity.amountMinor).toBe(2);
+        expect(portion?.from.lotId).toBeUndefined();
+        expect(portion?.to?.lotId).toBeUndefined();
+        const source = await inventory.read.positions(selector);
+        expect(source.map((row) => [row.key.lotId, row.measurements.primary.quantity.amountMinor])).toEqual([
+          ["young", 2], [undefined, 3],
+        ]);
+        if (verb !== "policy scrap") {
+          const arrival = await inventory.read.planAllocation({
+            selector: inventoryStockSelector("item-a", { placementNodeIds: ["destination"] }),
+            amount: stockAmount("4", "piece"), method: InventoryAllocationMethod.Fifo, atEpochMs: time3,
+          });
+          expect(arrival.lines.map((line) => [line.position.lotId, line.allocatedPrimary.amountMinor, line.layerStartedAtEpochMs])).toEqual([
+            ["old", 2, time0], [undefined, 2, time2],
+          ]);
+        } else {
+          expect(result.event.reason).toBe("Destroyed stock");
+          expect(portion?.to).toBeUndefined();
+        }
+      }
+    }
+  );
+
+  it("keeps whole package counts when an unwitnessed posting settles into an existing row", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const packageId = "item-a-box-24-v1";
+    await inventory.stock.receive({
+      operationId: "lot-packages", occurredAtEpochMs: time0,
+      to: loosePosition("store", { lotId: "lot-pack" }), amount: packageAmount(1, packageId),
+    });
+    await inventory.stock.receive({
+      operationId: "unlabelled-packages", occurredAtEpochMs: time1,
+      to: loosePosition("store"), amount: packageAmount(3, packageId),
+    });
+    const result = await inventory.stock.transfer({
+      operationId: "reported-packages", occurredAtEpochMs: time2,
+      from: loosePosition("store", { lotId: "lot-pack" }), toPlacementNodeId: "destination",
+      amount: packageAmount(2, packageId),
+    });
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      from: { packagingRevisionId: packageId }, to: { packagingRevisionId: packageId },
+      measurements: { primary: { quantity: { amountMinor: 24 } } },
+    }]);
+    expect(await inventory.read.positions(selector)).toMatchObject([{
+      key: { packagingRevisionId: packageId },
+      measurements: { primary: { quantity: { amountMinor: 48 } } },
+    }]);
+  });
+
+  it("preserves FIFO evidence for the unlabelled balance after a prior batch request", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    await receiveKnownLots(inventory);
+    await inventory.stock.receive({
+      operationId: "receive-unlabelled", occurredAtEpochMs: time1,
+      to: loosePosition("store"), amount: stockAmount("5", "piece"),
+    });
+    const command = {
+      operationId: "batch-debits-and-picks", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      requests: [
+        {
+          requestId: "report-old", method: InventoryAllocationMethod.Fifo, amount: stockAmount("4", "piece"),
+          selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], lotIds: ["old"] }),
+        },
+        {
+          requestId: "pick-unlabelled", method: InventoryAllocationMethod.Fifo, amount: stockAmount("3", "piece"),
+          selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], lot: { kind: InventoryOptionalIdentityConstraintKind.Absent } }),
+        },
+      ],
+    };
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const result = await inventory.stock.transferManyByPolicy(command);
+    expect(result.allocations).toMatchObject([
+      { requestId: "report-old", deficit: { primary: { amountMinor: 2 } } },
+      { requestId: "pick-unlabelled", lines: [{ allocatedPrimary: { amountMinor: 3 }, layerStartedAtEpochMs: time1 }] },
+    ]);
+    expect((await inventory.stock.transferManyByPolicy(command)).event).toEqual(result.event);
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("retains the witnessed leg when the destination balance absorbs it", async () => {
+    for (const storage of [createInMemoryInventoryDurableStorage(), createInMemoryInventoryDurableStorage({ failpoint: () => undefined })]) {
+      const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+      await receiveKnownLots(inventory);
+      const formerBalance = loosePosition("destination", { lotId: "old" });
+      await inventory.stock.issue({
+        operationId: "unrecorded-destination-receipt", occurredAtEpochMs: time1, from: formerBalance,
+        amount: stockAmount("2", "piece"),
+      });
+      const result = await inventory.stock.transfer({
+        operationId: "settle-and-transfer", occurredAtEpochMs: time2,
+        from: loosePosition("store", { lotId: "old" }), toPlacementNodeId: "destination", amount: stockAmount("4", "piece"),
+      });
+      expect(result.event.positiveLayerProvenanceTransfers).toMatchObject([{ from: { lotId: "old" }, to: formerBalance }]);
+      const readDestination = inventoryStockSelector("item-a", { placementNodeIds: ["destination"] });
+      const arrival = await inventory.read.planAllocation({
+        selector: readDestination, amount: stockAmount("2", "piece"), method: InventoryAllocationMethod.Fifo, atEpochMs: time3,
+      });
+      expect(arrival.lines).toMatchObject([{ allocatedPrimary: { amountMinor: 2 }, layerStartedAtEpochMs: time2 }]);
+      expect((await inventory.read.world()).projection.lastRecordSequence).toBe(4);
+    }
+  });
+
   it("records an exact transfer shortage without copying the known lot, age or line cost", async () => {
     for (const storage of [createInMemoryInventoryDurableStorage(), createInMemoryInventoryDurableStorage({ failpoint: () => undefined })]) {
       const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);

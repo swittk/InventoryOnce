@@ -1,4 +1,4 @@
-import type { InventoryCommittedEvent } from "./events.js";
+import { InventoryEventKind, type InventoryCommittedEvent } from "./events.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 
 /** Capture FIFO age before a conserved movement changes source/destination positions. */
@@ -26,4 +26,9 @@ export function captureConservedPositiveLayerStarts(
     );
   }
   return result;
+}
+
+/** A direct transfer that pays down a signed balance only leaves an age when positive stock remains. */
+export function inventoryConservedArrivalCanSettleDeficit(event: InventoryCommittedEvent): boolean {
+  return event.kind === InventoryEventKind.Transfer && event.transferLifecycle === undefined;
 }

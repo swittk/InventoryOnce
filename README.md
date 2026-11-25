@@ -416,6 +416,8 @@ A clinic may explicitly configure `InventoryDeficitPolicy.Record`. In that mode,
 
 In Record mode, a reported transfer may contain both a witnessed part and an unwitnessed shortage. The witnessed part retains its real position identity, source FIFO age, and line evidence. `event.unwitnessedStockMovements` identifies the exact signed source and unlabelled arrival for the remainder. It carries no lot, serial, source-age or cost evidence. Policy scrap keeps the reported reason and records its unwitnessed quantity at an unlabelled signed source. When witnessed and unwitnessed quantities share an exact row, the stock effect is their total and any line evidence applies to the witnessed remainder after subtracting the typed unwitnessed portion. The existing tracking and intact-package requirements still apply.
 
+An unlabelled debit settles against the balance at the same exact position. If five unlabelled pieces are on hand and the report has two unwitnessed pieces, three remain at the source and the event still records both unwitnessed pieces. A witnessed arrival can also pay down a negative destination balance. Its FIFO age applies to any positive stock that remains at the destination.
+
 Migration may therefore preserve coherent clinic truth such as positive tracked lots plus a negative `__untracked__` row when their signed sum equals the parent balance. A negative opening is not synthesized as a receipt: it compiles to an explicit Issue deficit event. Unit identity, algebra, and unresolved workflow rows still fail closed.
 
 ## Reservations after physical loss
