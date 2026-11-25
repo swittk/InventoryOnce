@@ -206,6 +206,37 @@ it("reconciles a subtree count after an edge-only contents move on both storage 
   expect(await native.read.world()).toEqual(await canonical.read.world());
 });
 
+it("keeps an embodied edge and serial unchanged when a contents move would erase its positive row", async () => {
+  const catalog = createTabletCatalog();
+  for (const storage of [
+    createInMemoryInventoryDurableStorage(),
+    createInMemoryInventoryDurableStorage({ failpoint: () => undefined }),
+  ]) {
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.issue({
+      operationId: "serial-destination-deficit", occurredAtEpochMs: time0,
+      from: loosePosition("destination", { serialId: "deficit-case" }), amount,
+    });
+    await inventory.stock.receive({
+      operationId: "receive-deficit-case", occurredAtEpochMs: time0,
+      to: loosePosition("source"), amount,
+    });
+    await inventory.stock.individualize({
+      operationId: "embody-deficit-case", occurredAtEpochMs: time1,
+      from: loosePosition("source"), amount, serialId: "deficit-case",
+      asPlacementNode: { acceptsPlacement: true },
+    });
+    const before = await inventory.read.world();
+    await expect(inventory.placement.moveContents({
+      operationId: "move-into-serial-deficit", occurredAtEpochMs: time2,
+      nodeId: "source", into: "destination",
+    })).rejects.toThrow("is not positive after its event");
+    expect(await inventory.read.placementAncestry("deficit-case")).toEqual(["deficit-case", "source"]);
+    expect(await inventory.read.world()).toEqual(before);
+  }
+});
+
 /** Node use-by after opening but before the later test authority time. */
 const shortUseBy = 1787563800000;
 /** Corrected node use-by later than all test authority times. */

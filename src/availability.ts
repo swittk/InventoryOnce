@@ -561,7 +561,7 @@ interface AvailabilitySelectedDeficitBurdenInput {
 
 /**
  * Attribute one pool's deficit once across its positive rows, then report only the selected share.
- * A selector that explicitly includes the deficit row still sees the full signed liability.
+ * Signed on-hand includes selected deficit rows. Usable on-hand includes only burden assigned to usable stock.
  */
 function availabilitySelectedDeficitBurdenMeasurements({
   useBy,
@@ -572,7 +572,7 @@ function availabilitySelectedDeficitBurdenMeasurements({
   atEpochMs,
   usableOnly,
 }: AvailabilitySelectedDeficitBurdenInput): InventoryMeasurementVector {
-  if (selectedPositions.some(inventoryPositionIsDeficit)) {
+  if (!usableOnly && selectedPositions.some(inventoryPositionIsDeficit)) {
     return availabilityPoolDeficitMeasurements(
       poolPositions,
       item,

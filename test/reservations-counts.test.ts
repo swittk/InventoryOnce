@@ -345,6 +345,7 @@ describe("broad reservations and physical truth", () => {
       .toBe(1);
     await expect(restarted.stock.issue({ ...issue, amount: stockAmount("2", "piece") }))
       .rejects.toThrow("changed intent");
+    expect((await restarted.read.world()).revision).toBe(before.revision + 1);
   });
 
   it("keeps count lifecycle usable through an existing shortage and records further physical loss", async () => {

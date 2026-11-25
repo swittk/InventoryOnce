@@ -70,7 +70,21 @@ export * from "./composition.js";
 /** Revision-frozen read-only collection/taxonomy summaries. */
 export * from "./collections.js";
 /** Revision-frozen mutual-fungibility summaries and exact allocation planning. */
-export * from "./fungibility.js";
+export {
+  InventoryFungibilityReservationEffectKind,
+  inventoryFungibilityScopeIdentity,
+  normalizeInventoryFungibilityScope,
+  planInventoryFungibilityAllocation,
+  summarizeInventoryFungibility,
+  type InventoryFungibilityAllocationLine,
+  type InventoryFungibilityAllocationPlan,
+  type InventoryFungibilityMemberSummary,
+  type InventoryFungibilityReservationEffect,
+  type InventoryFungibilityScope,
+  type InventoryFungibilitySummary,
+  type PlanInventoryFungibilityAllocationInput,
+  type SummarizeInventoryFungibilityInput,
+} from "./fungibility.js";
 /** Shared lot/placement-ancestry expiry and effective-use-by helpers. */
 export * from "./usability.js";
 /** Exact finite-decimal quantity arithmetic. */

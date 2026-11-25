@@ -145,8 +145,10 @@ export async function commitInventoryOperation({
   assertOperationIdentity(operationId, intentFingerprint);
   assertPositiveSafeInteger(maxRevisionRetries, "maxRevisionRetries");
 
-  const existing = await storage.readOperation(operationId);
-  if (existing !== undefined) {
+  /** Replay an already frozen operation before consulting mutable physical stock. */
+  const readReplay = async (): Promise<CommitInventoryOperationResult | undefined> => {
+    const existing = await storage.readOperation(operationId);
+    if (existing === undefined) return undefined;
     assertSameIntent(existing, intentFingerprint);
     const receipt = await resumeInventoryDurableOperation(storage, operationId);
     const completedWorld = await storage.readWorld();
@@ -157,24 +159,25 @@ export async function commitInventoryOperation({
       ...(event === undefined ? {} : { event }),
       replayed: true,
     };
-  }
+  };
+  const replay = await readReplay();
+  if (replay !== undefined) return replay;
 
-  const initialWorld = await storage.readWorld();
-  assertInventoryCatalogRetainsSnapshot(catalog, initialWorld.catalog);
   for (let attempt = 0; attempt < maxRevisionRetries; attempt += 1) {
     const world = await storage.readWorld();
-    assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
     const recordedAtEpochMs = clock.nowEpochMs();
     assertInventoryEpochMilliseconds(recordedAtEpochMs, "inventory durable record time");
-    const logicalPlan = await plan({ world, recordedAtEpochMs });
-    const durablePlan = createDurableOperationPlan({
-      catalog,
-      world,
-      recordedAtEpochMs,
-      operationId,
-      deficitPolicy,
-      logicalPlan,
-    });
+    let durablePlan: InventoryDurableOperationPlan;
+    try {
+      assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
+      const logicalPlan = await plan({ world, recordedAtEpochMs });
+      durablePlan = createDurableOperationPlan({ catalog, world, recordedAtEpochMs, operationId, deficitPolicy, logicalPlan });
+    } catch (error) {
+      // A matching caller may have published before this attempt read its planning world.
+      const concurrent = await readReplay();
+      if (concurrent !== undefined) return concurrent;
+      throw error;
+    }
     try {
       const beginResult = await storage.begin({
         operationId,

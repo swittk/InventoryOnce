@@ -73,7 +73,7 @@ export interface ApplyInventoryRecordedDeficitBurdenInput {
 /**
  * Broaden one caller selector to the direct-placement pool that owns recorded deficit.
  * Lot/package/serial/owner constraints choose what the caller may consume; they do not split
- * one item's shortage into separate liabilities that can be bypassed or paid repeatedly.
+ * one item's shortage into separate liabilities. Explicit whereabouts select distinct pools.
  */
 export function inventoryRecordedDeficitPoolSelector(
   selector: InventoryStockSelector,
@@ -86,6 +86,8 @@ export function inventoryRecordedDeficitPoolSelector(
     ...(selector.placement === undefined ? {} : { placement: selector.placement }),
     ...(selector.placementNodeIds === undefined ? {} : { placementNodeIds: selector.placementNodeIds }),
     ...(selector.withinPlacementNodeIds === undefined ? {} : { withinPlacementNodeIds: selector.withinPlacementNodeIds }),
+    ...(selector.whereabouts === undefined ? {} : { whereabouts: selector.whereabouts }),
+    ...(selector.whereaboutsStates === undefined ? {} : { whereaboutsStates: selector.whereaboutsStates }),
   });
 }
 

@@ -173,6 +173,7 @@ import {
   inventoryFungibilityScopeIdentity,
   normalizeInventoryFungibilityScope,
   planInventoryFungibilityAllocation,
+  planInventoryFungibilityRecordingAllocation,
   summarizeInventoryFungibility,
   type InventoryFungibilityAllocationLine,
   type InventoryFungibilityAllocationPlan,
@@ -3794,11 +3795,11 @@ async function commitInventoryFungibilityMovement(
           ? {}
           : { allowAllocatedStock: input.allowAllocatedStock }),
       };
-      const preferred = planInventoryFungibilityAllocation(planning);
+      const preferred = planInventoryFungibilityRecordingAllocation(planning);
       // A physical report may use held stock when a claim-preserving pick cannot fill it.
       const allocation = preferred.shortfall.amountMinor === 0 || planning.allowAllocatedStock
         ? preferred
-        : planInventoryFungibilityAllocation({ ...planning, allowAllocatedStock: true });
+        : planInventoryFungibilityRecordingAllocation({ ...planning, allowAllocatedStock: true });
       assertFungibilityAllocationComplete(allocation);
       return {
         event: createFungibilityMovementEvent(
@@ -5809,13 +5810,7 @@ async function policyRecordedDeficit({
     ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
   });
   assertPositionMatchesItem(item, position);
-  // A deficit can span lot and owner identities, but the posted location must satisfy the requested whereabouts.
-  const { whereabouts, whereaboutsStates } = allocation.selector;
-  const placementScope: InventoryStockSelector = {
-    ...inventoryRecordedDeficitPoolSelector(allocation.selector, item.revisionId),
-    ...(whereabouts === undefined ? {} : { whereabouts }),
-    ...(whereaboutsStates === undefined ? {} : { whereaboutsStates }),
-  };
+  const placementScope = inventoryRecordedDeficitPoolSelector(allocation.selector, item.revisionId);
   const ancestry = placementScope.withinPlacementNodeIds === undefined || position.placementNodeId === undefined
     ? []
     : await readAncestry(position.placementNodeId);

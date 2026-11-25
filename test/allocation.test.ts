@@ -219,6 +219,46 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
   });
 
+  it("bounds a partial search by the capacity allowed by row increments", () => {
+    const result = allocateInventoryUpTo({
+      requested: parseQuantity("103", "kg"),
+      candidates: [
+        candidate({ lotId: "divisible", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+          extra: { available: parseQuantity("100.000001", "kg") } }),
+        candidate({ lotId: "incremented", receivedAtEpochMs: time1, expiresAtEpochMs: time3,
+          extra: { available: parseQuantity("1.5", "kg"), allocationIncrement: parseQuantity("1", "kg") } }),
+      ],
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+    });
+    expect(result.allocations.map((line) => line.quantity)).toEqual([
+      parseQuantity("100.000001", "kg"), parseQuantity("1.000000", "kg"),
+    ]);
+    expect(result.shortfall).toEqual(parseQuantity("1.999999", "kg"));
+  });
+
+  it("skips unstoreable nonterminal picks without exhausting the choice budget", () => {
+    const requested = parseQuantity(String(Number.MAX_SAFE_INTEGER), "kg");
+    const fractional = parseQuantity("0.100001", "kg");
+    const result = allocateInventory({
+      requested,
+      candidates: [
+        candidate({ lotId: "early", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+          extra: { available: fractional, allocationIncrement: fractional } }),
+        candidate({ lotId: "large", receivedAtEpochMs: time1, expiresAtEpochMs: time3,
+          extra: { available: requested } }),
+        candidate({ lotId: "last", receivedAtEpochMs: time2, expiresAtEpochMs: time3,
+          extra: { available: parseQuantity("1", "kg") } }),
+      ],
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+    });
+    expect(result.allocations.map((line) => line.quantity)).toEqual([
+      fractional, parseQuantity("9007199254740990", "kg"), parseQuantity("0.899999", "kg"),
+    ]);
+    expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
+  });
+
   it.each([
     { increment: undefined, picked: "1.000000", missing: "9007199254740990" },
     { increment: "0.000008", picked: "1.000000", missing: "9007199254740990" },

@@ -127,6 +127,12 @@ def facade_family(key):
   }: return 'dimension-reclassification'
  raise KeyError(key)
 
+# The two public barrels name the same fungibility readers and hide the recording planner.
+fungibility_read_exports = {
+ 'inventoryFungibilityScopeIdentity', 'normalizeInventoryFungibilityScope',
+ 'planInventoryFungibilityAllocation', 'summarizeInventoryFungibility',
+}
+
 # Map one root export to the formal assurance family that owns its behavior.
 def root_family(name,decl):
  if name in {'InventoryOnce','createInventoryOnce'}: return 'facade-construction'
@@ -140,7 +146,7 @@ def root_family(name,decl):
  if decl in {'src/selectors.ts','src/model.ts','src/canonical.ts'}: return 'identity-normalization'
  if decl == 'src/placement.ts': return 'placement-command'
  if decl in {'src/catalog.ts','src/catalog-lifecycle.ts','src/composition.ts','src/collections.ts'}: return 'catalog-definition'
- if decl == 'src/fungibility.ts': return 'fungibility-read'
+ if name in fungibility_read_exports: return 'fungibility-read'
  if decl == 'src/transfers.ts': return 'transfer-lifecycle'
  if decl in {'src/read-model.ts','src/availability.ts','src/usability.ts','src/whereabouts.ts'}: return 'read-current'
  if decl == 'src/event-query.ts': return 'read-history'
@@ -202,7 +208,7 @@ def kernel_family(name,decl):
  if decl == 'src/traceability.ts': return 'traceability'
  if decl == 'src/composition.ts': return 'composition-open' if 'open' in low else 'catalog-definition'
  if decl == 'src/collections.ts': return 'collection-read'
- if decl == 'src/fungibility.ts': return 'fungibility-movement' if any(x in low for x in ('issue','transfer','scrap','event')) else 'fungibility-read'
+ if name in fungibility_read_exports: return 'fungibility-read'
  if decl == 'src/transfers.ts': return 'transfer-lifecycle'
  if decl in {'src/read-model.ts','src/availability.ts','src/usability.ts','src/whereabouts.ts'}: return 'read-current'
  if decl == 'src/event-query.ts': return 'read-history'

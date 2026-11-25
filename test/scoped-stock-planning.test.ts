@@ -23,6 +23,7 @@ import {
   readInventoryScopedStockAvailability,
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
+import { planInventoryAllocation } from "../src/kernel.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -144,7 +145,7 @@ describe("indexed stock planning and availability", () => {
       const inventory = createTestInventory(storage, measuredItemCatalog("weight"));
       const selection = { itemId: "measured", placementNodeIds: ["store"] };
       const amount = measuredStockAmount("2", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]);
-      for (const [lotId, occurredAtEpochMs] of [["held", time0], ["free", time1]] as const) {
+      for (const { lotId, occurredAtEpochMs } of [{ lotId: "held", occurredAtEpochMs: time0 }, { lotId: "free", occurredAtEpochMs: time1 }]) {
         await inventory.stock.receive({
           operationId: `receive-${lotId}`, occurredAtEpochMs,
           to: { itemId: selection.itemId, placementNodeId: "store", lotId }, amount,
@@ -175,6 +176,20 @@ describe("indexed stock planning and availability", () => {
           : await inventory.stock.scrapByPolicy({ ...command, reason: "Broken goods" });
         const debits = result.event.stockEffects.filter((effect) => effect.measurementsDelta.primary.quantity.amountMinor < 0);
         expect(debits.map((debit) => debit.position.lotId).sort()).toEqual(movement.lots);
+        for (const debit of debits) {
+          expect(debit.measurementsDelta).toEqual({
+            primary: { axisId: "pieces", quantity: parseQuantity("-2", "piece") },
+            independent: [{ axisId: "weight", quantity: parseQuantity("-4", "kg") }],
+          });
+        }
+        const credits = result.event.stockEffects.filter((effect) => effect.measurementsDelta.primary.quantity.amountMinor > 0);
+        expect(credits.map((credit) => credit.position.lotId).sort()).toEqual(verb === "transfer" ? movement.lots : []);
+        for (const credit of credits) {
+          expect(credit.measurementsDelta).toEqual({
+            primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") },
+            independent: [{ axisId: "weight", quantity: parseQuantity("4", "kg") }],
+          });
+        }
       }
       const claim = (await inventory.read.reservationFeasibility(time2)).groups[0];
       expect(claim).toMatchObject({ reservationIds: ["weight"], shortage: { amountMinor: 4 } });
@@ -292,7 +307,8 @@ describe("indexed stock planning and availability", () => {
     })).toHaveLength(2);
   });
 
-  it("discards unreported axes only from the residual, keeping them on the measured effects", async () => {
+  it.each([{ pieces: "2", weight: "2", residual: false }, { pieces: "3", weight: "5", residual: true }])(
+    "keeps unreported axes on measured scrap effects with residual $residual", async ({ pieces, weight, residual }) => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({
       ...base,
@@ -316,11 +332,19 @@ describe("indexed stock planning and availability", () => {
     const result = await inventory.stock.scrapByPolicy({
       operationId: "scrap-without-optional-report", occurredAtEpochMs: time2, reason: "Physically discarded",
       selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
-      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]),
+      amount: measuredStockAmount(pieces, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
     });
-    expect(result.event.unwitnessedStockMovements).toBeUndefined();
-    expect(result.event.stockEffects).toHaveLength(2);
-    for (const effect of result.event.stockEffects) {
+    if (residual) {
+      expect(result.event.unwitnessedStockMovements?.map((movement) => movement.measurements)).toEqual([{
+        primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("3", "kg") }],
+      }]);
+    } else {
+      expect(result.event.unwitnessedStockMovements).toBeUndefined();
+    }
+    const witnessed = result.event.stockEffects.filter((effect) => effect.position.lotId !== undefined);
+    expect(witnessed).toHaveLength(2);
+    for (const effect of witnessed) {
       expect(effect.measurementsDelta.independent).toContainEqual({
         axisId: "optional", quantity: parseQuantity(String(Number.MIN_SAFE_INTEGER), "g"),
       });
@@ -498,6 +522,44 @@ describe("indexed stock planning and availability", () => {
     expect(unplaced.recordedDeficit.amountMinor).toBe(0);
     const unrestricted = await inventory.read.planAllocation({ ...request, selector: { itemId: "item-a" } });
     expect(unrestricted.recordedDeficit.amountMinor).toBe(2);
+  });
+
+  it("reports only the deficit of the selected whereabouts cohort or state", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const amount = stockAmount("1", "piece");
+    for (const bin of ["detached-source", "missing-source"]) {
+      await inventory.stock.receive({ operationId: `receive-${bin}`, occurredAtEpochMs: time0, to: loosePosition(bin), amount });
+      await inventory.stock.detach({ operationId: `detach-${bin}`, occurredAtEpochMs: time1, from: loosePosition(bin), amount });
+    }
+    const detachedRows = await inventory.read.positions({ itemId: "item-a" });
+    const detached = detachedRows.find((row) => row.key.lastPlacementNodeId === "detached-source");
+    const beforeMissing = detachedRows.find((row) => row.key.lastPlacementNodeId === "missing-source");
+    if (detached?.key.whereaboutsId === undefined || beforeMissing?.key.whereaboutsId === undefined) {
+      throw new Error("Expected both detached cohorts.");
+    }
+    await inventory.stock.markMissing({ operationId: "mark-other-cohort-missing", occurredAtEpochMs: time1, from: beforeMissing.key, amount });
+    const [missing] = await inventory.read.positions({
+      itemId: "item-a", whereaboutsStates: [InventoryStockWhereaboutsState.Missing],
+    });
+    if (missing === undefined) throw new Error("Expected the missing cohort.");
+    await inventory.stock.issue({ operationId: "detached-deficit", occurredAtEpochMs: time2, from: detached.key, amount: stockAmount("3", "piece") });
+    await inventory.stock.issue({ operationId: "missing-deficit", occurredAtEpochMs: time2, from: missing.key, amount: stockAmount("6", "piece") });
+    const world = await inventory.read.world();
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const request = { method: InventoryAllocationMethod.Fifo, amount, atEpochMs: time2 };
+    for (const { selector, deficit } of [
+      { selector: { itemId: "item-a", whereaboutsIds: [detached.key.whereaboutsId] }, deficit: 2 },
+      { selector: { itemId: "item-a", whereaboutsStates: [InventoryStockWhereaboutsState.Missing] }, deficit: 5 },
+      { selector: { itemId: "item-a" }, deficit: 7 },
+    ]) {
+      const native = await inventory.read.planAllocation({ ...request, selector });
+      expect(native).toEqual(planInventoryAllocation({ ...request, selector, catalog, world }));
+      expect(native.recordedDeficit.amountMinor).toBe(deficit);
+      expect(native.uncoveredDeficit.amountMinor).toBe(deficit);
+    }
+    expect(readWorld).not.toHaveBeenCalled();
   });
 
   it("keeps preview quantity and claim time fixed across the scoped pool read", async () => {
@@ -907,6 +969,32 @@ describe("indexed stock planning and availability", () => {
       .rejects.toThrow("publish the retained inventory catalogue first");
   });
 
+  it("replays an exact serialized transfer that wins the canonical planning race", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const from = loosePosition("store", { serialId: "race-serial" });
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "receive-race-serial", occurredAtEpochMs: time0, to: from, amount });
+    const command = { operationId: "serialized-canonical-race", occurredAtEpochMs: time1,
+      from, toPlacementNodeId: "destination", amount };
+    const head = storage.readSegmentedStockHead();
+    const readOperation = storage.readOperation.bind(storage);
+    const lookup = vi.spyOn(storage, "readOperation");
+    let committed: Awaited<ReturnType<typeof inventory.stock.transfer>> | undefined;
+    lookup.mockImplementationOnce(readOperation).mockImplementationOnce(async (operationId) => {
+      expect(operationId).toBe(command.operationId);
+      const prior = await readOperation(operationId);
+      committed = await inventory.stock.transfer(command);
+      return prior;
+    });
+    const replay = await inventory.stock.transfer(command);
+    expect(committed?.replayed).toBe(false);
+    expect(replay).toEqual({ ...committed, replayed: true });
+    expect(storage.readSegmentedStockHead().worldRevision).toBe(head.worldRevision + 1);
+    await expect(inventory.stock.transfer({ ...command, operationId: "genuinely-empty-serial" }))
+      .rejects.toThrow("Unwitnessed transfer cannot claim a serial identity");
+  });
+
   it("reopens an interrupted native transfer before publish and replays the committed pick after a lost reply", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
@@ -1039,6 +1127,10 @@ describe("indexed stock planning and availability", () => {
     });
     for (const report of [canonical, scoped]) {
       expect(report?.exactlyAllocatedUsable.amountMinor).toBe(0);
+      expect(report?.onHand.primary.quantity.amountMinor).toBe(-1);
+      expect(report?.deficit.primary.quantity.amountMinor).toBe(1);
+      expect(report?.usableOnHand.primary.quantity.amountMinor).toBe(0);
+      expect(report?.usableDeficit.primary.quantity.amountMinor).toBe(0);
       expect(report?.positions).toMatchObject([{
         isDeficit: true,
         exactlyAllocated: { amountMinor: 2 },
@@ -1070,14 +1162,16 @@ describe("indexed stock planning and availability", () => {
       selector: { itemId: "item-a" }, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
     });
     const request = { selector, itemRevisionId: "item-a-v2", exactHoldsOnly: true, reservationAtEpochMs: time1 };
-    const current = storage.readSegmentedStockPool(request).reservations[0];
+    const [current, ...otherClaims] = storage.readSegmentedStockPool(request).reservations;
+    expect(otherClaims).toEqual([]);
     const allocation = current?.allocations[0];
     expect(current?.reservationId).toBe("store");
     expect(allocation).toBeDefined();
     expect(Object.isFrozen(allocation?.position)).toBe(true);
     await inventory.reservations.release({
-      operationId: "close-other", reservationId: "other", occurredAtEpochMs: time2,
+      operationId: "close-local-hold", reservationId: "store", occurredAtEpochMs: time2,
     });
+    expect(storage.readSegmentedStockPool({ ...request, reservationAtEpochMs: time2 }).reservations).toEqual([]);
     const earlier = storage.readSegmentedStockPool(request);
     expect(earlier.reservations).toEqual([current]);
     expect(Object.isFrozen(earlier.reservations[0]?.allocations[0]?.quantity)).toBe(true);

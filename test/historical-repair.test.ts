@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryWhereaboutsAction,
@@ -29,6 +30,33 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("late historical repair", () => {
+  it("retains a mixed transfer witness while exposing the shortage from an earlier corrected receipt", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const from = loosePosition("historical-transfer-source", { lotId: "TRANSFER-LOT" });
+    const receipt = await inventory.stock.receive({
+      operationId: "historical-transfer-receipt", occurredAtEpochMs: time0, to: from, amount: stockAmount("2", "piece"),
+    });
+    const transfer = await inventory.stock.transfer({
+      operationId: "historical-mixed-transfer", occurredAtEpochMs: time1,
+      from, toPlacementNodeId: "historical-transfer-destination", amount: stockAmount("3", "piece"),
+    });
+    expect(transfer.event.unwitnessedStockMovements).toMatchObject([{ measurements: { primary: { quantity: { amountMinor: 1 } } } }]);
+    const correction = await inventory.stock.correct({
+      operationId: "historical-transfer-receipt-correction", occurredAtEpochMs: time2,
+      reason: "The receipt was one piece smaller than recorded.", correctsEventId: receipt.event.eventId,
+      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: from, amount: stockAmount("1", "piece") }),
+    });
+    expect(correction.event.historicalImpact?.deficits).toMatchObject([{
+      position: { lotId: from.lotId }, maximumDeficit: { primary: { quantity: { amountMinor: 1 } } },
+    }]);
+    const world = await inventory.read.world();
+    expect(world.projection.events[transfer.event.eventId]).toEqual(transfer.event);
+    const destination = await inventory.read.planAllocation({
+      selector: { itemId: from.itemId, lotIds: ["TRANSFER-LOT"], placementNodeIds: ["historical-transfer-destination"] },
+      amount: stockAmount("2", "piece"), method: InventoryAllocationMethod.Fifo, atEpochMs: time2,
+    });
+    expect(destination.lines).toMatchObject([{ layerStartedAtEpochMs: time0, allocatedPrimary: { amountMinor: 2 } }]);
+  });
   /** A later redundant move still contributes its retained parent-node definition. */
   it("preserves placement metadata when an earlier correction makes a later move redundant", () => {
     const catalog = createTabletCatalog();

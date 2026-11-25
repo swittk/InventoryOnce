@@ -291,8 +291,11 @@ function searchInventoryAllocations({
   );
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
+    const capacity = capacityMinor[index] ?? 0n;
+    const increment = incrementMinor[index] ?? 1n;
+    // Stock below the next whole increment cannot improve a suffix assignment.
     suffixCapacity[index] =
-      (suffixCapacity[index + 1] ?? 0n) + (capacityMinor[index] ?? 0n);
+      (suffixCapacity[index + 1] ?? 0n) + capacity - capacity % increment;
   }
   if (!acceptPartial && (suffixCapacity[0] ?? 0n) < requestedMinor) return undefined;
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
@@ -340,9 +343,14 @@ function searchInventoryAllocations({
     const terminalPartial = acceptPartial && index === candidates.length - 1;
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
-      if (terminalPartial && (storableQuantityScale(take, decimals) === undefined ||
-          storableQuantityScale(remainingMinor - take, decimals) === undefined)) {
-        const next = largestStorableTerminalTake(take, remainingMinor, increment);
+      if (storableQuantityScale(take, decimals) === undefined ||
+          (terminalPartial && storableQuantityScale(remainingMinor - take, decimals) === undefined)) {
+        // Skip impossible storage digits before they consume the bounded search budget.
+        const next = largestStorableAllocationTake({
+          limit: take,
+          increment,
+          ...(terminalPartial ? { remaining: remainingMinor } : {}),
+        });
         if (next === undefined) break;
         take = next;
       }
@@ -355,11 +363,8 @@ function searchInventoryAllocations({
           "Exact allocation exceeded its safe search bound; narrow the candidates or request."
         );
       }
-      // Skip picks that cannot be stored before memoizing suffixes by remainder.
-      if (terminalPartial || storableQuantityScale(take, decimals) !== undefined) {
-        chosenMinor[index] = take;
-        if (findExactSuffix(index + 1, remainingMinor - take)) return true;
-      }
+      chosenMinor[index] = take;
+      if (findExactSuffix(index + 1, remainingMinor - take)) return true;
       if (take === 0n) break;
       take -= increment;
     }
@@ -379,18 +384,28 @@ function allocationStorageFactor(minor: bigint): bigint {
   return factor;
 }
 
-/** Find the largest final pick whose line and shortfall both fit at an exact scale. */
-function largestStorableTerminalTake(limit: bigint, remaining: bigint, increment: bigint): bigint | undefined {
+/** Bounds for skipping allocation picks that cannot be stored exactly. */
+interface StorableAllocationTakeInput {
+  /** Greatest shared-scale quantity allowed on the candidate. */
+  readonly limit: bigint;
+  /** Allowed increment on the same scale. */
+  readonly increment: bigint;
+  /** Amount still requested when the remaining shortfall must also fit storage. */
+  readonly remaining?: bigint;
+}
+
+/** Find the largest exact allowed pick, including the final shortfall when requested. */
+function largestStorableAllocationTake({ limit, increment, remaining }: StorableAllocationTakeInput): bigint | undefined {
   while (limit >= 0n) {
     const takeFactor = allocationStorageFactor(limit);
-    const shortfallFactor = allocationStorageFactor(remaining - limit);
+    const shortfallFactor = remaining === undefined ? 1n : allocationStorageFactor(remaining - limit);
     // Descending past either boundary changes the scale requirement, so solve one range at a time.
     const takeFloor = takeFactor === 1n ? 0n : MAXIMUM_STORED_QUANTITY_MINOR * (takeFactor / 10n) + 1n;
-    const shortfallFloor = remaining - MAXIMUM_STORED_QUANTITY_MINOR * shortfallFactor;
+    const shortfallFloor = remaining === undefined ? 0n : remaining - MAXIMUM_STORED_QUANTITY_MINOR * shortfallFactor;
     const floor = takeFloor > shortfallFloor ? takeFloor : shortfallFloor;
     const stride = takeFactor === 1n ? increment
       : (increment / allocationModularCoefficients(increment, takeFactor).divisor) * takeFactor;
-    const take = largestAllocationMultipleWithRemainder(limit, stride, remaining, shortfallFactor);
+    const take = largestAllocationMultipleWithRemainder({ limit, stride, remaining: remaining ?? 0n, factor: shortfallFactor });
     if (take !== undefined && take >= floor) return take;
     limit = floor - 1n;
   }
@@ -423,10 +438,22 @@ function allocationModularCoefficients(stride: bigint, modulus: bigint): Allocat
   return { divisor, coefficient };
 }
 
+/** Bounds for choosing a whole stride with an exact remainder. */
+interface AllocationMultipleWithRemainderInput {
+  /** Greatest permitted pick. */
+  readonly limit: bigint;
+  /** Multiple each valid pick must use. */
+  readonly stride: bigint;
+  /** Amount left to allocate before this pick. */
+  readonly remaining: bigint;
+  /** Divisor the leftover quantity must satisfy. */
+  readonly factor: bigint;
+}
+
 /** Find the greatest allowed multiple leaving a shortfall divisible by the storage factor. */
-function largestAllocationMultipleWithRemainder(
-  limit: bigint, stride: bigint, remaining: bigint, factor: bigint
-): bigint | undefined {
+function largestAllocationMultipleWithRemainder({
+  limit, stride, remaining, factor,
+}: AllocationMultipleWithRemainderInput): bigint | undefined {
   if (factor === 1n) return limit - (limit % stride);
   const { divisor, coefficient } = allocationModularCoefficients(stride, factor);
   if (remaining % divisor !== 0n) return undefined;

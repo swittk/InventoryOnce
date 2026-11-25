@@ -37,6 +37,27 @@ async function storePositions(
 }
 
 describe("atomic conserved split/merge/reclassification", () => {
+  it("conserves multiple individually storable postings above the running storage range", async () => {
+    const inventory = createTestInventory();
+    const amount = stockAmount(String(Number.MAX_SAFE_INTEGER), "piece");
+    const first = loosePosition("a-first-source");
+    const second = loosePosition("b-second-source");
+    const firstDestination = loosePosition("y-first-destination");
+    const secondDestination = loosePosition("z-second-destination");
+    await inventory.stock.receive({ operationId: "receive-first-large-row", occurredAtEpochMs: time0, to: first, amount });
+    await inventory.stock.receive({ operationId: "receive-second-large-row", occurredAtEpochMs: time0, to: second, amount });
+    const moved = await inventory.stock.reclassifyMany({
+      operationId: "reclassify-large-rows", occurredAtEpochMs: time1,
+      consume: [{ from: first, amount }, { from: second, amount }],
+      produce: [{ to: firstDestination, amount }, { to: secondDestination, amount }],
+    });
+    expect(moved.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity.amountMinor)).toEqual([
+      -Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER,
+    ]);
+    expect((await inventory.read.positions({ itemId: "item-a" })).map((position) => position.key.placementNodeId))
+      .toEqual([firstDestination.placementNodeId, secondDestination.placementNodeId]);
+  });
+
   it("splits one stock position into explicit usable and quarantine positions atomically", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

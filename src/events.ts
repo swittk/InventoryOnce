@@ -781,9 +781,9 @@ export function defineInventoryEvent({
     event.stockEffects,
     event.kind
   );
-  const unwitnessed = normalizeUnwitnessedStockMovements(
-    catalog, event.kind, event.unwitnessedStockMovements, stockEffects
-  );
+  const unwitnessed = normalizeUnwitnessedStockMovements({
+    catalog, kind: event.kind, rawMovements: event.unwitnessedStockMovements, normalizedStockEffects: stockEffects,
+  });
   const positiveLayerProvenanceTransfers =
     normalizePositiveLayerProvenanceTransfers(
       catalog,
@@ -1246,20 +1246,29 @@ interface NormalizedUnwitnessedStockMovements {
   readonly witnessedEffects: ReadonlyMap<string, InventoryMeasurementVector>;
 }
 
-/** Validate only typed unwitnessed routes and their partition of the event's concrete postings. */
-function normalizeUnwitnessedStockMovements(
-  catalog: InventoryCatalog,
-  kind: InventoryEventKind,
-  raw: readonly InventoryUnwitnessedStockMovement[] | undefined,
-  stockEffects: readonly InventoryStockEffect[]
-): NormalizedUnwitnessedStockMovements | undefined {
-  if (raw === undefined) return undefined;
-  if (raw.length === 0 || (kind !== InventoryEventKind.Transfer && kind !== InventoryEventKind.Scrap)) {
+/** Reported portions and the normalized postings that bound them. */
+interface NormalizeUnwitnessedStockMovementsInput {
+  /** Exact catalogue used by the event. */
+  readonly catalog: InventoryCatalog;
+  /** Event kind determining whether each portion must have a destination. */
+  readonly kind: InventoryEventKind;
+  /** Reported portions before validation and normalization. */
+  readonly rawMovements: readonly InventoryUnwitnessedStockMovement[] | undefined;
+  /** Signed normalized postings that already include the reported portions. */
+  readonly normalizedStockEffects: readonly InventoryStockEffect[];
+}
+
+/** Validate typed unwitnessed routes and their partition of the event's concrete postings. */
+function normalizeUnwitnessedStockMovements({
+  catalog, kind, rawMovements, normalizedStockEffects,
+}: NormalizeUnwitnessedStockMovementsInput): NormalizedUnwitnessedStockMovements | undefined {
+  if (rawMovements === undefined) return undefined;
+  if (rawMovements.length === 0 || (kind !== InventoryEventKind.Transfer && kind !== InventoryEventKind.Scrap)) {
     throw new Error("Unwitnessed movement requires a transfer or scrap with a reported quantity.");
   }
   const movements: InventoryUnwitnessedStockMovement[] = [];
   const effects = new Map<string, InventoryMeasurementVector>();
-  for (const portion of raw) {
+  for (const portion of rawMovements) {
     const from = normalizeInventoryStockPositionKey(portion.from);
     if (from.lotId !== undefined || from.serialId !== undefined || from.placementNodeId === undefined) {
       throw new Error("Unwitnessed stock needs a direct source placement without a lot or serial.");
@@ -1287,7 +1296,7 @@ function normalizeUnwitnessedStockMovements(
 
   // A portion must be represented in the existing effect, with any remainder still a coherent witness.
   const stockById = new Map<string, InventoryMeasurementVector>();
-  for (const effect of stockEffects) {
+  for (const effect of normalizedStockEffects) {
     stockById.set(inventoryStockPositionIdentity(effect.position), effect.measurementsDelta);
   }
   /** Keep the exact partition so FIFO checks use the same validated digits. */
@@ -2287,21 +2296,28 @@ function assertInternalEventConservesEachItem(
       totals = new Map();
       totalByItemRevision.set(effect.itemRevisionId, totals);
     }
-    const { primary, independent } = effect.measurementsDelta;
-    addInventoryConservationQuantity(totals, primary.axisId, primary.quantity);
-    for (const axis of independent) {
-      addInventoryConservationQuantity(totals, axis.axisId, axis.quantity);
-    }
+    addInventoryConservationMeasurements(totals, effect.measurementsDelta);
   }
   for (const [itemRevisionId, totals] of totalByItemRevision) {
-    for (const total of totals.values()) {
-      if (total.minor !== 0n) {
-        throw new Error(
-          `Inventory event '${kind}' does not conserve item revision '${itemRevisionId}'.`
-        );
-      }
+    if (!inventoryConservationTotalsAreZero(totals)) {
+      throw new Error(`Inventory event '${kind}' does not conserve item revision '${itemRevisionId}'.`);
     }
   }
+}
+
+/** Add all axes without narrowing intermediate sums to stored quantities. */
+function addInventoryConservationMeasurements(
+  totals: Map<string, InventoryConservationTotal>,
+  { primary, independent }: InventoryMeasurementVector
+): void {
+  addInventoryConservationQuantity(totals, primary.axisId, primary.quantity);
+  for (const axis of independent) addInventoryConservationQuantity(totals, axis.axisId, axis.quantity);
+}
+
+/** Report whether every measurement axis is balanced exactly. */
+function inventoryConservationTotalsAreZero(totals: ReadonlyMap<string, InventoryConservationTotal>): boolean {
+  for (const total of totals.values()) if (total.minor !== 0n) return false;
+  return true;
 }
 
 /** Add one normalized measurement to a temporary exact balance. */
@@ -2326,22 +2342,21 @@ function addInventoryConservationQuantity(
 function assertReclassificationPreservesPackagingBuckets(
   effects: readonly InventoryStockEffect[]
 ): void {
-  const totalByPackageBucket = new Map<string, InventoryMeasurementVector>();
+  const totalByPackageBucket = new Map<string, Map<string, InventoryConservationTotal>>();
   for (const effect of effects) {
     const bucket = inventoryIntentFingerprint([
       effect.itemRevisionId,
       effect.position.packagingRevisionId ?? null,
     ]);
-    const earlier = totalByPackageBucket.get(bucket);
-    totalByPackageBucket.set(
-      bucket,
-      earlier === undefined
-        ? effect.measurementsDelta
-        : addInventoryMeasurements(earlier, effect.measurementsDelta)
-    );
+    let totals = totalByPackageBucket.get(bucket);
+    if (totals === undefined) {
+      totals = new Map();
+      totalByPackageBucket.set(bucket, totals);
+    }
+    addInventoryConservationMeasurements(totals, effect.measurementsDelta);
   }
-  for (const [bucket, total] of totalByPackageBucket) {
-    if (!inventoryMeasurementsAreZero(total)) {
+  for (const [bucket, totals] of totalByPackageBucket) {
+    if (!inventoryConservationTotalsAreZero(totals)) {
       throw new Error(
         `Inventory reclassification changes packaging bucket ${bucket}; use pack/unpack instead.`
       );

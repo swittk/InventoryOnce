@@ -40,8 +40,10 @@ import {
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
 import {
+  inventoryAllocationPoolFromWorld,
   inventoryAmountForPrimaryAllocation,
-  planInventoryAllocation,
+  planInventoryAllocationInPool,
+  resolveAllocationItemAndSelector,
   type InventoryPolicyAllocationLine,
 } from "./picking.js";
 import {
@@ -332,7 +334,21 @@ interface InventoryFungibilityCandidateEvidence {
 }
 
 /** Plan cross-item FIFO/FEFO allocation while every selected line retains real item identity. */
-export function planInventoryFungibilityAllocation({
+export function planInventoryFungibilityAllocation(
+  input: PlanInventoryFungibilityAllocationInput
+): InventoryFungibilityAllocationPlan {
+  return planInventoryFungibilityAllocationWithHolds(input, false);
+}
+
+/** Prefer rows without independent-axis holds before falling back to all physical stock. */
+export function planInventoryFungibilityRecordingAllocation(
+  input: PlanInventoryFungibilityAllocationInput
+): InventoryFungibilityAllocationPlan {
+  return planInventoryFungibilityAllocationWithHolds(input, true);
+}
+
+/** Plan against the same exact members while applying the recording-specific hold preference. */
+function planInventoryFungibilityAllocationWithHolds({
   catalog,
   world,
   fungibilityRevisionId,
@@ -346,7 +362,7 @@ export function planInventoryFungibilityAllocation({
   scope = {},
   allowExpiredLots = false,
   allowAllocatedStock = false,
-}: PlanInventoryFungibilityAllocationInput): InventoryFungibilityAllocationPlan {
+}: PlanInventoryFungibilityAllocationInput, recording: boolean): InventoryFungibilityAllocationPlan {
   assertInventoryEpochMilliseconds(atEpochMs, "fungibility allocation authority time");
   assertInventoryEpochMilliseconds(
     reservationAtEpochMs,
@@ -389,20 +405,19 @@ export function planInventoryFungibilityAllocation({
       item
     );
     if (physicalTotal.amountMinor === 0) continue;
-    const memberPlan = planInventoryAllocation({
+    const amount = stockAmount(quantityToDecimalString(physicalTotal), physicalTotal.unit);
+    const selection = resolveAllocationItemAndSelector(catalog, selector, amount, item.revisionId);
+    const memberPlan = planInventoryAllocationInPool({
       catalog,
-      world,
-      selector,
-      amount: stockAmount(
-        quantityToDecimalString(physicalTotal),
-        physicalTotal.unit
-      ),
-      itemRevisionId: item.revisionId,
+      selection,
+      pool: inventoryAllocationPoolFromWorld(world, selection, reservationAtEpochMs),
+      amount,
       method,
       atEpochMs,
       reservationAtEpochMs,
       allowExpiredLots,
       allowAllocatedStock,
+      ...(recording && !allowAllocatedStock ? { recordingAttempt: "prefer-unheld" } : {}),
     });
     expiredStockWasExcluded =
       expiredStockWasExcluded || memberPlan.expiredStockWasExcluded;
