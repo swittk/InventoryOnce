@@ -189,7 +189,7 @@ def migration_family(name):
 def kernel_family(name,decl):
  low=name.lower()
  if name in {'findInventoryEventByOperationId','listInventoryPackagingRevisions','summarizeInventoryStock','summarizeInventoryAvailability'}: return 'read-current'
- if name in {'inventoryAmountForPrimaryAllocation','planInventoryAllocation'}: return 'allocation-helper'
+ if name in {'allocateInventory','compareInventoryAllocationCandidates','inventoryAmountForPrimaryAllocation','planInventoryAllocation'}: return 'allocation-helper'
  if name.startswith('createInventoryTransfer') and name.endswith('Event'): return 'transfer-lifecycle'
  if decl in {'src/quantity.ts','src/measurements.ts','src/amounts.ts'}: return 'pure-exact-value'
  if decl in {'src/canonical.ts','src/model.ts','src/selectors.ts'}: return 'identity-normalization'

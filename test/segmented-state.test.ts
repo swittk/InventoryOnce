@@ -729,6 +729,31 @@ describe("segmented inventory position store", () => {
     expect(ancestry).toHaveBeenCalledExactlyOnceWith("bin");
   });
 
+  it("trusts indexed subtree membership and still applies direct stock filters", () => {
+    const placement = createInMemoryInventorySegmentedPlacementStore();
+    const positions: InventoryStockPosition[] = [];
+    for (let index = 0; index < 20; index += 1) {
+      const nodeId = `child-${index}`;
+      const parentId = index === 0 ? "root" : `child-${index - 1}`;
+      placement.applyChange({
+        expectedRevision: index, nextRevision: index + 1, eventId: `place-${nodeId}`,
+        nodeId, toParentNodeId: parentId, targetAcceptsPlacement: true,
+      });
+      positions.push(segmentedPosition({ placementNodeId: nodeId, lotId: "selected" }));
+      positions.push(segmentedPosition({ placementNodeId: nodeId, lotId: "other" }));
+    }
+    for (let index = 0; index < 200; index += 1) {
+      positions.push(segmentedPosition({ placementNodeId: `outside-${index}`, lotId: "selected" }));
+    }
+    const store = createInMemoryInventorySegmentedPositionStore({ positions });
+    const ancestry = vi.spyOn(placement, "ancestry");
+    const selected = store.queryPositions({
+      itemId: "item-a", withinPlacementNodeIds: ["root", "child-4"], lotIds: ["selected"],
+    }, placement);
+    expect(selected?.map((row) => row.key.lotId)).toEqual(Array(20).fill("selected"));
+    expect(ancestry).not.toHaveBeenCalled();
+  });
+
   it("preserves the FIFO origin of a same-position positive replacement", () => {
     const stock = segmentedPosition({ placementNodeId: "store", lotId: "aged" });
     const id = inventoryStockPositionIdentity(stock.key);

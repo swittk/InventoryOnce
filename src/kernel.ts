@@ -1,5 +1,14 @@
 /** Automatic FIFO/FEFO allocation policy helpers. */
-export * from "./allocation.js";
+export {
+  allocateInventory,
+  compareInventoryAllocationCandidates,
+  InventoryAllocationMethod,
+  MAXIMUM_EXACT_ALLOCATION_STATES,
+  type AllocateInventoryInput,
+  type InventoryAllocation,
+  type InventoryAllocationCandidate,
+  type InventoryAllocationResult,
+} from "./allocation.js";
 /** Public amount resolution plus low-level amount value helpers. */
 export * from "./amounts.js";
 /** Immutable item/package catalogue and validators. */

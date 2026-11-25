@@ -183,7 +183,6 @@ import {
 } from "./fungibility.js";
 import {
   addInventoryMeasurements,
-  assertInventoryMeasurementsFollowPrimarySign,
   inventoryMeasurementAt,
   inventoryMeasurementsEqual,
   inventoryMeasurementsAreZero,
@@ -4465,6 +4464,7 @@ async function commitInventoryPolicyBatch(
         const allocation = planInventoryAllocationForRecording({
           catalog: internals.catalog,
           selection, pool, amount: request.amount, method: request.method,
+          allowMeasuredShortfall: internals.deficitPolicy === InventoryDeficitPolicy.Record,
           atEpochMs: input.occurredAtEpochMs,
           reservationAtEpochMs: recordedAtEpochMs,
           ...(request.allowExpiredLots === undefined ? {} : { allowExpiredLots: request.allowExpiredLots }),
@@ -5570,6 +5570,7 @@ async function commitInventoryPolicyMovement(
       const allocation = planInventoryAllocationForRecording({
         catalog: internals.catalog,
         selection, pool, amount: input.amount, method: input.method,
+        allowMeasuredShortfall: internals.deficitPolicy === InventoryDeficitPolicy.Record,
         atEpochMs: input.occurredAtEpochMs,
         reservationAtEpochMs: recordedAtEpochMs,
         ...(input.allowExpiredLots === undefined
@@ -5615,27 +5616,29 @@ function planInventoryAllocationForRecording(
   const item = input.selection.item;
   /** Calculate the remaining reported axes for one measured witness plan. */
   const remainderOf = (plan: InventoryPolicyAllocationPlan): InventoryMeasurementVector | undefined =>
-    measured ? inventoryPolicyMovementRemainder({
+    inventoryPolicyMovementRemainder({
       catalog: input.catalog, item, report: plan.requestedMeasurements, lines: plan.lines,
-    }) : undefined;
+    });
   let selected = preferred;
-  let residual = remainderOf(preferred);
+  let residual = measured ? remainderOf(preferred) : undefined;
   if (!input.allowAllocatedStock && (preferred.shortfall.amountMinor !== 0 ||
-    (residual !== undefined && !inventoryMeasurementsAreZero(residual)))) {
+    (measured && residual === undefined))) {
     const physical = planInventoryAllocationInPool({
       ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
     });
-    const physicalResidual = remainderOf(physical);
+    const physicalResidual = measured ? remainderOf(physical) : undefined;
     // A coherent partial witness is better than a fuller count that contradicts the report.
-    if (inventoryPolicyMovementRemainderIsCoherent(physicalResidual) &&
-        (!inventoryPolicyMovementRemainderIsCoherent(residual) ||
+    if ((!measured || physicalResidual !== undefined) &&
+        ((measured && residual === undefined) ||
           compareQuantity(physical.shortfall, preferred.shortfall) < 0)) {
       selected = physical;
       residual = physicalResidual;
     }
   }
-  if (residual === undefined) return selected;
-  assertInventoryMeasurementsFollowPrimarySign(residual, "Reported physical movement remainder");
+  if (!measured) return selected;
+  if (residual === undefined) {
+    throw new Error("Reported physical movement remainder cannot exactly match its witnessed axes.");
+  }
   if (inventoryMeasurementsAreZero(residual)) return selected;
   const position = {
     itemId: item.itemId,
@@ -5645,16 +5648,6 @@ function planInventoryAllocationForRecording(
       : {}),
   };
   return { ...selected, shortfallAmount: transferAmountForVector(input.catalog, position, residual) };
-}
-
-/** A positive reported residual can carry positive measurements only while primary stock remains. */
-function inventoryPolicyMovementRemainderIsCoherent(residual: InventoryMeasurementVector | undefined): boolean {
-  if (residual === undefined) return true;
-  for (const axis of residual.independent) {
-    const minor = axis.quantity.amountMinor;
-    if (minor < 0 || (minor > 0 && residual.primary.quantity.amountMinor === 0)) return false;
-  }
-  return true;
 }
 
 /** Reject unsafe policy combinations before planning or writing. */
@@ -5806,12 +5799,14 @@ async function policyRecordedDeficit({
     unwitnessed
   );
   const resolved = resolveInventoryAmount(catalog, item, amount);
+  const packagingRevisionId = resolved.packaging?.revisionId;
+  if (from.packagingRevisionId !== undefined && from.packagingRevisionId !== packagingRevisionId) {
+    throw new Error("Inventory policy deficit position packaging revision differs from its amount.");
+  }
   const position = normalizeInventoryStockPositionKey({
     ...from,
     itemRevisionId: item.revisionId,
-    ...(resolved.packaging === undefined
-      ? {}
-      : { packagingRevisionId: resolved.packaging.revisionId }),
+    ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
   });
   assertPositionMatchesItem(item, position);
   const placementScope = inventoryRecordedDeficitPoolSelector(allocation.selector, item.revisionId);

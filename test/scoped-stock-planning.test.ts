@@ -258,6 +258,72 @@ describe("indexed stock planning and availability", () => {
   });
 
   it.each([
+    { reported: "4", remaining: 2 },
+    { reported: "3", remaining: 1 },
+  ])("uses the largest compatible partial witness in a $reported-piece measured transfer", async ({ reported, remaining }) => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, weight] of [["heavy", "40"], ["light", "10"], ["medium", "15"]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}`, occurredAtEpochMs: time0,
+        to: { itemId: "measured", placementNodeId: "store", lotId },
+        amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
+      });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "record-compatible-witnesses", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount(reported, "piece", [{ axisId: "weight", value: "30", unit: "kg" }]),
+    });
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: { amountMinor: remaining } },
+        independent: [{ axisId: "weight", quantity: { amountMinor: 5 } }],
+      },
+    }]);
+    expect(await inventory.read.positions({ itemId: "measured", lotIds: ["heavy"] })).toMatchObject([
+      { key: { placementNodeId: "store" } },
+    ]);
+    expect(await inventory.read.positions({
+      itemId: "measured", placementNodeIds: ["destination"], lotIds: ["light", "medium"],
+    })).toHaveLength(2);
+  });
+
+  it("discards unreported axes only from the residual, keeping them on the measured effects", async () => {
+    const base = measuredItemCatalog("pieces").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base,
+      independentAxes: [...base.independentAxes, {
+        axisId: "optional", role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("g"), requirement: InventoryMeasurementRequirement.Optional,
+      }],
+    });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    for (const lotId of ["a", "b"]) {
+      await inventory.stock.receive({
+        operationId: `receive-large-optional-${lotId}`, occurredAtEpochMs: time0,
+        to: { itemId: "measured", lotId, placementNodeId: "store" },
+        amount: measuredStockAmount("1", "piece", [
+          { axisId: "weight", value: "1", unit: "kg" },
+          { axisId: "optional", value: String(Number.MAX_SAFE_INTEGER), unit: "g" },
+        ]),
+      });
+    }
+    const result = await inventory.stock.scrapByPolicy({
+      operationId: "scrap-without-optional-report", occurredAtEpochMs: time2, reason: "Physically discarded",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]),
+    });
+    expect(result.event.unwitnessedStockMovements).toBeUndefined();
+    expect(result.event.stockEffects).toHaveLength(2);
+    for (const effect of result.event.stockEffects) {
+      expect(effect.measurementsDelta.independent).toContainEqual({
+        axisId: "optional", quantity: parseQuantity(String(Number.MIN_SAFE_INTEGER), "g"),
+      });
+    }
+  });
+
+  it.each([
     { verb: "transfer", held: true },
     { verb: "scrap", held: true },
     { verb: "transfer", held: false },
@@ -447,6 +513,27 @@ describe("indexed stock planning and availability", () => {
       key: { packagingRevisionId: packageId },
       measurements: { primary: { quantity: { amountMinor: 48 } } },
     }]);
+  });
+
+  it("requires an explicit shortfall package to match the reported amount", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const amount = packageAmount(1, "item-a-box-24-v1");
+    const command = {
+      operationId: "report-packaged-shortage", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector, method: InventoryAllocationMethod.Fifo, amount,
+    };
+    const before = storage.readSegmentedStockHead();
+    await expect(inventory.stock.transferByPolicy({
+      ...command, deficitPosition: loosePosition("store", { packagingRevisionId: "item-a-box-20-v1" }),
+    })).rejects.toThrow("deficit position packaging revision differs");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    const result = await inventory.stock.transferByPolicy({
+      ...command, deficitPosition: loosePosition("store", { packagingRevisionId: "item-a-box-24-v1" }),
+    });
+    expect(result.event.unwitnessedStockMovements).toMatchObject([
+      { from: { packagingRevisionId: "item-a-box-24-v1" }, to: { packagingRevisionId: "item-a-box-24-v1" } },
+    ]);
   });
 
   it("preserves FIFO evidence for the unlabelled balance after a prior batch request", async () => {

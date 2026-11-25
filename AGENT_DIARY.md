@@ -1877,3 +1877,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Physical policy picks can search another FIFO or FEFO assignment when the first full primary pick differs on a reported independent axis. An exact unheld assignment takes precedence. If held stock supplies the matching vector, the movement records it and leaves its claim in place.
 - An exact scoped retry can replay its completed operation after concurrent catalogue publication. Open subtree counts use the journal's placement edges at observation time, so an edge-only direct-contents move does not create a false discrepancy.
+
+## 2026-11-25 — coherent partial witnesses
+
+- If Record mode's first measured pick contradicts the reported measurements, the bounded allocator can keep the largest compatible positive witness and record the exact remainder. Unreported axes remain on witnessed effects and do not enter remainder arithmetic.
+- A named deficit package must match the reported package. Stock posted under an indexed subtree already satisfies the ancestry predicate, so the position query applies only the remaining stock filters there.

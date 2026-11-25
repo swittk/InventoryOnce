@@ -87,14 +87,24 @@ export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
 
 /** Pick FIFO/FEFO stock without inventing synthetic lots or hiding expiry/shortfall policy. */
-export function allocateInventory({
+export function allocateInventory(input: AllocateInventoryInput): InventoryAllocationResult {
+  return allocateInventoryCandidates(input, false);
+}
+
+/** Find the largest accepted witness, including a partial witness for measured recording. */
+export function allocateInventoryUpTo(input: AllocateInventoryInput): InventoryAllocationResult {
+  return allocateInventoryCandidates(input, true);
+}
+
+/** Share the ordered, bounded search without changing the public full-plan constraint. */
+function allocateInventoryCandidates({
   requested,
   candidates,
   method,
   nowEpochMs,
   allowExpired = false,
   acceptAllocations,
-}: AllocateInventoryInput): InventoryAllocationResult {
+}: AllocateInventoryInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
   let expiredStockWasExcluded = false;
@@ -117,17 +127,19 @@ export function allocateInventory({
   eligible.sort(compareEligibleCandidates);
 
   // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
-  const exactAllocations = createExactAllocationsIfPossible(
+  const assignment = searchInventoryAllocations(
     requested,
     eligible,
-    acceptAllocations
+    acceptAllocations,
+    acceptPartial
   );
-  if (exactAllocations !== undefined) {
+  if (assignment !== undefined) {
     return {
-      allocations: exactAllocations,
-      shortfall: zeroQuantity(requested.unit, requested.decimals),
+      allocations: assignment.allocations,
+      shortfall: assignment.shortfall,
       expiredStockWasExcluded,
       incrementBlockedStock:
+        assignment.shortfall.amountMinor === 0 &&
         eligible.some(
           /** Only an indivisible increment can make an exact-plan deviation increment-driven. */
           (candidate) => candidate.allocationIncrement !== undefined
@@ -135,17 +147,18 @@ export function allocateInventory({
         exactAllocationsDoNotFollowGreedyPrefix(
           requested,
           eligible,
-          exactAllocations
+          assignment.allocations
         ),
       allocationConstraintBlockedStock: false,
     };
   }
 
   if (acceptAllocations !== undefined) {
-    const unconstrainedExact = createExactAllocationsIfPossible(
+    const unconstrainedExact = searchInventoryAllocations(
       requested,
       eligible,
-      undefined
+      undefined,
+      false
     );
     let incrementBlockedStock = false;
     if (unconstrainedExact === undefined) {
@@ -211,12 +224,21 @@ export function allocateInventory({
   };
 }
 
-/** Find a full exact assignment while preferring earlier FIFO/FEFO rows at every choice. */
-function createExactAllocationsIfPossible(
+/** An accepted exact assignment and the primary amount left unwitnessed. */
+interface InventoryAllocationAssignment {
+  /** The chosen positions in policy order. */
+  readonly allocations: readonly InventoryAllocation[];
+  /** The exact primary quantity outside those choices. */
+  readonly shortfall: Quantity;
+}
+
+/** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
+function searchInventoryAllocations(
   requested: Quantity,
   candidates: readonly InventoryAllocationCandidate[],
-  acceptAllocations: AllocateInventoryInput["acceptAllocations"]
-): readonly InventoryAllocation[] | undefined {
+  acceptAllocations: AllocateInventoryInput["acceptAllocations"],
+  acceptPartial: boolean
+): InventoryAllocationAssignment | undefined {
   let decimals = requested.decimals;
   for (const candidate of candidates) {
     decimals = Math.max(decimals, candidate.available.decimals);
@@ -241,7 +263,7 @@ function createExactAllocationsIfPossible(
     suffixCapacity[index] =
       (suffixCapacity[index + 1] ?? 0n) + (capacityMinor[index] ?? 0n);
   }
-  if ((suffixCapacity[0] ?? 0n) < requestedMinor) return undefined;
+  if (!acceptPartial && (suffixCapacity[0] ?? 0n) < requestedMinor) return undefined;
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
     throw new Error(
       "Exact allocation exceeded its safe search bound; narrow the candidates or request."
@@ -253,6 +275,9 @@ function createExactAllocationsIfPossible(
   /** Failed index/remainder pairs already exhausted by the bounded search. */
   const failedStates = new Set<string>();
   let exploredChoices = 0;
+  /** Best coherent partial result so far. Equal quantities keep the first policy choice. */
+  let bestPartial: InventoryAllocationAssignment | undefined;
+  let bestRemainingMinor = requestedMinor + 1n;
 
   /** Search larger amounts from earlier rows first, giving deterministic FIFO/FEFO preference. */
   const findExactSuffix = (index: number, remainingMinor: bigint): boolean => {
@@ -264,8 +289,27 @@ function createExactAllocationsIfPossible(
         )
       );
     }
-    if (index >= candidates.length) return false;
-    if ((suffixCapacity[index] ?? 0n) < remainingMinor) return false;
+    if (index >= candidates.length) {
+      if (acceptPartial && remainingMinor < bestRemainingMinor) {
+        const allocations = materializeExactAllocations(candidates, chosenMinor, decimals);
+        if (acceptAllocations === undefined || acceptAllocations(allocations)) {
+          bestRemainingMinor = remainingMinor;
+          bestPartial = {
+            allocations,
+            shortfall: quantity({
+              amountMinor: safeNumber(remainingMinor, "Allocation shortfall"),
+              decimals,
+              unit: requested.unit,
+            }),
+          };
+        }
+      }
+      return false;
+    }
+    const capacityFromHere = suffixCapacity[index] ?? 0n;
+    if (acceptPartial ? remainingMinor - capacityFromHere >= bestRemainingMinor : capacityFromHere < remainingMinor) {
+      return false;
+    }
     const state = `${index}:${remainingMinor}`;
     if (acceptAllocations === undefined && failedStates.has(state))
       return false;
@@ -290,8 +334,11 @@ function createExactAllocationsIfPossible(
     return false;
   };
 
-  if (!findExactSuffix(0, requestedMinor)) return undefined;
-  return materializeExactAllocations(candidates, chosenMinor, decimals);
+  if (!findExactSuffix(0, requestedMinor)) return bestPartial;
+  return {
+    allocations: materializeExactAllocations(candidates, chosenMinor, decimals),
+    shortfall: zeroQuantity(requested.unit, requested.decimals),
+  };
 }
 
 /** Convert one exact shared-scale choice vector into normal allocation rows. */

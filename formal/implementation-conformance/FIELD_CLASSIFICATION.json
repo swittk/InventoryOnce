@@ -68121,7 +68121,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:808:5.deficitPosition": {
+    "anonymous@src/facade.ts:807:5.deficitPosition": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68146,7 +68146,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/facade.ts:808:5.groupId": {
+    "anonymous@src/facade.ts:807:5.groupId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68170,7 +68170,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:808:5.requestId": {
+    "anonymous@src/facade.ts:807:5.requestId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68859,5 +68859,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "35094beab1ec75e77418c1f6467d524da5c75e1b752a353c82b6c2c2fa4f8fa3"
+  "surfaceSha256": "a7303559dfb3c7c77e2505dd46bf80dd5b7422f9fbfb6db637335af4384c2be4"
 }

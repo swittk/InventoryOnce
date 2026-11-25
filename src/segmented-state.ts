@@ -602,9 +602,12 @@ export class InMemoryInventorySegmentedPositionStore
     let subtreeRoots: Set<string> | undefined;
     if (normalized.withinPlacementNodeIds !== undefined) {
       const { withinPlacementNodeIds, ...remaining } = normalized;
-      subtreeRoots = new Set(withinPlacementNodeIds);
-      subtreeMembership = new Map();
       directSelector = remaining;
+      // Subtree postings already prove membership. Only the general item index needs ancestry checks.
+      if (subtreeIds === undefined) {
+        subtreeRoots = new Set(withinPlacementNodeIds);
+        subtreeMembership = new Map();
+      }
     }
     for (const positionId of ids) {
       const position = this.positions.get(positionId);

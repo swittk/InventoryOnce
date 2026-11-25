@@ -1,6 +1,7 @@
 import { assertInventoryAmountKind, positionHasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
 import {
   allocateInventory,
+  allocateInventoryUpTo,
   compareInventoryAllocationCandidates,
   InventoryAllocationMethod,
   type AllocateInventoryInput,
@@ -29,8 +30,6 @@ import { assertInventoryEpochMilliseconds } from "./events.js";
 import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
-  inventoryMeasurementsAreZero,
-  subtractInventoryMeasurements,
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
@@ -49,7 +48,9 @@ import {
 import {
   addQuantity,
   compareQuantity,
+  integerAtDecimals,
   positiveQuantity,
+  quantity,
   quantityEq,
   quantityToDecimalString,
   quantityWholeMultipleCount,
@@ -215,6 +216,8 @@ export interface PlanInventoryAllocationInPoolInput
   readonly pool: InventoryScopedStockPool;
   /** A physical attempt defers measured residuals until the witness plan is chosen. */
   readonly recordingAttempt?: "prefer-unheld" | "all-physical";
+  /** Record mode can keep a compatible partial witness and post the measured remainder. */
+  readonly allowMeasuredShortfall?: boolean;
 }
 
 /** Plan exact FIFO/FEFO picks over one complete signed stock pool. */
@@ -229,6 +232,7 @@ export function planInventoryAllocationInPool({
   reservationId,
   allowAllocatedStock = false,
   recordingAttempt,
+  allowMeasuredShortfall = false,
   reservationAtEpochMs = atEpochMs,
 }: PlanInventoryAllocationInPoolInput): InventoryPolicyAllocationPlan {
   assertInventoryEpochMilliseconds(atEpochMs, "inventory allocation authority time");
@@ -280,21 +284,27 @@ export function planInventoryAllocationInPool({
     });
   let lines = buildLines(allocated.allocations);
   const deferMeasuredShortfall = recordingAttempt !== undefined && amount.independent.length > 0;
-  if (deferMeasuredShortfall && allocated.shortfall.amountMinor === 0 &&
-      !inventoryMeasurementsAreZero(inventoryPolicyMovementRemainder({
-        catalog, item: selected.item, report: resolved.measurements, lines,
-      }))) {
-    // Only a conflicting measured pick needs to explore other exact FIFO/FEFO assignments.
-    const measured = allocateInventory({
-      ...allocationInput,
-      /** Accept only a complete assignment of the report's measured axes. */
-      acceptAllocations: (choices) => inventoryMeasurementsAreZero(inventoryPolicyMovementRemainder({
-        catalog, item: selected.item, report: resolved.measurements, lines: buildLines(choices),
-      })),
+  if (deferMeasuredShortfall) {
+    const residual = inventoryPolicyMovementRemainder({
+      catalog, item: selected.item, report: resolved.measurements, lines,
     });
-    if (measured.shortfall.amountMinor === 0) {
-      allocated = measured;
-      lines = buildLines(measured.allocations);
+    if (residual === undefined && (allocated.shortfall.amountMinor === 0 ||
+      (allowMeasuredShortfall && !allocated.incrementBlockedStock))) {
+      // Read other assignments only when the primary-first witness contradicts the report.
+      const findWitness = allowMeasuredShortfall && !allocated.incrementBlockedStock
+        ? allocateInventoryUpTo
+        : allocateInventory;
+      const measured = findWitness({
+        ...allocationInput,
+        /** Keep a positive witness whose reported-axis remainder can be recorded exactly. */
+        acceptAllocations: (choices) => choices.length > 0 && inventoryPolicyMovementRemainder({
+          catalog, item: selected.item, report: resolved.measurements, lines: buildLines(choices),
+        }) !== undefined,
+      });
+      if (measured.allocations.length > 0) {
+        allocated = measured;
+        lines = buildLines(measured.allocations);
+      }
     }
   }
   return {
@@ -388,23 +398,58 @@ interface InventoryPolicyMovementRemainderInput {
   readonly lines: readonly InventoryPolicyAllocationLine[];
 }
 
-/** Subtract witnessed stock on every reported axis without claiming unreported measurements. */
+/** An exact remainder whose aligned digits may temporarily exceed safe integer storage. */
+interface ReportedAxisRemainder {
+  /** Exact signed digits at the current scale. */
+  minor: bigint;
+  /** Number of fractional decimal places. */
+  decimals: number;
+}
+
+/** Return the exact report remainder when the selected witnesses fit every reported axis. */
 export function inventoryPolicyMovementRemainder({
   catalog, item, report, lines,
-}: InventoryPolicyMovementRemainderInput): InventoryMeasurementVector {
-  let remainder = report;
+}: InventoryPolicyMovementRemainderInput): InventoryMeasurementVector | undefined {
+  let primary = report.primary.quantity;
+  /** Keep exact running remainders only for axes named by the report or its package. */
+  const reported = new Map<string, ReportedAxisRemainder>();
+  for (const axis of report.independent) {
+    reported.set(axis.axisId, {
+      minor: BigInt(axis.quantity.amountMinor), decimals: axis.quantity.decimals,
+    });
+  }
   for (const line of lines) {
-    remainder = subtractInventoryMeasurements(
-      remainder, resolveInventoryAmount(catalog, item, line.amount).measurements
-    );
+    const witness = resolveInventoryAmount(catalog, item, line.amount).measurements;
+    primary = subtractQuantity(primary, witness.primary.quantity);
+    for (const axis of witness.independent) {
+      const remaining = reported.get(axis.axisId);
+      if (remaining === undefined) continue;
+      const measured = axis.quantity;
+      const decimals = Math.max(remaining.decimals, measured.decimals);
+      remaining.minor = remaining.minor * (10n ** BigInt(decimals - remaining.decimals)) -
+        integerAtDecimals(measured, decimals);
+      remaining.decimals = decimals;
+      if (remaining.minor < 0n) return undefined;
+    }
   }
-  const reportedAxes = new Set<string>();
-  for (const axis of report.independent) reportedAxes.add(axis.axisId);
+  // Keep zero values for required axes and reject weight without positive primary stock.
   const independent: InventoryMeasurementVector["independent"][number][] = [];
-  for (const axis of remainder.independent) {
-    if (reportedAxes.has(axis.axisId)) independent.push(axis);
+  for (const axis of report.independent) {
+    const remaining = reported.get(axis.axisId);
+    if (remaining === undefined) throw new Error("Measured inventory report lost a reported axis.");
+    let { minor, decimals } = remaining;
+    if (primary.amountMinor === 0 && minor !== 0n) return undefined;
+    while (minor > BigInt(Number.MAX_SAFE_INTEGER) && decimals > 0 && minor % 10n === 0n) {
+      minor /= 10n;
+      decimals -= 1;
+    }
+    if (minor > BigInt(Number.MAX_SAFE_INTEGER)) return undefined;
+    independent.push({
+      axisId: axis.axisId,
+      quantity: quantity({ amountMinor: Number(minor), decimals, unit: axis.quantity.unit }),
+    });
   }
-  return { primary: remainder.primary, independent };
+  return { primary: { axisId: report.primary.axisId, quantity: primary }, independent };
 }
 
 /** Item revision and selector after freezing all ambiguous human/package choices. */
