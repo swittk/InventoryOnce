@@ -724,9 +724,31 @@ describe("segmented inventory position store", () => {
       segmentedPosition({ placementNodeId: "bin", lotId: `LOT-${index}` })
     );
     const store = createInMemoryInventorySegmentedPositionStore({ positions });
-    const ancestry = vi.spyOn(placement, "ancestry");
+    const parent = vi.spyOn(placement, "parentNodeId");
     expect(store.queryPositions({ itemId: "item-a", withinPlacementNodeIds: ["root"] }, placement)).toHaveLength(200);
-    expect(ancestry).toHaveBeenCalledExactlyOnceWith("bin");
+    expect(parent).toHaveBeenCalledExactlyOnceWith("bin");
+  });
+
+  it("shares fallback subtree membership across a deep chain of distinct stock nodes", () => {
+    const placement = createInMemoryInventorySegmentedPlacementStore();
+    const positions: InventoryStockPosition[] = [];
+    const depth = 180;
+    for (let index = 0; index < depth; index += 1) {
+      const nodeId = `chain-${index}`;
+      placement.applyChange({
+        expectedRevision: index, nextRevision: index + 1, eventId: `place-${nodeId}`,
+        nodeId, toParentNodeId: index === 0 ? "root" : `chain-${index - 1}`, targetAcceptsPlacement: true,
+      });
+      positions.push(segmentedPosition({ placementNodeId: nodeId, lotId: "stock" }));
+    }
+    positions.push(segmentedPosition({ placementNodeId: "outside", lotId: "stock" }));
+    const store = createInMemoryInventorySegmentedPositionStore({ positions });
+    const parent = vi.spyOn(placement, "parentNodeId");
+    expect(store.queryPositions({
+      itemId: "item-a", withinPlacementNodeIds: ["root", "chain-40"], lotIds: ["stock"],
+    }, placement)).toHaveLength(depth);
+    expect(parent).toHaveBeenCalledTimes(depth);
+    expect(parent).toHaveBeenCalledWith("outside");
   });
 
   it("trusts indexed subtree membership and still applies direct stock filters", () => {

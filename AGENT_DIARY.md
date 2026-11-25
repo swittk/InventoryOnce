@@ -1882,3 +1882,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - If Record mode's first measured pick contradicts the reported measurements, the bounded allocator can keep the largest compatible positive witness and record the exact remainder. Unreported axes remain on witnessed effects and do not enter remainder arithmetic.
 - A named deficit package must match the reported package. Stock posted under an indexed subtree already satisfies the ancestry predicate, so the position query applies only the remaining stock filters there.
+
+## 2026-11-25 — bounded measured witnesses and exact conservation
+
+- Measured allocation stops exploring a branch once its remaining capacity cannot improve the best witness. It distinguishes stock blocked by an indivisible increment from exhausted stock and keeps the first FIFO or FEFO choice on ties.
+- A genuine primary shortage can be recorded without a compatible witness. Mixed-scale quantities retain their exact values, and event conservation uses temporary wide integers while each stored effect remains a safe-integer quantity.
+- Fallback subtree queries share resolved membership across parent paths without touching descendants outside the selected stock scope.

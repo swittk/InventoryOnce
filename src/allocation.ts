@@ -11,7 +11,6 @@ import {
   positiveQuantity,
   quantity,
   safeNumber,
-  subtractQuantity,
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
@@ -127,39 +126,34 @@ function allocateInventoryCandidates({
   eligible.sort(compareEligibleCandidates);
 
   // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
-  const assignment = searchInventoryAllocations(
+  const assignment = searchInventoryAllocations({
     requested,
-    eligible,
-    acceptAllocations,
-    acceptPartial
-  );
+    candidates: eligible,
+    ...(acceptAllocations === undefined ? {} : { acceptAllocations }),
+    acceptPartial,
+  });
   if (assignment !== undefined) {
     return {
       allocations: assignment.allocations,
       shortfall: assignment.shortfall,
       expiredStockWasExcluded,
-      incrementBlockedStock:
-        assignment.shortfall.amountMinor === 0 &&
-        eligible.some(
-          /** Only an indivisible increment can make an exact-plan deviation increment-driven. */
-          (candidate) => candidate.allocationIncrement !== undefined
-        ) &&
-        exactAllocationsDoNotFollowGreedyPrefix(
-          requested,
-          eligible,
-          assignment.allocations
-        ),
+      incrementBlockedStock: assignment.shortfall.amountMinor > 0
+        ? partialAllocationHasBlockedIncrement(eligible, assignment)
+        : eligible.some(
+            /** Only an indivisible increment can make an exact-plan deviation increment-driven. */
+            (candidate) => candidate.allocationIncrement !== undefined
+          ) &&
+          exactAllocationsDoNotFollowGreedyPrefix(requested, eligible, assignment.allocations),
       allocationConstraintBlockedStock: false,
     };
   }
 
   if (acceptAllocations !== undefined) {
-    const unconstrainedExact = searchInventoryAllocations(
+    const unconstrainedExact = searchInventoryAllocations({
       requested,
-      eligible,
-      undefined,
-      false
-    );
+      candidates: eligible,
+      acceptPartial: false,
+    });
     let incrementBlockedStock = false;
     if (unconstrainedExact === undefined) {
       let eligibleCapacity = zeroQuantity(requested.unit, requested.decimals);
@@ -213,7 +207,7 @@ function allocateInventoryCandidates({
       continue;
     }
     allocations.push({ position: candidate.position, quantity: allocated });
-    remaining = subtractQuantity(remaining, allocated);
+    remaining = subtractInventoryAllocationQuantity(remaining, allocated);
   }
   return {
     allocations,
@@ -224,6 +218,28 @@ function allocateInventoryCandidates({
   };
 }
 
+/** Distinguish an exhausted row from remaining stock that cannot supply one legal increment. */
+function partialAllocationHasBlockedIncrement(
+  candidates: readonly InventoryAllocationCandidate[],
+  assignment: InventoryAllocationAssignment
+): boolean {
+  const allocated = new Map<string, Quantity>();
+  for (const line of assignment.allocations) {
+    allocated.set(inventoryStockPositionIdentity(line.position), line.quantity);
+  }
+  for (const candidate of candidates) {
+    const increment = candidate.allocationIncrement;
+    if (increment === undefined) continue;
+    const used = allocated.get(inventoryStockPositionIdentity(candidate.position));
+    if (used !== undefined && compareQuantity(candidate.available, used) === 0) continue;
+    const unpicked = used === undefined ? candidate.available : subtractInventoryAllocationQuantity(candidate.available, used);
+    if (compareQuantity(assignment.shortfall, increment) < 0 || compareQuantity(unpicked, increment) < 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /** An accepted exact assignment and the primary amount left unwitnessed. */
 interface InventoryAllocationAssignment {
   /** The chosen positions in policy order. */
@@ -232,13 +248,22 @@ interface InventoryAllocationAssignment {
   readonly shortfall: Quantity;
 }
 
+/** Ordered candidate search and the policies that govern its result. */
+interface SearchInventoryAllocationsInput {
+  /** Total requested primary quantity. */
+  readonly requested: Quantity;
+  /** Eligible candidates in FIFO or FEFO order. */
+  readonly candidates: readonly InventoryAllocationCandidate[];
+  /** Extra exact evidence a complete or partial assignment must satisfy. */
+  readonly acceptAllocations?: AllocateInventoryInput["acceptAllocations"];
+  /** Whether a coherent assignment can leave part of the request unwitnessed. */
+  readonly acceptPartial: boolean;
+}
+
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
-function searchInventoryAllocations(
-  requested: Quantity,
-  candidates: readonly InventoryAllocationCandidate[],
-  acceptAllocations: AllocateInventoryInput["acceptAllocations"],
-  acceptPartial: boolean
-): InventoryAllocationAssignment | undefined {
+function searchInventoryAllocations({
+  requested, candidates, acceptAllocations, acceptPartial,
+}: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
   let decimals = requested.decimals;
   for (const candidate of candidates) {
     decimals = Math.max(decimals, candidate.available.decimals);
@@ -296,11 +321,9 @@ function searchInventoryAllocations(
           bestRemainingMinor = remainingMinor;
           bestPartial = {
             allocations,
-            shortfall: quantity({
-              amountMinor: safeNumber(remainingMinor, "Allocation shortfall"),
-              decimals,
-              unit: requested.unit,
-            }),
+            shortfall: inventoryAllocationQuantityAtStorableScale(
+              remainingMinor, decimals, requested.unit, "Allocation shortfall"
+            ),
           };
         }
       }
@@ -316,8 +339,11 @@ function searchInventoryAllocations(
     const capacity = capacityMinor[index] ?? 0n;
     const increment = incrementMinor[index] ?? 1n;
     const maximum = capacity < remainingMinor ? capacity : remainingMinor;
+    const laterCapacity = suffixCapacity[index + 1] ?? 0n;
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
+      // Lower choices can only tie or worsen this bound. Keep the first witness on ties.
+      if (acceptPartial && remainingMinor - take - laterCapacity >= bestRemainingMinor) break;
       exploredChoices += 1;
       if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
         throw new Error(
@@ -341,6 +367,27 @@ function searchInventoryAllocations(
   };
 }
 
+/** Drop exact trailing zeros only if the supplied digits need a smaller storage scale. */
+export function inventoryAllocationQuantityAtStorableScale(
+  digits: bigint, decimals: number, unit: Quantity["unit"], label: string
+): Quantity {
+  const limit = BigInt(Number.MAX_SAFE_INTEGER);
+  while ((digits > limit || digits < -limit) && decimals > 0 && digits % 10n === 0n) {
+    digits /= 10n;
+    decimals -= 1;
+  }
+  return quantity({ amountMinor: safeNumber(digits, label), decimals, unit });
+}
+
+/** Subtract one selection without rejecting a remainder merely for trailing zeros. */
+function subtractInventoryAllocationQuantity(remaining: Quantity, picked: Quantity): Quantity {
+  const decimals = Math.max(remaining.decimals, picked.decimals);
+  return inventoryAllocationQuantityAtStorableScale(
+    integerAtDecimals(remaining, decimals) - integerAtDecimals(picked, decimals),
+    decimals, remaining.unit, "Allocation shortfall"
+  );
+}
+
 /** Convert one exact shared-scale choice vector into normal allocation rows. */
 function materializeExactAllocations(
   candidates: readonly InventoryAllocationCandidate[],
@@ -354,14 +401,9 @@ function materializeExactAllocations(
     if (amountMinor === 0n || candidate === undefined) continue;
     allocations.push({
       position: candidate.position,
-      quantity: quantity({
-        amountMinor: safeNumber(
-          amountMinor,
-          "Exact allocation quantity"
-        ),
-        decimals,
-        unit: candidate.available.unit,
-      }),
+      quantity: inventoryAllocationQuantityAtStorableScale(
+        amountMinor, decimals, candidate.available.unit, "Exact allocation quantity"
+      ),
     });
   }
   return allocations;
@@ -402,7 +444,7 @@ function exactAllocationsDoNotFollowGreedyPrefix(
         inventoryStockPositionIdentity(candidate.position)
       ) ?? zeroQuantity(requested.unit, requested.decimals);
     if (compareQuantity(greedy, exact) !== 0) return true;
-    remaining = subtractQuantity(remaining, greedy);
+    remaining = subtractInventoryAllocationQuantity(remaining, greedy);
   }
   return false;
 }

@@ -7,6 +7,7 @@ import {
   type InventoryAllocationCandidate,
   type InventoryStockPositionKey,
 } from "../src/kernel.js";
+import { allocateInventoryUpTo } from "../src/allocation.js";
 import { time0, time1, time2, time3 } from "./test-fixtures.js";
 
 /** Named fields for one revision-qualified allocation candidate fixture. */
@@ -151,6 +152,32 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.shortfall).toEqual(parseQuantity("2", "piece"));
     expect(result.incrementBlockedStock).toBe(false);
     expect(result.allocationConstraintBlockedStock).toBe(false);
+  });
+
+  it.each([
+    { requested: "3", available: "4", increment: "2", picked: "2", missing: "1", blocked: true },
+    { requested: "5", available: "4", increment: "2", picked: "4", missing: "1", blocked: false },
+    { requested: "100002", available: "100001", picked: "100001", missing: "1", blocked: false },
+    { requested: "9007199254740991", available: "1.0", picked: "1.0", missing: "9007199254740990", blocked: false },
+  ])("finds the bounded exact partial pick for $requested from $available", ({
+    requested, available, increment, picked, missing, blocked,
+  }) => {
+    const result = allocateInventoryUpTo({
+      requested: parseQuantity(requested, "piece"),
+      candidates: [candidate({
+        lotId: "partial", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+        extra: {
+          available: parseQuantity(available, "piece"),
+          ...(increment === undefined ? {} : { allocationIncrement: parseQuantity(increment, "piece") }),
+        },
+      })],
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time1,
+      acceptAllocations: () => true,
+    });
+    expect(result.allocations[0]?.quantity).toEqual(parseQuantity(picked, "piece"));
+    expect(result.shortfall).toEqual(parseQuantity(missing, "piece"));
+    expect(result.incrementBlockedStock).toBe(blocked);
   });
 
   it("rejects an invalid requested decimal scale before returning shortfall", () => {

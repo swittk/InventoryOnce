@@ -35,6 +35,34 @@ import {
   type InventoryStockSelector,
 } from "./selectors.js";
 
+/** Resolve fallback subtree membership once per traversed parent edge. */
+function inventorySegmentedNodeIsInSubtree(
+  nodeId: string,
+  placement: InMemoryInventorySegmentedPlacementStore,
+  membership: Map<string, boolean>
+): boolean {
+  const alreadySelected = membership.get(nodeId);
+  if (alreadySelected !== undefined) return alreadySelected;
+  /** Unanswered nodes on this walk, also used to detect a cycle. */
+  const visited = new Set<string>();
+  let current: string | undefined = nodeId;
+  let selected = false;
+  while (current !== undefined) {
+    const cached = membership.get(current);
+    if (cached !== undefined) {
+      selected = cached;
+      break;
+    }
+    if (visited.has(current)) {
+      throw new Error(`Segmented placement graph contains a cycle at '${current}'.`);
+    }
+    visited.add(current);
+    current = placement.parentNodeId(current);
+  }
+  for (const node of visited) membership.set(node, selected);
+  return selected;
+}
+
 /** Adapter-local segmented reads may be synchronous in-process or asynchronous for remote databases. */
 export type InventorySegmentedResult<T> = T | Promise<T>;
 
@@ -596,17 +624,15 @@ export class InMemoryInventorySegmentedPositionStore
     const ids = subtreeIds ?? [...candidate.identities()].sort();
     const result: InventoryStockPosition[] = [];
     let directSelector = normalized;
-    /** Cached subtree membership for the direct nodes encountered by this query. */
+    /** Fallback membership, seeded with the requested roots. */
     let subtreeMembership: Map<string, boolean> | undefined;
-    /** Requested subtree roots, checked against each encountered node once. */
-    let subtreeRoots: Set<string> | undefined;
     if (normalized.withinPlacementNodeIds !== undefined) {
       const { withinPlacementNodeIds, ...remaining } = normalized;
       directSelector = remaining;
       // Subtree postings already prove membership. Only the general item index needs ancestry checks.
       if (subtreeIds === undefined) {
-        subtreeRoots = new Set(withinPlacementNodeIds);
         subtreeMembership = new Map();
+        for (const root of withinPlacementNodeIds) subtreeMembership.set(root, true);
       }
     }
     for (const positionId of ids) {
@@ -617,20 +643,9 @@ export class InMemoryInventorySegmentedPositionStore
         );
       }
       if (!inventoryStockPositionMatchesNormalizedSelector(position.key, directSelector)) continue;
-      if (subtreeMembership !== undefined) {
+      if (subtreeMembership !== undefined && placement !== undefined) {
         const nodeId = position.key.placementNodeId;
-        if (nodeId === undefined) continue;
-        let selected = subtreeMembership.get(nodeId);
-        if (selected === undefined) {
-          selected = false;
-          for (const ancestor of placement?.ancestry(nodeId) ?? []) {
-            if (subtreeRoots?.has(ancestor) !== true) continue;
-            selected = true;
-            break;
-          }
-          subtreeMembership.set(nodeId, selected);
-        }
-        if (!selected) continue;
+        if (nodeId === undefined || !inventorySegmentedNodeIsInSubtree(nodeId, placement, subtreeMembership)) continue;
       }
       result.push(cloneInventoryRetainedData(position));
     }

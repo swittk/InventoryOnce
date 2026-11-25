@@ -3,6 +3,7 @@ import {
   allocateInventory,
   allocateInventoryUpTo,
   compareInventoryAllocationCandidates,
+  inventoryAllocationQuantityAtStorableScale,
   InventoryAllocationMethod,
   type AllocateInventoryInput,
   type InventoryAllocation,
@@ -291,17 +292,18 @@ export function planInventoryAllocationInPool({
     if (residual === undefined && (allocated.shortfall.amountMinor === 0 ||
       (allowMeasuredShortfall && !allocated.incrementBlockedStock))) {
       // Read other assignments only when the primary-first witness contradicts the report.
-      const findWitness = allowMeasuredShortfall && !allocated.incrementBlockedStock
-        ? allocateInventoryUpTo
-        : allocateInventory;
+      const canRecordPartial = allowMeasuredShortfall && !allocated.incrementBlockedStock;
+      // With a genuine primary shortage, no matching recorded row may exist at all.
+      const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0;
+      const findWitness = canRecordPartial ? allocateInventoryUpTo : allocateInventory;
       const measured = findWitness({
         ...allocationInput,
-        /** Keep a positive witness whose reported-axis remainder can be recorded exactly. */
-        acceptAllocations: (choices) => choices.length > 0 && inventoryPolicyMovementRemainder({
+        /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
+        acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && inventoryPolicyMovementRemainder({
           catalog, item: selected.item, report: resolved.measurements, lines: buildLines(choices),
         }) !== undefined,
       });
-      if (measured.allocations.length > 0) {
+      if (measured.allocations.length > 0 || canRecordWithoutWitness) {
         allocated = measured;
         lines = buildLines(measured.allocations);
       }
@@ -410,7 +412,9 @@ interface ReportedAxisRemainder {
 export function inventoryPolicyMovementRemainder({
   catalog, item, report, lines,
 }: InventoryPolicyMovementRemainderInput): InventoryMeasurementVector | undefined {
-  let primary = report.primary.quantity;
+  const reportedPrimary = report.primary.quantity;
+  let primaryMinor = BigInt(reportedPrimary.amountMinor);
+  let primaryDecimals = reportedPrimary.decimals;
   /** Keep exact running remainders only for axes named by the report or its package. */
   const reported = new Map<string, ReportedAxisRemainder>();
   for (const axis of report.independent) {
@@ -420,7 +424,11 @@ export function inventoryPolicyMovementRemainder({
   }
   for (const line of lines) {
     const witness = resolveInventoryAmount(catalog, item, line.amount).measurements;
-    primary = subtractQuantity(primary, witness.primary.quantity);
+    const witnessedPrimary = witness.primary.quantity;
+    const primaryScale = Math.max(primaryDecimals, witnessedPrimary.decimals);
+    primaryMinor = primaryMinor * (10n ** BigInt(primaryScale - primaryDecimals)) -
+      integerAtDecimals(witnessedPrimary, primaryScale);
+    primaryDecimals = primaryScale;
     for (const axis of witness.independent) {
       const remaining = reported.get(axis.axisId);
       if (remaining === undefined) continue;
@@ -438,7 +446,7 @@ export function inventoryPolicyMovementRemainder({
     const remaining = reported.get(axis.axisId);
     if (remaining === undefined) throw new Error("Measured inventory report lost a reported axis.");
     let { minor, decimals } = remaining;
-    if (primary.amountMinor === 0 && minor !== 0n) return undefined;
+    if (primaryMinor === 0n && minor !== 0n) return undefined;
     while (minor > BigInt(Number.MAX_SAFE_INTEGER) && decimals > 0 && minor % 10n === 0n) {
       minor /= 10n;
       decimals -= 1;
@@ -449,6 +457,9 @@ export function inventoryPolicyMovementRemainder({
       quantity: quantity({ amountMinor: Number(minor), decimals, unit: axis.quantity.unit }),
     });
   }
+  const primary = inventoryAllocationQuantityAtStorableScale(
+    primaryMinor, primaryDecimals, reportedPrimary.unit, "Reported primary remainder"
+  );
   return { primary: { axisId: report.primary.axisId, quantity: primary }, independent };
 }
 

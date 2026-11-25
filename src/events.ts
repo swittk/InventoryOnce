@@ -47,6 +47,7 @@ import {
 } from "./placement.js";
 import {
   compareQuantity,
+  integerAtDecimals,
   negateQuantity,
   positiveQuantity,
   quantityEq,
@@ -2268,28 +2269,60 @@ function assertEveryPrimarySign(
   }
 }
 
+/** Accumulate conservation totals without the safe-integer limit of stored quantities. */
+interface InventoryConservationTotal {
+  /** Signed net quantity at the current scale. */
+  minor: bigint;
+  /** Decimal places needed by the effects seen so far. */
+  decimals: number;
+}
+
 /** Require internal verbs to conserve every measurement axis inside each frozen item revision. */
 function assertInternalEventConservesEachItem(
   effects: readonly InventoryStockEffect[],
   kind: InventoryEventKind
 ): void {
-  const totalByItemRevision = new Map<string, InventoryMeasurementVector>();
+  /** Normalization already checked the axis units against each frozen revision. */
+  const totalByItemRevision = new Map<string, Map<string, InventoryConservationTotal>>();
   for (const effect of effects) {
-    const earlier = totalByItemRevision.get(effect.itemRevisionId);
-    totalByItemRevision.set(
-      effect.itemRevisionId,
-      earlier === undefined
-        ? effect.measurementsDelta
-        : addInventoryMeasurements(earlier, effect.measurementsDelta)
-    );
-  }
-  for (const [itemRevisionId, total] of totalByItemRevision) {
-    if (!inventoryMeasurementsAreZero(total)) {
-      throw new Error(
-        `Inventory event '${kind}' does not conserve item revision '${itemRevisionId}'.`
-      );
+    let totals = totalByItemRevision.get(effect.itemRevisionId);
+    if (totals === undefined) {
+      totals = new Map();
+      totalByItemRevision.set(effect.itemRevisionId, totals);
+    }
+    const { primary, independent } = effect.measurementsDelta;
+    addInventoryConservationQuantity(totals, primary.axisId, primary.quantity);
+    for (const axis of independent) {
+      addInventoryConservationQuantity(totals, axis.axisId, axis.quantity);
     }
   }
+  for (const [itemRevisionId, totals] of totalByItemRevision) {
+    for (const total of totals.values()) {
+      if (total.minor !== 0n) {
+        throw new Error(
+          `Inventory event '${kind}' does not conserve item revision '${itemRevisionId}'.`
+        );
+      }
+    }
+  }
+}
+
+/** Add one normalized measurement to a temporary exact balance. */
+function addInventoryConservationQuantity(
+  totals: Map<string, InventoryConservationTotal>,
+  axisId: string,
+  quantity: Quantity
+): void {
+  const total = totals.get(axisId);
+  if (total === undefined) {
+    totals.set(axisId, { minor: BigInt(quantity.amountMinor), decimals: quantity.decimals });
+    return;
+  }
+  if (quantity.decimals > total.decimals) {
+    total.minor *= 10n ** BigInt(quantity.decimals - total.decimals);
+    total.decimals = quantity.decimals;
+  }
+  total.minor += integerAtDecimals(quantity, total.decimals);
 }
 
 /** Prevent generic reclassification from silently acting like pack/unpack. */

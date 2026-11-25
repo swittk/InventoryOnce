@@ -323,6 +323,52 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
+  it("records a genuine measured shortage when none of the recorded stock can witness it", async () => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "receive-incompatible-witness", occurredAtEpochMs: time0,
+      to: { itemId: "measured", placementNodeId: "store", lotId: "heavy" },
+      amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "40", unit: "kg" }]),
+    });
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "report-without-a-witness", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "30", unit: "kg" }]),
+    });
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: { amountMinor: 3 } },
+        independent: [{ axisId: "weight", quantity: { amountMinor: 30 } }],
+      },
+    }]);
+    expect(result.event.stockEffects).toHaveLength(2);
+    expect(await inventory.read.positions({ itemId: "measured", lotIds: ["heavy"] })).toMatchObject([
+      { key: { placementNodeId: "store" } },
+    ]);
+  });
+
+  it("records a measured remainder whose exact primary digits fit at a smaller scale", async () => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, primary, weight] of [["heavy", "1.0", "40"], ["light", "1.0", "10"]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}-mixed-scale`, occurredAtEpochMs: time0,
+        to: { itemId: "measured", placementNodeId: "store", lotId },
+        amount: measuredStockAmount(primary, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
+      });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "record-mixed-scale-remaining", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount(String(Number.MAX_SAFE_INTEGER), "piece", [{ axisId: "weight", value: "30", unit: "kg" }]),
+    });
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: { amountMinor: Number.MAX_SAFE_INTEGER - 1, decimals: 0 } },
+        independent: [{ axisId: "weight", quantity: { amountMinor: 20 } }],
+      },
+    }]);
+  });
+
   it.each([
     { verb: "transfer", held: true },
     { verb: "scrap", held: true },

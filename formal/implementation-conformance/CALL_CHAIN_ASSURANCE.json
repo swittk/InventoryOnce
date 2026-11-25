@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 3925,
-    "edges": 10848,
+    "callables": 3935,
+    "edges": 10878,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -6744,10 +6744,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:48403:<anonymous@899>",
+                "id": "test/scoped-stock-planning.test.ts:51099:<anonymous@945>",
                 "kind": "ArrowFunction",
-                "line": 899,
-                "name": "<anonymous@899>",
+                "line": 945,
+                "name": "<anonymous@945>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -9101,9 +9101,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:26368:applyDelta",
+          "id": "src/segmented-state.ts:26910:applyDelta",
           "kind": "MethodDeclaration",
-          "line": 641,
+          "line": 656,
           "name": "applyDelta"
         }
       ],
@@ -9114,9 +9114,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:26368:applyDelta",
+            "id": "src/segmented-state.ts:26910:applyDelta",
             "kind": "MethodDeclaration",
-            "line": 641,
+            "line": 656,
             "name": "applyDelta"
           },
           "witness": {
@@ -9144,19 +9144,19 @@
                 "column": 75,
                 "file": "test/segmented-state.test.ts",
                 "hasBody": true,
-                "id": "test/segmented-state.test.ts:29127:<anonymous@757>",
+                "id": "test/segmented-state.test.ts:30280:<anonymous@779>",
                 "kind": "ArrowFunction",
-                "line": 757,
-                "name": "<anonymous@757>",
+                "line": 779,
+                "name": "<anonymous@779>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:26368:applyDelta",
+                "id": "src/segmented-state.ts:26910:applyDelta",
                 "kind": "MethodDeclaration",
-                "line": 641,
+                "line": 656,
                 "name": "applyDelta",
                 "reason": "resolved-call"
               }
@@ -9172,9 +9172,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:30618:applyStockEffects",
+          "id": "src/segmented-state.ts:31160:applyStockEffects",
           "kind": "MethodDeclaration",
-          "line": 757,
+          "line": 772,
           "name": "applyStockEffects"
         }
       ],
@@ -9185,9 +9185,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:30618:applyStockEffects",
+            "id": "src/segmented-state.ts:31160:applyStockEffects",
             "kind": "MethodDeclaration",
-            "line": 757,
+            "line": 772,
             "name": "applyStockEffects"
           },
           "witness": {
@@ -9255,9 +9255,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:30618:applyStockEffects",
+                "id": "src/segmented-state.ts:31160:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 757,
+                "line": 772,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               }
@@ -9273,9 +9273,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:18709:contentRoot",
+          "id": "src/segmented-state.ts:19673:contentRoot",
           "kind": "MethodDeclaration",
-          "line": 420,
+          "line": 448,
           "name": "contentRoot"
         }
       ],
@@ -9286,9 +9286,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:18709:contentRoot",
+            "id": "src/segmented-state.ts:19673:contentRoot",
             "kind": "MethodDeclaration",
-            "line": 420,
+            "line": 448,
             "name": "contentRoot"
           },
           "witness": {
@@ -9326,9 +9326,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:18709:contentRoot",
+                "id": "src/segmented-state.ts:19673:contentRoot",
                 "kind": "MethodDeclaration",
-                "line": 420,
+                "line": 448,
                 "name": "contentRoot",
                 "reason": "resolved-call"
               }
@@ -9344,9 +9344,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:34303:materialize",
+          "id": "src/segmented-state.ts:34845:materialize",
           "kind": "MethodDeclaration",
-          "line": 845,
+          "line": 860,
           "name": "materialize"
         }
       ],
@@ -9357,9 +9357,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:34303:materialize",
+            "id": "src/segmented-state.ts:34845:materialize",
             "kind": "MethodDeclaration",
-            "line": 845,
+            "line": 860,
             "name": "materialize"
           },
           "witness": {
@@ -9397,9 +9397,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:34303:materialize",
+                "id": "src/segmented-state.ts:34845:materialize",
                 "kind": "MethodDeclaration",
-                "line": 845,
+                "line": 860,
                 "name": "materialize",
                 "reason": "resolved-call"
               }
@@ -9415,9 +9415,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:19085:position",
+          "id": "src/segmented-state.ts:20049:position",
           "kind": "MethodDeclaration",
-          "line": 432,
+          "line": 460,
           "name": "position"
         }
       ],
@@ -9428,9 +9428,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:19085:position",
+            "id": "src/segmented-state.ts:20049:position",
             "kind": "MethodDeclaration",
-            "line": 432,
+            "line": 460,
             "name": "position"
           },
           "witness": {
@@ -9458,19 +9458,19 @@
                 "column": 75,
                 "file": "test/segmented-state.test.ts",
                 "hasBody": true,
-                "id": "test/segmented-state.test.ts:29127:<anonymous@757>",
+                "id": "test/segmented-state.test.ts:30280:<anonymous@779>",
                 "kind": "ArrowFunction",
-                "line": 757,
-                "name": "<anonymous@757>",
+                "line": 779,
+                "name": "<anonymous@779>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:19085:position",
+                "id": "src/segmented-state.ts:20049:position",
                 "kind": "MethodDeclaration",
-                "line": 432,
+                "line": 460,
                 "name": "position",
                 "reason": "resolved-call"
               }
@@ -9486,9 +9486,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:19970:positionsByItem",
+          "id": "src/segmented-state.ts:20934:positionsByItem",
           "kind": "MethodDeclaration",
-          "line": 456,
+          "line": 484,
           "name": "positionsByItem"
         }
       ],
@@ -9499,9 +9499,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:19970:positionsByItem",
+            "id": "src/segmented-state.ts:20934:positionsByItem",
             "kind": "MethodDeclaration",
-            "line": 456,
+            "line": 484,
             "name": "positionsByItem"
           },
           "witness": {
@@ -9529,19 +9529,19 @@
                 "column": 83,
                 "file": "test/segmented-state.test.ts",
                 "hasBody": true,
-                "id": "test/segmented-state.test.ts:30093:<anonymous@780>",
+                "id": "test/segmented-state.test.ts:31246:<anonymous@802>",
                 "kind": "ArrowFunction",
-                "line": 780,
-                "name": "<anonymous@780>",
+                "line": 802,
+                "name": "<anonymous@802>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:19970:positionsByItem",
+                "id": "src/segmented-state.ts:20934:positionsByItem",
                 "kind": "MethodDeclaration",
-                "line": 456,
+                "line": 484,
                 "name": "positionsByItem",
                 "reason": "resolved-call"
               }
@@ -9557,9 +9557,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:20194:positionsByItemRevision",
+          "id": "src/segmented-state.ts:21158:positionsByItemRevision",
           "kind": "MethodDeclaration",
-          "line": 461,
+          "line": 489,
           "name": "positionsByItemRevision"
         }
       ],
@@ -9570,9 +9570,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:20194:positionsByItemRevision",
+            "id": "src/segmented-state.ts:21158:positionsByItemRevision",
             "kind": "MethodDeclaration",
-            "line": 461,
+            "line": 489,
             "name": "positionsByItemRevision"
           },
           "witness": {
@@ -9600,19 +9600,19 @@
                 "column": 83,
                 "file": "test/segmented-state.test.ts",
                 "hasBody": true,
-                "id": "test/segmented-state.test.ts:30093:<anonymous@780>",
+                "id": "test/segmented-state.test.ts:31246:<anonymous@802>",
                 "kind": "ArrowFunction",
-                "line": 780,
-                "name": "<anonymous@780>",
+                "line": 802,
+                "name": "<anonymous@802>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:20194:positionsByItemRevision",
+                "id": "src/segmented-state.ts:21158:positionsByItemRevision",
                 "kind": "MethodDeclaration",
-                "line": 461,
+                "line": 489,
                 "name": "positionsByItemRevision",
                 "reason": "resolved-call"
               }
@@ -9628,9 +9628,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:20452:positionsByPlacement",
+          "id": "src/segmented-state.ts:21416:positionsByPlacement",
           "kind": "MethodDeclaration",
-          "line": 470,
+          "line": 498,
           "name": "positionsByPlacement"
         }
       ],
@@ -9641,9 +9641,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:20452:positionsByPlacement",
+            "id": "src/segmented-state.ts:21416:positionsByPlacement",
             "kind": "MethodDeclaration",
-            "line": 470,
+            "line": 498,
             "name": "positionsByPlacement"
           },
           "witness": {
@@ -9681,9 +9681,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:20452:positionsByPlacement",
+                "id": "src/segmented-state.ts:21416:positionsByPlacement",
                 "kind": "MethodDeclaration",
-                "line": 470,
+                "line": 498,
                 "name": "positionsByPlacement",
                 "reason": "resolved-call"
               }
@@ -9699,9 +9699,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:19785:positiveLayerStart",
+          "id": "src/segmented-state.ts:20749:positiveLayerStart",
           "kind": "MethodDeclaration",
-          "line": 451,
+          "line": 479,
           "name": "positiveLayerStart"
         }
       ],
@@ -9712,9 +9712,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:19785:positiveLayerStart",
+            "id": "src/segmented-state.ts:20749:positiveLayerStart",
             "kind": "MethodDeclaration",
-            "line": 451,
+            "line": 479,
             "name": "positiveLayerStart"
           },
           "witness": {
@@ -9742,19 +9742,19 @@
                 "column": 75,
                 "file": "test/segmented-state.test.ts",
                 "hasBody": true,
-                "id": "test/segmented-state.test.ts:29127:<anonymous@757>",
+                "id": "test/segmented-state.test.ts:30280:<anonymous@779>",
                 "kind": "ArrowFunction",
-                "line": 757,
-                "name": "<anonymous@757>",
+                "line": 779,
+                "name": "<anonymous@779>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:19785:positiveLayerStart",
+                "id": "src/segmented-state.ts:20749:positiveLayerStart",
                 "kind": "MethodDeclaration",
-                "line": 451,
+                "line": 479,
                 "name": "positiveLayerStart",
                 "reason": "resolved-call"
               }
@@ -9770,9 +9770,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:19384:positivePositionBySerial",
+          "id": "src/segmented-state.ts:20348:positivePositionBySerial",
           "kind": "MethodDeclaration",
-          "line": 440,
+          "line": 468,
           "name": "positivePositionBySerial"
         }
       ],
@@ -9783,9 +9783,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:19384:positivePositionBySerial",
+            "id": "src/segmented-state.ts:20348:positivePositionBySerial",
             "kind": "MethodDeclaration",
-            "line": 440,
+            "line": 468,
             "name": "positivePositionBySerial"
           },
           "witness": {
@@ -9823,9 +9823,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:19384:positivePositionBySerial",
+                "id": "src/segmented-state.ts:20348:positivePositionBySerial",
                 "kind": "MethodDeclaration",
-                "line": 440,
+                "line": 468,
                 "name": "positivePositionBySerial",
                 "reason": "resolved-call"
               }
@@ -9841,9 +9841,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:20740:queryPositions",
+          "id": "src/segmented-state.ts:21704:queryPositions",
           "kind": "MethodDeclaration",
-          "line": 479,
+          "line": 507,
           "name": "queryPositions"
         }
       ],
@@ -9854,9 +9854,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:20740:queryPositions",
+            "id": "src/segmented-state.ts:21704:queryPositions",
             "kind": "MethodDeclaration",
-            "line": 479,
+            "line": 507,
             "name": "queryPositions"
           },
           "witness": {
@@ -9894,9 +9894,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:20740:queryPositions",
+                "id": "src/segmented-state.ts:21704:queryPositions",
                 "kind": "MethodDeclaration",
-                "line": 479,
+                "line": 507,
                 "name": "queryPositions",
                 "reason": "resolved-call"
               }
@@ -9912,9 +9912,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:33508:replaceExactPosition",
+          "id": "src/segmented-state.ts:34050:replaceExactPosition",
           "kind": "MethodDeclaration",
-          "line": 822,
+          "line": 837,
           "name": "replaceExactPosition"
         }
       ],
@@ -9925,9 +9925,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:33508:replaceExactPosition",
+            "id": "src/segmented-state.ts:34050:replaceExactPosition",
             "kind": "MethodDeclaration",
-            "line": 822,
+            "line": 837,
             "name": "replaceExactPosition"
           },
           "witness": {
@@ -9955,19 +9955,19 @@
                 "column": 75,
                 "file": "test/segmented-state.test.ts",
                 "hasBody": true,
-                "id": "test/segmented-state.test.ts:29127:<anonymous@757>",
+                "id": "test/segmented-state.test.ts:30280:<anonymous@779>",
                 "kind": "ArrowFunction",
-                "line": 757,
-                "name": "<anonymous@757>",
+                "line": 779,
+                "name": "<anonymous@779>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:33508:replaceExactPosition",
+                "id": "src/segmented-state.ts:34050:replaceExactPosition",
                 "kind": "MethodDeclaration",
-                "line": 822,
+                "line": 837,
                 "name": "replaceExactPosition",
                 "reason": "resolved-call"
               }
@@ -9983,9 +9983,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:18565:revision",
+          "id": "src/segmented-state.ts:19529:revision",
           "kind": "MethodDeclaration",
-          "line": 415,
+          "line": 443,
           "name": "revision"
         }
       ],
@@ -9996,9 +9996,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:18565:revision",
+            "id": "src/segmented-state.ts:19529:revision",
             "kind": "MethodDeclaration",
-            "line": 415,
+            "line": 443,
             "name": "revision"
           },
           "witness": {
@@ -10036,9 +10036,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:18565:revision",
+                "id": "src/segmented-state.ts:19529:revision",
                 "kind": "MethodDeclaration",
-                "line": 415,
+                "line": 443,
                 "name": "revision",
                 "reason": "resolved-call"
               }
@@ -10471,9 +10471,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -10481,9 +10481,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:54666:normalizePositiveLayerProvenanceTransfers",
+                "id": "src/events.ts:54687:normalizePositiveLayerProvenanceTransfers",
                 "kind": "FunctionDeclaration",
-                "line": 1321,
+                "line": 1322,
                 "name": "normalizePositiveLayerProvenanceTransfers",
                 "reason": "resolved-call"
               },
@@ -10590,9 +10590,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:3658:allocateInventory",
+          "id": "src/allocation.ts:3638:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 90,
+          "line": 89,
           "name": "allocateInventory"
         }
       ],
@@ -10603,9 +10603,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:3658:allocateInventory",
+            "id": "src/allocation.ts:3638:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 90,
+            "line": 89,
             "name": "allocateInventory"
           },
           "witness": {
@@ -10623,29 +10623,29 @@
                 "column": 69,
                 "file": "test/allocation.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1419:<anonymous@46>",
-                "kind": "ArrowFunction",
-                "line": 46,
-                "name": "<anonymous@46>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 86,
-                "file": "test/allocation.test.ts",
-                "hasBody": true,
-                "id": "test/allocation.test.ts:1512:<anonymous@47>",
+                "id": "test/allocation.test.ts:1481:<anonymous@47>",
                 "kind": "ArrowFunction",
                 "line": 47,
                 "name": "<anonymous@47>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 86,
+                "file": "test/allocation.test.ts",
+                "hasBody": true,
+                "id": "test/allocation.test.ts:1574:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:3658:allocateInventory",
+                "id": "src/allocation.ts:3638:allocateInventory",
                 "kind": "FunctionDeclaration",
-                "line": 90,
+                "line": 89,
                 "name": "allocateInventory",
                 "reason": "resolved-call"
               }
@@ -11211,9 +11211,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -11239,9 +11239,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:93571:assertInventoryEpochMilliseconds",
+          "id": "src/events.ts:94808:assertInventoryEpochMilliseconds",
           "kind": "FunctionDeclaration",
-          "line": 2408,
+          "line": 2441,
           "name": "assertInventoryEpochMilliseconds"
         }
       ],
@@ -11252,9 +11252,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:93571:assertInventoryEpochMilliseconds",
+            "id": "src/events.ts:94808:assertInventoryEpochMilliseconds",
             "kind": "FunctionDeclaration",
-            "line": 2408,
+            "line": 2441,
             "name": "assertInventoryEpochMilliseconds"
           },
           "witness": {
@@ -11282,9 +11282,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -11292,9 +11292,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:93571:assertInventoryEpochMilliseconds",
+                "id": "src/events.ts:94808:assertInventoryEpochMilliseconds",
                 "kind": "FunctionDeclaration",
-                "line": 2408,
+                "line": 2441,
                 "name": "assertInventoryEpochMilliseconds",
                 "reason": "resolved-call"
               }
@@ -11353,9 +11353,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -11424,9 +11424,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -11434,9 +11434,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:50745:normalizeUnwitnessedStockMovements",
+                "id": "src/events.ts:50766:normalizeUnwitnessedStockMovements",
                 "kind": "FunctionDeclaration",
-                "line": 1249,
+                "line": 1250,
                 "name": "normalizeUnwitnessedStockMovements",
                 "reason": "resolved-call"
               },
@@ -11586,9 +11586,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -11596,9 +11596,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:25146:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:25167:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
-                "line": 535,
+                "line": 536,
                 "name": "normalizeInventoryHistoricalImpact",
                 "reason": "resolved-call"
               },
@@ -11748,9 +11748,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -11758,9 +11758,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:25146:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:25167:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
-                "line": 535,
+                "line": 536,
                 "name": "normalizeInventoryHistoricalImpact",
                 "reason": "resolved-call"
               },
@@ -11920,9 +11920,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -11930,9 +11930,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -11958,9 +11958,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:37127:commitInventoryEvent",
+          "id": "src/events.ts:37148:commitInventoryEvent",
           "kind": "FunctionDeclaration",
-          "line": 890,
+          "line": 891,
           "name": "commitInventoryEvent"
         }
       ],
@@ -11971,9 +11971,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:37127:commitInventoryEvent",
+            "id": "src/events.ts:37148:commitInventoryEvent",
             "kind": "FunctionDeclaration",
-            "line": 890,
+            "line": 891,
             "name": "commitInventoryEvent"
           },
           "witness": {
@@ -12011,9 +12011,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:37127:commitInventoryEvent",
+                "id": "src/events.ts:37148:commitInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 890,
+                "line": 891,
                 "name": "commitInventoryEvent",
                 "reason": "resolved-call"
               }
@@ -12120,9 +12120,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:16276:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:19047:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 441,
+          "line": 483,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -12133,9 +12133,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:16276:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:19047:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 441,
+            "line": 483,
             "name": "compareInventoryAllocationCandidates"
           },
           "witness": {
@@ -12153,29 +12153,29 @@
                 "column": 69,
                 "file": "test/allocation.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1419:<anonymous@46>",
-                "kind": "ArrowFunction",
-                "line": 46,
-                "name": "<anonymous@46>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 86,
-                "file": "test/allocation.test.ts",
-                "hasBody": true,
-                "id": "test/allocation.test.ts:1512:<anonymous@47>",
+                "id": "test/allocation.test.ts:1481:<anonymous@47>",
                 "kind": "ArrowFunction",
                 "line": 47,
                 "name": "<anonymous@47>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 86,
+                "file": "test/allocation.test.ts",
+                "hasBody": true,
+                "id": "test/allocation.test.ts:1574:<anonymous@48>",
+                "kind": "ArrowFunction",
+                "line": 48,
+                "name": "<anonymous@48>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:3658:allocateInventory",
+                "id": "src/allocation.ts:3638:allocateInventory",
                 "kind": "FunctionDeclaration",
-                "line": 90,
+                "line": 89,
                 "name": "allocateInventory",
                 "reason": "resolved-call"
               },
@@ -12183,9 +12183,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:4144:allocateInventoryCandidates",
+                "id": "src/allocation.ts:4124:allocateInventoryCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 100,
+                "line": 99,
                 "name": "allocateInventoryCandidates",
                 "reason": "resolved-call"
               },
@@ -12193,9 +12193,9 @@
                 "column": 37,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:5020:compareEligibleCandidates",
+                "id": "src/allocation.ts:5000:compareEligibleCandidates",
                 "kind": "ArrowFunction",
-                "line": 123,
+                "line": 122,
                 "name": "compareEligibleCandidates",
                 "reason": "external-callback-dispatch"
               },
@@ -12203,9 +12203,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:16276:compareInventoryAllocationCandidates",
+                "id": "src/allocation.ts:19047:compareInventoryAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 441,
+                "line": 483,
                 "name": "compareInventoryAllocationCandidates",
                 "reason": "resolved-call"
               }
@@ -12264,9 +12264,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -12274,9 +12274,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -15744,9 +15744,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:28798:defineInventoryEvent",
+          "id": "src/events.ts:28819:defineInventoryEvent",
           "kind": "FunctionDeclaration",
-          "line": 640,
+          "line": 641,
           "name": "defineInventoryEvent"
         }
       ],
@@ -15757,9 +15757,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:28798:defineInventoryEvent",
+            "id": "src/events.ts:28819:defineInventoryEvent",
             "kind": "FunctionDeclaration",
-            "line": 640,
+            "line": 641,
             "name": "defineInventoryEvent"
           },
           "witness": {
@@ -15787,9 +15787,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               }
@@ -17285,9 +17285,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:38937:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 961,
+          "line": 972,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -17298,9 +17298,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:38937:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 961,
+            "line": 972,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -17368,9 +17368,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:38937:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 961,
+                "line": 972,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -17581,9 +17581,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -17804,10 +17804,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:48403:<anonymous@899>",
+                "id": "test/scoped-stock-planning.test.ts:51099:<anonymous@945>",
                 "kind": "ArrowFunction",
-                "line": 899,
-                "name": "<anonymous@899>",
+                "line": 945,
+                "name": "<anonymous@945>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -18176,9 +18176,9 @@
           "column": 1,
           "file": "src/events.ts",
           "hasBody": true,
-          "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+          "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
           "kind": "FunctionDeclaration",
-          "line": 936,
+          "line": 937,
           "name": "inventoryEventIntentFingerprint"
         }
       ],
@@ -18189,9 +18189,9 @@
             "column": 1,
             "file": "src/events.ts",
             "hasBody": true,
-            "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+            "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
             "kind": "FunctionDeclaration",
-            "line": 936,
+            "line": 937,
             "name": "inventoryEventIntentFingerprint"
           },
           "witness": {
@@ -18219,9 +18219,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
-                "line": 936,
+                "line": 937,
                 "name": "inventoryEventIntentFingerprint",
                 "reason": "resolved-call"
               }
@@ -18927,9 +18927,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
-                "line": 936,
+                "line": 937,
                 "name": "inventoryEventIntentFingerprint",
                 "reason": "resolved-call"
               },
@@ -19089,10 +19089,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:48403:<anonymous@899>",
+                "id": "test/scoped-stock-planning.test.ts:51099:<anonymous@945>",
                 "kind": "ArrowFunction",
-                "line": 899,
-                "name": "<anonymous@899>",
+                "line": 945,
+                "name": "<anonymous@945>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -19616,9 +19616,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -19626,9 +19626,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -19778,9 +19778,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
-                "line": 936,
+                "line": 937,
                 "name": "inventoryEventIntentFingerprint",
                 "reason": "resolved-call"
               },
@@ -19788,10 +19788,10 @@
                 "column": 13,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:40629:<anonymous@982>",
+                "id": "src/events.ts:40650:<anonymous@983>",
                 "kind": "ArrowFunction",
-                "line": 982,
-                "name": "<anonymous@982>",
+                "line": 983,
+                "name": "<anonymous@983>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -19859,9 +19859,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
-                "line": 936,
+                "line": 937,
                 "name": "inventoryEventIntentFingerprint",
                 "reason": "resolved-call"
               },
@@ -19930,9 +19930,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
-                "line": 936,
+                "line": 937,
                 "name": "inventoryEventIntentFingerprint",
                 "reason": "resolved-call"
               },
@@ -20183,9 +20183,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -20193,9 +20193,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:73154:normalizePlacementNodeDefinitions",
+                "id": "src/events.ts:73175:normalizePlacementNodeDefinitions",
                 "kind": "FunctionDeclaration",
-                "line": 1790,
+                "line": 1791,
                 "name": "normalizePlacementNodeDefinitions",
                 "reason": "resolved-call"
               },
@@ -20537,9 +20537,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6108:planInventoryAllocation",
+                "id": "src/picking.ts:6154:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 151,
+                "line": 152,
                 "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               },
@@ -20547,9 +20547,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6646:inventoryAllocationPoolFromWorld",
+                "id": "src/picking.ts:6692:inventoryAllocationPoolFromWorld",
                 "kind": "FunctionDeclaration",
-                "line": 167,
+                "line": 168,
                 "name": "inventoryAllocationPoolFromWorld",
                 "reason": "resolved-call"
               },
@@ -20557,9 +20557,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:7146:inventoryStockPoolRowsFromProjection",
+                "id": "src/picking.ts:7192:inventoryStockPoolRowsFromProjection",
                 "kind": "FunctionDeclaration",
-                "line": 181,
+                "line": 182,
                 "name": "inventoryStockPoolRowsFromProjection",
                 "reason": "resolved-call"
               },
@@ -22400,9 +22400,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -22410,9 +22410,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -22491,9 +22491,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -22501,9 +22501,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:50745:normalizeUnwitnessedStockMovements",
+                "id": "src/events.ts:50766:normalizeUnwitnessedStockMovements",
                 "kind": "FunctionDeclaration",
-                "line": 1249,
+                "line": 1250,
                 "name": "normalizeUnwitnessedStockMovements",
                 "reason": "resolved-call"
               },
@@ -22572,9 +22572,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -22582,9 +22582,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60066:assertInventoryRevisionTransitionEvidence",
+                "id": "src/events.ts:60087:assertInventoryRevisionTransitionEvidence",
                 "kind": "FunctionDeclaration",
-                "line": 1460,
+                "line": 1461,
                 "name": "assertInventoryRevisionTransitionEvidence",
                 "reason": "resolved-call"
               },
@@ -22946,9 +22946,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -22956,9 +22956,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:79764:normalizePlacementChanges",
+                "id": "src/events.ts:79785:normalizePlacementChanges",
                 "kind": "FunctionDeclaration",
-                "line": 1993,
+                "line": 1994,
                 "name": "normalizePlacementChanges",
                 "reason": "resolved-call"
               },
@@ -23319,9 +23319,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6108:planInventoryAllocation",
+          "id": "src/picking.ts:6154:planInventoryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 151,
+          "line": 152,
           "name": "planInventoryAllocation"
         }
       ],
@@ -23332,9 +23332,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6108:planInventoryAllocation",
+            "id": "src/picking.ts:6154:planInventoryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 151,
+            "line": 152,
             "name": "planInventoryAllocation"
           },
           "witness": {
@@ -23372,9 +23372,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6108:planInventoryAllocation",
+                "id": "src/picking.ts:6154:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 151,
+                "line": 152,
                 "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               }
@@ -23524,9 +23524,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -23534,9 +23534,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:25146:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:25167:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
-                "line": 535,
+                "line": 536,
                 "name": "normalizeInventoryHistoricalImpact",
                 "reason": "resolved-call"
               },
@@ -23605,9 +23605,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -23615,9 +23615,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60066:assertInventoryRevisionTransitionEvidence",
+                "id": "src/events.ts:60087:assertInventoryRevisionTransitionEvidence",
                 "kind": "FunctionDeclaration",
-                "line": 1460,
+                "line": 1461,
                 "name": "assertInventoryRevisionTransitionEvidence",
                 "reason": "resolved-call"
               },
@@ -23828,9 +23828,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -23838,9 +23838,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60066:assertInventoryRevisionTransitionEvidence",
+                "id": "src/events.ts:60087:assertInventoryRevisionTransitionEvidence",
                 "kind": "FunctionDeclaration",
-                "line": 1460,
+                "line": 1461,
                 "name": "assertInventoryRevisionTransitionEvidence",
                 "reason": "resolved-call"
               },
@@ -23909,9 +23909,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -23919,9 +23919,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -24932,51 +24932,61 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/projection-index-scale.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/projection-index-scale.test.ts"
               },
               {
-                "column": 69,
-                "file": "test/allocation.test.ts",
+                "column": 47,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1419:<anonymous@46>",
+                "id": "test/projection-index-scale.test.ts:13071:<anonymous@387>",
                 "kind": "ArrowFunction",
-                "line": 46,
-                "name": "<anonymous@46>",
+                "line": 387,
+                "name": "<anonymous@387>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 95,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1512:<anonymous@47>",
+                "id": "test/projection-index-scale.test.ts:19962:<anonymous@560>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 560,
+                "name": "<anonymous@560>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
-                "file": "src/allocation.ts",
+                "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:3658:allocateInventory",
+                "id": "src/picking.ts:6154:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 90,
-                "name": "allocateInventory",
+                "line": 152,
+                "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               },
               {
                 "column": 1,
-                "file": "src/allocation.ts",
+                "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:4144:allocateInventoryCandidates",
+                "id": "src/picking.ts:9254:planInventoryAllocationInPool",
                 "kind": "FunctionDeclaration",
-                "line": 100,
-                "name": "allocateInventoryCandidates",
+                "line": 225,
+                "name": "planInventoryAllocationInPool",
+                "reason": "resolved-call"
+              },
+              {
+                "column": 1,
+                "file": "src/picking.ts",
+                "hasBody": true,
+                "id": "src/picking.ts:29648:createPolicyAllocationCandidates",
+                "kind": "FunctionDeclaration",
+                "line": 715,
+                "name": "createPolicyAllocationCandidates",
                 "reason": "resolved-call"
               },
               {
@@ -24990,7 +25000,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/projection-index-scale.test.ts"
           }
         }
       ]
@@ -25530,9 +25540,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -25540,9 +25550,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -26929,9 +26939,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -26939,9 +26949,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:54666:normalizePositiveLayerProvenanceTransfers",
+                "id": "src/events.ts:54687:normalizePositiveLayerProvenanceTransfers",
                 "kind": "FunctionDeclaration",
-                "line": 1321,
+                "line": 1322,
                 "name": "normalizePositiveLayerProvenanceTransfers",
                 "reason": "resolved-call"
               },
@@ -27172,9 +27182,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -27243,9 +27253,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -27253,9 +27263,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:50745:normalizeUnwitnessedStockMovements",
+                "id": "src/events.ts:50766:normalizeUnwitnessedStockMovements",
                 "kind": "FunctionDeclaration",
-                "line": 1249,
+                "line": 1250,
                 "name": "normalizeUnwitnessedStockMovements",
                 "reason": "resolved-call"
               },
@@ -27324,9 +27334,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -27334,9 +27344,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:25146:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:25167:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
-                "line": 535,
+                "line": 536,
                 "name": "normalizeInventoryHistoricalImpact",
                 "reason": "resolved-call"
               },
@@ -27405,9 +27415,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -27415,9 +27425,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:25146:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:25167:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
-                "line": 535,
+                "line": 536,
                 "name": "normalizeInventoryHistoricalImpact",
                 "reason": "resolved-call"
               },
@@ -27577,9 +27587,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -27587,9 +27597,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -27871,9 +27881,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -27881,9 +27891,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -29683,9 +29693,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:38937:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 961,
+          "line": 972,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -29696,9 +29706,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:38937:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 961,
+            "line": 972,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -29766,9 +29776,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:38937:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:39760:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 961,
+                "line": 972,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -30060,9 +30070,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -30192,10 +30202,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:48403:<anonymous@899>",
+                "id": "test/scoped-stock-planning.test.ts:51099:<anonymous@945>",
                 "kind": "ArrowFunction",
-                "line": 899,
-                "name": "<anonymous@899>",
+                "line": 945,
+                "name": "<anonymous@945>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -30374,10 +30384,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:48403:<anonymous@899>",
+                "id": "test/scoped-stock-planning.test.ts:51099:<anonymous@945>",
                 "kind": "ArrowFunction",
-                "line": 899,
-                "name": "<anonymous@899>",
+                "line": 945,
+                "name": "<anonymous@945>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -30810,9 +30820,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -30820,9 +30830,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -30972,9 +30982,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:39047:inventoryEventIntentFingerprint",
+                "id": "src/events.ts:39068:inventoryEventIntentFingerprint",
                 "kind": "FunctionDeclaration",
-                "line": 936,
+                "line": 937,
                 "name": "inventoryEventIntentFingerprint",
                 "reason": "resolved-call"
               },
@@ -30982,10 +30992,10 @@
                 "column": 13,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:40629:<anonymous@982>",
+                "id": "src/events.ts:40650:<anonymous@983>",
                 "kind": "ArrowFunction",
-                "line": 982,
-                "name": "<anonymous@982>",
+                "line": 983,
+                "name": "<anonymous@983>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -31053,9 +31063,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -31063,9 +31073,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:73154:normalizePlacementNodeDefinitions",
+                "id": "src/events.ts:73175:normalizePlacementNodeDefinitions",
                 "kind": "FunctionDeclaration",
-                "line": 1790,
+                "line": 1791,
                 "name": "normalizePlacementNodeDefinitions",
                 "reason": "resolved-call"
               },
@@ -31215,9 +31225,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6108:planInventoryAllocation",
+                "id": "src/picking.ts:6154:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 151,
+                "line": 152,
                 "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               },
@@ -31225,9 +31235,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6646:inventoryAllocationPoolFromWorld",
+                "id": "src/picking.ts:6692:inventoryAllocationPoolFromWorld",
                 "kind": "FunctionDeclaration",
-                "line": 167,
+                "line": 168,
                 "name": "inventoryAllocationPoolFromWorld",
                 "reason": "resolved-call"
               },
@@ -31235,9 +31245,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:7146:inventoryStockPoolRowsFromProjection",
+                "id": "src/picking.ts:7192:inventoryStockPoolRowsFromProjection",
                 "kind": "FunctionDeclaration",
-                "line": 181,
+                "line": 182,
                 "name": "inventoryStockPoolRowsFromProjection",
                 "reason": "resolved-call"
               },
@@ -31964,9 +31974,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -31974,9 +31984,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -32055,9 +32065,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -32065,9 +32075,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:50745:normalizeUnwitnessedStockMovements",
+                "id": "src/events.ts:50766:normalizeUnwitnessedStockMovements",
                 "kind": "FunctionDeclaration",
-                "line": 1249,
+                "line": 1250,
                 "name": "normalizeUnwitnessedStockMovements",
                 "reason": "resolved-call"
               },
@@ -32136,9 +32146,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -32146,9 +32156,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60066:assertInventoryRevisionTransitionEvidence",
+                "id": "src/events.ts:60087:assertInventoryRevisionTransitionEvidence",
                 "kind": "FunctionDeclaration",
-                "line": 1460,
+                "line": 1461,
                 "name": "assertInventoryRevisionTransitionEvidence",
                 "reason": "resolved-call"
               },
@@ -32498,9 +32508,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6108:planInventoryAllocation",
+          "id": "src/picking.ts:6154:planInventoryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 151,
+          "line": 152,
           "name": "planInventoryAllocation"
         }
       ],
@@ -32511,9 +32521,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6108:planInventoryAllocation",
+            "id": "src/picking.ts:6154:planInventoryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 151,
+            "line": 152,
             "name": "planInventoryAllocation"
           },
           "witness": {
@@ -32551,9 +32561,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6108:planInventoryAllocation",
+                "id": "src/picking.ts:6154:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 151,
+                "line": 152,
                 "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               }
@@ -32703,9 +32713,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -32713,9 +32723,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:25146:normalizeInventoryHistoricalImpact",
+                "id": "src/events.ts:25167:normalizeInventoryHistoricalImpact",
                 "kind": "FunctionDeclaration",
-                "line": 535,
+                "line": 536,
                 "name": "normalizeInventoryHistoricalImpact",
                 "reason": "resolved-call"
               },
@@ -32784,9 +32794,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -32794,9 +32804,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60066:assertInventoryRevisionTransitionEvidence",
+                "id": "src/events.ts:60087:assertInventoryRevisionTransitionEvidence",
                 "kind": "FunctionDeclaration",
-                "line": 1460,
+                "line": 1461,
                 "name": "assertInventoryRevisionTransitionEvidence",
                 "reason": "resolved-call"
               },
@@ -33078,9 +33088,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -33088,9 +33098,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:60066:assertInventoryRevisionTransitionEvidence",
+                "id": "src/events.ts:60087:assertInventoryRevisionTransitionEvidence",
                 "kind": "FunctionDeclaration",
-                "line": 1460,
+                "line": 1461,
                 "name": "assertInventoryRevisionTransitionEvidence",
                 "reason": "resolved-call"
               },
@@ -33159,9 +33169,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -33169,9 +33179,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -34020,51 +34030,61 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/allocation.test.ts",
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/allocation.test.ts",
+                "id": "test-root:test/projection-index-scale.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/allocation.test.ts"
+                "name": "test/projection-index-scale.test.ts"
               },
               {
-                "column": 69,
-                "file": "test/allocation.test.ts",
+                "column": 47,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1419:<anonymous@46>",
+                "id": "test/projection-index-scale.test.ts:13071:<anonymous@387>",
                 "kind": "ArrowFunction",
-                "line": 46,
-                "name": "<anonymous@46>",
+                "line": 387,
+                "name": "<anonymous@387>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 86,
-                "file": "test/allocation.test.ts",
+                "column": 95,
+                "file": "test/projection-index-scale.test.ts",
                 "hasBody": true,
-                "id": "test/allocation.test.ts:1512:<anonymous@47>",
+                "id": "test/projection-index-scale.test.ts:19962:<anonymous@560>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 560,
+                "name": "<anonymous@560>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
-                "file": "src/allocation.ts",
+                "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:3658:allocateInventory",
+                "id": "src/picking.ts:6154:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 90,
-                "name": "allocateInventory",
+                "line": 152,
+                "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               },
               {
                 "column": 1,
-                "file": "src/allocation.ts",
+                "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:4144:allocateInventoryCandidates",
+                "id": "src/picking.ts:9254:planInventoryAllocationInPool",
                 "kind": "FunctionDeclaration",
-                "line": 100,
-                "name": "allocateInventoryCandidates",
+                "line": 225,
+                "name": "planInventoryAllocationInPool",
+                "reason": "resolved-call"
+              },
+              {
+                "column": 1,
+                "file": "src/picking.ts",
+                "hasBody": true,
+                "id": "src/picking.ts:29648:createPolicyAllocationCandidates",
+                "kind": "FunctionDeclaration",
+                "line": 715,
+                "name": "createPolicyAllocationCandidates",
                 "reason": "resolved-call"
               },
               {
@@ -34078,7 +34098,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/allocation.test.ts"
+            "test": "test/projection-index-scale.test.ts"
           }
         }
       ]
@@ -34547,9 +34567,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28798:defineInventoryEvent",
+                "id": "src/events.ts:28819:defineInventoryEvent",
                 "kind": "FunctionDeclaration",
-                "line": 640,
+                "line": 641,
                 "name": "defineInventoryEvent",
                 "reason": "resolved-call"
               },
@@ -34557,9 +34577,9 @@
                 "column": 1,
                 "file": "src/events.ts",
                 "hasBody": true,
-                "id": "src/events.ts:66893:normalizeStockEffects",
+                "id": "src/events.ts:66914:normalizeStockEffects",
                 "kind": "FunctionDeclaration",
-                "line": 1610,
+                "line": 1611,
                 "name": "normalizeStockEffects",
                 "reason": "resolved-call"
               },
@@ -34808,9 +34828,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:17547:InMemoryInventorySegmentedPositionStore",
+          "id": "src/segmented-state.ts:18511:InMemoryInventorySegmentedPositionStore",
           "kind": "Constructor",
-          "line": 390,
+          "line": 418,
           "name": "InMemoryInventorySegmentedPositionStore"
         }
       ],
@@ -34821,9 +34841,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:17547:InMemoryInventorySegmentedPositionStore",
+            "id": "src/segmented-state.ts:18511:InMemoryInventorySegmentedPositionStore",
             "kind": "Constructor",
-            "line": 390,
+            "line": 418,
             "name": "InMemoryInventorySegmentedPositionStore"
           },
           "witness": {
@@ -34861,9 +34881,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:48343:createInMemoryInventorySegmentedPositionStore",
+                "id": "src/segmented-state.ts:48885:createInMemoryInventorySegmentedPositionStore",
                 "kind": "FunctionDeclaration",
-                "line": 1295,
+                "line": 1310,
                 "name": "createInMemoryInventorySegmentedPositionStore",
                 "reason": "resolved-call"
               },
@@ -34871,9 +34891,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:17547:InMemoryInventorySegmentedPositionStore",
+                "id": "src/segmented-state.ts:18511:InMemoryInventorySegmentedPositionStore",
                 "kind": "Constructor",
-                "line": 390,
+                "line": 418,
                 "name": "InMemoryInventorySegmentedPositionStore",
                 "reason": "resolved-call"
               }
@@ -35071,9 +35091,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:13536:InventorySegmentRevisionConflictError",
+          "id": "src/segmented-state.ts:14500:InventorySegmentRevisionConflictError",
           "kind": "Constructor",
-          "line": 295,
+          "line": 323,
           "name": "InventorySegmentRevisionConflictError"
         }
       ],
@@ -35084,9 +35104,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:13536:InventorySegmentRevisionConflictError",
+            "id": "src/segmented-state.ts:14500:InventorySegmentRevisionConflictError",
             "kind": "Constructor",
-            "line": 295,
+            "line": 323,
             "name": "InventorySegmentRevisionConflictError"
           },
           "witness": {
@@ -35114,19 +35134,19 @@
                 "column": 75,
                 "file": "test/segmented-state.test.ts",
                 "hasBody": true,
-                "id": "test/segmented-state.test.ts:29127:<anonymous@757>",
+                "id": "test/segmented-state.test.ts:30280:<anonymous@779>",
                 "kind": "ArrowFunction",
-                "line": 757,
-                "name": "<anonymous@757>",
+                "line": 779,
+                "name": "<anonymous@779>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:26368:applyDelta",
+                "id": "src/segmented-state.ts:26910:applyDelta",
                 "kind": "MethodDeclaration",
-                "line": 641,
+                "line": 656,
                 "name": "applyDelta",
                 "reason": "resolved-call"
               },
@@ -35134,9 +35154,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:13536:InventorySegmentRevisionConflictError",
+                "id": "src/segmented-state.ts:14500:InventorySegmentRevisionConflictError",
                 "kind": "Constructor",
-                "line": 295,
+                "line": 323,
                 "name": "InventorySegmentRevisionConflictError",
                 "reason": "resolved-call"
               }
@@ -35749,9 +35769,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:48343:createInMemoryInventorySegmentedPositionStore",
+          "id": "src/segmented-state.ts:48885:createInMemoryInventorySegmentedPositionStore",
           "kind": "FunctionDeclaration",
-          "line": 1295,
+          "line": 1310,
           "name": "createInMemoryInventorySegmentedPositionStore"
         }
       ],
@@ -35762,9 +35782,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:48343:createInMemoryInventorySegmentedPositionStore",
+            "id": "src/segmented-state.ts:48885:createInMemoryInventorySegmentedPositionStore",
             "kind": "FunctionDeclaration",
-            "line": 1295,
+            "line": 1310,
             "name": "createInMemoryInventorySegmentedPositionStore"
           },
           "witness": {
@@ -35802,9 +35822,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:48343:createInMemoryInventorySegmentedPositionStore",
+                "id": "src/segmented-state.ts:48885:createInMemoryInventorySegmentedPositionStore",
                 "kind": "FunctionDeclaration",
-                "line": 1295,
+                "line": 1310,
                 "name": "createInMemoryInventorySegmentedPositionStore",
                 "reason": "resolved-call"
               }
@@ -36641,9 +36661,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:9880:inventoryStorageSupportsSegmentedPositions",
+          "id": "src/segmented-state.ts:10844:inventoryStorageSupportsSegmentedPositions",
           "kind": "FunctionDeclaration",
-          "line": 215,
+          "line": 243,
           "name": "inventoryStorageSupportsSegmentedPositions"
         }
       ],
@@ -36654,9 +36674,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:9880:inventoryStorageSupportsSegmentedPositions",
+            "id": "src/segmented-state.ts:10844:inventoryStorageSupportsSegmentedPositions",
             "kind": "FunctionDeclaration",
-            "line": 215,
+            "line": 243,
             "name": "inventoryStorageSupportsSegmentedPositions"
           },
           "witness": {
@@ -36704,9 +36724,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:9880:inventoryStorageSupportsSegmentedPositions",
+                "id": "src/segmented-state.ts:10844:inventoryStorageSupportsSegmentedPositions",
                 "kind": "FunctionDeclaration",
-                "line": 215,
+                "line": 243,
                 "name": "inventoryStorageSupportsSegmentedPositions",
                 "reason": "resolved-call"
               }
@@ -36722,9 +36742,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:4188:inventoryStorageSupportsSegmentedStockEventCommit",
+          "id": "src/segmented-state.ts:5152:inventoryStorageSupportsSegmentedStockEventCommit",
           "kind": "FunctionDeclaration",
-          "line": 97,
+          "line": 125,
           "name": "inventoryStorageSupportsSegmentedStockEventCommit"
         }
       ],
@@ -36735,9 +36755,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:4188:inventoryStorageSupportsSegmentedStockEventCommit",
+            "id": "src/segmented-state.ts:5152:inventoryStorageSupportsSegmentedStockEventCommit",
             "kind": "FunctionDeclaration",
-            "line": 97,
+            "line": 125,
             "name": "inventoryStorageSupportsSegmentedStockEventCommit"
           },
           "witness": {
@@ -36805,9 +36825,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:4188:inventoryStorageSupportsSegmentedStockEventCommit",
+                "id": "src/segmented-state.ts:5152:inventoryStorageSupportsSegmentedStockEventCommit",
                 "kind": "FunctionDeclaration",
-                "line": 97,
+                "line": 125,
                 "name": "inventoryStorageSupportsSegmentedStockEventCommit",
                 "reason": "resolved-call"
               }
@@ -37210,10 +37230,10 @@
                 "column": 96,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:42824:<anonymous@794>",
+                "id": "test/scoped-stock-planning.test.ts:45520:<anonymous@840>",
                 "kind": "ArrowFunction",
-                "line": 794,
-                "name": "<anonymous@794>",
+                "line": 840,
+                "name": "<anonymous@840>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37238,9 +37258,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:10693:readInventorySegmentedPositionSnapshot",
+          "id": "src/segmented-state.ts:11657:readInventorySegmentedPositionSnapshot",
           "kind": "FunctionDeclaration",
-          "line": 234,
+          "line": 262,
           "name": "readInventorySegmentedPositionSnapshot"
         }
       ],
@@ -37251,9 +37271,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:10693:readInventorySegmentedPositionSnapshot",
+            "id": "src/segmented-state.ts:11657:readInventorySegmentedPositionSnapshot",
             "kind": "FunctionDeclaration",
-            "line": 234,
+            "line": 262,
             "name": "readInventorySegmentedPositionSnapshot"
           },
           "witness": {
@@ -37301,9 +37321,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:10693:readInventorySegmentedPositionSnapshot",
+                "id": "src/segmented-state.ts:11657:readInventorySegmentedPositionSnapshot",
                 "kind": "FunctionDeclaration",
-                "line": 234,
+                "line": 262,
                 "name": "readInventorySegmentedPositionSnapshot",
                 "reason": "resolved-call"
               }
@@ -50243,5 +50263,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "a7303559dfb3c7c77e2505dd46bf80dd5b7422f9fbfb6db637335af4384c2be4"
+  "surfaceSha256": "84be64b885cb640d31cb4c04624dec2693aad766c329edd9884a4f1c31122bee"
 }
