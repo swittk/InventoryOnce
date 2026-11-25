@@ -6,6 +6,18 @@ import {
   type InventoryReservationOperation,
 } from "./reservations.js";
 
+/** Claim evidence requested for one signed stock pool. */
+interface InventoryStockClaimsForPoolInput {
+  /** Exact item revision whose lifecycle evidence is relevant. */
+  readonly revisionId: string;
+  /** Current signed positions whose exact holds are needed. */
+  readonly positions: readonly InventoryStockPosition[];
+  /** Authority time used to select the applicable lifecycle state. */
+  readonly atEpochMs: number;
+  /** Exclude broad claims when only position-bound hold evidence is needed. */
+  readonly exactHoldsOnly: boolean;
+}
+
 /** Index current exact bindings for stock picking while retaining scoped historical claim lookup. */
 export class InventoryStockClaimIndex {
   /** Current active exact claims grouped by the positions they bind. */
@@ -39,7 +51,9 @@ export class InventoryStockClaimIndex {
   }
 
   /** Resolve the relevant exact holds and revision-wide broad indicator at the queried time. */
-  forPool(revisionId: string, positions: readonly InventoryStockPosition[], atEpochMs: number, exactHoldsOnly: boolean): readonly InventoryReservation[] {
+  forPool({
+    revisionId, positions, atEpochMs, exactHoldsOnly,
+  }: InventoryStockClaimsForPoolInput): readonly InventoryReservation[] {
     if (atEpochMs < (this.latestByRevision.get(revisionId) ?? 0)) {
       // Historical replay is confined to the requested revision and uses the retained lifecycle order.
       const latest = new Map<string, InventoryReservationOperation>();

@@ -6,6 +6,7 @@ import {
   createInMemoryInventorySegmentedPositionStore,
   InventorySegmentRevisionConflictError,
 } from "../src/segmented-state.js";
+import { createInMemoryInventorySegmentedPlacementStore } from "../src/segmented-placement.js";
 import {
   createInMemoryInventoryDurableStorage,
   InventoryDurableOperationState,
@@ -711,6 +712,21 @@ describe("segmented inventory position store", () => {
     expect(replay.replayed).toBe(true);
     expect(replay.event.eventId).toBe(first.event.eventId);
     expect(storage.readPositionSegment().revision()).toBe(beforeRevision + 1);
+  });
+
+  it("resolves a shared bin's subtree membership once across all stock rows", () => {
+    const placement = createInMemoryInventorySegmentedPlacementStore();
+    placement.applyChange({
+      expectedRevision: 0, nextRevision: 1, eventId: "bin-placed",
+      nodeId: "bin", toParentNodeId: "root", targetAcceptsPlacement: true,
+    });
+    const positions = Array.from({ length: 200 }, (_, index) =>
+      segmentedPosition({ placementNodeId: "bin", lotId: `LOT-${index}` })
+    );
+    const store = createInMemoryInventorySegmentedPositionStore({ positions });
+    const ancestry = vi.spyOn(placement, "ancestry");
+    expect(store.queryPositions({ itemId: "item-a", withinPlacementNodeIds: ["root"] }, placement)).toHaveLength(200);
+    expect(ancestry).toHaveBeenCalledExactlyOnceWith("bin");
   });
 
   it("preserves the FIFO origin of a same-position positive replacement", () => {

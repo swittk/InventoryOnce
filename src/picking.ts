@@ -209,6 +209,8 @@ export interface PlanInventoryAllocationInPoolInput
   readonly selection: ResolvedAllocationSelection;
   /** Complete signed pool rows and claim states at the requested reservation time. */
   readonly pool: InventoryScopedStockPool;
+  /** Set for the preferred unheld attempt before considering all physical stock. */
+  readonly preferUnheldForRecording?: boolean;
 }
 
 /** Plan exact FIFO/FEFO picks over one complete signed stock pool. */
@@ -222,6 +224,7 @@ export function planInventoryAllocationInPool({
   allowExpiredLots = false,
   reservationId,
   allowAllocatedStock = false,
+  preferUnheldForRecording = false,
   reservationAtEpochMs = atEpochMs,
 }: PlanInventoryAllocationInPoolInput): InventoryPolicyAllocationPlan {
   assertInventoryEpochMilliseconds(atEpochMs, "inventory allocation authority time");
@@ -241,6 +244,7 @@ export function planInventoryAllocationInPool({
     reservationAtEpochMs,
     ...(reservationId === undefined ? {} : { reservationId }),
     allowAllocatedStock,
+    keepIndependentHoldsWhole: preferUnheldForRecording,
   });
   const deficitAdjusted = applyPolicyAllocationDeficitBurden({
     selector: selected.selector,
@@ -291,6 +295,10 @@ export function planInventoryAllocationInPool({
         : { expiresAtEpochMs: candidate.expiresAtEpochMs }),
     });
   }
+  // Only the final physical attempt needs to express any independently
+  // measured shortfall. The preferred result can first try the held rows.
+  const retryMeasuredShortfall = preferUnheldForRecording && amount.independent.length > 0 &&
+    !quantityEq(allocated.shortfall, requestedPrimary);
   return {
     selector: selected.selector,
     itemRevisionId: selected.item.revisionId,
@@ -298,7 +306,7 @@ export function planInventoryAllocationInPool({
     requestedMeasurements: resolved.measurements,
     lines,
     shortfall: allocated.shortfall,
-    ...(allocated.shortfall.amountMinor === 0
+    ...(allocated.shortfall.amountMinor === 0 || retryMeasuredShortfall
       ? {}
       : {
           shortfallAmount: inventoryAmountForPolicyShortfall({
@@ -480,6 +488,8 @@ interface CreatePolicyAllocationCandidatesInput {
   readonly reservationId?: string;
   /** Whether exact allocations should remain physically selectable. */
   readonly allowAllocatedStock: boolean;
+  /** Prefer unheld rows in physical recording without converting an independent hold. */
+  readonly keepIndependentHoldsWhole: boolean;
 }
 
 /** Resolve one request to exactly one immutable item revision and optional package revision. */
@@ -574,6 +584,7 @@ function createPolicyAllocationCandidates({
   reservationAtEpochMs,
   reservationId,
   allowAllocatedStock,
+  keepIndependentHoldsWhole,
 }: CreatePolicyAllocationCandidatesInput): PolicyAllocationCandidates {
   const rowsById = new Map<string, InventoryScopedStockPosition>();
   for (const row of pool.positions) {
@@ -587,6 +598,7 @@ function createPolicyAllocationCandidates({
     atEpochMs: reservationAtEpochMs,
     ...(reservationId === undefined ? {} : { excludedReservationId: reservationId }),
     allowAllocatedStock,
+    keepIndependentHoldsWhole,
   });
 
   for (const [positionIdentity, row] of rowsById) {
@@ -662,6 +674,8 @@ interface CreateExactPrimaryReservationSummaryInput {
   readonly excludedReservationId?: string;
   /** Whether exact bindings are deliberately ignored as physical-truth candidates. */
   readonly allowAllocatedStock: boolean;
+  /** Treat a held independent-axis row as wholly held during the preferred pick. */
+  readonly keepIndependentHoldsWhole: boolean;
 }
 
 /** Sum every active exact binding once so candidate planning stays O(reservations + allocations + candidates). */
@@ -672,6 +686,7 @@ function createExactPrimaryReservationSummary({
   atEpochMs,
   excludedReservationId,
   allowAllocatedStock,
+  keepIndependentHoldsWhole,
 }: CreateExactPrimaryReservationSummaryInput): ExactPrimaryReservationSummary {
   // Exact primary-axis pressure accumulated once per bound stock position.
   const reservedPrimaryByPositionIdentity = new Map<string, Quantity>();
@@ -689,8 +704,14 @@ function createExactPrimaryReservationSummary({
     if (allowAllocatedStock) continue;
     for (const allocation of allocations) {
       const positionIdentity = inventoryStockPositionIdentity(allocation.position);
-      if (!positions.has(positionIdentity)) continue;
+      const row = positions.get(positionIdentity);
+      if (row === undefined) continue;
       if (item.reservationAxisId !== item.primaryAxis.axisId) {
+        if (keepIndependentHoldsWhole) {
+          // One primary count cannot be inferred from an independently measured hold.
+          reservedPrimaryByPositionIdentity.set(positionIdentity, row.position.measurements.primary.quantity);
+          continue;
+        }
         throw new Error(
           "Automatic primary-quantity picking cannot subtract an exact reservation on an independent axis; use explicit fulfillment lines."
         );

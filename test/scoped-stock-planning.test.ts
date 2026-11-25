@@ -64,29 +64,35 @@ function issueCommand() {
   };
 }
 
+/** One item with exact piece and weight evidence and a chosen claim axis. */
+function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
+  const item = defineInventoryItem({
+    itemId: "measured", revisionId: "measured-v1",
+    primaryAxis: {
+      axisId: "pieces", role: InventoryMeasurementAxisRole.Primary,
+      unit: unitCode("piece"), requirement: InventoryMeasurementRequirement.Required,
+    },
+    independentAxes: [{
+      axisId: "weight", role: InventoryMeasurementAxisRole.Independent,
+      unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required,
+    }],
+    reservationAxisId,
+    tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional },
+    qualifiedDimensions: [],
+  });
+  return defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
+  });
+}
+
 describe("indexed stock planning and availability", () => {
   it.each([
     { pieces: "10", weight: "5", accepted: false },
     { pieces: "4", weight: "8", accepted: false },
     { pieces: "4", weight: "5", accepted: true },
   ])("preserves exact witnesses from $pieces pieces and $weight kg", async ({ pieces, weight, accepted }) => {
-    const item = defineInventoryItem({
-      itemId: "measured", revisionId: "measured-v1",
-      primaryAxis: {
-        axisId: "pieces", role: InventoryMeasurementAxisRole.Primary,
-        unit: unitCode("piece"), requirement: InventoryMeasurementRequirement.Required,
-      },
-      independentAxes: [{
-        axisId: "weight", role: InventoryMeasurementAxisRole.Independent,
-        unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required,
-      }],
-      reservationAxisId: "pieces",
-      tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional },
-      qualifiedDimensions: [],
-    });
-    const catalog = defineInventoryCatalog({
-      itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
-    });
+    const catalog = measuredItemCatalog("pieces");
+    const item = catalog.activeItem("measured");
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
     const from = { itemId: item.itemId, placementNodeId: "store", lotId: "weighed" };
@@ -118,6 +124,112 @@ describe("indexed stock planning and availability", () => {
       row.key.lotId, row.measurements.primary.quantity.amountMinor,
       row.measurements.independent[0]?.quantity.amountMinor,
     ])).toEqual([["weighed", 4, 5], [undefined, 2, 2]]);
+  });
+
+  it.each([
+    { verb: "transfer", together: false },
+    { verb: "scrap", together: false },
+    { verb: "transfer", together: true },
+    { verb: "scrap", together: true },
+  ])(
+    "records measured $verb with independent-axis holds (combined request: $together)",
+    async ({ verb, together }) => {
+      const storage = createInMemoryInventoryDurableStorage();
+      const inventory = createTestInventory(storage, measuredItemCatalog("weight"));
+      const selection = { itemId: "measured", placementNodeIds: ["store"] };
+      const amount = measuredStockAmount("2", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]);
+      for (const [lotId, occurredAtEpochMs] of [["held", time0], ["free", time1]] as const) {
+        await inventory.stock.receive({
+          operationId: `receive-${lotId}`, occurredAtEpochMs,
+          to: { itemId: selection.itemId, placementNodeId: "store", lotId }, amount,
+        });
+      }
+      const holdScope = { ...selection, lotIds: ["held"] };
+      const heldRow = (await inventory.read.positions(holdScope))[0];
+      if (heldRow === undefined) throw new Error("Missing measured hold source.");
+      const quantity = parseQuantity("4", "kg");
+      await inventory.reservations.reserve({
+        operationId: "reserve-weight", reservationId: "weight", itemRevisionId: "measured-v1",
+        selector: holdScope, requested: quantity, createdAtEpochMs: time1,
+      });
+      await inventory.reservations.allocate({
+        operationId: "allocate-weight", reservationId: "weight", occurredAtEpochMs: time1,
+        allocations: [{ position: heldRow.key, quantity }],
+      });
+      const movements = together
+        ? [{ lots: ["free", "held"], amount: measuredStockAmount("4", "piece", [{ axisId: "weight", value: "8", unit: "kg" }]) }]
+        : [{ lots: ["free"], amount }, { lots: ["held"], amount }];
+      for (const [sequence, movement] of movements.entries()) {
+        const command = {
+          operationId: `record-measured-${sequence}`, occurredAtEpochMs: time2,
+          selector: selection, amount: movement.amount, method: InventoryAllocationMethod.Fifo,
+        };
+        const result = verb === "transfer"
+          ? await inventory.stock.transferByPolicy({ ...command, toPlacementNodeId: "destination" })
+          : await inventory.stock.scrapByPolicy({ ...command, reason: "Broken goods" });
+        const debits = result.event.stockEffects.filter((effect) => effect.measurementsDelta.primary.quantity.amountMinor < 0);
+        expect(debits.map((debit) => debit.position.lotId).sort()).toEqual(movement.lots);
+      }
+      const claim = (await inventory.read.reservationFeasibility(time2)).groups[0];
+      expect(claim).toMatchObject({ reservationIds: ["weight"], shortage: { amountMinor: 4 } });
+    }
+  );
+
+  it("keeps FIFO and use-by when an explicit report debits a row outside the first pool", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "older-unlabelled", occurredAtEpochMs: time0, to: loosePosition("store"),
+      placementNode: { useByEpochMs: time3 }, amount: stockAmount("5", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "younger-labelled", occurredAtEpochMs: time1,
+      to: loosePosition("store", { lotId: "young" }), amount: stockAmount("3", "piece"),
+    });
+    const result = await inventory.stock.transferManyByPolicy({
+      operationId: "report-then-pick", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      requests: [
+        {
+          requestId: "report", method: InventoryAllocationMethod.Fifo,
+          selector: { ...selector, withinPlacementNodeIds: ["another-root"] },
+          deficitPosition: loosePosition("store"), amount: stockAmount("2", "piece"),
+        },
+        {
+          requestId: "pick", method: InventoryAllocationMethod.Fifo,
+          selector, amount: stockAmount("1", "piece"),
+        },
+      ],
+    });
+    expect(result.allocations[0]?.deficit?.primary.amountMinor).toBe(2);
+    expect(result.allocations[1]?.lines).toMatchObject([{
+      position: { placementNodeId: "store" }, layerStartedAtEpochMs: time0, expiresAtEpochMs: time3,
+    }]);
+    expect(result.allocations[1]?.lines[0]?.position.lotId).toBeUndefined();
+  });
+
+  it("snapshots only typed command fields through native physical planning", async () => {
+    const inventory = createTestInventory();
+    await receiveKnownLots(inventory);
+    const batch = issueCommand();
+    const [first, second] = batch.requests;
+    if (first === undefined || second === undefined) throw new Error("Missing batch requests.");
+    const extended = { ...first, applicationCallback: () => undefined };
+    const result = await inventory.stock.issueManyByPolicy(new Proxy({
+      ...batch, requests: [extended, second],
+    }, {}));
+    expect(result.allocations).toHaveLength(2);
+    const movement = {
+      operationId: "extended-policy", occurredAtEpochMs: time2, selector,
+      amount: stockAmount("1", "piece"), method: InventoryAllocationMethod.Fifo,
+      toPlacementNodeId: "destination", applicationCallback: () => undefined,
+    };
+    await inventory.stock.transferByPolicy(new Proxy(movement, {}));
+    const contents = {
+      operationId: "extended-contents", occurredAtEpochMs: time2,
+      nodeId: "destination", into: "final", applicationCallback: () => undefined,
+    };
+    await inventory.placement.moveContents(new Proxy(contents, {}));
+    expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["final"] })).toHaveLength(1);
   });
 
   it.each(["exact transfer", "policy transfer", "policy scrap"])(
@@ -487,6 +599,39 @@ describe("indexed stock planning and availability", () => {
     });
     expect(scoped.deficit.primary.quantity.amountMinor).toBe(2);
     expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("keeps an exact hold on a signed deficit out of usable allocations", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const from = loosePosition("store", { lotId: "held" });
+    await inventory.stock.receive({
+      operationId: "receive-held-deficit", occurredAtEpochMs: time0, to: from, amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      operationId: "reserve-held-deficit", reservationId: "held-deficit", itemRevisionId: "item-a-v2",
+      selector, requested: parseQuantity("2", "piece"), createdAtEpochMs: time1,
+    });
+    await inventory.reservations.allocateByPolicy({
+      operationId: "allocate-held-deficit", reservationId: "held-deficit",
+      occurredAtEpochMs: time1, method: InventoryAllocationMethod.Fifo,
+    });
+    await inventory.stock.issue({
+      operationId: "issue-held-deficit", occurredAtEpochMs: time2, from, amount: stockAmount("3", "piece"),
+    });
+    const canonical = (await inventory.read.availability(selector, time2)).revisions[0];
+    const scoped = await readInventoryScopedStockAvailability({
+      storage, catalog, selector, itemRevisionId: "item-a-v2", atEpochMs: time2,
+    });
+    for (const report of [canonical, scoped]) {
+      expect(report?.exactlyAllocatedUsable.amountMinor).toBe(0);
+      expect(report?.positions).toMatchObject([{
+        isDeficit: true,
+        exactlyAllocated: { amountMinor: 2 },
+        exactAllocationReservationIds: ["held-deficit"],
+      }]);
+    }
   });
 
   it("publishes immutable pool claims and returns only local exact holds at historical times", async () => {

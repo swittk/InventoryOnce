@@ -1,5 +1,5 @@
 import type { InMemoryInventorySegmentedPlacementStore } from "./segmented-placement.js";
-import { candidateSubtreePositionIds, inventoryScopedStockMatches } from "./stock-scope.js";
+import { candidateSubtreePositionIds } from "./stock-scope.js";
 import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import type { InventoryCatalogSnapshot } from "./catalog.js";
@@ -29,6 +29,7 @@ import {
 } from "./sparse-record.js";
 import {
   InventoryOptionalIdentityConstraintKind,
+  inventoryStockPositionMatchesNormalizedSelector,
   normalizeInventoryStockSelector,
   type InventoryOptionalIdentityConstraint,
   type InventoryStockSelector,
@@ -594,6 +595,17 @@ export class InMemoryInventorySegmentedPositionStore
         }, normalized.withinPlacementNodeIds, candidate.size);
     const ids = subtreeIds ?? [...candidate.identities()].sort();
     const result: InventoryStockPosition[] = [];
+    let directSelector = normalized;
+    /** Cached subtree membership for the direct nodes encountered by this query. */
+    let subtreeMembership: Map<string, boolean> | undefined;
+    /** Requested subtree roots, checked against each encountered node once. */
+    let subtreeRoots: Set<string> | undefined;
+    if (normalized.withinPlacementNodeIds !== undefined) {
+      const { withinPlacementNodeIds, ...remaining } = normalized;
+      subtreeRoots = new Set(withinPlacementNodeIds);
+      subtreeMembership = new Map();
+      directSelector = remaining;
+    }
     for (const positionId of ids) {
       const position = this.positions.get(positionId);
       if (position === undefined) {
@@ -601,15 +613,23 @@ export class InMemoryInventorySegmentedPositionStore
           `Inventory segmented selector index references missing position '${positionId}'.`
         );
       }
-      if (inventoryScopedStockMatches(
-        position.key,
-        normalized,
-        normalized.withinPlacementNodeIds === undefined || position.key.placementNodeId === undefined
-          ? []
-          : placement?.ancestry(position.key.placementNodeId) ?? []
-      )) {
-        result.push(cloneInventoryRetainedData(position));
+      if (!inventoryStockPositionMatchesNormalizedSelector(position.key, directSelector)) continue;
+      if (subtreeMembership !== undefined) {
+        const nodeId = position.key.placementNodeId;
+        if (nodeId === undefined) continue;
+        let selected = subtreeMembership.get(nodeId);
+        if (selected === undefined) {
+          selected = false;
+          for (const ancestor of placement?.ancestry(nodeId) ?? []) {
+            if (subtreeRoots?.has(ancestor) !== true) continue;
+            selected = true;
+            break;
+          }
+          subtreeMembership.set(nodeId, selected);
+        }
+        if (!selected) continue;
       }
+      result.push(cloneInventoryRetainedData(position));
     }
     return result;
   }

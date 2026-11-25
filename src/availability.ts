@@ -401,7 +401,7 @@ export function summarizeInventoryPhysicalAvailability({
         exactlyAllocatedExpired,
         exactAllocations.quantity
       );
-    } else {
+    } else if (!isDeficit && ordinarilyUsable) {
       exactlyAllocatedUsable = addQuantity(
         exactlyAllocatedUsable,
         exactAllocations.quantity
@@ -770,6 +770,7 @@ function indexScopedAvailabilityHolds(
   unit: Quantity["unit"],
   atEpochMs: number
 ): ReadonlyMap<string, ExactAllocationSummary> {
+  /** Mutable quantities and unique claim IDs accumulated per exact position. */
   const totals = new Map<string, MutableExactAllocationSummary>();
   for (const reservation of pool.reservations) {
     if (reservation.itemRevisionId !== item.revisionId ||
@@ -786,6 +787,7 @@ function indexScopedAvailabilityHolds(
       totals.set(id, current);
     }
   }
+  /** The returned quantities and deterministically sorted claim IDs. */
   const holds = new Map<string, ExactAllocationSummary>();
   for (const [id, total] of totals) {
     holds.set(id, { quantity: total.quantity, reservationIds: [...total.reservationIds].sort() });

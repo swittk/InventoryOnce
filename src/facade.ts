@@ -4354,7 +4354,19 @@ function policyPoolAfterPriorRequests({
   if (changed.size === 0) return pool;
   const positions: InventoryScopedStockPosition[] = [];
   for (const row of pool.positions) {
-    positions.push(changed.get(inventoryStockPositionIdentity(row.position.key)) ?? row);
+    const next = changed.get(inventoryStockPositionIdentity(row.position.key));
+    if (next === undefined) {
+      positions.push(row);
+      continue;
+    }
+    // Prior requests change balances. The published pool still owns age and expiry.
+    const { layerStartedAtEpochMs, ...published } = row;
+    positions.push({
+      ...published,
+      position: next.position,
+      ...(next.position.measurements.primary.quantity.amountMinor > 0 && layerStartedAtEpochMs !== undefined
+        ? { layerStartedAtEpochMs } : {}),
+    });
   }
   for (const row of addedDeficits?.values() ?? []) {
     if (inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) positions.push(row);
@@ -4369,7 +4381,10 @@ async function commitInventoryPolicyBatch(
   original: InventoryOncePolicyBatchInput,
   toPlacementNodeId?: string
 ): Promise<InventoryOncePolicyBatchResult> {
-  const input = structuredClone(original);
+  const input: InventoryOncePolicyBatchInput = {
+    ...snapshotInventoryScopedMovementHeader(original),
+    requests: original.requests.map(snapshotInventoryPolicyBatchRequest),
+  };
   if (
     kind !== InventoryPolicyMovementKind.Issue &&
     kind !== InventoryPolicyMovementKind.Transfer
@@ -5493,7 +5508,7 @@ async function commitInventoryPolicyMovement(
   original: InventoryOncePolicyMovementInput,
   toPlacementNodeId?: string
 ): Promise<InventoryOnceEventResult> {
-  const input = structuredClone(original);
+  const input = snapshotInventoryPolicyMovement(original);
   const internals = requireInventoryOnceInternals(owner);
   assertPolicyMovementRequest(
     kind,
@@ -5574,8 +5589,9 @@ async function commitInventoryPolicyMovement(
 function planInventoryAllocationForRecording(
   input: PlanInventoryAllocationInPoolInput
 ): InventoryPolicyAllocationPlan {
-  const preferred = planInventoryAllocationInPool(input);
-  if (input.allowAllocatedStock || preferred.shortfall.amountMinor === 0) {
+  if (input.allowAllocatedStock) return planInventoryAllocationInPool(input);
+  const preferred = planInventoryAllocationInPool({ ...input, preferUnheldForRecording: true });
+  if (preferred.shortfall.amountMinor === 0) {
     return preferred;
   }
   const physical = planInventoryAllocationInPool({ ...input, allowAllocatedStock: true });
@@ -5936,6 +5952,27 @@ function inventoryCommandHeaderFromPolicyInput(
       : { sourceReference: input.sourceReference }),
     ...(input.reason === undefined ? {} : { reason: input.reason }),
     ...(input.metadata === undefined ? {} : { metadata: input.metadata }),
+  };
+}
+
+/** Freeze the documented header fields before awaiting native planning reads. */
+function snapshotInventoryScopedMovementHeader(input: InventoryCommandHeader): InventoryCommandHeader {
+  const { metadata, ...header } = inventoryCommandHeaderFromPolicyInput(input);
+  return metadata === undefined ? header : { ...header, metadata: structuredClone(metadata) };
+}
+
+/** Capture the typed policy command without copying application-owned extensions. */
+function snapshotInventoryPolicyMovement(input: InventoryOncePolicyMovementInput): InventoryOncePolicyMovementInput {
+  return {
+    ...snapshotInventoryScopedMovementHeader(input),
+    selector: normalizeInventoryStockSelector(input.selector),
+    amount: snapshotInventoryPolicyAmount(input.amount),
+    method: input.method,
+    ...(input.itemRevisionId === undefined ? {} : { itemRevisionId: input.itemRevisionId }),
+    ...(input.allowExpiredLots === undefined ? {} : { allowExpiredLots: input.allowExpiredLots }),
+    ...(input.allowAllocatedStock === undefined ? {} : { allowAllocatedStock: input.allowAllocatedStock }),
+    ...(input.reservationId === undefined ? {} : { reservationId: input.reservationId }),
+    ...(input.deficitPosition === undefined ? {} : { deficitPosition: snapshotInventoryPolicyDeficitPosition(input.deficitPosition) }),
   };
 }
 
@@ -7167,7 +7204,11 @@ async function commitInventoryPlacementDirectContentsMove(
   original: InventoryOnceMovePlacementContentsInput
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  const input = structuredClone(original);
+  const input: InventoryOnceMovePlacementContentsInput = {
+    ...snapshotInventoryScopedMovementHeader(original),
+    nodeId: original.nodeId,
+    into: original.into,
+  };
   inventoryPlacementNodeIdentity(input.nodeId);
   inventoryPlacementNodeIdentity(input.into);
   if (input.nodeId === input.into) {

@@ -1862,3 +1862,8 @@ The R105 portable-current-input authority and final publication both continue to
 - Exact Record transfers require the witnessed source to cover all measured axes. A partial witness uses the whole source only if the requested vector leaves a representable remainder. No weight or other independent axis is estimated from the primary count.
 - Same-position positive replacements carry the existing FIFO age. Scoped claim reads retain immutable published evidence, restrict historical exact holds to the selected pool, and sample the default preview time after observing the published revision.
 - The direct-contents stock hook declines standalone unplacement. Its contract still expects domain-validated events and publishes prepared edges inside the same adapter transaction as stock.
+
+## 2026-11-25 — measured claims and scoped reads
+
+- A hold remains visible on its exact deficit row without contributing to usable allocations. Physical policy movements prefer unheld rows and can then use held measured stock without converting between independent axes.
+- Ordered batch debits retain the published position's FIFO and use-by facts. Command snapshots copy typed request fields, and subtree reads check membership once per direct node.

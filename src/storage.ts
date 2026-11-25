@@ -874,7 +874,12 @@ export class InMemoryInventoryDurableStorage
     }
     return {
       positions: rows,
-      reservations: this.stockClaims.forPool(input.itemRevisionId, positions, input.reservationAtEpochMs, input.exactHoldsOnly ?? false),
+      reservations: this.stockClaims.forPool({
+        revisionId: input.itemRevisionId,
+        positions,
+        atEpochMs: input.reservationAtEpochMs,
+        exactHoldsOnly: input.exactHoldsOnly ?? false,
+      }),
     };
   }
 
