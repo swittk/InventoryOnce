@@ -41,6 +41,13 @@ export function subtractWorkingQuantity(left: InventoryWorkingQuantity, right: I
   return { amountMinor: total.minor, decimals: total.decimals, unit: left.unit };
 }
 
+/** Materialize an exact working quantity only when the returned digits fit storage. */
+export function materializeInventoryWorkingQuantity(value: InventoryWorkingQuantity, label: string): Quantity {
+  const stored = storableQuantityDigits(BigInt(value.amountMinor), value.decimals);
+  if (stored === undefined) throw new Error(`${label} exceeds the safe integer storage range.`);
+  return { ...stored, unit: value.unit };
+}
+
 /** Add signed digits at the least scale that retains both quantities exactly. */
 export function addExactQuantityDigits(total: ExactQuantityDigits, minor: bigint, decimals: number): void {
   if (decimals > total.decimals) {

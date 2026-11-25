@@ -26,6 +26,11 @@ import {
 } from "./model.js";
 import type { InventoryProjectionState } from "./projection.js";
 import {
+  materializeInventoryWorkingQuantity,
+  workingQuantityAtDecimals,
+  type InventoryWorkingQuantity,
+} from "./quantity-storage.js";
+import {
   assertPositionInsideSelector,
   inventoryStockPositionMatchesSelector,
   inventoryStockSelectorIdentity,
@@ -38,7 +43,6 @@ import {
   addQuantity,
   compareQuantity,
   positiveQuantity,
-  quantity,
   quantityEq,
   quantityIsWholeMultipleOf,
   zeroQuantity,
@@ -376,14 +380,11 @@ export function inspectInventoryReservationFeasibility({
       reservations,
       atEpochMs
     );
-    const shortage = quantity({
-      amountMinor: safeNumberFromBigInt(
-        feasibility.requestedMinor - feasibility.fulfillableMinor,
-        "Reservation feasibility shortage"
-      ),
+    const shortage = materializeInventoryWorkingQuantity({
+      amountMinor: feasibility.requestedMinor - feasibility.fulfillableMinor,
       decimals: feasibility.decimals,
       unit: axis.unit,
-    });
+    }, "Reservation feasibility shortage");
     if (shortage.amountMinor > 0) {
       status = InventoryReservationFeasibilityStatus.Shortage;
     }
@@ -395,22 +396,16 @@ export function inspectInventoryReservationFeasibility({
       itemId: item.itemId,
       axisId: axis.axisId,
       reservationIds,
-      requested: quantity({
-        amountMinor: safeNumberFromBigInt(
-          feasibility.requestedMinor,
-          "Reservation feasibility requested quantity"
-        ),
+      requested: materializeInventoryWorkingQuantity({
+        amountMinor: feasibility.requestedMinor,
         decimals: feasibility.decimals,
         unit: axis.unit,
-      }),
-      fulfillable: quantity({
-        amountMinor: safeNumberFromBigInt(
-          feasibility.fulfillableMinor,
-          "Reservation feasibility fulfillable quantity"
-        ),
+      }, "Reservation feasibility requested quantity"),
+      fulfillable: materializeInventoryWorkingQuantity({
+        amountMinor: feasibility.fulfillableMinor,
         decimals: feasibility.decimals,
         unit: axis.unit,
-      }),
+      }, "Reservation feasibility fulfillable quantity"),
       shortage,
     });
   }
@@ -985,8 +980,8 @@ interface ReservationFeasibilityPosition {
   readonly identity: string;
   /** Exact position key. */
   readonly position: InventoryStockPositionKey;
-  /** Positive on-hand capacity on the competing axis. */
-  readonly capacity: Quantity;
+  /** Exact positive capacity on the competing axis after any deficit burden. */
+  readonly capacity: InventoryWorkingQuantity;
   /** Smallest legal issue from this row; omitted means the row is divisible on this axis. */
   readonly indivisibleIncrement?: Quantity;
 }
@@ -1152,9 +1147,7 @@ function reservationGroupFeasibility(
       axis.axisId,
       axis.unit
     );
-    if (
-      compareQuantity(capacity, zeroQuantity(axis.unit, capacity.decimals)) <= 0
-    ) {
+    if (capacity.amountMinor <= 0n) {
       continue;
     }
     let eligibleReservationCount = 0;
@@ -1232,9 +1225,7 @@ function reservationGroupFeasibility(
         `Reservation deficit burden lost position '${position.identity}'.`
       );
     }
-    if (
-      compareQuantity(capacity, zeroQuantity(axis.unit, capacity.decimals)) <= 0
-    ) {
+    if (capacity.amountMinor <= 0n) {
       continue;
     }
     positions.push({
@@ -1934,20 +1925,11 @@ function flowEdgeIdentity(from: number, to: number): string {
 }
 
 /** Convert one exact quantity into a bigint at a shared decimal scale. */
-function quantityAtDecimals(value: Quantity, decimals: number): bigint {
+function quantityAtDecimals(value: InventoryWorkingQuantity, decimals: number): bigint {
   if (decimals < value.decimals) {
     throw new Error("Reservation flow scale cannot discard exact digits.");
   }
-  return BigInt(value.amountMinor) * 10n ** BigInt(decimals - value.decimals);
-}
-
-/** Convert one exact flow bigint to public safe-integer quantity storage. */
-function safeNumberFromBigInt(value: bigint, label: string): number {
-  const converted = Number(value);
-  if (!Number.isSafeInteger(converted)) {
-    throw new Error(`${label} exceeds the safe integer storage range.`);
-  }
-  return converted;
+  return workingQuantityAtDecimals(value, decimals);
 }
 
 /** Stable normalized creation fingerprint including selector, quantity, provenance, and metadata. */

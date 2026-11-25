@@ -26,7 +26,6 @@ import {
 import {
   applyInventoryWorkingDeficitBurden,
   inventoryRecordedDeficitPoolSelector,
-  storeInventoryDeficitQuantity,
   type InventorySignedDeficitRow,
 } from "./deficits.js";
 import { assertInventoryEpochMilliseconds } from "./events.js";
@@ -47,6 +46,7 @@ import { inventoryPlacementAncestry } from "./placement.js";
 import {
   addExactQuantityDigits,
   compareWorkingQuantities,
+  materializeInventoryWorkingQuantity,
   subtractWorkingQuantity,
   type ExactQuantityDigits,
   type InventoryWorkingQuantity,
@@ -267,8 +267,8 @@ export function planInventoryAllocationInPool(input: PlanInventoryAllocationInPo
   const result = planWorkingInventoryAllocation(input);
   return {
     ...result,
-    recordedDeficit: storeInventoryDeficitQuantity(result.recordedDeficit),
-    uncoveredDeficit: storeInventoryDeficitQuantity(result.uncoveredDeficit),
+    recordedDeficit: materializeInventoryWorkingQuantity(result.recordedDeficit, "Inventory recorded deficit"),
+    uncoveredDeficit: materializeInventoryWorkingQuantity(result.uncoveredDeficit, "Inventory uncovered deficit"),
   };
 }
 

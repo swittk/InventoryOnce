@@ -201,18 +201,18 @@ describe("collision-free retry identity", () => {
         { position: positionB, capacity: parseQuantity("4", "piece") },
       ],
     });
-    expect(allLocations.recordedDeficit.amountMinor).toBe(6);
-    expect(allLocations.uncoveredDeficit.amountMinor).toBe(3);
+    expect(allLocations.recordedDeficit.amountMinor).toBe(6n);
+    expect(allLocations.uncoveredDeficit.amountMinor).toBe(3n);
     expect(
       allLocations.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(positionA)
       )?.amountMinor
-    ).toBe(2);
+    ).toBe(2n);
     expect(
       allLocations.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(positionB)
       )?.amountMinor
-    ).toBe(2);
+    ).toBe(2n);
 
     const storeAOnly = applyInventoryRecordedDeficitBurden({
       projection: world.projection,
@@ -222,8 +222,8 @@ describe("collision-free retry identity", () => {
       placementNodeIds: ["store-a"],
       lines: [{ position: positionA, capacity: parseQuantity("3", "piece") }],
     });
-    expect(storeAOnly.recordedDeficit.amountMinor).toBe(1);
-    expect(storeAOnly.uncoveredDeficit.amountMinor).toBe(0);
+    expect(storeAOnly.recordedDeficit.amountMinor).toBe(1n);
+    expect(storeAOnly.uncoveredDeficit.amountMinor).toBe(0n);
     expect(() =>
       applyInventoryRecordedDeficitBurden({
         projection: world.projection,
@@ -271,8 +271,8 @@ describe("collision-free retry identity", () => {
       adjusted.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(position)
       )?.amountMinor
-    ).toBe(4);
-    expect(adjusted.uncoveredDeficit.amountMinor).toBe(0);
+    ).toBe(4n);
+    expect(adjusted.uncoveredDeficit.amountMinor).toBe(0n);
   });
   it("rejects storage mutation re-entry from an async failpoint instead of deadlocking", async () => {
     let storage: InventoryDurableStorage | undefined;

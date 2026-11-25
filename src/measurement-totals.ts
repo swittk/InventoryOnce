@@ -1,6 +1,6 @@
 import { inventoryMeasurement, inventoryMeasurementVector, type InventoryMeasurement, type InventoryMeasurementVector } from "./measurements.js";
-import { quantity, type Quantity } from "./quantity.js";
-import { addExactQuantityDigits, storableQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
+import type { Quantity } from "./quantity.js";
+import { addExactQuantityDigits, materializeInventoryWorkingQuantity, type ExactQuantityDigits } from "./quantity-storage.js";
 
 /** Temporary sum of one normalized measurement axis. */
 interface InventoryMeasurementTotal extends ExactQuantityDigits {
@@ -10,6 +10,13 @@ interface InventoryMeasurementTotal extends ExactQuantityDigits {
 
 /** Exact working totals for measurements of one frozen item schema. */
 export type InventoryMeasurementTotals = Map<string, InventoryMeasurementTotal>;
+
+/** Start an exact accumulator with the normalized axes and values of a vector. */
+export function inventoryMeasurementTotalsFromVector(measurements: InventoryMeasurementVector): InventoryMeasurementTotals {
+  const totals: InventoryMeasurementTotals = new Map();
+  addInventoryMeasurementTotals(totals, measurements);
+  return totals;
+}
 
 /** Add the axes of one normalized vector, optionally as a subtraction. */
 export function addInventoryMeasurementTotals(
@@ -49,9 +56,8 @@ export function materializeInventoryMeasurementTotals(
   let primary: InventoryMeasurement | undefined;
   const independent: InventoryMeasurement[] = [];
   for (const [axisId, { minor, decimals, unit }] of totals) {
-    const stored = storableQuantityDigits(minor, decimals);
-    if (stored === undefined) throw new Error("Inventory measurement total exceeds the safe integer storage range.");
-    const axis = inventoryMeasurement(axisId, quantity({ ...stored, unit }));
+    const axis = inventoryMeasurement(axisId,
+      materializeInventoryWorkingQuantity({ amountMinor: minor, decimals, unit }, "Inventory measurement total"));
     if (axisId === primaryAxisId) primary = axis;
     else independent.push(axis);
   }

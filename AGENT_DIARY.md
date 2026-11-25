@@ -1919,3 +1919,8 @@ The R105 portable-current-input authority and final publication both continue to
 - Ordered policy requests keep their touched stock and deficit balances in exact working digits. FIFO/FEFO and deficit allocation use the same signed pool rules before the event stores its final positions.
 - A whole measured row whose temporary axes cannot form an exact line is ineligible for that trial. The same bounded search can select another coherent witness.
 - Availability stores the selected capacities and their assigned deficit after attributing the whole pool in exact digits.
+
+## 2026-11-25 — exact stock reports and claim capacity
+
+- Stock summaries and canonical and scoped availability retain exact report subtotals until their returned quantities are complete. Signed, expired, held, and dimensional totals therefore give the same result for different row orders.
+- Reservation feasibility keeps deficit-adjusted capacity at full precision for the existing flow solver. Its final requested, fulfillable, and shortage quantities narrow independently when their exact digits fit.

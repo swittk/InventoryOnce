@@ -237,6 +237,100 @@ describe("indexed stock planning and availability", () => {
     expect(readWorld).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { report: "physical", values: ["9007199254740990", "0.1", "0.9"] },
+    { report: "physical", values: ["0.1", "0.9", "9007199254740990"] },
+    { report: "expired", values: ["9007199254740990", "0.1", "0.9"] },
+    { report: "deficit", values: ["9007199254740990", "0.1", "0.9"] },
+    { report: "held", values: ["9007199254740990", "0.1", "0.9"] },
+    { report: "broad", values: ["9007199254740990", "0.1", "0.9"] },
+  ])("reports exact $report totals after summing $values", async ({ report, values }) => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const placementNodeId = "store";
+    const selector = inventoryStockSelector(item.itemId, { placementNodeIds: [placementNodeId] });
+    const rows = values.map((value, index) => ({ lotId: String(index), value }));
+    for (const { lotId, value } of rows) {
+      const position = { itemId: item.itemId, placementNodeId, lotId };
+      const header = { operationId: lotId, occurredAtEpochMs: time0, amount: stockAmount(value, "kg") };
+      if (report === "deficit") {
+        await inventory.stock.issue({ ...header, from: position });
+      } else {
+        await inventory.stock.receive({ ...header, to: position,
+          ...(report === "expired" ? { lot: { expiresAtEpochMs: time1 } } : {}) });
+      }
+    }
+    if (report === "held" || report === "broad") {
+      // Establish the fractions first so each published claim total fits storage.
+      for (const { lotId, value } of [...rows.slice(1), ...rows.slice(0, 1)]) {
+        await inventory.reservations.reserve({
+          operationId: "hold-" + lotId, reservationId: lotId, itemRevisionId: item.revisionId,
+          selector: { ...selector, lotIds: [lotId] }, requested: parseQuantity(value, "kg"), createdAtEpochMs: time1,
+        });
+        if (report === "held") {
+          await inventory.reservations.allocateByPolicy({
+            operationId: "allocate-" + lotId, reservationId: lotId, occurredAtEpochMs: time1, method: InventoryAllocationMethod.Fifo,
+          });
+        }
+      }
+    }
+    const zero = parseQuantity("0", "kg");
+    const max = parseQuantity("9007199254740991", "kg");
+    const total = report === "deficit" ? parseQuantity("-9007199254740991", "kg") : max;
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const scope = { storage, catalog, selector, itemRevisionId: item.revisionId, atEpochMs: time2 };
+    const scoped = await readInventoryScopedStockAvailability(scope);
+    const stock = (await inventory.read.summary(selector)).revisions[0];
+    expect(readWorld).not.toHaveBeenCalled();
+    readWorld.mockRestore();
+    expect(stock).toMatchObject({
+      total: { primary: { quantity: total } },
+      deficit: { primary: { quantity: report === "deficit" ? max : zero } },
+      byPlacementNode: [{ valueId: placementNodeId, positionCount: 3, measurements: { primary: { quantity: total } } }],
+    });
+    expect(scoped).toMatchObject({
+      onHand: { primary: { quantity: total } },
+      expiredOnHand: { primary: { quantity: report === "expired" ? max : zero } },
+      exactlyAllocatedUsable: report === "held" ? max : zero,
+    });
+    expect(scoped.unallocatedUsablePhysical.amountMinor).toBe(
+      report === "physical" || report === "broad" ? max.amountMinor : 0);
+    expect((await inventory.read.availability(selector, time2)).revisions[0]).toMatchObject({
+      ...scoped, broadRequested: report === "broad" ? max : zero,
+    });
+    if (report === "physical") {
+      await inventory.stock.receive({ operationId: "unstorable-final-report", occurredAtEpochMs: time1,
+        to: { itemId: item.itemId, placementNodeId, lotId: "overflow" }, amount: stockAmount("0.1", "kg") });
+      await expect(readInventoryScopedStockAvailability(scope)).rejects.toThrow("safe integer storage range");
+      await expect(inventory.read.summary(selector)).rejects.toThrow("safe integer storage range");
+    }
+  });
+
+  it("fulfills a storable claim against a wide post-deficit capacity", async () => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const position = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receive({ operationId: "receive-large", occurredAtEpochMs: time0,
+      to: { ...position, lotId: "large" }, amount: stockAmount("9007199254740991", "kg") });
+    await inventory.stock.issue({ operationId: "record-fractional-deficit", occurredAtEpochMs: time0,
+      from: { ...position, lotId: "deficit" }, amount: stockAmount("0.1", "kg") });
+    const requested = parseQuantity("0.9", "kg");
+    await inventory.reservations.reserve({
+      operationId: "reserve-small", reservationId: "small", itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["large"] },
+      requested, createdAtEpochMs: time1,
+    });
+    await inventory.reservations.allocateByPolicy({
+      operationId: "allocate-small", reservationId: "small", occurredAtEpochMs: time1, method: InventoryAllocationMethod.Fifo,
+    });
+    expect(await inventory.read.reservationFeasibility(time2)).toMatchObject({
+      status: "feasible", groups: [{ requested, fulfillable: requested, shortage: parseQuantity("0.0", "kg") }],
+    });
+  });
+
   it("considers a later measured witness when a private row cannot supply a storable whole amount", async () => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
     /** Resolve one report in pieces and independently measured kilograms. */

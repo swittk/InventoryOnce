@@ -17,7 +17,6 @@ import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
   addExactQuantityDigits,
   compareWorkingQuantities,
-  storableQuantityDigits,
   subtractWorkingQuantity,
   workingQuantityAtDecimals,
   type ExactQuantityDigits,
@@ -29,33 +28,21 @@ import {
 } from "./selectors.js";
 import {
   compareQuantity,
-  quantity,
   zeroQuantity,
-  type Quantity,
   type UnitCode,
 } from "./quantity.js";
 
 /** Reserved untracked lot identity used by ordinary policy shortfall when no explicit deficit position is supplied. */
 export const INVENTORY_RECORDED_DEFICIT_LOT_ID = "__inventory_deficit__";
 
-/** One positive capacity row that may be burdened by recorded direct-placement-pool deficit. */
-export interface InventoryDeficitCapacityLine {
+/** One positive capacity on the selected axis before narrowing any returned quantities. */
+export interface InventoryWorkingDeficitCapacityLine {
   /** Exact positive physical position supplying this capacity. */
   readonly position: InventoryStockPositionKey;
   /** Positive capacity already reduced by exact claims or caller-owned constraints. */
-  readonly capacity: Quantity;
+  readonly capacity: InventoryWorkingQuantity;
   /** Smallest legal remaining quantity for intact package/serial rows. */
-  readonly allocationIncrement?: Quantity;
-}
-
-/** Exact capacities after every selected direct placement's recorded deficit has first priority. */
-export interface InventoryDeficitCapacityAdjustment {
-  /** Adjusted non-negative capacity by exact physical position identity. */
-  readonly capacityByPositionIdentity: ReadonlyMap<string, Quantity>;
-  /** Total positive deficit magnitude recorded in the selected direct-placement pools. */
-  readonly recordedDeficit: Quantity;
-  /** Deficit still not backed by any supplied positive capacity. */
-  readonly uncoveredDeficit: Quantity;
+  readonly allocationIncrement?: InventoryWorkingQuantity;
 }
 
 /** Inputs for applying durable signed deficit to otherwise-positive capacity rows. */
@@ -71,7 +58,7 @@ export interface ApplyInventoryRecordedDeficitBurdenInput {
   /** Selected pools; deficit never crosses direct-placement boundaries. */
   readonly placementNodeIds: readonly string[];
   /** Positive capacities in deterministic burden order, reduced without going negative. */
-  readonly lines: readonly InventoryDeficitCapacityLine[];
+  readonly lines: readonly InventoryWorkingDeficitCapacityLine[];
 }
 
 /**
@@ -148,20 +135,11 @@ export function inventoryPositionDeficitMeasurements(
 export function applyInventoryRecordedDeficitBurden({
   projection,
   ...input
-}: ApplyInventoryRecordedDeficitBurdenInput): InventoryDeficitCapacityAdjustment {
-  const burden = applyInventoryWorkingDeficitBurdenToPositions({
+}: ApplyInventoryRecordedDeficitBurdenInput): InventoryWorkingDeficitBurden {
+  return applyInventoryWorkingDeficitBurdenToPositions({
     ...input,
     positions: inventoryDeficitRevisionRows(projection, input.itemRevisionId),
   });
-  const capacityByPositionIdentity = new Map<string, Quantity>();
-  for (const [id, capacity] of burden.capacityByPositionIdentity) {
-    capacityByPositionIdentity.set(id, storeInventoryDeficitQuantity(capacity));
-  }
-  return {
-    capacityByPositionIdentity,
-    recordedDeficit: storeInventoryDeficitQuantity(burden.recordedDeficit),
-    uncoveredDeficit: storeInventoryDeficitQuantity(burden.uncoveredDeficit),
-  };
 }
 
 /** Read signed rows for one exact revision through the canonical projection index. */
@@ -205,13 +183,6 @@ export function applyInventoryWorkingDeficitBurdenToPositions({
   });
 }
 
-/** Narrow a returned deficit or capacity exactly at the published read boundary. */
-export function storeInventoryDeficitQuantity(value: InventoryWorkingQuantity): Quantity {
-  const stored = storableQuantityDigits(BigInt(value.amountMinor), value.decimals);
-  if (stored === undefined) throw new Error("Inventory deficit quantity exceeds the safe integer storage range.");
-  return quantity({ ...stored, unit: value.unit });
-}
-
 /** One negative measurement in a signed stock pool. */
 export interface InventorySignedDeficitRow {
   /** Exact position that owns the negative balance. */
@@ -231,14 +202,6 @@ function* inventorySignedDeficitRows(
     const signed = inventoryMeasurementAt(position.measurements, axisId, unit);
     if (signed.amountMinor < 0) yield { position: position.key, signed };
   }
-}
-
-/** Ordered positive capacity on the selected axis before narrowing to a published read result. */
-export interface InventoryWorkingDeficitCapacityLine extends Omit<InventoryDeficitCapacityLine, "capacity" | "allocationIncrement"> {
-  /** Exact positive capacity, after any reservation holds. */
-  readonly capacity: InventoryWorkingQuantity;
-  /** Smallest legal pick from this physical row. */
-  readonly allocationIncrement?: InventoryWorkingQuantity;
 }
 
 /** Signed pool rows and ordered positive capacities on a single working axis. */

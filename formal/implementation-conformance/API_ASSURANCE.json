@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4065,
-    "compilerCallGraphEdges": 11233,
+    "compilerCallGraphCallables": 4066,
+    "compilerCallGraphEdges": 11255,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -1567,7 +1567,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 8,
+          "occurrences": 10,
           "path": "src/availability.ts"
         },
         {
@@ -1583,7 +1583,7 @@
           "path": "src/coordinator.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
           "path": "src/deficits.ts"
         },
         {
@@ -4230,9 +4230,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:8827:createInventoryReservation",
+              "id": "src/reservations.ts:8957:createInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 221,
+              "line": 225,
               "name": "createInventoryReservation",
               "reason": "resolved-call"
             },
@@ -6897,7 +6897,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 8,
+          "occurrences": 10,
           "path": "src/availability.ts"
         },
         {
@@ -6913,7 +6913,7 @@
           "path": "src/coordinator.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
           "path": "src/deficits.ts"
         },
         {
@@ -9564,9 +9564,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:8827:createInventoryReservation",
+              "id": "src/reservations.ts:8957:createInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 221,
+              "line": 225,
               "name": "createInventoryReservation",
               "reason": "resolved-call"
             },
@@ -13753,10 +13753,10 @@
               "column": 96,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:82074:<anonymous@1434>",
+              "id": "test/scoped-stock-planning.test.ts:87964:<anonymous@1528>",
               "kind": "ArrowFunction",
-              "line": 1434,
-              "name": "<anonymous@1434>",
+              "line": 1528,
+              "name": "<anonymous@1528>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -18815,7 +18815,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 12,
           "path": "src/read-model.ts"
         },
         {
@@ -19851,7 +19851,7 @@
           "path": "src/counts.ts"
         },
         {
-          "occurrences": 46,
+          "occurrences": 45,
           "path": "src/deficits.ts"
         },
         {
@@ -21311,7 +21311,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 12,
           "path": "src/read-model.ts"
         },
         {
@@ -22241,10 +22241,6 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 5,
-          "path": "src/availability.ts"
-        },
-        {
           "occurrences": 2,
           "path": "src/commands.ts"
         },
@@ -22275,10 +22271,6 @@
         {
           "occurrences": 2,
           "path": "src/projection.ts"
-        },
-        {
-          "occurrences": 5,
-          "path": "src/read-model.ts"
         },
         {
           "occurrences": 2,
@@ -22425,10 +22417,6 @@
       ],
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
-        {
-          "occurrences": 6,
-          "path": "src/availability.ts"
-        },
         {
           "occurrences": 4,
           "path": "src/collections.ts"
@@ -22670,9 +22658,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:22084:allocateInventoryReservation",
+              "id": "src/reservations.ts:22145:allocateInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 591,
+              "line": 586,
               "name": "allocateInventoryReservation",
               "reason": "resolved-call"
             }
@@ -22681,9 +22669,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:22084:allocateInventoryReservation",
+            "id": "src/reservations.ts:22145:allocateInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 591,
+            "line": 586,
             "name": "allocateInventoryReservation"
           },
           "test": "test/record-key-domain.test.ts"
@@ -22709,9 +22697,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:22084:allocateInventoryReservation",
+          "id": "src/reservations.ts:22145:allocateInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 591,
+          "line": 586,
           "name": "allocateInventoryReservation"
         }
       ],
@@ -24267,9 +24255,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:8827:createInventoryReservation",
+              "id": "src/reservations.ts:8957:createInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 221,
+              "line": 225,
               "name": "createInventoryReservation",
               "reason": "resolved-call"
             },
@@ -24277,9 +24265,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:12442:assertInventoryReservationsFeasible",
+              "id": "src/reservations.ts:12572:assertInventoryReservationsFeasible",
               "kind": "FunctionDeclaration",
-              "line": 325,
+              "line": 329,
               "name": "assertInventoryReservationsFeasible",
               "reason": "resolved-call"
             }
@@ -24288,9 +24276,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:12442:assertInventoryReservationsFeasible",
+            "id": "src/reservations.ts:12572:assertInventoryReservationsFeasible",
             "kind": "FunctionDeclaration",
-            "line": 325,
+            "line": 329,
             "name": "assertInventoryReservationsFeasible"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -24312,9 +24300,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:12442:assertInventoryReservationsFeasible",
+          "id": "src/reservations.ts:12572:assertInventoryReservationsFeasible",
           "kind": "FunctionDeclaration",
-          "line": 325,
+          "line": 329,
           "name": "assertInventoryReservationsFeasible"
         }
       ],
@@ -24556,7 +24544,7 @@
               "column": 43,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15707:<anonymous@411>",
+              "id": "test/review-hardening.test.ts:15715:<anonymous@411>",
               "kind": "ArrowFunction",
               "line": 411,
               "name": "<anonymous@411>",
@@ -24566,7 +24554,7 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15794:<anonymous@412>",
+              "id": "test/review-hardening.test.ts:15802:<anonymous@412>",
               "kind": "ArrowFunction",
               "line": 412,
               "name": "<anonymous@412>",
@@ -24576,9 +24564,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:19364:refineInventoryReservation",
+              "id": "src/reservations.ts:19425:refineInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 504,
+              "line": 499,
               "name": "refineInventoryReservation",
               "reason": "resolved-call"
             },
@@ -25677,7 +25665,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 5,
+          "occurrences": 4,
           "path": "src/availability.ts"
         },
         {
@@ -25721,7 +25709,7 @@
           "path": "src/quantity.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
           "path": "src/reservations.ts"
         },
         {
@@ -29681,9 +29669,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:8827:createInventoryReservation",
+              "id": "src/reservations.ts:8957:createInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 221,
+              "line": 225,
               "name": "createInventoryReservation",
               "reason": "resolved-call"
             }
@@ -29692,9 +29680,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:8827:createInventoryReservation",
+            "id": "src/reservations.ts:8957:createInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 221,
+            "line": 225,
             "name": "createInventoryReservation"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -29720,9 +29708,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:8827:createInventoryReservation",
+          "id": "src/reservations.ts:8957:createInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 221,
+          "line": 225,
           "name": "createInventoryReservation"
         }
       ],
@@ -33678,9 +33666,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:8544:emptyInventoryReservationBook",
+              "id": "src/reservations.ts:8674:emptyInventoryReservationBook",
               "kind": "FunctionDeclaration",
-              "line": 213,
+              "line": 217,
               "name": "emptyInventoryReservationBook",
               "reason": "resolved-call"
             }
@@ -33689,9 +33677,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:8544:emptyInventoryReservationBook",
+            "id": "src/reservations.ts:8674:emptyInventoryReservationBook",
             "kind": "FunctionDeclaration",
-            "line": 213,
+            "line": 217,
             "name": "emptyInventoryReservationBook"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -33717,9 +33705,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:8544:emptyInventoryReservationBook",
+          "id": "src/reservations.ts:8674:emptyInventoryReservationBook",
           "kind": "FunctionDeclaration",
-          "line": 213,
+          "line": 217,
           "name": "emptyInventoryReservationBook"
         }
       ],
@@ -34090,9 +34078,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:25552:expireInventoryReservation",
+              "id": "src/reservations.ts:25613:expireInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 700,
+              "line": 695,
               "name": "expireInventoryReservation",
               "reason": "resolved-call"
             }
@@ -34101,9 +34089,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:25552:expireInventoryReservation",
+            "id": "src/reservations.ts:25613:expireInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 700,
+            "line": 695,
             "name": "expireInventoryReservation"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -34129,9 +34117,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:25552:expireInventoryReservation",
+          "id": "src/reservations.ts:25613:expireInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 700,
+          "line": 695,
           "name": "expireInventoryReservation"
         }
       ],
@@ -34365,7 +34353,7 @@
               "column": 1,
               "file": "src/read-model.ts",
               "hasBody": true,
-              "id": "src/read-model.ts:4615:findInventoryEventByOperationId",
+              "id": "src/read-model.ts:4733:findInventoryEventByOperationId",
               "kind": "FunctionDeclaration",
               "line": 101,
               "name": "findInventoryEventByOperationId",
@@ -34376,7 +34364,7 @@
             "column": 1,
             "file": "src/read-model.ts",
             "hasBody": true,
-            "id": "src/read-model.ts:4615:findInventoryEventByOperationId",
+            "id": "src/read-model.ts:4733:findInventoryEventByOperationId",
             "kind": "FunctionDeclaration",
             "line": 101,
             "name": "findInventoryEventByOperationId"
@@ -34405,7 +34393,7 @@
           "column": 1,
           "file": "src/read-model.ts",
           "hasBody": true,
-          "id": "src/read-model.ts:4615:findInventoryEventByOperationId",
+          "id": "src/read-model.ts:4733:findInventoryEventByOperationId",
           "kind": "FunctionDeclaration",
           "line": 101,
           "name": "findInventoryEventByOperationId"
@@ -34692,9 +34680,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
+              "id": "src/reservations.ts:13433:inspectInventoryReservationFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 352,
+              "line": 356,
               "name": "inspectInventoryReservationFeasibility",
               "reason": "resolved-call"
             }
@@ -34703,9 +34691,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
+            "id": "src/reservations.ts:13433:inspectInventoryReservationFeasibility",
             "kind": "FunctionDeclaration",
-            "line": 352,
+            "line": 356,
             "name": "inspectInventoryReservationFeasibility"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -34731,9 +34719,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
+          "id": "src/reservations.ts:13433:inspectInventoryReservationFeasibility",
           "kind": "FunctionDeclaration",
-          "line": 352,
+          "line": 356,
           "name": "inspectInventoryReservationFeasibility"
         }
       ],
@@ -35028,7 +35016,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:43933:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:44012:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
               "line": 1011,
               "name": "inventoryAmountForPrimaryAllocation",
@@ -35039,7 +35027,7 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:43933:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:44012:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
             "line": 1011,
             "name": "inventoryAmountForPrimaryAllocation"
@@ -35064,7 +35052,7 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:43933:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:44012:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
           "line": 1011,
           "name": "inventoryAmountForPrimaryAllocation"
@@ -35873,10 +35861,10 @@
               "column": 96,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:82074:<anonymous@1434>",
+              "id": "test/scoped-stock-planning.test.ts:87964:<anonymous@1528>",
               "kind": "ArrowFunction",
-              "line": 1434,
-              "name": "<anonymous@1434>",
+              "line": 1528,
+              "name": "<anonymous@1528>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -38181,10 +38169,10 @@
               "column": 96,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:82074:<anonymous@1434>",
+              "id": "test/scoped-stock-planning.test.ts:87964:<anonymous@1528>",
               "kind": "ArrowFunction",
-              "line": 1434,
-              "name": "<anonymous@1434>",
+              "line": 1528,
+              "name": "<anonymous@1528>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -41013,7 +41001,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:6429:planInventoryAllocation",
+              "id": "src/picking.ts:6435:planInventoryAllocation",
               "kind": "FunctionDeclaration",
               "line": 159,
               "name": "planInventoryAllocation",
@@ -41023,7 +41011,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:6967:inventoryAllocationPoolFromWorld",
+              "id": "src/picking.ts:6973:inventoryAllocationPoolFromWorld",
               "kind": "FunctionDeclaration",
               "line": 175,
               "name": "inventoryAllocationPoolFromWorld",
@@ -41033,7 +41021,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:7467:inventoryStockPoolRowsFromProjection",
+              "id": "src/picking.ts:7473:inventoryStockPoolRowsFromProjection",
               "kind": "FunctionDeclaration",
               "line": 189,
               "name": "inventoryStockPoolRowsFromProjection",
@@ -41194,9 +41182,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
+              "id": "src/reservations.ts:13433:inspectInventoryReservationFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 352,
+              "line": 356,
               "name": "inspectInventoryReservationFeasibility",
               "reason": "resolved-call"
             },
@@ -41204,9 +41192,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:38603:reservationGroupFeasibility",
+              "id": "src/reservations.ts:38703:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1061,
+              "line": 1056,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -41214,9 +41202,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:37853:reservationPositionEligible",
+              "id": "src/reservations.ts:37953:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1035,
+              "line": 1030,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -41385,9 +41373,9 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6741:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6889:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 158,
+              "line": 162,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             },
@@ -41395,9 +41383,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:17556:inventoryReservationIsActiveAt",
+              "id": "src/reservations.ts:17617:inventoryReservationIsActiveAt",
               "kind": "FunctionDeclaration",
-              "line": 469,
+              "line": 464,
               "name": "inventoryReservationIsActiveAt",
               "reason": "resolved-call"
             }
@@ -41406,9 +41394,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:17556:inventoryReservationIsActiveAt",
+            "id": "src/reservations.ts:17617:inventoryReservationIsActiveAt",
             "kind": "FunctionDeclaration",
-            "line": 469,
+            "line": 464,
             "name": "inventoryReservationIsActiveAt"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -41430,9 +41418,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:17556:inventoryReservationIsActiveAt",
+          "id": "src/reservations.ts:17617:inventoryReservationIsActiveAt",
           "kind": "FunctionDeclaration",
-          "line": 469,
+          "line": 464,
           "name": "inventoryReservationIsActiveAt"
         }
       ],
@@ -41544,9 +41532,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:15740:inventoryReservationsAt",
+              "id": "src/reservations.ts:15801:inventoryReservationsAt",
               "kind": "FunctionDeclaration",
-              "line": 422,
+              "line": 417,
               "name": "inventoryReservationsAt",
               "reason": "resolved-call"
             }
@@ -41555,9 +41543,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:15740:inventoryReservationsAt",
+            "id": "src/reservations.ts:15801:inventoryReservationsAt",
             "kind": "FunctionDeclaration",
-            "line": 422,
+            "line": 417,
             "name": "inventoryReservationsAt"
           },
           "test": "test/reservations-counts.test.ts"
@@ -41583,9 +41571,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:15740:inventoryReservationsAt",
+          "id": "src/reservations.ts:15801:inventoryReservationsAt",
           "kind": "FunctionDeclaration",
-          "line": 422,
+          "line": 417,
           "name": "inventoryReservationsAt"
         }
       ],
@@ -42519,7 +42507,7 @@
               "column": 43,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15707:<anonymous@411>",
+              "id": "test/review-hardening.test.ts:15715:<anonymous@411>",
               "kind": "ArrowFunction",
               "line": 411,
               "name": "<anonymous@411>",
@@ -42529,7 +42517,7 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15794:<anonymous@412>",
+              "id": "test/review-hardening.test.ts:15802:<anonymous@412>",
               "kind": "ArrowFunction",
               "line": 412,
               "name": "<anonymous@412>",
@@ -42539,9 +42527,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:19364:refineInventoryReservation",
+              "id": "src/reservations.ts:19425:refineInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 504,
+              "line": 499,
               "name": "refineInventoryReservation",
               "reason": "resolved-call"
             },
@@ -42968,7 +42956,7 @@
               "column": 43,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15707:<anonymous@411>",
+              "id": "test/review-hardening.test.ts:15715:<anonymous@411>",
               "kind": "ArrowFunction",
               "line": 411,
               "name": "<anonymous@411>",
@@ -42978,7 +42966,7 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15794:<anonymous@412>",
+              "id": "test/review-hardening.test.ts:15802:<anonymous@412>",
               "kind": "ArrowFunction",
               "line": 412,
               "name": "<anonymous@412>",
@@ -42988,9 +42976,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:19364:refineInventoryReservation",
+              "id": "src/reservations.ts:19425:refineInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 504,
+              "line": 499,
               "name": "refineInventoryReservation",
               "reason": "resolved-call"
             },
@@ -43942,9 +43930,9 @@
               "column": 1,
               "file": "src/read-model.ts",
               "hasBody": true,
-              "id": "src/read-model.ts:10276:listInventoryPackagingRevisions",
+              "id": "src/read-model.ts:10238:listInventoryPackagingRevisions",
               "kind": "FunctionDeclaration",
-              "line": 243,
+              "line": 241,
               "name": "listInventoryPackagingRevisions",
               "reason": "resolved-call"
             }
@@ -43953,9 +43941,9 @@
             "column": 1,
             "file": "src/read-model.ts",
             "hasBody": true,
-            "id": "src/read-model.ts:10276:listInventoryPackagingRevisions",
+            "id": "src/read-model.ts:10238:listInventoryPackagingRevisions",
             "kind": "FunctionDeclaration",
-            "line": 243,
+            "line": 241,
             "name": "listInventoryPackagingRevisions"
           },
           "test": "test/catalog-publication.test.ts"
@@ -43978,9 +43966,9 @@
           "column": 1,
           "file": "src/read-model.ts",
           "hasBody": true,
-          "id": "src/read-model.ts:10276:listInventoryPackagingRevisions",
+          "id": "src/read-model.ts:10238:listInventoryPackagingRevisions",
           "kind": "FunctionDeclaration",
-          "line": 243,
+          "line": 241,
           "name": "listInventoryPackagingRevisions"
         }
       ],
@@ -44073,7 +44061,7 @@
               "column": 43,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15707:<anonymous@411>",
+              "id": "test/review-hardening.test.ts:15715:<anonymous@411>",
               "kind": "ArrowFunction",
               "line": 411,
               "name": "<anonymous@411>",
@@ -44083,7 +44071,7 @@
               "column": 78,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:19203:<anonymous@506>",
+              "id": "test/review-hardening.test.ts:19211:<anonymous@506>",
               "kind": "ArrowFunction",
               "line": 506,
               "name": "<anonymous@506>",
@@ -44093,9 +44081,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:27921:markInventoryReservationConsumed",
+              "id": "src/reservations.ts:27982:markInventoryReservationConsumed",
               "kind": "FunctionDeclaration",
-              "line": 762,
+              "line": 757,
               "name": "markInventoryReservationConsumed",
               "reason": "resolved-call"
             }
@@ -44104,9 +44092,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:27921:markInventoryReservationConsumed",
+            "id": "src/reservations.ts:27982:markInventoryReservationConsumed",
             "kind": "FunctionDeclaration",
-            "line": 762,
+            "line": 757,
             "name": "markInventoryReservationConsumed"
           },
           "test": "test/review-hardening.test.ts"
@@ -44132,9 +44120,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:27921:markInventoryReservationConsumed",
+          "id": "src/reservations.ts:27982:markInventoryReservationConsumed",
           "kind": "FunctionDeclaration",
-          "line": 762,
+          "line": 757,
           "name": "markInventoryReservationConsumed"
         }
       ],
@@ -46480,7 +46468,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:6429:planInventoryAllocation",
+              "id": "src/picking.ts:6435:planInventoryAllocation",
               "kind": "FunctionDeclaration",
               "line": 159,
               "name": "planInventoryAllocation",
@@ -46491,7 +46479,7 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6429:planInventoryAllocation",
+            "id": "src/picking.ts:6435:planInventoryAllocation",
             "kind": "FunctionDeclaration",
             "line": 159,
             "name": "planInventoryAllocation"
@@ -46520,7 +46508,7 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6429:planInventoryAllocation",
+          "id": "src/picking.ts:6435:planInventoryAllocation",
           "kind": "FunctionDeclaration",
           "line": 159,
           "name": "planInventoryAllocation"
@@ -47298,7 +47286,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 23,
+          "occurrences": 31,
           "path": "src/availability.ts"
         },
         {
@@ -47326,7 +47314,7 @@
           "path": "src/corrections.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 7,
           "path": "src/deficits.ts"
         },
         {
@@ -47358,7 +47346,7 @@
           "path": "src/measurement-schema.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 9,
           "path": "src/measurement-totals.ts"
         },
         {
@@ -47374,7 +47362,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 5,
           "path": "src/quantity-storage.ts"
         },
         {
@@ -47390,7 +47378,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 37,
+          "occurrences": 33,
           "path": "src/reservations.ts"
         },
         {
@@ -48369,7 +48357,7 @@
               "column": 43,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15707:<anonymous@411>",
+              "id": "test/review-hardening.test.ts:15715:<anonymous@411>",
               "kind": "ArrowFunction",
               "line": 411,
               "name": "<anonymous@411>",
@@ -48379,7 +48367,7 @@
               "column": 80,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15794:<anonymous@412>",
+              "id": "test/review-hardening.test.ts:15802:<anonymous@412>",
               "kind": "ArrowFunction",
               "line": 412,
               "name": "<anonymous@412>",
@@ -48389,9 +48377,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:19364:refineInventoryReservation",
+              "id": "src/reservations.ts:19425:refineInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 504,
+              "line": 499,
               "name": "refineInventoryReservation",
               "reason": "resolved-call"
             }
@@ -48400,9 +48388,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:19364:refineInventoryReservation",
+            "id": "src/reservations.ts:19425:refineInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 504,
+            "line": 499,
             "name": "refineInventoryReservation"
           },
           "test": "test/review-hardening.test.ts"
@@ -48428,9 +48416,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:19364:refineInventoryReservation",
+          "id": "src/reservations.ts:19425:refineInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 504,
+          "line": 499,
           "name": "refineInventoryReservation"
         }
       ],
@@ -48525,9 +48513,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:24272:releaseInventoryReservation",
+              "id": "src/reservations.ts:24333:releaseInventoryReservation",
               "kind": "FunctionDeclaration",
-              "line": 660,
+              "line": 655,
               "name": "releaseInventoryReservation",
               "reason": "resolved-call"
             }
@@ -48536,9 +48524,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:24272:releaseInventoryReservation",
+            "id": "src/reservations.ts:24333:releaseInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 660,
+            "line": 655,
             "name": "releaseInventoryReservation"
           },
           "test": "test/record-key-domain.test.ts"
@@ -48564,9 +48552,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:24272:releaseInventoryReservation",
+          "id": "src/reservations.ts:24333:releaseInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 660,
+          "line": 655,
           "name": "releaseInventoryReservation"
         }
       ],
@@ -49772,9 +49760,9 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6741:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6889:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 158,
+              "line": 162,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             }
@@ -49783,9 +49771,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6741:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6889:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 158,
+            "line": 162,
             "name": "summarizeInventoryAvailability"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -49812,9 +49800,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6741:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6889:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 158,
+          "line": 162,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -50227,7 +50215,7 @@
               "column": 1,
               "file": "src/read-model.ts",
               "hasBody": true,
-              "id": "src/read-model.ts:6042:summarizeInventoryStock",
+              "id": "src/read-model.ts:6160:summarizeInventoryStock",
               "kind": "FunctionDeclaration",
               "line": 138,
               "name": "summarizeInventoryStock",
@@ -50238,7 +50226,7 @@
             "column": 1,
             "file": "src/read-model.ts",
             "hasBody": true,
-            "id": "src/read-model.ts:6042:summarizeInventoryStock",
+            "id": "src/read-model.ts:6160:summarizeInventoryStock",
             "kind": "FunctionDeclaration",
             "line": 138,
             "name": "summarizeInventoryStock"
@@ -50263,7 +50251,7 @@
           "column": 1,
           "file": "src/read-model.ts",
           "hasBody": true,
-          "id": "src/read-model.ts:6042:summarizeInventoryStock",
+          "id": "src/read-model.ts:6160:summarizeInventoryStock",
           "kind": "FunctionDeclaration",
           "line": 138,
           "name": "summarizeInventoryStock"
@@ -50749,7 +50737,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 15,
+          "occurrences": 10,
           "path": "src/availability.ts"
         },
         {
@@ -50785,7 +50773,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
           "path": "src/reservations.ts"
         },
         {
@@ -53499,10 +53487,6 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 5,
-          "path": "src/availability.ts"
-        },
-        {
           "occurrences": 2,
           "path": "src/commands.ts"
         },
@@ -53533,10 +53517,6 @@
         {
           "occurrences": 2,
           "path": "src/projection.ts"
-        },
-        {
-          "occurrences": 5,
-          "path": "src/read-model.ts"
         },
         {
           "occurrences": 2,
@@ -53683,10 +53663,6 @@
       ],
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
-        {
-          "occurrences": 6,
-          "path": "src/availability.ts"
-        },
         {
           "occurrences": 4,
           "path": "src/collections.ts"
@@ -55251,7 +55227,7 @@
       "inputMapping": "Exact decimal/unit/package inputs map directly to finite quantity or measurement tuples.",
       "internalReferences": [
         {
-          "occurrences": 5,
+          "occurrences": 4,
           "path": "src/availability.ts"
         },
         {
@@ -55295,7 +55271,7 @@
           "path": "src/quantity.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
           "path": "src/reservations.ts"
         },
         {
@@ -58222,7 +58198,7 @@
               "column": 1,
               "file": "src/read-model.ts",
               "hasBody": true,
-              "id": "src/read-model.ts:4615:findInventoryEventByOperationId",
+              "id": "src/read-model.ts:4733:findInventoryEventByOperationId",
               "kind": "FunctionDeclaration",
               "line": 101,
               "name": "findInventoryEventByOperationId",
@@ -58233,7 +58209,7 @@
             "column": 1,
             "file": "src/read-model.ts",
             "hasBody": true,
-            "id": "src/read-model.ts:4615:findInventoryEventByOperationId",
+            "id": "src/read-model.ts:4733:findInventoryEventByOperationId",
             "kind": "FunctionDeclaration",
             "line": 101,
             "name": "findInventoryEventByOperationId"
@@ -58262,7 +58238,7 @@
           "column": 1,
           "file": "src/read-model.ts",
           "hasBody": true,
-          "id": "src/read-model.ts:4615:findInventoryEventByOperationId",
+          "id": "src/read-model.ts:4733:findInventoryEventByOperationId",
           "kind": "FunctionDeclaration",
           "line": 101,
           "name": "findInventoryEventByOperationId"
@@ -58713,7 +58689,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:43933:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:44012:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
               "line": 1011,
               "name": "inventoryAmountForPrimaryAllocation",
@@ -58724,7 +58700,7 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:43933:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:44012:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
             "line": 1011,
             "name": "inventoryAmountForPrimaryAllocation"
@@ -58749,7 +58725,7 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:43933:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:44012:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
           "line": 1011,
           "name": "inventoryAmountForPrimaryAllocation"
@@ -59580,10 +59556,10 @@
               "column": 96,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:82074:<anonymous@1434>",
+              "id": "test/scoped-stock-planning.test.ts:87964:<anonymous@1528>",
               "kind": "ArrowFunction",
-              "line": 1434,
-              "name": "<anonymous@1434>",
+              "line": 1528,
+              "name": "<anonymous@1528>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -59910,10 +59886,10 @@
               "column": 96,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:82074:<anonymous@1434>",
+              "id": "test/scoped-stock-planning.test.ts:87964:<anonymous@1528>",
               "kind": "ArrowFunction",
-              "line": 1434,
-              "name": "<anonymous@1434>",
+              "line": 1528,
+              "name": "<anonymous@1528>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -61620,7 +61596,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:6429:planInventoryAllocation",
+              "id": "src/picking.ts:6435:planInventoryAllocation",
               "kind": "FunctionDeclaration",
               "line": 159,
               "name": "planInventoryAllocation",
@@ -61630,7 +61606,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:6967:inventoryAllocationPoolFromWorld",
+              "id": "src/picking.ts:6973:inventoryAllocationPoolFromWorld",
               "kind": "FunctionDeclaration",
               "line": 175,
               "name": "inventoryAllocationPoolFromWorld",
@@ -61640,7 +61616,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:7467:inventoryStockPoolRowsFromProjection",
+              "id": "src/picking.ts:7473:inventoryStockPoolRowsFromProjection",
               "kind": "FunctionDeclaration",
               "line": 189,
               "name": "inventoryStockPoolRowsFromProjection",
@@ -61801,9 +61777,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:13303:inspectInventoryReservationFeasibility",
+              "id": "src/reservations.ts:13433:inspectInventoryReservationFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 352,
+              "line": 356,
               "name": "inspectInventoryReservationFeasibility",
               "reason": "resolved-call"
             },
@@ -61811,9 +61787,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:38603:reservationGroupFeasibility",
+              "id": "src/reservations.ts:38703:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1061,
+              "line": 1056,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -61821,9 +61797,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:37853:reservationPositionEligible",
+              "id": "src/reservations.ts:37953:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1035,
+              "line": 1030,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -62474,9 +62450,9 @@
               "column": 1,
               "file": "src/read-model.ts",
               "hasBody": true,
-              "id": "src/read-model.ts:10276:listInventoryPackagingRevisions",
+              "id": "src/read-model.ts:10238:listInventoryPackagingRevisions",
               "kind": "FunctionDeclaration",
-              "line": 243,
+              "line": 241,
               "name": "listInventoryPackagingRevisions",
               "reason": "resolved-call"
             }
@@ -62485,9 +62461,9 @@
             "column": 1,
             "file": "src/read-model.ts",
             "hasBody": true,
-            "id": "src/read-model.ts:10276:listInventoryPackagingRevisions",
+            "id": "src/read-model.ts:10238:listInventoryPackagingRevisions",
             "kind": "FunctionDeclaration",
-            "line": 243,
+            "line": 241,
             "name": "listInventoryPackagingRevisions"
           },
           "test": "test/catalog-publication.test.ts"
@@ -62510,9 +62486,9 @@
           "column": 1,
           "file": "src/read-model.ts",
           "hasBody": true,
-          "id": "src/read-model.ts:10276:listInventoryPackagingRevisions",
+          "id": "src/read-model.ts:10238:listInventoryPackagingRevisions",
           "kind": "FunctionDeclaration",
-          "line": 243,
+          "line": 241,
           "name": "listInventoryPackagingRevisions"
         }
       ],
@@ -64114,7 +64090,7 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:6429:planInventoryAllocation",
+              "id": "src/picking.ts:6435:planInventoryAllocation",
               "kind": "FunctionDeclaration",
               "line": 159,
               "name": "planInventoryAllocation",
@@ -64125,7 +64101,7 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6429:planInventoryAllocation",
+            "id": "src/picking.ts:6435:planInventoryAllocation",
             "kind": "FunctionDeclaration",
             "line": 159,
             "name": "planInventoryAllocation"
@@ -64154,7 +64130,7 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6429:planInventoryAllocation",
+          "id": "src/picking.ts:6435:planInventoryAllocation",
           "kind": "FunctionDeclaration",
           "line": 159,
           "name": "planInventoryAllocation"
@@ -65057,7 +65033,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 23,
+          "occurrences": 31,
           "path": "src/availability.ts"
         },
         {
@@ -65085,7 +65061,7 @@
           "path": "src/corrections.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 7,
           "path": "src/deficits.ts"
         },
         {
@@ -65117,7 +65093,7 @@
           "path": "src/measurement-schema.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 9,
           "path": "src/measurement-totals.ts"
         },
         {
@@ -65133,7 +65109,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 5,
           "path": "src/quantity-storage.ts"
         },
         {
@@ -65149,7 +65125,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 37,
+          "occurrences": 33,
           "path": "src/reservations.ts"
         },
         {
@@ -67241,9 +67217,9 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6741:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6889:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 158,
+              "line": 162,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             }
@@ -67252,9 +67228,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6741:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6889:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 158,
+            "line": 162,
             "name": "summarizeInventoryAvailability"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -67281,9 +67257,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6741:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6889:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 158,
+          "line": 162,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -67569,7 +67545,7 @@
               "column": 1,
               "file": "src/read-model.ts",
               "hasBody": true,
-              "id": "src/read-model.ts:6042:summarizeInventoryStock",
+              "id": "src/read-model.ts:6160:summarizeInventoryStock",
               "kind": "FunctionDeclaration",
               "line": 138,
               "name": "summarizeInventoryStock",
@@ -67580,7 +67556,7 @@
             "column": 1,
             "file": "src/read-model.ts",
             "hasBody": true,
-            "id": "src/read-model.ts:6042:summarizeInventoryStock",
+            "id": "src/read-model.ts:6160:summarizeInventoryStock",
             "kind": "FunctionDeclaration",
             "line": 138,
             "name": "summarizeInventoryStock"
@@ -67605,7 +67581,7 @@
           "column": 1,
           "file": "src/read-model.ts",
           "hasBody": true,
-          "id": "src/read-model.ts:6042:summarizeInventoryStock",
+          "id": "src/read-model.ts:6160:summarizeInventoryStock",
           "kind": "FunctionDeclaration",
           "line": 138,
           "name": "summarizeInventoryStock"
@@ -68091,7 +68067,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 15,
+          "occurrences": 10,
           "path": "src/availability.ts"
         },
         {
@@ -68127,7 +68103,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 2,
           "path": "src/reservations.ts"
         },
         {
@@ -70685,7 +70661,7 @@
               "column": 43,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:15707:<anonymous@411>",
+              "id": "test/review-hardening.test.ts:15715:<anonymous@411>",
               "kind": "ArrowFunction",
               "line": 411,
               "name": "<anonymous@411>",
@@ -70695,7 +70671,7 @@
               "column": 78,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:19203:<anonymous@506>",
+              "id": "test/review-hardening.test.ts:19211:<anonymous@506>",
               "kind": "ArrowFunction",
               "line": 506,
               "name": "<anonymous@506>",
@@ -71110,7 +71086,7 @@
               "column": 62,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:58842:<anonymous@1524>",
+              "id": "test/review-hardening.test.ts:58850:<anonymous@1524>",
               "kind": "ArrowFunction",
               "line": 1524,
               "name": "<anonymous@1524>",
@@ -71120,7 +71096,7 @@
               "column": 113,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:58962:<anonymous@1525>",
+              "id": "test/review-hardening.test.ts:58970:<anonymous@1525>",
               "kind": "ArrowFunction",
               "line": 1525,
               "name": "<anonymous@1525>",
@@ -71622,7 +71598,7 @@
               "column": 62,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:58842:<anonymous@1524>",
+              "id": "test/review-hardening.test.ts:58850:<anonymous@1524>",
               "kind": "ArrowFunction",
               "line": 1524,
               "name": "<anonymous@1524>",
@@ -71632,7 +71608,7 @@
               "column": 113,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:58962:<anonymous@1525>",
+              "id": "test/review-hardening.test.ts:58970:<anonymous@1525>",
               "kind": "ArrowFunction",
               "line": 1525,
               "name": "<anonymous@1525>",
@@ -75077,7 +75053,7 @@
       "inputMapping": "Collection revision and optional scope map to frozen member identities and selector constraints.",
       "internalReferences": [
         {
-          "occurrences": 5,
+          "occurrences": 6,
           "path": "src/availability.ts"
         },
         {
@@ -77637,7 +77613,7 @@
       "inputMapping": "Pool revision, exact basis quantity, scope, method, and eligibility flags map to revision-frozen member candidates.",
       "internalReferences": [
         {
-          "occurrences": 5,
+          "occurrences": 6,
           "path": "src/availability.ts"
         },
         {
@@ -78048,10 +78024,6 @@
         {
           "occurrences": 4,
           "path": "src/projection.ts"
-        },
-        {
-          "occurrences": 1,
-          "path": "src/read-model.ts"
         }
       ],
       "invariants": [
@@ -78655,10 +78627,6 @@
         {
           "occurrences": 4,
           "path": "src/projection.ts"
-        },
-        {
-          "occurrences": 1,
-          "path": "src/read-model.ts"
         }
       ],
       "invariants": [
@@ -82435,7 +82403,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 25,
+          "occurrences": 19,
           "path": "src/read-model.ts"
         },
         {
@@ -82633,7 +82601,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 35,
+          "occurrences": 38,
           "path": "src/availability.ts"
         },
         {
@@ -82643,10 +82611,6 @@
         {
           "occurrences": 33,
           "path": "src/coordinator.ts"
-        },
-        {
-          "occurrences": 1,
-          "path": "src/deficits.ts"
         },
         {
           "occurrences": 107,
@@ -83211,7 +83175,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 5,
+          "occurrences": 6,
           "path": "src/availability.ts"
         },
         {
@@ -88304,7 +88268,7 @@
           "path": "src/projection.ts"
         },
         {
-          "occurrences": 25,
+          "occurrences": 19,
           "path": "src/read-model.ts"
         },
         {
@@ -88490,7 +88454,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 35,
+          "occurrences": 38,
           "path": "src/availability.ts"
         },
         {
@@ -88500,10 +88464,6 @@
         {
           "occurrences": 33,
           "path": "src/coordinator.ts"
-        },
-        {
-          "occurrences": 1,
-          "path": "src/deficits.ts"
         },
         {
           "occurrences": 107,
@@ -88846,7 +88806,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 5,
+          "occurrences": 6,
           "path": "src/availability.ts"
         },
         {
@@ -90967,10 +90927,6 @@
         {
           "occurrences": 4,
           "path": "src/projection.ts"
-        },
-        {
-          "occurrences": 1,
-          "path": "src/read-model.ts"
         }
       ],
       "invariants": [
@@ -94705,10 +94661,10 @@
               "column": 101,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:13226:<anonymous@240>",
+              "id": "test/scoped-stock-planning.test.ts:19116:<anonymous@334>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 334,
+              "name": "<anonymous@334>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -95597,7 +95553,7 @@
               "column": 68,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:60457:<anonymous@1558>",
+              "id": "test/review-hardening.test.ts:60465:<anonymous@1558>",
               "kind": "ArrowFunction",
               "line": 1558,
               "name": "<anonymous@1558>",
@@ -95607,7 +95563,7 @@
               "column": 74,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:62111:<anonymous@1583>",
+              "id": "test/review-hardening.test.ts:62119:<anonymous@1583>",
               "kind": "ArrowFunction",
               "line": 1583,
               "name": "<anonymous@1583>",
@@ -96109,7 +96065,7 @@
               "column": 68,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:60457:<anonymous@1558>",
+              "id": "test/review-hardening.test.ts:60465:<anonymous@1558>",
               "kind": "ArrowFunction",
               "line": 1558,
               "name": "<anonymous@1558>",
@@ -96119,7 +96075,7 @@
               "column": 74,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:62111:<anonymous@1583>",
+              "id": "test/review-hardening.test.ts:62119:<anonymous@1583>",
               "kind": "ArrowFunction",
               "line": 1583,
               "name": "<anonymous@1583>",
@@ -96293,7 +96249,7 @@
               "column": 68,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:60457:<anonymous@1558>",
+              "id": "test/review-hardening.test.ts:60465:<anonymous@1558>",
               "kind": "ArrowFunction",
               "line": 1558,
               "name": "<anonymous@1558>",
@@ -96303,7 +96259,7 @@
               "column": 74,
               "file": "test/review-hardening.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:62111:<anonymous@1583>",
+              "id": "test/review-hardening.test.ts:62119:<anonymous@1583>",
               "kind": "ArrowFunction",
               "line": 1583,
               "name": "<anonymous@1583>",
@@ -102126,5 +102082,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "a9405d2d565107a40f88370d5e14dd4199037c690097afc9c8cbf6c66d15829b"
+  "surfaceSha256": "0ead3b8cb239e2b15222024eeedb975eb9d54887a27c9b2333f0f6ee00e3244c"
 }
