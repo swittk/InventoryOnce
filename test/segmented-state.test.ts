@@ -27,6 +27,7 @@ import {
   type InventoryStockPosition,
 } from "../src/model.js";
 import { parseQuantity } from "../src/quantity.js";
+import { InventoryDeficitPolicy } from "../src/projection.js";
 
 /** Build one exact positive stock row for segmented-store tests. */
 function segmentedPosition(input: {
@@ -131,6 +132,32 @@ async function expectSegmentMatchesPublishedWorld(
 }
 
 describe("segmented inventory position store", () => {
+  it("publishes a validated age-only correction with its exact segment revision", async () => {
+    const inventory = createTestInventory();
+    const to = loosePosition("age-only", { lotId: "age-only-lot" });
+    const amount = stockAmount("1", "piece");
+    const receipt = await inventory.stock.receive({ operationId: "age-only-open", occurredAtEpochMs: time1, to, amount });
+    const position = (await inventory.read.positions({ itemId: "item-a" }))[0];
+    if (position === undefined) throw new Error("Expected the opened position.");
+    const id = inventoryStockPositionIdentity(position.key);
+    const segment = createInMemoryInventorySegmentedPositionStore({
+      revision: 1, positions: [position], positiveLayerStarts: { [id]: time1 },
+    });
+    const correction = await inventory.stock.correct({
+      operationId: "age-only-correction", occurredAtEpochMs: time2,
+      correctsEventId: receipt.event.eventId, reason: "The receipt occurred earlier.",
+      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to, amount }),
+    });
+    expect(correction.event.stockEffects).toEqual([]);
+    expect(correction.event.positiveLayerProvenanceOverrides).toEqual([{ position: position.key, startedAtEpochMs: time0 }]);
+    segment.applyStockEffects({
+      expectedRevision: 1, nextRevision: 2, event: correction.event, deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(segment.revision()).toBe(2);
+    expect(segment.position(id)).toEqual(position);
+    expect(segment.positiveLayerStart(id)).toBe(time0);
+  });
+
   it("returns a frozen reader capability without writable segment methods or stock aliases", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
@@ -798,7 +825,7 @@ describe("segmented inventory position store", () => {
       },
     });
     expect(store.positiveLayerStart(id)).toBe(time0);
-    expect(store.position(id)?.measurements.primary.quantity.amountMinor).toBe(2);
+    expect(store.position(id)?.measurements.primary.quantity).toEqual(parseQuantity("2", "piece"));
     store.applyDelta({ expectedRevision: 2, nextRevision: 3, removePositionIds: [id] });
     expect(store.positiveLayerStart(id)).toBeUndefined();
   });

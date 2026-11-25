@@ -42,6 +42,43 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("first-class physical transfer lifecycle", () => {
+  it("publishes release and transit completion while retaining an unrelated shortage", async () => {
+    const inventory = createTestInventory();
+    const selector = inventoryStockSelector("item-a", { placementNodeIds: ["A"] });
+    for (const node of ["A", "B", "C"]) {
+      await inventory.stock.receive({
+        operationId: `seed-${node}`, occurredAtEpochMs: time0, to: loosePosition(node), amount: stockAmount("1", "piece"),
+      });
+    }
+    await inventory.reservations.reserve({
+      operationId: "reserve-transfer-unrelated-a", reservationId: "hold-A", itemRevisionId: "item-a-v2",
+      selector, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+    for (const node of ["B", "C"]) {
+      await inventory.transfers.prepare({
+        operationId: `prepare-${node}`, occurredAtEpochMs: time1, transferId: node,
+        transitPlacementNodeId: "transit", destinationPlacementNodeId: "destination",
+        lines: [{ lineId: "one", from: loosePosition(node), amount: stockAmount("1", "piece") }],
+      });
+    }
+    await inventory.stock.issue({
+      operationId: "issue-claimed-a", occurredAtEpochMs: time2, from: loosePosition("A"), amount: stockAmount("1", "piece"),
+    });
+    const before = await inventory.read.reservationFeasibility();
+    expect(before.groups[0]?.shortage).toEqual(parseQuantity("1", "piece"));
+    const released = await inventory.transfers.release({
+      operationId: "release-B", occurredAtEpochMs: time2, transferId: "B",
+    });
+    expect(released.transfer.status).toBe(InventoryTransferStatus.Released);
+    await inventory.transfers.dispatch({ operationId: "dispatch-C", occurredAtEpochMs: time2, transferId: "C" });
+    await inventory.transfers.receive({ operationId: "receive-C", occurredAtEpochMs: time3, transferId: "C" });
+    for (const node of ["B", "destination"]) {
+      const rows = await inventory.read.positions(inventoryStockSelector("item-a", { placementNodeIds: [node] }));
+      expect(rows.map(({ measurements }) => measurements.primary.quantity)).toEqual([parseQuantity("1", "piece")]);
+    }
+    expect(await inventory.read.reservationFeasibility()).toEqual(before);
+  });
+
   it("never manufactures prepared stock through Record-mode deficits", async () => {
     const inventory = createInventoryOnce({
       catalog: createTabletCatalog(),

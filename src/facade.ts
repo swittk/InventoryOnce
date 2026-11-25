@@ -156,6 +156,7 @@ import {
 import {
   assertInventoryEpochMilliseconds,
   InventoryEventKind,
+  InventoryTransferLifecycleAction,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
   defineInventoryEvent,
@@ -2320,13 +2321,16 @@ async function commitInventoryTransferOperation(
     intentFingerprint,
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
-    /** Retain the claim rules for the explicit prepare/dispatch/receive workflow. */
-    plan: ({
-      world,
-    }) => ({
-      event: planEvent(world),
-      reservationProtection: InventoryReservationProtection.ProtectClaims,
-    }),
+    /** Only Prepare removes ordinary stock from the claim pool. */
+    plan: ({ world }) => {
+      const event = planEvent(world);
+      return {
+        event,
+        reservationProtection: event.transferLifecycle?.action === InventoryTransferLifecycleAction.Prepare
+          ? InventoryReservationProtection.ProtectClaims
+          : InventoryReservationProtection.RecordPhysicalTruth,
+      };
+    },
   });
   const event = result.event;
   if (event === undefined)

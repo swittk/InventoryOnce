@@ -46,6 +46,50 @@ function candidate({
 }
 
 describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
+  it.each([false, true])("returns all storable stock when a large pool cannot fill the request (predicate %s)", (predicate) => {
+    const available = parseQuantity("1", "piece");
+    const candidates = Array.from({ length: 5_001 }, (_, index) =>
+      candidate({ lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3, extra: { available } })
+    );
+    const result = allocateInventoryUpTo({
+      requested: parseQuantity("5002", "piece"),
+      candidates,
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+      ...(predicate ? {
+        /** The measured witness can accept all physically available rows. */
+        acceptAllocations: (lines: readonly { position: InventoryStockPositionKey }[]) => lines.length === candidates.length,
+      } : {}),
+    });
+    expect(result.allocations).toEqual(candidates.map(({ position }) => ({ position, quantity: available })));
+    expect(result.shortfall).toEqual(available);
+    expect(result.incrementBlockedStock).toBe(false);
+  });
+
+  it.each([true, false])("reaches a distant intact increment after an early divisible row (partial %s)", (partial) => {
+    const available = parseQuantity("250000", "piece");
+    const earlier = candidate({
+      lotId: "divisible", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+      extra: { available: parseQuantity("200000", "piece") },
+    });
+    const later = candidate({
+      lotId: "intact", receivedAtEpochMs: time1, expiresAtEpochMs: time3,
+      extra: { available, allocationIncrement: available },
+    });
+    const allocate = partial ? allocateInventoryUpTo : allocateInventory;
+    const result = allocate({
+      requested: parseQuantity("300001", "piece"),
+      candidates: [earlier, later],
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+    });
+    expect(result.allocations).toEqual([
+      { position: earlier.position, quantity: parseQuantity("50001", "piece") },
+      { position: later.position, quantity: available },
+    ]);
+    expect(result.shortfall).toEqual(parseQuantity("0", "piece"));
+  });
+
   it("orders signed epoch milliseconds numerically and expires inclusively at zero", () => {
     const instants = [10, -1, 2, -11, 0, -2];
     const fifo = allocateInventory({
@@ -401,6 +445,8 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       candidates: deepCandidates,
       method: InventoryAllocationMethod.Fifo,
       nowEpochMs: time2,
+      /** Reject the maximum-capacity witness so a real search is required. */
+      acceptAllocations: () => false,
     })).toThrow("safe search bound");
   });
 

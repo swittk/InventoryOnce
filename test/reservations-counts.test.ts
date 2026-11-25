@@ -341,8 +341,8 @@ describe("broad reservations and physical truth", () => {
     expect(await restarted.stock.issue(issue)).toEqual(recovered);
     expect(recovered.receipt.worldRevision).toBe(before.revision + 1);
     expect((await restarted.read.world()).reservations).toEqual(before.reservations);
-    expect((await restarted.read.reservationFeasibility(time2)).groups[0]?.shortage.amountMinor)
-      .toBe(1);
+    expect((await restarted.read.reservationFeasibility(time2)).groups[0]?.shortage)
+      .toEqual(parseQuantity("1", "piece"));
     await expect(restarted.stock.issue({ ...issue, amount: stockAmount("2", "piece") }))
       .rejects.toThrow("changed intent");
     expect((await restarted.read.world()).revision).toBe(before.revision + 1);

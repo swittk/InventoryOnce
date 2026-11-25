@@ -4,6 +4,14 @@ import { inventoryStockPositionIdentity } from "./model.js";
 /** Internal replay marker for corrected history that can remove a retained transfer's source age. */
 export const replayEffectiveStockAge = Symbol("replayEffectiveStockAge");
 
+/** Preserve FIFO provenance only for the final positive stock row of a correction. */
+export function assertInventoryStockAgeOverride(start: number | undefined, positive: boolean, positionId: string): void {
+  if ((start !== undefined) === positive) return;
+  throw new Error(positive
+    ? `Correction cannot remove positive-layer provenance from positive position ${positionId}.`
+    : `Correction cannot assign positive-layer provenance to non-positive position ${positionId}.`);
+}
+
 /** Capture FIFO age before a conserved movement changes source/destination positions. */
 export function captureConservedPositiveLayerStarts(
   event: InventoryCommittedEvent,

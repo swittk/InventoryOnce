@@ -251,7 +251,7 @@ describe("reservation closure through an existing shortage", () => {
       amount: stockAmount("1", "piece"),
     });
     const selector = { itemId: "item-a", placementNodeIds: ["u2"] };
-    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: { amountMinor: 2 } } } }]);
+    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: parseQuantity("2", "piece") } } }]);
     await expect(
       inventory.reservations.reserve({
         reservationId: "c3",
@@ -276,7 +276,7 @@ describe("reservation closure through an existing shortage", () => {
       from: loosePosition("u2"),
       amount: stockAmount("1", "piece"),
     });
-    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: { amountMinor: 1 } } } }]);
+    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: parseQuantity("1", "piece") } } }]);
     const after = await inventory.read.world();
     expect(after.revision).toBe(before.revision + 2);
     expect(after.reservations).toEqual(before.reservations);
@@ -298,7 +298,7 @@ describe("reservation closure through an existing shortage", () => {
         from: loosePosition(nodeId), amount: stockAmount(String(Number.MAX_SAFE_INTEGER), "piece") });
     }
     expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([{
-      reservationIds: ["intersection"], shortage: { amountMinor: 1 },
+      reservationIds: ["intersection"], shortage: parseQuantity("1", "piece"),
     }]);
   });
 

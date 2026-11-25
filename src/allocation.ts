@@ -329,7 +329,31 @@ function searchInventoryAllocations({
       increment === 1n || laterDivisor === 1n ? 1n :
       allocationModularCoefficients(increment, laterDivisor).divisor;
   }
-  if (!acceptPartial && (suffixCapacity[0] ?? 0n) < requestedMinor) return undefined;
+  const totalCapacity = suffixCapacity[0] ?? 0n;
+  if (!acceptPartial && totalCapacity < requestedMinor) return undefined;
+  if (totalCapacity <= requestedMinor) {
+    // Taking every legal unit has the smallest possible remainder without a search.
+    const remaining = requestedMinor - totalCapacity;
+    if (improveOnShortfall !== undefined && remaining >= integerAtDecimals(improveOnShortfall, decimals)) {
+      return undefined;
+    }
+    const shortfall = remaining === 0n
+      ? zeroQuantity(requested.unit, requested.decimals)
+      : inventoryAllocationQuantityIfStorable(remaining, decimals, requested.unit);
+    if (shortfall !== undefined) {
+      const wholePicks = capacityMinor.map(
+        /** Round each available balance down to its own legal increment. */
+        (capacity, index) => capacity - capacity % (incrementMinor[index] ?? 1n)
+      );
+      if (wholePicks.every(
+        /** A private working row can have more digits than a published allocation. */
+        (take) => storableQuantityScale(take, decimals) !== undefined
+      )) {
+        const allocations = materializeExactAllocations(candidates, wholePicks, decimals);
+        if (acceptAllocations === undefined || acceptAllocations(allocations)) return { allocations, shortfall };
+      }
+    }
+  }
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
     if (improveOnShortfall !== undefined) return undefined;
     throw new Error(
@@ -382,6 +406,7 @@ function searchInventoryAllocations({
     const increment = incrementMinor[index] ?? 1n;
     const maximum = capacity < remainingMinor ? capacity : remainingMinor;
     const laterCapacity = suffixCapacity[index + 1] ?? 0n;
+    const laterDivisor = suffixDivisor[index + 1] ?? 0n;
     const terminalPartial = acceptPartial && index === candidates.length - 1;
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
@@ -396,9 +421,17 @@ function searchInventoryAllocations({
         if (next === undefined) break;
         take = next;
       }
-      // Lower choices cannot make up an uncovered amount or improve the best partial witness.
-      const unfillable = remainingMinor - take - laterCapacity;
-      if (acceptPartial ? unfillable >= bestRemainingMinor : unfillable > 0n) break;
+      const pending = remainingMinor - take;
+      const laterLimit = pending < laterCapacity ? pending : laterCapacity;
+      const laterUsable = laterDivisor === 0n ? 0n : laterLimit - laterLimit % laterDivisor;
+      if (pending - laterUsable >= (acceptPartial ? bestRemainingMinor : 1n)) {
+        // Decreasing this pick only makes the gap larger until another suffix increment can fit.
+        if (laterUsable === laterCapacity) break;
+        const nextLimit = remainingMinor - laterUsable - laterDivisor;
+        if (nextLimit < 0n) break;
+        take = nextLimit - nextLimit % increment;
+        continue;
+      }
       exploredChoices += 1;
       if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
         // A diagnostic without a proven improvement must leave the accepted plan usable.

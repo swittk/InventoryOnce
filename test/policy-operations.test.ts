@@ -1125,6 +1125,6 @@ describe("native policy and reservation safety", () => {
     });
     const report = await inventory.read.reservationFeasibility(time2);
     expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
-    expect(report.groups[0]?.shortage.amountMinor).toBe(1);
+    expect(report.groups[0]?.shortage).toEqual(parseQuantity("1", "piece"));
   });
 });

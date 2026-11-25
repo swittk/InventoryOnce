@@ -788,12 +788,14 @@ export function defineInventoryEvent({
   const unwitnessed = normalizeUnwitnessedStockMovements({
     catalog, kind: event.kind, rawMovements: event.unwitnessedStockMovements, normalizedStockEffects: stockEffects,
   });
+  const ordinaryTransfer = event.kind === InventoryEventKind.Transfer && event.transferLifecycle === undefined;
   const positiveLayerProvenanceTransfers =
     normalizePositiveLayerProvenanceTransfers(
       catalog,
       event.kind,
       event.positiveLayerProvenanceTransfers ?? [],
       stockEffects,
+      ordinaryTransfer,
       unwitnessed?.witnessedEffects
     );
   const positiveLayerProvenanceOverrides =
@@ -854,7 +856,8 @@ export function defineInventoryEvent({
     lotDefinitions,
     placementNodeDefinitions,
     placementChanges,
-    traceabilityChanges
+    traceabilityChanges,
+    ordinaryTransfer
   );
   assertInventoryRevisionTransitionEvidence(
     catalog,
@@ -1359,6 +1362,7 @@ function normalizePositiveLayerProvenanceTransfers(
   kind: InventoryEventKind,
   transfers: readonly InventoryPositiveLayerProvenanceTransfer[],
   effects: readonly InventoryStockEffect[],
+  ordinaryTransfer: boolean,
   witnessedEffects?: ReadonlyMap<string, InventoryMeasurementTotals>
 ): readonly InventoryPositiveLayerProvenanceTransfer[] {
   if (
@@ -1388,6 +1392,12 @@ function normalizePositiveLayerProvenanceTransfers(
     const to = normalizeInventoryStockPositionKey(raw.to);
     const fromIdentity = inventoryStockPositionIdentity(from);
     const toIdentity = inventoryStockPositionIdentity(to);
+    if (ordinaryTransfer && (
+      from.placementNodeId === undefined || to.placementNodeId === undefined ||
+      inventoryStockPositionIdentity({ ...from, placementNodeId: to.placementNodeId }) !== toIdentity
+    )) {
+      throw new Error("Ordinary transfer FIFO routes must preserve every position dimension except direct placement.");
+    }
     if (fromIdentity === toIdentity) {
       throw new Error(
         "Inventory FIFO provenance transfer needs distinct positions."
@@ -2124,7 +2134,8 @@ function assertEventKindShape(
   lotDefinitions: readonly InventoryLotDefinition[],
   placementNodeDefinitions: readonly InventoryPlacementNodeDefinition[],
   placementChanges: readonly InventoryPlacementChange[],
-  traceabilityChanges: readonly InventoryTraceabilityRelationChange[]
+  traceabilityChanges: readonly InventoryTraceabilityRelationChange[],
+  ordinaryTransfer: boolean
 ): void {
   for (const change of traceabilityChanges) {
     if (
@@ -2242,7 +2253,7 @@ function assertEventKindShape(
   ) {
     if (effects.length < 2)
       throw new Error(`${kind} event needs at least two stock effects.`);
-    assertInternalEventConservesEachItem(effects, kind);
+    assertInternalEventConservesEachItem(effects, kind, ordinaryTransfer);
     if (kind === InventoryEventKind.Reclassification) {
       assertReclassificationPreservesPackagingBuckets(effects);
     }
@@ -2296,24 +2307,34 @@ function assertEveryPrimarySign(
   }
 }
 
-/** Require internal verbs to conserve every measurement axis inside each frozen item revision. */
+/** Conserve all axes inside each revision or each exact stock bucket for direct transfers. */
 function assertInternalEventConservesEachItem(
   effects: readonly InventoryStockEffect[],
-  kind: InventoryEventKind
+  kind: InventoryEventKind,
+  ordinaryTransfer = false
 ): void {
   /** Normalization already checked the axis units against each frozen revision. */
-  const totalByItemRevision = new Map<string, InventoryMeasurementTotals>();
+  const totalByStockBucket = new Map<string, InventoryMeasurementTotals>();
   for (const effect of effects) {
-    let totals = totalByItemRevision.get(effect.itemRevisionId);
+    if (ordinaryTransfer && effect.position.placementNodeId === undefined) {
+      throw new Error("Ordinary transfer effects must have a direct placement.");
+    }
+    // Give every direct placement the same key component without dropping other dimensions.
+    const bucket = ordinaryTransfer
+      ? inventoryStockPositionIdentity({ ...effect.position, placementNodeId: "transfer" })
+      : effect.itemRevisionId;
+    let totals = totalByStockBucket.get(bucket);
     if (totals === undefined) {
       totals = new Map();
-      totalByItemRevision.set(effect.itemRevisionId, totals);
+      totalByStockBucket.set(bucket, totals);
     }
     addInventoryMeasurementTotals(totals, effect.measurementsDelta);
   }
-  for (const [itemRevisionId, totals] of totalByItemRevision) {
+  for (const [bucket, totals] of totalByStockBucket) {
     if (!inventoryMeasurementTotalsAreZero(totals)) {
-      throw new Error(`Inventory event '${kind}' does not conserve item revision '${itemRevisionId}'.`);
+      throw new Error(ordinaryTransfer
+        ? "Ordinary transfer effects must preserve every position dimension except direct placement."
+        : `Inventory event '${kind}' does not conserve item revision '${bucket}'.`);
     }
   }
 }

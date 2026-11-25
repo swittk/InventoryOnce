@@ -409,8 +409,9 @@ describe("indexed stock planning and availability", () => {
       expiredOnHand: { primary: { quantity: report === "expired" ? max : zero } },
       exactlyAllocatedUsable: report === "held" ? max : zero,
     });
-    expect(scoped.unallocatedUsablePhysical.amountMinor).toBe(
-      report === "physical" || report === "broad" ? max.amountMinor : 0);
+    const unallocated = report === "physical" || report === "broad" ? max
+      : report === "expired" ? zero : parseQuantity("0.0", "kg");
+    expect(scoped.unallocatedUsablePhysical).toEqual(unallocated);
     expect((await inventory.read.availability(selector, time2)).revisions[0]).toMatchObject({
       ...scoped, broadRequested: report === "broad" ? max : zero,
     });
@@ -772,13 +773,14 @@ describe("indexed stock planning and availability", () => {
         : await inventory.stock.scrapByPolicy({ ...report, reason: "Physical destruction" });
       expect(result.event.unwitnessedStockMovements).toMatchObject([{
         measurements: {
-          primary: { quantity: { amountMinor: 2 } },
-          independent: [{ axisId: "weight", quantity: { amountMinor: 20 } }],
+          primary: { quantity: parseQuantity("2", "piece") },
+          independent: [{ axisId: "weight", quantity: parseQuantity("20", "kg") }],
         },
       }]);
-      expect(result.event.stockEffects.some((effect) =>
-        effect.position.lotId === "known" && effect.measurementsDelta.independent[0]?.quantity.amountMinor === -10
-      )).toBe(true);
+      const knownDebit = result.event.stockEffects.find(
+        (effect) => effect.position.lotId === "known" && effect.position.placementNodeId === "store"
+      );
+      expect(knownDebit?.measurementsDelta.independent[0]?.quantity).toEqual(parseQuantity("-10", "kg"));
     }
   );
 
@@ -1388,11 +1390,41 @@ describe("indexed stock planning and availability", () => {
     })).toThrow("exceeds its signed stock effect");
   });
 
+  it("keeps the witnessed remainder of a mixed transfer in its original owner bucket", () => {
+    const catalog = createTabletCatalog();
+    const from = loosePosition("source", { ownerId: "owner-x" });
+    /** Build each legal posting with the public kernel's exact transfer builder. */
+    const transfer = (amount: string, toPlacementNodeId: string) => createInventoryTransferManyEvent({
+      catalog, operationId: "mixed-transfer-owner", occurredAtEpochMs: time2,
+      lines: [{ from, toPlacementNodeId, amount: stockAmount(amount, "piece") }],
+    });
+    const draft = transfer("2", "witnessed");
+    const debit = draft.stockEffects.find(({ position }) => position.placementNodeId === "source");
+    const reported = transfer("1", "reported").stockEffects.find(({ position }) => position.placementNodeId === "reported");
+    const witnessed = transfer("1", "witnessed").stockEffects.find(({ position }) => position.placementNodeId === "witnessed");
+    if (debit === undefined || reported === undefined || witnessed === undefined) throw new Error("Expected all transfer effects.");
+    const unwitnessedStockMovements = [{ from: debit.position, to: reported.position, measurements: reported.measurementsDelta }];
+    const valid = {
+      ...draft, stockEffects: [debit, reported, witnessed], unwitnessedStockMovements,
+      positiveLayerProvenanceTransfers: [{ from: debit.position, to: witnessed.position }],
+    };
+    expect(defineInventoryEvent({ catalog, event: valid }).unwitnessedStockMovements).toEqual(unwitnessedStockMovements);
+    const stolen = { ...witnessed, position: { ...witnessed.position, ownerId: "owner-y" } };
+    const invalid = { ...valid, stockEffects: [debit, reported, stolen] };
+    expect(() => defineInventoryEvent({
+      catalog, event: { ...invalid, positiveLayerProvenanceTransfers: [{ from: debit.position, to: stolen.position }] },
+    })).toThrow(/transfer.*preserve.*placement/i);
+    expect(() => defineInventoryEvent({
+      catalog, event: { ...invalid, positiveLayerProvenanceTransfers: [] },
+    })).toThrow(/transfer.*preserve.*placement/i);
+  });
+
   it("records an exact transfer shortage without copying the known lot, age or line cost", async () => {
     for (const canonical of [false, true]) {
       const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : undefined);
       const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
       await receiveKnownLots(inventory);
+      const originalSource = await inventory.read.positions(selector);
       const command = {
         operationId: "record-exact-transfer", occurredAtEpochMs: time2,
         lines: [{
@@ -1454,6 +1486,7 @@ describe("indexed stock planning and availability", () => {
         replaceWith: (plans) => plans.omit(),
       });
       expect(await reopened.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })).toEqual([]);
+      expect(await reopened.read.positions(selector)).toEqual(originalSource);
       expect((await storage.readOperation(command.operationId))?.state).toBe("completed");
     }
   });
@@ -1676,7 +1709,9 @@ describe("indexed stock planning and availability", () => {
     const command = issueCommand();
     const commit = storage.commitSegmentedStockEvent.bind(storage);
     const readHead = storage.readSegmentedStockHead.bind(storage);
+    /** Rejected publication attempts from the original command. */
     let declined = 0;
+    /** Receipt from the competing invocation with the same intent. */
     let winner: Awaited<ReturnType<typeof inventory.stock.issueManyByPolicy>> | undefined;
     const planning: InventorySegmentedStockPlanningCapability = storage;
     const head = vi.spyOn(planning, "readSegmentedStockHead");
@@ -1684,6 +1719,7 @@ describe("indexed stock planning and availability", () => {
       if (plan.operationId !== command.operationId || declined === 8) return commit(plan);
       declined += 1;
       if (declined === 8) {
+        // Publish the winner as the original command reads the head after its final decline.
         head.mockImplementationOnce(async () => {
           winner = await inventory.stock.issueManyByPolicy(command);
           return readHead();
@@ -1732,7 +1768,19 @@ describe("indexed stock planning and availability", () => {
       { requestId: "first", lines: [{ position: { lotId: "old" } }] },
       { requestId: "second", lines: [{ position: { lotId: "young" } }] },
     ]);
+    const destinationSelector = inventoryStockSelector("item-a", { placementNodeIds: ["destination"] });
+    const source = await reopened.read.positions(selector);
+    const destination = await reopened.read.positions(destinationSelector);
+    expect(source).toMatchObject([
+      { key: { lotId: "young" }, measurements: { primary: { quantity: parseQuantity("1", "piece") } } },
+    ]);
+    expect(destination).toMatchObject([
+      { key: { lotId: "old" }, measurements: { primary: { quantity: parseQuantity("2", "piece") } } },
+      { key: { lotId: "young" }, measurements: { primary: { quantity: parseQuantity("1", "piece") } } },
+    ]);
     expect(await reopened.stock.transferManyByPolicy(command)).toEqual(replay);
+    expect(await reopened.read.positions(selector)).toEqual(source);
+    expect(await reopened.read.positions(destinationSelector)).toEqual(destination);
     expect(write).toHaveBeenCalledTimes(2);
     expect(readWorld).not.toHaveBeenCalled();
   });

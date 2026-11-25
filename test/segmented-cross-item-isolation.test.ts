@@ -81,14 +81,15 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
         const amounts = () => {
           const segment = storage.readPositionSegment();
           return ["a-source", "b-source", "a-destination", "b-destination"].map(
-            (nodeId) => segment.positionsByPlacement(nodeId)[0]?.measurements.primary.quantity.amountMinor
+            (nodeId) => segment.positionsByPlacement(nodeId)[0]?.measurements.primary.quantity
           );
         };
         const moved = await inventory.stock.transferMany(command);
         expect(moved.replayed).toBe(false);
-        expect(amounts()).toEqual([1, 1, 1, 1]);
+        const expected = Array.from({ length: 4 }, () => parseQuantity("1", "piece"));
+        expect(amounts()).toEqual(expected);
         expect(await inventory.stock.transferMany(command)).toEqual({ ...moved, replayed: true });
-        expect(amounts()).toEqual([1, 1, 1, 1]);
+        expect(amounts()).toEqual(expected);
         expect(readWorld).not.toHaveBeenCalled();
         expect(storage.readPositionSegment().revision()).toBe(before + 1);
       } finally {
@@ -98,7 +99,7 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
       const report = await inventory.read.reservationFeasibility();
       expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
       expect(report.groups[0]).toMatchObject({
-        reservationIds: ["claim-b"], shortage: { amountMinor: 1 },
+        reservationIds: ["claim-b"], shortage: parseQuantity("1", "piece"),
       });
     },
   );
@@ -230,7 +231,7 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
     } finally {
       readWorld.mockRestore();
     }
-    expect(indexed[0]?.measurements.primary.quantity.amountMinor).toBe(-2);
+    expect(indexed[0]?.measurements.primary.quantity).toEqual(parseQuantity("-2", "piece"));
     const world = await storage.readWorld();
     expect(Object.values(world.projection.positions)).toEqual(indexed);
   });

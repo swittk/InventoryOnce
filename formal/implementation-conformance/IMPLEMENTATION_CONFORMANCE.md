@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `0d0b420bc5940c145d1f54cf8991d5910507c834902c8ab868886abf35c6ebd9`
+Surface SHA-256: `4425c2ccc996fb1b4d249ddd43a3bf84b6c50a9112b4c8790fd7724797f36264`
 
 ## Mechanically covered surface
 
@@ -27,8 +27,8 @@ Surface SHA-256: `0d0b420bc5940c145d1f54cf8991d5910507c834902c8ab868886abf35c6eb
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
 - Public call/construct overload signatures: 632
-- Directly executed public APIs: 263
-- Public APIs exercised through tested internal call chains: 365
+- Directly executed public APIs: 264
+- Public APIs exercised through tested internal call chains: 364
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 5
@@ -70,7 +70,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | read-snapshot | 24 | PublishedHeadCAS, PlacementGraph | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
 | revision-transition | 3 | RevisionTransition, CatalogPublication, InventoryOperation, PublishedHeadCAS, ReservationScope | covered | — |
-| scrap | 5 | RecordedDeficit, InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
+| scrap | 5 | RecordedDeficit, InventoryOperation, PackagingIdentity, DualMeasure, ReservationScope, UseByReservation | covered | — |
 | stock-issue | 4 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-policy-issue | 2 | InventoryOperation, ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, RecordedDeficit, FungibilityPool | covered | — |
 | stock-policy-transfer | 2 | RecordedDeficit, ResourceDimensions, PlacementGraph, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, FungibilityPool | covered | — |

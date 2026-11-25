@@ -1,5 +1,5 @@
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge } from "./stock-age.js";
+import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -1116,28 +1116,17 @@ function applyInventoryCommittedEventInternal(
     []) {
     const identity = inventoryStockPositionIdentity(override.position);
     const position = positions[identity];
+    assertInventoryStockAgeOverride(
+      override.startedAtEpochMs,
+      position !== undefined && quantityIsPositive(position.measurements.primary.quantity),
+      identity
+    );
     if (override.startedAtEpochMs === undefined) {
-      if (
-        position !== undefined &&
-        quantityIsPositive(position.measurements.primary.quantity)
-      ) {
-        throw new Error(
-          `Correction cannot remove positive-layer provenance from positive position ${identity}.`
-        );
-      }
       deleteInventorySparseRecordValue(
         positiveLayerStartedAtEpochMsByPositionId,
         identity
       );
       continue;
-    }
-    if (
-      position === undefined ||
-      !quantityIsPositive(position.measurements.primary.quantity)
-    ) {
-      throw new Error(
-        `Correction cannot assign positive-layer provenance to non-positive position ${identity}.`
-      );
     }
     setInventorySparseRecordValue(
       positiveLayerStartedAtEpochMsByPositionId,

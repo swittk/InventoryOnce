@@ -1,6 +1,6 @@
 import type { InMemoryInventorySegmentedPlacementStore } from "./segmented-placement.js";
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
+import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit } from "./stock-age.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import type { InventoryCatalogSnapshot } from "./catalog.js";
 import { inventorySha256 } from "./digest.js";
@@ -817,6 +817,15 @@ export class InMemoryInventorySegmentedPositionStore
       } else if (positive && !this.positiveLayerStarts.has(positionId)) {
         positiveLayerStarts.set(positionId, input.event.occurredAtEpochMs);
       }
+    }
+    for (const override of input.event.positiveLayerProvenanceOverrides ?? []) {
+      const positionId = inventoryStockPositionIdentity(override.position);
+      const position = nextRows.has(positionId) ? nextRows.get(positionId) : this.positions.get(positionId);
+      const positive = position !== undefined && position.measurements.primary.quantity.amountMinor > 0;
+      assertInventoryStockAgeOverride(override.startedAtEpochMs, positive, positionId);
+      // An age-only correction belongs to the new revision even without a stock delta.
+      if (override.startedAtEpochMs === undefined) positiveLayerStarts.delete(positionId);
+      else positiveLayerStarts.set(positionId, override.startedAtEpochMs);
     }
     const removePositionIds: string[] = [];
     const upsertPositions: InventoryStockPosition[] = [];
