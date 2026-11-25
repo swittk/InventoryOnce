@@ -343,24 +343,16 @@ function searchInventoryAllocations({
     }
   }
   const requestedMinor = integerAtDecimals(requested, decimals);
+  const capacityMinor = candidates.map(
+    /** Put every candidate capacity on one exact integer scale for the bounded search. */
+    (candidate) => workingQuantityAtDecimals(candidate.available, decimals)
+  );
   const incrementMinor = candidates.map(
     /** Divisible rows use the smallest exact digit on the shared scale. */
     (candidate) =>
       ignoreIncrements || candidate.allocationIncrement === undefined
         ? 1n
         : workingQuantityAtDecimals(candidate.allocationIncrement, decimals)
-  );
-  /** Bound each row by its greatest storable legal contribution to this request. */
-  const capacityMinor = candidates.map(
-    /** A wide balance can hold more than any single published pick can take. */
-    (candidate, index) => {
-      const available = workingQuantityAtDecimals(candidate.available, decimals);
-      const limit = available < requestedMinor ? available : requestedMinor;
-      const increment = incrementMinor[index] ?? 1n;
-      const selectable = limit - limit % increment;
-      return storableQuantityScale(selectable, decimals) !== undefined
-        ? selectable : largestStorableAllocationTake({ limit: selectable, increment }) ?? 0n;
-    }
   );
   /** Capacity and common divisibility of all selectable rows at or after each index. */
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
@@ -370,8 +362,10 @@ function searchInventoryAllocations({
   /** Build the few reachable sums until the suffix needs the general capacity and divisor bounds. */
   let wholeSums: readonly bigint[] | undefined = [0n];
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
-    const selectable = capacityMinor[index] ?? 0n;
+    const capacity = capacityMinor[index] ?? 0n;
     const increment = incrementMinor[index] ?? 1n;
+    // Stock below the next whole increment cannot improve a suffix assignment.
+    const selectable = capacity - capacity % increment;
     if (wholeSums?.length === 4) suffixWholeSums[index + 1] = wholeSums;
     if (wholeSums !== undefined && selectable !== 0n) {
       wholeSums = selectable === increment && wholeSums.length < 4
@@ -400,8 +394,17 @@ function searchInventoryAllocations({
       ? zeroQuantity(requested.unit, requested.decimals)
       : inventoryAllocationQuantityIfStorable(remaining, decimals, requested.unit);
     if (shortfall !== undefined) {
-      const allocations = materializeExactAllocations(candidates, capacityMinor, decimals);
-      if (acceptAllocations === undefined || acceptAllocations(allocations)) return { allocations, shortfall };
+      const wholePicks = capacityMinor.map(
+        /** Round each available balance down to its own legal increment. */
+        (capacity, index) => capacity - capacity % (incrementMinor[index] ?? 1n)
+      );
+      if (wholePicks.every(
+        /** A private working row can have more digits than a published allocation. */
+        (take) => storableQuantityScale(take, decimals) !== undefined
+      )) {
+        const allocations = materializeExactAllocations(candidates, wholePicks, decimals);
+        if (acceptAllocations === undefined || acceptAllocations(allocations)) return { allocations, shortfall };
+      }
     }
   }
   if (totalCapacity > requestedMinor) {

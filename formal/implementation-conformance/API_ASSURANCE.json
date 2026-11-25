@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4190,
-    "compilerCallGraphEdges": 11693,
+    "compilerCallGraphCallables": 4191,
+    "compilerCallGraphEdges": 11690,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -25425,9 +25425,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:37461:compareInventoryAllocationCandidates",
+              "id": "src/allocation.ts:37549:compareInventoryAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 817,
+              "line": 820,
               "name": "compareInventoryAllocationCandidates",
               "reason": "resolved-call"
             }
@@ -25436,9 +25436,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:37461:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:37549:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 817,
+            "line": 820,
             "name": "compareInventoryAllocationCandidates"
           },
           "test": "test/allocation.test.ts"
@@ -25465,9 +25465,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:37461:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:37549:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 817,
+          "line": 820,
           "name": "compareInventoryAllocationCandidates"
         }
       ],

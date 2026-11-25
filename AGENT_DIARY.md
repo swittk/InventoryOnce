@@ -1962,3 +1962,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Exact allocation bounds each suffix using the largest legal amount each position can store. Digits in a working balance that cannot appear in a single pick do not make smaller prefixes look more promising.
 - A reported remainder carries the independent axes the report actually contains, including an explicit zero. Intact packages still derive fixed axes from their retained definition.
+
+## 2026-11-26 — allocation bounds and supported stock reports
+
+- The allocator retains its existing bounded search and checks whether quantities fit storage when evaluating picks. A synthetic working balance alone does not justify narrowing every row before searching.

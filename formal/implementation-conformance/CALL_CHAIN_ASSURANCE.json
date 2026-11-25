@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4190,
-    "edges": 11693,
+    "callables": 4191,
+    "edges": 11690,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -11960,9 +11960,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:37461:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:37549:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 817,
+          "line": 820,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -11973,9 +11973,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:37461:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:37549:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 817,
+            "line": 820,
             "name": "compareInventoryAllocationCandidates"
           },
           "witness": {
@@ -12013,9 +12013,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:37461:compareInventoryAllocationCandidates",
+                "id": "src/allocation.ts:37549:compareInventoryAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 817,
+                "line": 820,
                 "name": "compareInventoryAllocationCandidates",
                 "reason": "resolved-call"
               }
