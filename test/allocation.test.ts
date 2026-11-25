@@ -8,7 +8,7 @@ import {
   type InventoryAllocationCandidate,
   type InventoryStockPositionKey,
 } from "../src/kernel.js";
-import { allocateInventoryUpTo } from "../src/allocation.js";
+import { allocateInventoryUpTo, allocateWorkingInventory } from "../src/allocation.js";
 import { time0, time1, time2, time3 } from "./test-fixtures.js";
 
 /** Named fields for one revision-qualified allocation candidate fixture. */
@@ -238,6 +238,54 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       parseQuantity("100.000001", "kg"), parseQuantity("1.000000", "kg"),
     ]);
     expect(result.shortfall).toEqual(parseQuantity("1.999999", "kg"));
+  });
+
+  it.each([false, true])("bounds partial search by reachable increment residues with a unit row %s", (unitRow) => {
+    const requested = parseQuantity("200003", "piece");
+    const whole = parseQuantity("2", "piece");
+    const candidates = ["early", "later"].map((lotId, index) => candidate({
+      lotId, receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+      extra: { available: parseQuantity("200002", "piece"), allocationIncrement: whole },
+    }));
+    if (unitRow) candidates.push(candidate({
+      lotId: "unit", receivedAtEpochMs: time2, expiresAtEpochMs: time3,
+      extra: { available: parseQuantity("1", "piece") },
+    }));
+    const result = allocateInventoryUpTo({
+      requested, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+    });
+    expect(result.shortfall).toEqual(parseQuantity(unitRow ? "0" : "1", "piece"));
+    expect(result.allocations.map((line) => [line.position.lotId, line.quantity.amountMinor]))
+      .toEqual(unitRow ? [["early", 200002], ["unit", 1]] : [["early", 200002]]);
+  });
+
+  it.each([
+    { fraction: "0.1", whole: false, blocked: false },
+    { fraction: "0.1", whole: true, blocked: false },
+    { fraction: "1", whole: true, blocked: true },
+  ])("attributes an exact-plan failure to increments only when relaxing them helps: %o", ({ fraction, whole, blocked }) => {
+    const requested = parseQuantity(String(Number.MAX_SAFE_INTEGER), "kg");
+    const base = candidate({ lotId: "early", receivedAtEpochMs: time0, expiresAtEpochMs: time3 });
+    const tail = candidate({
+      lotId: "later", receivedAtEpochMs: time1, expiresAtEpochMs: time3,
+      extra: { available: parseQuantity(fraction, "kg") },
+    });
+    const result = allocateWorkingInventory({
+      requested,
+      candidates: [
+        {
+          ...base,
+          available: { ...requested, amountMinor: BigInt(requested.amountMinor) * 10n - 1n, decimals: 1 },
+          ...(whole ? { allocationIncrement: parseQuantity("4", "kg") } : {}),
+        },
+        tail,
+      ],
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+      // A measured constraint rejects every assignment in these capacity controls.
+      acceptAllocations: () => false,
+    });
+    expect(result).toMatchObject({ incrementBlockedStock: blocked, allocationConstraintBlockedStock: false });
   });
 
   it("skips unstoreable nonterminal picks without exhausting the choice budget", () => {

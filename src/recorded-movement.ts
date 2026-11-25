@@ -1,14 +1,19 @@
 import {
   createInventoryScrapEvent,
   createInventoryTransferEvent,
+  createInventoryTransferManyEvent,
   type InventoryCommandHeader,
   type InventoryScrapLine,
+  type InventoryTransferLine,
 } from "./commands.js";
+import { inventoryMetadataFingerprint } from "./canonical.js";
+import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
 import type { InventoryCatalog } from "./catalog.js";
 import {
   defineInventoryEvent,
   InventoryEventKind,
   type InventoryEventDraft,
+  type InventoryPositiveLayerProvenanceTransfer,
   type InventoryStockEffect,
   type InventoryUnwitnessedStockMovement,
 } from "./events.js";
@@ -46,25 +51,55 @@ interface CreateInventoryRecordedMovementInput {
   readonly kind: InventoryEventKind.Transfer | InventoryEventKind.Scrap;
   /** Exact witnessed source event if recorded stock backed part of the command. */
   readonly witnessed: InventoryEventDraft | undefined;
+  /** Individual batch witnesses whose combined posting may require extra precision. */
+  readonly witnessedTransferLines?: readonly InventoryTransferLine[];
   /** All reported portions without a witnessed lot, serial or original source age. */
   readonly unknown: readonly InventoryUnwitnessedMovementLine[];
 }
 
 /** Join witnessed picks and the remaining signed portions in one ordinary transfer or scrap. */
 export function createInventoryRecordedMovement({
-  catalog, header, kind, witnessed, unknown,
+  catalog, header, kind, witnessed, witnessedTransferLines, unknown,
 }: CreateInventoryRecordedMovementInput): InventoryEventDraft {
+  if (kind === InventoryEventKind.Transfer && header.metadata?.[inventoryReportedTransferReplayMetadataKey] !== undefined) {
+    throw new Error(`Inventory metadata key '${inventoryReportedTransferReplayMetadataKey}' is reserved for transfer replay.`);
+  }
   const effects = new Map<string, ReportedPosting>();
   let eventId = witnessed?.eventId;
   const unwitnessedStockMovements: InventoryUnwitnessedStockMovement[] = [];
+  // Individual parts are temporary. Only the final event carries the audit and batch evidence.
+  const partHeader = {
+    operationId: header.operationId,
+    occurredAtEpochMs: header.occurredAtEpochMs,
+    ...(header.reason === undefined ? {} : { reason: header.reason }),
+  };
   for (const effect of witnessed?.stockEffects ?? []) {
     addReportedPosting(effects, effect);
+  }
+  /** Deduplicate repeated witnesses while retaining complete route endpoints for FIFO. */
+  const witnessedRoutes = new Map<string, InventoryPositiveLayerProvenanceTransfer>();
+  for (const line of witnessedTransferLines ?? []) {
+    const part = createInventoryTransferManyEvent({ ...partHeader, catalog, lines: [line] });
+    eventId ??= part.eventId;
+    for (const effect of part.stockEffects) {
+      const earlier = effects.get(inventoryStockPositionIdentity(effect.position));
+      if (earlier !== undefined &&
+        inventoryMetadataFingerprint(earlier.effect.metadata) !== inventoryMetadataFingerprint(effect.metadata)) {
+        throw new Error("Transfer lines for the same exact position have conflicting effect metadata.");
+      }
+      addReportedPosting(effects, effect);
+    }
+    for (const route of part.positiveLayerProvenanceTransfers ?? []) {
+      witnessedRoutes.set(JSON.stringify([
+        inventoryStockPositionIdentity(route.from), inventoryStockPositionIdentity(route.to),
+      ]), route);
+    }
   }
   for (const line of unknown) {
     const toPlacementNodeId = line.toPlacementNodeId;
     const portion = toPlacementNodeId === undefined
-      ? createInventoryScrapEvent({ ...header, ...line, catalog })
-      : createInventoryTransferEvent({ ...header, ...line, catalog, toPlacementNodeId });
+      ? createInventoryScrapEvent({ ...partHeader, ...line, catalog })
+      : createInventoryTransferEvent({ ...partHeader, ...line, catalog, toPlacementNodeId });
     eventId ??= portion.eventId;
     let source: InventoryStockEffect | undefined;
     let destination: InventoryStockEffect | undefined;
@@ -88,7 +123,7 @@ export function createInventoryRecordedMovement({
       eventId,
       kind,
       stockEffects: Array.from(effects.values(), materializeReportedPosting),
-      positiveLayerProvenanceTransfers: witnessed?.positiveLayerProvenanceTransfers ?? [],
+      positiveLayerProvenanceTransfers: witnessed?.positiveLayerProvenanceTransfers ?? [...witnessedRoutes.values()],
       traceabilityChanges: [],
       unwitnessedStockMovements,
     },

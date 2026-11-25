@@ -146,6 +146,10 @@ it("publishes direct stock, standalone children, and embodied children at one na
   await expect(native.placement.moveContents(input)).rejects.toThrow("before composite publish");
   expect(storage.readSegmentedStockHead()).toEqual(before);
   expect(await native.read.placementAncestry("case")).toEqual(["case", "source"]);
+  expect(await native.read.placementAncestry("standalone")).toEqual(["standalone", "source"]);
+  expect(await native.read.positions({ itemId: "item-a", placementNodeIds: ["source"] }))
+    .toEqual(direct.positions);
+  expect(await native.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })).toEqual([]);
   write.mockImplementationOnce(async (plan) => {
     await publish(plan);
     throw new Error("after composite publish");

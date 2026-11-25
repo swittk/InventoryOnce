@@ -3,6 +3,8 @@ import { compareInventoryIdentityText } from "./ordering.js";
 import {
   addInventoryMeasurementTotals,
   inventoryMeasurementTotalsAreZero,
+  inventoryMeasurementTotalsCancel,
+  inventoryMeasurementTotalsFromVector,
   materializeInventoryMeasurementTotals,
   type InventoryMeasurementTotals,
 } from "./measurement-totals.js";
@@ -22,7 +24,6 @@ import {
 import {
   addInventoryMeasurements,
   assertWholeMeasurementMultiple,
-  assertInventoryMeasurementsFollowPrimarySign,
   inventoryMeasurementsAreZero,
   inventoryMeasurementsFingerprint,
   negateInventoryMeasurements,
@@ -59,7 +60,6 @@ import {
   type Quantity,
 } from "./quantity.js";
 import { convertInventoryRevisionQuantity } from "./revision-transition-math.js";
-
 /** Generic reason one committed inventory event changes or annotates resource truth. */
 export enum InventoryEventKind {
   /** Explicit adoption/opening fact for stock that existed before InventoryOnce authority. */
@@ -1247,7 +1247,7 @@ interface NormalizedUnwitnessedStockMovements {
   /** Individual reports retained for exact audit and costing. */
   readonly movements: readonly InventoryUnwitnessedStockMovement[];
   /** Validated signed witness per affected position, used to verify FIFO provenance. */
-  readonly witnessedEffects: ReadonlyMap<string, InventoryMeasurementVector>;
+  readonly witnessedEffects: ReadonlyMap<string, InventoryMeasurementTotals>;
 }
 
 /** Running subtraction of unwitnessed portions at one exact posting identity. */
@@ -1312,19 +1312,25 @@ function normalizeUnwitnessedStockMovements({
     stockById.set(inventoryStockPositionIdentity(effect.position), effect.measurementsDelta);
   }
   /** Keep the exact partition so FIFO checks use the same validated digits. */
-  const witnessedEffects = new Map<string, InventoryMeasurementVector>();
+  const witnessedEffects = new Map<string, InventoryMeasurementTotals>();
   for (const [id, portion] of effects) {
     const total = stockById.get(id);
     if (total === undefined || primarySign(total) !== portion.sign) {
       throw new Error("Unwitnessed movement is missing its signed stock effect.");
     }
     addInventoryMeasurementTotals(portion.remainder, total);
-    const witnessed = materializeInventoryMeasurementTotals(portion.remainder, total.primary.axisId);
-    assertInventoryMeasurementsFollowPrimarySign(witnessed, "Witnessed movement");
-    if (!inventoryMeasurementsAreZero(witnessed) && primarySign(witnessed) !== primarySign(total)) {
+    // Only the complete posting is stored. Its witnessed partition can require extra digits.
+    const witnessedPrimary = portion.remainder.get(total.primary.axisId)?.minor ?? 0n;
+    const witnessedDirection = witnessedPrimary * BigInt(portion.sign);
+    if (witnessedDirection < 0n) {
       throw new Error("Unwitnessed movement exceeds its signed stock effect.");
     }
-    witnessedEffects.set(id, witnessed);
+    for (const [axisId, axis] of portion.remainder) {
+      if (axis.minor !== 0n && (witnessedDirection === 0n || axis.minor * BigInt(portion.sign) < 0n)) {
+        throw new Error(`Witnessed movement axis '${axisId}' cannot contradict its primary quantity.`);
+      }
+    }
+    witnessedEffects.set(id, portion.remainder);
   }
   return { movements, witnessedEffects };
 }
@@ -1353,7 +1359,7 @@ function normalizePositiveLayerProvenanceTransfers(
   kind: InventoryEventKind,
   transfers: readonly InventoryPositiveLayerProvenanceTransfer[],
   effects: readonly InventoryStockEffect[],
-  witnessedEffects?: ReadonlyMap<string, InventoryMeasurementVector>
+  witnessedEffects?: ReadonlyMap<string, InventoryMeasurementTotals>
 ): readonly InventoryPositiveLayerProvenanceTransfer[] {
   if (
     transfers.length !== 0 &&
@@ -1416,24 +1422,22 @@ function normalizePositiveLayerProvenanceTransfers(
         "Inventory FIFO provenance transfer must reference positions changed by the same event."
       );
     }
-    const fromWitness = witnessedEffects?.get(fromIdentity) ?? fromEffect.measurementsDelta;
-    const toWitness = witnessedEffects?.get(toIdentity) ?? toEffect.measurementsDelta;
+    const fromWitness = witnessedEffects?.get(fromIdentity);
+    const toWitness = witnessedEffects?.get(toIdentity);
+    const fromPrimary = fromWitness?.get(fromItem.primaryAxis.axisId)?.minor ??
+      BigInt(fromEffect.measurementsDelta.primary.quantity.amountMinor);
+    const toPrimary = toWitness?.get(toItem.primaryAxis.axisId)?.minor ??
+      BigInt(toEffect.measurementsDelta.primary.quantity.amountMinor);
     if (
-      compareQuantity(
-        fromWitness.primary.quantity,
-        zeroQuantity(fromWitness.primary.quantity.unit)
-      ) >= 0 ||
-      compareQuantity(
-        toWitness.primary.quantity,
-        zeroQuantity(toWitness.primary.quantity.unit)
-      ) <= 0 ||
+      fromPrimary >= 0n ||
+      toPrimary <= 0n ||
       (kind !== InventoryEventKind.RevisionTransition &&
-        !inventoryMeasurementsAreZero(
-          addInventoryMeasurements(
-            fromWitness,
-            toWitness
-          )
-        ))
+        !(fromWitness === undefined && toWitness === undefined
+          ? inventoryMeasurementsAreZero(addInventoryMeasurements(fromEffect.measurementsDelta, toEffect.measurementsDelta))
+          : inventoryMeasurementTotalsCancel(
+              fromWitness ?? inventoryMeasurementTotalsFromVector(fromEffect.measurementsDelta),
+              toWitness ?? inventoryMeasurementTotalsFromVector(toEffect.measurementsDelta)
+            )))
     ) {
       throw new Error(
         "Inventory FIFO provenance transfer must pair equal negative and positive measurement vectors."

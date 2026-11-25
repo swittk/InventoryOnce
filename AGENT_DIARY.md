@@ -1924,3 +1924,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Stock summaries and canonical and scoped availability retain exact report subtotals until their returned quantities are complete. Signed, expired, held, and dimensional totals therefore give the same result for different row orders.
 - Reservation feasibility keeps deficit-adjusted capacity at full precision for the existing flow solver. Its final requested, fulfillable, and shortage quantities narrow independently when their exact digits fit.
+
+## 2026-11-25 — exact transfer replay and witnessed partitions
+
+- Exact reported transfers retain the original intent and receipt revision in the journal. Reopening a published snapshot lets a retry match that evidence before reading the consumed source.
+- Mixed transfer batches keep witnessed and unwitnessed portions in one working total until each posting is complete. FIFO validation compares the witnessed portions without storing them separately.
+- Partial allocation uses the common divisor of the remaining selectable increments to rule out unreachable amounts. A held row can still supply expiry evidence when both physical picks leave the same shortfall.

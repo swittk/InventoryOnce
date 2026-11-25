@@ -23,7 +23,7 @@ import {
   readInventoryScopedStockAvailability,
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
-import { planInventoryAllocation } from "../src/kernel.js";
+import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -1133,6 +1133,37 @@ describe("indexed stock planning and availability", () => {
       ?.measurements.primary.quantity).toEqual(parseQuantity(total, "piece"));
   });
 
+  it("combines repeated witnessed picks and an unwitnessed fraction before storing the route", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const total = parseQuantity(String(Number.MAX_SAFE_INTEGER), "piece");
+    await inventory.stock.receive({
+      operationId: "wide-witness-source", occurredAtEpochMs: time0,
+      to: loosePosition("store"), amount: stockAmount(String(total.amountMinor), "piece"),
+    });
+    const result = await inventory.stock.transferManyByPolicy({
+      operationId: "wide-witness-batch", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      requests: [
+        { requestId: "whole", selector, amount: stockAmount("9007199254740990", "piece"), method: InventoryAllocationMethod.Fifo },
+        { requestId: "fractional", selector, amount: stockAmount("0.9", "piece"), method: InventoryAllocationMethod.Fifo },
+        {
+          requestId: "missing", amount: stockAmount("0.1", "piece"), method: InventoryAllocationMethod.Fifo,
+          selector: { ...selector, lotIds: ["missing"] },
+        },
+      ],
+    });
+    expect(result.allocations.map((allocation) => [
+      allocation.lines[0]?.allocatedPrimary, allocation.deficit?.primary,
+    ])).toEqual([
+      [parseQuantity("9007199254740990", "piece"), undefined],
+      [parseQuantity("0.9", "piece"), undefined],
+      [undefined, parseQuantity("0.1", "piece")],
+    ]);
+    expect(result.event.unwitnessedStockMovements).toHaveLength(1);
+    expect(result.event.positiveLayerProvenanceTransfers).toHaveLength(1);
+    expect(result.event.stockEffects.map((effect) => effect.evidence?.transactedMeasurements.primary.quantity))
+      .toEqual([total, total]);
+  });
+
   it("retains the witnessed leg when the destination balance absorbs it", async () => {
     for (const storage of [createInMemoryInventoryDurableStorage(), createInMemoryInventoryDurableStorage({ failpoint: () => undefined })]) {
       const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
@@ -1154,6 +1185,35 @@ describe("indexed stock planning and availability", () => {
       expect(arrival.lines).toMatchObject([{ allocatedPrimary: { amountMinor: 2 }, layerStartedAtEpochMs: time2 }]);
       expect((await inventory.read.world()).projection.lastRecordSequence).toBe(4);
     }
+  });
+
+  it("validates a wide witnessed posting partition without storing it", () => {
+    const catalog = createTabletCatalog();
+    const draft = createInventoryTransferManyEvent({
+      catalog, operationId: "wide-witness", occurredAtEpochMs: time2,
+      lines: [{
+        from: loosePosition("store"), toPlacementNodeId: "destination",
+        amount: stockAmount(String(Number.MAX_SAFE_INTEGER), "piece"),
+      }],
+    });
+    const route = draft.positiveLayerProvenanceTransfers?.[0];
+    const posted = draft.stockEffects[0]?.evidence?.transactedMeasurements;
+    if (route === undefined || posted === undefined) throw new Error("Expected exact transfer evidence.");
+    const fractionalPortion = {
+      ...route,
+      measurements: { ...posted, primary: { ...posted.primary, quantity: parseQuantity("0.1", "piece") } },
+    };
+    const retained = defineInventoryEvent({
+      catalog, event: { ...draft, unwitnessedStockMovements: [fractionalPortion] },
+    });
+    expect(retained.stockEffects).toEqual(draft.stockEffects);
+    expect(retained.positiveLayerProvenanceTransfers).toEqual([route]);
+    expect(retained.unwitnessedStockMovements).toEqual([fractionalPortion]);
+    expect(() => defineInventoryEvent({
+      catalog, event: { ...draft, unwitnessedStockMovements: [
+        fractionalPortion, { ...route, measurements: posted },
+      ] },
+    })).toThrow("exceeds its signed stock effect");
   });
 
   it("records an exact transfer shortage without copying the known lot, age or line cost", async () => {
@@ -1189,7 +1249,11 @@ describe("indexed stock planning and availability", () => {
       expect(await reopened.stock.transferMany(command)).toEqual({ ...result, replayed: true });
       await expect(reopened.stock.transferMany({ ...command, reason: "changed" })).rejects.toThrow("changed intent");
       const world = await inventory.read.world();
-      const cold = createTestInventory(createInMemoryInventoryDurableStorage({ initialWorld: world }), undefined, undefined, InventoryDeficitPolicy.Record);
+      const coldStorage = createInMemoryInventoryDurableStorage({ initialWorld: world });
+      const cold = createTestInventory(coldStorage, undefined, clockAt(time3), InventoryDeficitPolicy.Record);
+      expect(await cold.stock.transferMany(command)).toEqual({ ...result, replayed: true });
+      await expect(cold.stock.transferMany({ ...command, reason: "changed" })).rejects.toThrow("changed intent");
+      expect(coldStorage.readSegmentedStockHead().worldRevision).toBe(world.revision);
       expect(await cold.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })).toEqual(
         await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })
       );
@@ -1201,6 +1265,72 @@ describe("indexed stock planning and availability", () => {
       expect(await reopened.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })).toEqual([]);
       expect((await storage.readOperation(command.operationId))?.state).toBe("completed");
     }
+  });
+
+  it("replays a serialized reported transfer after reopening the exact journal", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const serial = loosePosition("store", { serialId: "one" });
+    await inventory.stock.receive({
+      operationId: "receive-serial", occurredAtEpochMs: time0,
+      to: serial, amount: stockAmount("1", "piece"),
+    });
+    const command = {
+      operationId: "report-serial-transfer", occurredAtEpochMs: time1,
+      from: serial, toPlacementNodeId: "destination", amount: stockAmount("1", "piece"),
+    };
+    const moved = await inventory.stock.transfer(command);
+    await inventory.reservations.reserve({
+      operationId: "later-claim", reservationId: "later-claim", itemRevisionId: "item-a-v2",
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["destination"] }),
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time2,
+    });
+    const world = await inventory.read.world();
+    const storage = createInMemoryInventoryDurableStorage({ initialWorld: world });
+    const reopened = createTestInventory(storage, undefined, clockAt(time3), InventoryDeficitPolicy.Record);
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    expect(await reopened.stock.transfer(command)).toEqual({ ...moved, replayed: true });
+    await expect(reopened.stock.transfer({ ...command, toPlacementNodeId: "changed" })).rejects.toThrow("changed intent");
+    await expect(reopened.stock.transfer({ ...command, operationId: "new-empty-serial" })).rejects.toThrow("cannot claim a serial");
+    expect(storage.readSegmentedStockHead().worldRevision).toBe(world.revision);
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it.each(["transfer", "batch", "scrap"])("retains expiry evidence for a held lot during %s recording", async (kind) => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const beforeExpiry = createTestInventory(storage, undefined, clockAt(time1), InventoryDeficitPolicy.Record);
+    const amount = stockAmount("1", "piece");
+    await beforeExpiry.stock.receive({
+      operationId: "receive-expiring-held-lot", occurredAtEpochMs: time0,
+      to: loosePosition("store", { lotId: "expiring" }), amount,
+      lot: { expiresAtEpochMs: time2 },
+    });
+    await beforeExpiry.reservations.reserve({
+      operationId: "reserve-expiring", reservationId: "hold-expiring", itemRevisionId: "item-a-v2",
+      selector, requested: parseQuantity("1", "piece"), createdAtEpochMs: time0,
+    });
+    await beforeExpiry.reservations.allocateByPolicy({
+      operationId: "allocate-expiring", reservationId: "hold-expiring",
+      occurredAtEpochMs: time1, method: InventoryAllocationMethod.Fifo,
+    });
+    const inventory = createTestInventory(storage, undefined, clockAt(time3), InventoryDeficitPolicy.Record);
+    const operationId = "report-expiring-stock";
+    const before = storage.readSegmentedStockHead();
+    /** Apply the same report through each physical picking entry point. */
+    const report = (allowExpiredLots: boolean) => {
+      const request = { selector, amount, method: InventoryAllocationMethod.Fifo, allowExpiredLots };
+      const header = { operationId, occurredAtEpochMs: time2 };
+      if (kind === "batch") return inventory.stock.transferManyByPolicy({
+        ...header, toPlacementNodeId: "destination", requests: [{ ...request, requestId: "report" }],
+      });
+      if (kind === "scrap") return inventory.stock.scrapByPolicy({ ...header, ...request, reason: "Physical disposal" });
+      return inventory.stock.transferByPolicy({ ...header, ...request, toPlacementNodeId: "destination" });
+    };
+    await expect(report(false)).rejects.toThrow("excluding expired stock");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await storage.readOperation(operationId)).toBeUndefined();
+    const allowed = await report(true);
+    expect(allowed.event.stockEffects[0]?.position.lotId).toBe("expiring");
+    expect(allowed.event.unwitnessedStockMovements).toBeUndefined();
   });
 
   it("records a policy transfer and scrap shortfall through the native fence", async () => {
@@ -1421,14 +1551,21 @@ describe("indexed stock planning and availability", () => {
     const catalog = createTabletCatalog();
     const inventory = createTestInventory(storage, catalog, clockAt(time3), InventoryDeficitPolicy.Record);
     await receiveKnownLots(inventory);
-    await inventory.stock.receive({
-      operationId: "expired-cart", occurredAtEpochMs: time0,
-      to: loosePosition("cart", { lotId: "cart-lot" }), amount: stockAmount("3", "piece"),
+    await inventory.placement.define({
+      operationId: "define-expired-cart", occurredAtEpochMs: time0, nodeId: "cart",
       placementNode: { category: "opened-cart", useByEpochMs: time2 },
+    });
+    await inventory.stock.receive({
+      operationId: "expired-cart-stock", occurredAtEpochMs: time0,
+      to: loosePosition("cart-child", { lotId: "cart-lot" }), amount: stockAmount("3", "piece"),
     });
     await inventory.placement.move({
       operationId: "place-cart", occurredAtEpochMs: time1, nodeId: "cart", into: "store",
     });
+    await inventory.placement.move({
+      operationId: "put-bin-in-cart", occurredAtEpochMs: time1, nodeId: "cart-child", into: "cart",
+    });
+    expect(await inventory.read.placementAncestry("cart-child")).toEqual(["cart-child", "cart", "store"]);
     await inventory.reservations.reserve({
       operationId: "reserve-scoped", reservationId: "hold", itemRevisionId: "item-a-v2",
       selector, requested: parseQuantity("2", "piece"), createdAtEpochMs: time1,

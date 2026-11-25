@@ -1,4 +1,5 @@
 import { createInventoryRecordedMovement, type InventoryUnwitnessedMovementLine } from "./recorded-movement.js";
+import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
 import {
   inventoryScopedStockMatches,
   type InventoryScopedStockPool,
@@ -335,7 +336,6 @@ import {
 } from "./transfers.js";
 import { inventoryPositionIsExpiredAt } from "./usability.js";
 import type { InventoryWorldState } from "./world.js";
-
 /** Default wall clock used when applications do not inject one. */
 const systemInventoryClock: InventoryClock = {
   /** Return canonical current UTC time. */
@@ -4095,12 +4095,22 @@ async function commitInventoryReportedExactTransfer(
   if (internals.deficitPolicy !== InventoryDeficitPolicy.Record) {
     return commitInventoryEventDraft(owner, event);
   }
+  const intentFingerprint = inventoryEventIntentFingerprint(event);
   return commitInventoryScopedMovement({
     internals,
     operationId: event.operationId,
-    intentFingerprint: inventoryEventIntentFingerprint(event),
+    intentFingerprint,
     /** Split only the exact positive witnesses from the signed report. */
-    plan: (source) => planRecordedExactTransfer({ catalog: internals.catalog, event, readPosition: source.position }),
+    plan: async (source, _recordedAtEpochMs, nextWorldRevision) => {
+      const planned = await planRecordedExactTransfer({ catalog: internals.catalog, event, readPosition: source.position });
+      return {
+        ...planned,
+        metadata: {
+          ...planned.metadata,
+          [inventoryReportedTransferReplayMetadataKey]: { intentFingerprint, worldRevision: nextWorldRevision },
+        },
+      };
+    },
   });
 }
 
@@ -4252,8 +4262,8 @@ interface CommitInventoryScopedMovementInput {
   readonly operationId: string;
   /** Frozen command intent before any adapter await. */
   readonly intentFingerprint: string;
-  /** Plan one event from one signed stock and claim view. */
-  plan(source: InventoryPolicyStockSource, recordedAtEpochMs: number): Promise<InventoryEventDraft>;
+  /** Plan one event from one signed view and its next publication revision. */
+  plan(source: InventoryPolicyStockSource, recordedAtEpochMs: number, nextWorldRevision: number): Promise<InventoryEventDraft>;
 }
 
 /** Commit a scoped event through the existing segmented fence or canonical coordinator. */
@@ -4293,7 +4303,7 @@ async function commitInventoryScopedMovement({
             "Inventory command uses unpublished catalogue revisions; publish the retained inventory catalogue first."
           );
         }
-        event = await plan(source, recordedAtEpochMs);
+        event = await plan(source, recordedAtEpochMs, head.worldRevision + 1);
       } catch (error) {
         // The matching operation can publish before this head read, including before a catalogue update.
         const concurrent = await readScopedReplay();
@@ -4348,7 +4358,7 @@ async function commitInventoryScopedMovement({
     deficitPolicy,
     /** Plan against the coordinator's own coherent canonical snapshot. */
     plan: async ({ world, recordedAtEpochMs }) => ({
-      event: await plan(canonicalPolicyStockSource(world, recordedAtEpochMs), recordedAtEpochMs),
+      event: await plan(canonicalPolicyStockSource(world, recordedAtEpochMs), recordedAtEpochMs, world.revision + 1),
     }),
   }));
 }
@@ -4754,25 +4764,22 @@ function createPolicyBatchMovementEvent(
     if (toPlacementNodeId === undefined) {
       throw new Error("Policy transfer batch lost destination direct placement.");
     }
-    const witnessed = exactLines.length === 0 ? undefined : createInventoryTransferManyEvent({
-      catalog,
-      ...header,
-      lines: exactLines.map(
-        /** Apply the shared destination after every source allocation is frozen. */
-        (line) => ({ ...line, toPlacementNodeId })
-      ),
-    });
+    const transferLines = exactLines.map(
+      /** Apply the shared destination after every source allocation is frozen. */
+      (line) => ({ ...line, toPlacementNodeId })
+    );
     if (deficitLines.length !== 0) {
       return createInventoryRecordedMovement({
-        catalog, header, kind: InventoryEventKind.Transfer, witnessed,
+        catalog, header, kind: InventoryEventKind.Transfer, witnessed: undefined,
+        witnessedTransferLines: transferLines,
         unknown: deficitLines.map(
           /** Retain each request shortage with the same observed destination. */
           (line) => ({ ...line, toPlacementNodeId })
         ),
       });
     }
-    if (witnessed === undefined) throw new Error("Inventory policy transfer batch has no stock effects.");
-    return witnessed;
+    if (transferLines.length === 0) throw new Error("Inventory policy transfer batch has no stock effects.");
+    return createInventoryTransferManyEvent({ catalog, ...header, lines: transferLines });
   }
   throw new Error("Inventory policy batch cannot create a scrap event.");
 }
@@ -5474,6 +5481,10 @@ function planInventoryAllocationForRecording(
           compareQuantity(physical.shortfall, preferred.shortfall) < 0)) {
       selected = physical;
       residual = physicalResidual;
+    }
+    // Holds can hide expired stock in the preferred pass, even on a shortfall tie.
+    if (physical.expiredStockWasExcluded && !selected.expiredStockWasExcluded) {
+      selected = { ...selected, expiredStockWasExcluded: true };
     }
   }
   if (!measured) return selected;

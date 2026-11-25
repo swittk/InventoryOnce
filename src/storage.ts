@@ -1,4 +1,5 @@
 import { InventoryStockClaimIndex } from "./stock-claim-index.js";
+import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
 import { inventoryEffectiveUseByFromAncestry, inventoryLotAndPlacementUseBy } from "./usability.js";
 import type { InventoryScopedStockPool, InventoryScopedStockPosition } from "./stock-scope.js";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -943,9 +944,9 @@ export class InMemoryInventoryDurableStorage
     operationId: string
   ): Promise<InventoryDurableOperation | undefined> {
     const stored = this.operations.get(operationId);
-    if (stored === undefined) return undefined;
-    if (stored.value.event !== undefined) return structuredClone(stored.value);
+    if (stored?.value.event !== undefined) return structuredClone(stored.value);
     const event = this.eventJournal.eventByOperation(operationId);
+    if (stored === undefined) return retainedInventoryReportedTransferOperation(event);
     return event === undefined
       ? structuredClone(stored.value)
       : structuredClone({ ...stored.value, event });
@@ -2444,6 +2445,35 @@ export class InMemoryInventoryDurableStorage
       () => this.failpoint?.({ stage, timing, operationId })
     );
   }
+}
+
+/** Restore the exact original receipt from the journal when reopening a published world. */
+function retainedInventoryReportedTransferOperation(
+  event: InventoryCommittedEvent | undefined
+): InventoryDurableOperation | undefined {
+  if (event?.kind !== InventoryEventKind.Transfer || event.transferLifecycle !== undefined) return undefined;
+  const replay = event.metadata?.[inventoryReportedTransferReplayMetadataKey];
+  if (typeof replay !== "object" || replay === null || !("intentFingerprint" in replay) || !("worldRevision" in replay)) {
+    return undefined;
+  }
+  const { intentFingerprint, worldRevision } = replay;
+  if (typeof intentFingerprint !== "string" || typeof worldRevision !== "number") return undefined;
+  const { operationId, eventId, recordedAtEpochMs } = event;
+  return {
+    operationId,
+    intentFingerprint,
+    baseRevision: worldRevision - 1,
+    recordedAtEpochMs,
+    state: InventoryDurableOperationState.Completed,
+    receipt: { operationId, eventId, recordedAtEpochMs, worldRevision },
+    event,
+    eventWritten: true,
+    projectionWritten: true,
+    reservationsWritten: true,
+    countsWritten: true,
+    receiptWritten: true,
+    worldPublished: true,
+  };
 }
 
 /** Resolve the serialized mutation barrier after either a successful or failed adapter mutation. */

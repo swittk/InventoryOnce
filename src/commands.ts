@@ -1,4 +1,5 @@
 import { assertInventoryAmountKind } from "./stock-amount-rules.js";
+import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
 import {
   InventoryAmountKind,
   packageAmount,
@@ -58,7 +59,6 @@ import {
   type PartyId,
 } from "./model.js";
 import type { InventoryPlacementChange } from "./placement.js";
-
 /** Common immutable identity/provenance supplied to every application command. */
 export interface InventoryCommandHeader {
   /** Stable retry identity; one operation id freezes one exact intent. */
@@ -2158,6 +2158,9 @@ function movementEventDraft(
   catalogSnapshot?: InventoryCatalogSnapshot,
   placementChanges: readonly InventoryPlacementChange[] = []
 ): InventoryEventDraft {
+  if (kind === InventoryEventKind.Transfer && header.metadata?.[inventoryReportedTransferReplayMetadataKey] !== undefined) {
+    throw new Error(`Inventory metadata key '${inventoryReportedTransferReplayMetadataKey}' is reserved for transfer replay.`);
+  }
   return {
     eventId: inventoryEventIdForOperation(header.operationId),
     operationId: header.operationId,

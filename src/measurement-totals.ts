@@ -48,6 +48,26 @@ export function inventoryMeasurementTotalsAreZero(totals: InventoryMeasurementTo
   return true;
 }
 
+/** Check whether two working vectors cancel on every axis without storing either subtotal. */
+export function inventoryMeasurementTotalsCancel(
+  left: InventoryMeasurementTotals,
+  right: InventoryMeasurementTotals
+): boolean {
+  for (const [axisId, total] of left) {
+    const opposite = right.get(axisId);
+    const sum = { minor: total.minor, decimals: total.decimals };
+    if (opposite !== undefined) {
+      if (opposite.unit !== total.unit) return false;
+      addExactQuantityDigits(sum, opposite.minor, opposite.decimals);
+    }
+    if (sum.minor !== 0n) return false;
+  }
+  for (const [axisId, total] of right) {
+    if (total.minor !== 0n && !left.has(axisId)) return false;
+  }
+  return true;
+}
+
 /** Store every final axis exactly, removing trailing zeros only when required. */
 export function materializeInventoryMeasurementTotals(
   totals: InventoryMeasurementTotals,

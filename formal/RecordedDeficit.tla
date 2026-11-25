@@ -88,6 +88,8 @@ Receipt(quantity) ==
   /\ lastChangedIntentRejected' = FALSE
   /\ UNCHANGED <<unlabelledNet, intentByOperation, resultShortfallByOperation>>
 
+\* Record the physical report. Exact transfers name their source stock, and
+\* only issue shortfalls enter the dedicated deficit bucket.
 RecordMovement(op, quantity, verb, fabricate) ==
   LET available == IF verb = "exact-transfer" THEN physical
                    ELSE Available(physical, deficit, unlabelledNet)
@@ -130,6 +132,7 @@ RecordMovement(op, quantity, verb, fabricate) ==
     /\ lastReplayed' = FALSE
     /\ lastChangedIntentRejected' = FALSE
 
+\* Publish a policy movement only when recorded usable stock covers it.
 RejectMovement(op, quantity, verb) ==
   LET available == Available(physical, deficit, unlabelledNet)
       shortfall == Max(quantity - available, 0)

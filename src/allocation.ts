@@ -107,12 +107,12 @@ export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 /** Maximum recursive exact-search depth before callers must narrow the candidate set. */
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
 
-/** Pick FIFO/FEFO stock without inventing synthetic lots or hiding expiry/shortfall policy. */
+/** Pick FIFO/FEFO stock, requiring a full assignment when a whole-plan predicate is supplied. */
 export function allocateInventory(input: AllocateInventoryInput): InventoryAllocationResult {
   return allocateWorkingInventory(input);
 }
 
-/** Find the largest accepted witness, including a partial witness for measured recording. */
+/** Find the largest accepted witness, keeping the first FIFO/FEFO choice on ties. */
 export function allocateInventoryUpTo(input: AllocateWorkingInventoryInput): InventoryAllocationResult {
   return allocateInventoryCandidates(input, true);
 }
@@ -181,21 +181,15 @@ function allocateInventoryCandidates({
       candidates: eligible,
       acceptPartial: false,
     });
-    let incrementBlockedStock = false;
-    if (unconstrainedExact === undefined) {
-      /** Capacity still needed to cover the request before applying increments. */
-      const uncovered: ExactQuantityDigits = {
-        minor: BigInt(requested.amountMinor),
-        decimals: requested.decimals,
-      };
-      for (const candidate of eligible) {
-        subtractInventoryAllocationDigits(uncovered, BigInt(candidate.available.amountMinor), candidate.available.decimals);
-        if (uncovered.minor <= 0n) {
-          incrementBlockedStock = true;
-          break;
-        }
-      }
-    }
+    // Raw capacity can cover the request even when no storable split exists.
+    const incrementBlockedStock = unconstrainedExact === undefined &&
+      eligible.some(
+        /** A divisible pool cannot have an increment-caused failure. */
+        (candidate) => candidate.allocationIncrement !== undefined
+      ) &&
+      searchInventoryAllocations({
+        requested, candidates: eligible, acceptPartial: false, ignoreIncrements: true,
+      }) !== undefined;
     return {
       allocations: [],
       shortfall: requested,
@@ -292,11 +286,13 @@ interface SearchInventoryAllocationsInput {
   readonly acceptAllocations?: AllocateInventoryInput["acceptAllocations"];
   /** Whether a coherent assignment can leave part of the request unwitnessed. */
   readonly acceptPartial: boolean;
+  /** Test whether relaxing indivisible increments admits a storable split. */
+  readonly ignoreIncrements?: boolean;
 }
 
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
 function searchInventoryAllocations({
-  requested, candidates, acceptAllocations, acceptPartial,
+  requested, candidates, acceptAllocations, acceptPartial, ignoreIncrements = false,
 }: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
   let decimals = requested.decimals;
   for (const candidate of candidates) {
@@ -313,17 +309,24 @@ function searchInventoryAllocations({
   const incrementMinor = candidates.map(
     /** Divisible rows use the smallest exact digit on the shared scale. */
     (candidate) =>
-      candidate.allocationIncrement === undefined
+      ignoreIncrements || candidate.allocationIncrement === undefined
         ? 1n
         : workingQuantityAtDecimals(candidate.allocationIncrement, decimals)
   );
+  /** Capacity and common divisibility of all selectable rows at or after each index. */
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
+  const suffixDivisor: bigint[] = new Array(candidates.length + 1).fill(0n);
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
     const capacity = capacityMinor[index] ?? 0n;
     const increment = incrementMinor[index] ?? 1n;
     // Stock below the next whole increment cannot improve a suffix assignment.
-    suffixCapacity[index] =
-      (suffixCapacity[index + 1] ?? 0n) + capacity - capacity % increment;
+    const selectable = capacity - capacity % increment;
+    suffixCapacity[index] = (suffixCapacity[index + 1] ?? 0n) + selectable;
+    const laterDivisor = suffixDivisor[index + 1] ?? 0n;
+    suffixDivisor[index] = selectable === 0n ? laterDivisor :
+      laterDivisor === 0n ? increment :
+      increment === 1n || laterDivisor === 1n ? 1n :
+      allocationModularCoefficients(increment, laterDivisor).divisor;
   }
   if (!acceptPartial && (suffixCapacity[0] ?? 0n) < requestedMinor) return undefined;
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
@@ -358,7 +361,11 @@ function searchInventoryAllocations({
       return complete;
     }
     const capacityFromHere = suffixCapacity[index] ?? 0n;
-    if (acceptPartial ? remainingMinor - capacityFromHere >= bestRemainingMinor : capacityFromHere < remainingMinor) {
+    const divisorFromHere = suffixDivisor[index] ?? 0n;
+    const unavoidableRemainder = divisorFromHere === 0n ? remainingMinor : remainingMinor % divisorFromHere;
+    const capacityRemainder = remainingMinor - capacityFromHere;
+    const minimumRemainder = capacityRemainder > unavoidableRemainder ? capacityRemainder : unavoidableRemainder;
+    if (acceptPartial ? minimumRemainder >= bestRemainingMinor : minimumRemainder > 0n) {
       return false;
     }
     const state = `${index}:${remainingMinor}`;
@@ -393,6 +400,7 @@ function searchInventoryAllocations({
       }
       chosenMinor[index] = take;
       if (findExactSuffix(index + 1, remainingMinor - take)) return true;
+      if (acceptPartial && bestRemainingMinor <= minimumRemainder) break;
       if (take === 0n) break;
       take -= increment;
     }

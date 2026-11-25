@@ -68851,7 +68851,7 @@
   "surfaceDiagnostics": {
     "maximumTypeDepth": 12,
     "recursiveTypeReferences": [
-      "InventoryEventDraft|src/events.ts|17637|04849f27e95c",
+      "InventoryEventDraft|src/events.ts|17664|04849f27e95c",
       "InventoryIntentFingerprintValue|src/canonical.ts|81|409e33b74f02",
       "InventoryMetadataValue|src/model.ts|1577|5d09d8b2fba1",
       "external:696f4aebb78e",
@@ -68859,5 +68859,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "0ead3b8cb239e2b15222024eeedb975eb9d54887a27c9b2333f0f6ee00e3244c"
+  "surfaceSha256": "84d05b51d9641e2e876978ed51693b26356b8c95abef9595a7321857eac65cb2"
 }
