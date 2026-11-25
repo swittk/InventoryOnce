@@ -43,7 +43,6 @@ import {
   type InventoryWorkingQuantity,
 } from "./quantity-storage.js";
 import {
-  inventoryScopedStockMatches,
   type InventoryScopedStockPool,
 } from "./stock-scope.js";
 import {
@@ -350,11 +349,13 @@ export function summarizeInventoryPhysicalAvailability({
   const positions: InventoryStockPosition[] = [];
   /** Presence and expiry evidence for every exact row in the pool. */
   const useBy = new Map<string, number | undefined>();
+  // The signed pool retains the report's subtree constraint.
+  const { withinPlacementNodeIds: _withinPlacementNodeIds, ...stockSelector } = selector;
   for (const row of pool.positions) {
     const { position } = row;
     poolPositions.push(position);
     useBy.set(inventoryStockPositionIdentity(position.key), row.effectiveUseByEpochMs);
-    if (inventoryScopedStockMatches(position.key, selector, row.ancestry)) positions.push(position);
+    if (inventoryStockPositionMatchesNormalizedSelector(position.key, stockSelector)) positions.push(position);
   }
   const exactHolds = indexScopedAvailabilityHolds(pool, useBy, item, reservationAxis.unit, atEpochMs);
   const pendingPositions: MutableInventoryPositionAvailability[] = [];

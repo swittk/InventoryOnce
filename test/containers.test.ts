@@ -138,7 +138,10 @@ it("publishes direct stock, standalone children, and embodied children at one na
   });
   expect(direct.positions).toHaveLength(2);
   expect(direct.children).toMatchObject([{ nodeId: "case", embodiedPosition: { key: { serialId: "case" } } }, { nodeId: "standalone" }]);
-  const input = { operationId: "empty-composite", occurredAtEpochMs: time2, nodeId: "source", into: "destination" };
+  const metadata = { inventoryOnceReportedTransferReplay: "placement audit reference" };
+  const input = {
+    operationId: "empty-composite", occurredAtEpochMs: time2, nodeId: "source", into: "destination", metadata,
+  };
   await expect(native.placement.moveContents({ ...input, into: "case" })).rejects.toThrow("descendants");
   const publish = storage.commitSegmentedStockEvent.bind(storage);
   const write = vi.spyOn(storage, "commitSegmentedStockEvent");
@@ -157,6 +160,7 @@ it("publishes direct stock, standalone children, and embodied children at one na
   await expect(native.placement.moveContents(input)).rejects.toThrow("after composite publish");
   const result = await createTestInventory(storage, catalog).placement.moveContents(input);
   expect(result).toEqual({ ...await canonical.placement.moveContents(input), replayed: true });
+  expect(result.event.metadata).toEqual(metadata);
   expect(result.receipt.worldRevision).toBe(before.worldRevision + 1);
   expect(await native.read.placementAncestry("case")).toEqual(["case", "destination"]);
   expect(await native.read.placementAncestry("standalone")).toEqual(["standalone", "destination"]);

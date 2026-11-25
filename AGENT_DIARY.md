@@ -1952,3 +1952,8 @@ The R105 portable-current-input authority and final publication both continue to
 - The allocator skips gaps between reachable sums when the suffix contains two whole-only rows. Fungibility converts legal member increments first and keeps any remainder in the physical stock row.
 - Exact transfers treat absent optional measurements as zero. A tie between preferred and physical witnesses retains a proven split requirement. A mixed posting carries effect metadata only when the metadata describes the entire quantity.
 - Canonical and native stock publication share the one-primary-resource rule for positive serial positions. Native contents moves check the final rows before publishing either stock or placement changes.
+
+## 2026-11-26 — retained transfer evidence and placement paths
+
+- A reported transfer keeps normalized postings for fully witnessed routes alongside independently recorded remainders. A contents move puts its audit metadata on the placement event even when stock postings are built using a transfer.
+- The position writer checks the revision before comparing stock effects against current rows. Signed stock pools capture shared parent links and use-by cutoffs once. Allocation and availability reuse the pool's subtree restriction, and an explicit ancestry read still describes the captured revision.

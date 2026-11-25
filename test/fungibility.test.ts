@@ -1093,10 +1093,12 @@ describe("derived pool summaries and exact member movements", () => {
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("0", "kg") }),
     ]));
     const physical = await inventory.fungibility.transfer({ ...command, operationId: "move-held-member" });
-    expect(physical.event.stockEffects.map((effect) => effect.measurementsDelta.primary.quantity))
-      .toEqual([parseQuantity("4", "piece"), parseQuantity("-4", "piece")]);
-    expect(physical.event.stockEffects.map((effect) => effect.measurementsDelta.independent[0]?.quantity))
-      .toEqual([parseQuantity("8", "kg"), parseQuantity("-8", "kg")]);
+    expect(physical.event.stockEffects.map((effect) => [
+      effect.position.placementNodeId, effect.measurementsDelta.primary.quantity, effect.measurementsDelta.independent[0]?.quantity,
+    ])).toEqual([
+      ["room", parseQuantity("4", "piece"), parseQuantity("8", "kg")],
+      ["store", parseQuantity("-4", "piece"), parseQuantity("-8", "kg")],
+    ]);
     expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual(expect.arrayContaining([
       expect.objectContaining({ reservationIds: ["outside-pool"], shortage: parseQuantity("1", "piece") }),
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("8", "kg") }),

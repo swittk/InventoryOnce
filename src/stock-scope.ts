@@ -1,6 +1,10 @@
+import { assertInventoryEpochMilliseconds } from "./events.js";
 import { compareInventoryIdentityText } from "./ordering.js";
-import type { InventoryStockPosition, InventoryStockPositionKey } from "./model.js";
+import { inventoryLotIdentity, type InventoryStockPosition, type InventoryStockPositionKey } from "./model.js";
+import type { InventoryProjectionState } from "./projection.js";
 import type { InventoryReservation } from "./reservations.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
+import { inventoryLotAndPlacementUseBy } from "./usability.js";
 import {
   inventoryStockPositionMatchesNormalizedSelector,
   type InventoryStockSelector,
@@ -24,6 +28,88 @@ export interface InventoryScopedStockPool {
   readonly positions: readonly InventoryScopedStockPosition[];
   /** Claim states at the requested time, including exact holds on returned positions. */
   readonly reservations: readonly InventoryReservation[];
+}
+
+/** One captured placement path node shared by all stock below it. */
+interface StockPoolPlacementPath {
+  /** Identity of this placement in the retained path. */
+  readonly nodeId: string;
+  /** The shared remainder of the path toward the root. */
+  readonly parent: StockPoolPlacementPath | undefined;
+  /** Earliest placement use-by, if any. */
+  readonly useByEpochMs: number | undefined;
+}
+
+/** Create pool rows that share captured parent paths and inherited expiry evidence. */
+export function inventoryStockPoolRowReader(
+  metadata: Pick<InventoryProjectionState, "lots" | "placementNodes">,
+  parentNodeId: (nodeId: string) => string | undefined,
+): (position: InventoryStockPosition, layerStartedAtEpochMs: number | undefined) => InventoryScopedStockPosition {
+  /** Capture each related direct edge and its inherited cutoff once per read. */
+  const byNode = new Map<string, StockPoolPlacementPath>();
+  /** Build one stock row using path and expiry evidence shared with the rest of the pool. */
+  function readRow(
+    position: InventoryStockPosition,
+    layerStartedAtEpochMs: number | undefined,
+  ): InventoryScopedStockPosition {
+    const { placementNodeId, lotId, itemId } = position.key;
+    /** New ancestors are filled from the first retained parent back toward this row. */
+    const missing: string[] = [];
+    /** The retained parent path, ending at the row's direct node once filled. */
+    let placement: StockPoolPlacementPath | undefined;
+    let nodeId = placementNodeId;
+    while (nodeId !== undefined) {
+      placement = byNode.get(nodeId);
+      if (placement !== undefined) break;
+      missing.push(nodeId);
+      nodeId = parentNodeId(nodeId);
+    }
+    missing.reverse();
+    for (const id of missing) {
+      const directUseBy = inventorySparseRecordValue(metadata.placementNodes, id)?.definition.useByEpochMs;
+      let useByEpochMs = placement?.useByEpochMs;
+      if (directUseBy !== undefined) {
+        assertInventoryEpochMilliseconds(directUseBy, "placement-node useByEpochMs");
+        if (useByEpochMs === undefined || directUseBy < useByEpochMs) useByEpochMs = directUseBy;
+      }
+      placement = {
+        /** Direct node represented by this link. */
+        nodeId: id,
+        /** Previously captured path above this link. */
+        parent: placement,
+        /** Earliest cutoff from this link through the root. */
+        useByEpochMs,
+      };
+      byNode.set(id, placement);
+    }
+    const lotExpires = lotId === undefined
+      ? undefined
+      : inventorySparseRecordValue(metadata.lots, inventoryLotIdentity(itemId, lotId))?.definition.expiresAtEpochMs;
+    const effectiveUseByEpochMs = inventoryLotAndPlacementUseBy(lotExpires, placement?.useByEpochMs);
+    return stockPoolRow(position, placement, layerStartedAtEpochMs, effectiveUseByEpochMs);
+  }
+  return readRow;
+}
+
+/** Construct one row whose ancestry holds only its captured path. */
+function stockPoolRow(
+  position: InventoryStockPosition,
+  placement: StockPoolPlacementPath | undefined,
+  layerStartedAtEpochMs: number | undefined,
+  effectiveUseByEpochMs: number | undefined,
+): InventoryScopedStockPosition {
+  return {
+    /** Published signed stock row. */
+    position,
+    /** Materialize the ancestry array only on request from the captured path. */
+    get ancestry(): readonly string[] {
+      const ancestry: string[] = [];
+      for (let current = placement; current !== undefined; current = current.parent) ancestry.push(current.nodeId);
+      return ancestry;
+    },
+    ...(layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs }),
+    ...(effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs }),
+  };
 }
 
 /** Apply a normalized stock selector with this position's real ancestry. */

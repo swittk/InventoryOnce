@@ -274,7 +274,7 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       nowEpochMs: time1,
       acceptAllocations: () => true,
     });
-    expect(result.allocations[0]?.quantity).toEqual(parseQuantity(picked, "piece"));
+    expect(result.allocations).toMatchObject([{ position: { lotId: "partial" }, quantity: parseQuantity(picked, "piece") }]);
     expect(result.shortfall).toEqual(parseQuantity(missing, "piece"));
     expect(result.incrementBlockedStock).toBe(blocked);
   });

@@ -1,7 +1,6 @@
 import { InventoryStockClaimIndex } from "./stock-claim-index.js";
 import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
-import { inventoryEffectiveUseByFromAncestry, inventoryLotAndPlacementUseBy } from "./usability.js";
-import type { InventoryScopedStockPool, InventoryScopedStockPosition } from "./stock-scope.js";
+import { inventoryStockPoolRowReader, type InventoryScopedStockPool, type InventoryScopedStockPosition } from "./stock-scope.js";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
@@ -61,7 +60,7 @@ import {
   type InventorySegmentedPlacementResult,
 } from "./segmented-placement.js";
 import { createInventoryPlacementEvent, type InventoryCommandHeader } from "./commands.js";
-import { inventoryLotIdentity, inventorySerialIdentity, inventoryStockPositionIdentity, type InventoryStockPosition } from "./model.js";
+import { inventorySerialIdentity, inventoryStockPositionIdentity, type InventoryStockPosition } from "./model.js";
 import type { InventoryPlacementChange } from "./placement.js";
 import type { InventoryStockSelector } from "./selectors.js";
 import { InventoryCountStatus } from "./counts.js";
@@ -618,14 +617,6 @@ export interface InventorySegmentedDirectChild {
   readonly embodiedPosition?: InventoryStockPosition;
 }
 
-/** Shared placement facts for a signed stock pool at one published revision. */
-interface InventoryStockPoolPlacementFacts {
-  /** Direct placement and its ancestors at the published revision. */
-  readonly ancestry: readonly string[];
-  /** Earliest validated placement use-by, if any. */
-  readonly useByEpochMs: number | undefined;
-}
-
 /** Indexed stock planning reads behind the existing native stock publication fence. */
 export interface InventorySegmentedStockPlanningCapability
   extends InventorySegmentedStockEventCommitCapability,
@@ -634,7 +625,7 @@ export interface InventorySegmentedStockPlanningCapability
   /** Read the latest published fence. Callers confirm it after multi-read planning. */
   readSegmentedStockHead(): InventorySegmentedResult<InventorySegmentedStockHead>;
   /**
-   * Read current pool rows and their real claim, ancestry, age and expiry evidence together.
+   * Read signed rows matching the pool selector and their claim, ancestry, age and expiry evidence.
    * Include all exact holds on these rows and enough broad evidence to exclude one own claim.
    */
   readSegmentedStockPool(input: ReadInventorySegmentedStockPoolInput): InventorySegmentedResult<InventoryScopedStockPool>;
@@ -856,35 +847,14 @@ export class InMemoryInventoryDurableStorage
     const positions = this.positionSegment.queryPositions(input.selector, this.placementSegment) ?? [];
     const rows: InventoryScopedStockPosition[] = [];
     // Metadata-only changes publish canonically, so these retained facts are already current.
-    const { lots, placementNodes } = this.world.projection;
-    /** Shared ancestry and validated placement cutoff for all lots at a direct node. */
-    const placementFacts = new Map<string, InventoryStockPoolPlacementFacts>();
+    const readRow = inventoryStockPoolRowReader(
+      this.world.projection,
+      /** Capture the direct links at the same published fence as the rows. */
+      (nodeId) => this.placementSegment.parentNodeId(nodeId),
+    );
     for (const position of positions) {
-      const { placementNodeId, lotId, itemId } = position.key;
-      let placement = placementNodeId === undefined ? undefined : placementFacts.get(placementNodeId);
-      if (placementNodeId !== undefined && placement === undefined) {
-        const ancestry = this.placementSegment.ancestry(placementNodeId);
-        placement = {
-          ancestry,
-          useByEpochMs: inventoryEffectiveUseByFromAncestry(
-            undefined, ancestry,
-            /** Read the current policy of each exact ancestor from the published metadata masters. */
-            (nodeId) => inventorySparseRecordValue(placementNodes, nodeId)?.definition.useByEpochMs
-          ),
-        };
-        placementFacts.set(placementNodeId, placement);
-      }
-      const lotExpires = lotId === undefined
-        ? undefined
-        : inventorySparseRecordValue(lots, inventoryLotIdentity(itemId, lotId))?.definition.expiresAtEpochMs;
-      const effectiveUseByEpochMs = inventoryLotAndPlacementUseBy(lotExpires, placement?.useByEpochMs);
       const layerStartedAtEpochMs = this.positionSegment.positiveLayerStart(inventoryStockPositionIdentity(position.key));
-      rows.push({
-        position,
-        ancestry: placement?.ancestry ?? [],
-        ...(layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs }),
-        ...(effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs }),
-      });
+      rows.push(readRow(position, layerStartedAtEpochMs));
     }
     return {
       positions: rows,

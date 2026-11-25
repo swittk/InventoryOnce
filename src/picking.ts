@@ -42,7 +42,6 @@ import {
   type ItemRevisionId,
 } from "./model.js";
 import { findInventoryPositions, type InventoryProjectionState } from "./projection.js";
-import { inventoryPlacementAncestry } from "./placement.js";
 import {
   addExactQuantityDigits,
   compareWorkingQuantities,
@@ -52,7 +51,7 @@ import {
   type InventoryWorkingQuantity,
 } from "./quantity-storage.js";
 import {
-  inventoryScopedStockMatches,
+  inventoryStockPoolRowReader,
   type InventoryScopedStockPool,
   type InventoryScopedStockPosition,
 } from "./stock-scope.js";
@@ -73,11 +72,12 @@ import {
 } from "./reservations.js";
 import {
   InventoryOptionalIdentityConstraintKind,
+  inventoryStockPositionMatchesNormalizedSelector,
   normalizeInventoryStockSelector,
   type InventoryOptionalIdentityConstraint,
   type InventoryStockSelector,
 } from "./selectors.js";
-import { inventoryPositionEffectiveUseByEpochMs } from "./usability.js";
+import { inventorySparseRecordValue } from "./sparse-record.js";
 import type { InventoryWorldState } from "./world.js";
 
 /** One generic policy request that may be previewed or committed by issue/transfer/scrap helpers. */
@@ -191,19 +191,16 @@ export function inventoryStockPoolRowsFromProjection(
   selector: InventoryStockSelector
 ): readonly InventoryScopedStockPosition[] {
   const rows: InventoryScopedStockPosition[] = [];
+  const readRow = inventoryStockPoolRowReader(
+    projection,
+    /** Capture the projection's direct parent without walking its full ancestry per row. */
+    (nodeId) => inventorySparseRecordValue(projection.placement.relationByNodeId, nodeId)?.parentNodeId,
+  );
   for (const position of findInventoryPositions(projection, selector)) {
     const layerStartedAtEpochMs = projection.positiveLayerStartedAtEpochMsByPositionId[
       inventoryStockPositionIdentity(position.key)
     ];
-    const effectiveUseByEpochMs = inventoryPositionEffectiveUseByEpochMs(projection, position.key);
-    rows.push({
-      position,
-      ancestry: position.key.placementNodeId === undefined
-        ? []
-        : inventoryPlacementAncestry(projection.placement, position.key.placementNodeId),
-      ...(layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs }),
-      ...(effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs }),
-    });
+    rows.push(readRow(position, layerStartedAtEpochMs));
   }
   return rows;
 }
@@ -233,7 +230,7 @@ export interface InventoryPolicyWorkingPosition {
 }
 
 /** Published policy evidence with either a published or an unpublished balance. */
-export interface InventoryPolicyWorkingRow extends Omit<InventoryScopedStockPosition, "position"> {
+export interface InventoryPolicyWorkingRow extends Omit<InventoryScopedStockPosition, "position" | "ancestry"> {
   /** Current exact stock row at the current point in the ordered batch. */
   readonly position: InventoryStockPosition | InventoryPolicyWorkingPosition;
 }
@@ -621,7 +618,7 @@ interface DeficitAdjustedPolicyAllocationCandidates {
 
 /** Inputs for reducing positive policy candidates by signed recorded deficit. */
 interface ApplyPolicyAllocationDeficitBurdenInput {
-  /** All signed rows in the affected pools and their ancestry. */
+  /** All signed rows already admitted to the affected placement pools. */
   readonly rowsById: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** Exact caller selector applied after the direct-placement pool pays its deficit once. */
   readonly selector: InventoryStockSelector;
@@ -652,12 +649,14 @@ function applyPolicyAllocationDeficitBurden({
   poolCandidates,
 }: ApplyPolicyAllocationDeficitBurdenInput): DeficitAdjustedPolicyAllocationCandidates {
   // A selector can narrow by lot or owner only after the entire pool bears its deficit.
+  // The pool query already applied the same subtree predicate to every row.
+  const { withinPlacementNodeIds: _withinPlacementNodeIds, ...stockSelector } = selector;
   const selectedIds = new Set<string>();
   const deficits: InventorySignedDeficitRow[] = [];
   for (const [positionId, row] of rowsById) {
     const signed = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
     if (signed.amountMinor < 0n) deficits.push({ position: row.position.key, signed });
-    if (inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) {
+    if (inventoryStockPositionMatchesNormalizedSelector(row.position.key, stockSelector)) {
       selectedIds.add(positionId);
     }
   }

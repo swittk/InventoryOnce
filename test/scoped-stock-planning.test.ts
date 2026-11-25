@@ -25,6 +25,7 @@ import {
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
 import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
+import { InMemoryInventorySegmentedPlacementStore } from "../src/segmented-placement.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -1210,6 +1211,40 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.stock.transferMany(command)).toEqual({ ...result, replayed: true });
   });
 
+  it("preserves explicit zero measurements on witnessed routes in a mixed transfer", async () => {
+    const base = measuredItemCatalog("pieces").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base,
+      independentAxes: base.independentAxes.map((axis) => ({ ...axis, requirement: InventoryMeasurementRequirement.Optional })),
+    });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const from = { itemId: item.itemId, placementNodeId: "store" };
+    const one = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "mixed-zero-receive", occurredAtEpochMs: time0, to: from, amount: one });
+    const command = {
+      operationId: "mixed-zero-transfer", occurredAtEpochMs: time2,
+      lines: [
+        { from, toPlacementNodeId: "destination",
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]) },
+        { from: { ...from, placementNodeId: "other" }, toPlacementNodeId: "other-destination", amount: one },
+      ],
+    };
+    const moved = await inventory.stock.transferMany(command);
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      from: { placementNodeId: "other" }, to: { placementNodeId: "other-destination" },
+    }]);
+    const witnessed = moved.event.stockEffects.filter((effect) =>
+      effect.position.placementNodeId === "store" || effect.position.placementNodeId === "destination"
+    );
+    const zeroWeight = [{ axisId: "weight", quantity: parseQuantity("0", "kg") }];
+    expect(witnessed).toMatchObject([
+      { position: { placementNodeId: "destination" }, evidence: { transactedMeasurements: { independent: zeroWeight } } },
+      { position: { placementNodeId: "store" }, evidence: { transactedMeasurements: { independent: zeroWeight } } },
+    ]);
+    expect(await inventory.stock.transferMany(command)).toEqual({ ...moved, replayed: true });
+  });
+
   it.each(["exact transfer", "policy transfer", "policy scrap"])(
     "settles an unlabelled remainder against one signed row for %s",
     async (verb) => {
@@ -1258,29 +1293,29 @@ describe("indexed stock planning and availability", () => {
     }
   );
 
-  it("keeps whole package counts when an unwitnessed posting settles into an existing row", async () => {
+  it("keeps whole package counts when a witnessed and unwitnessed posting share an exact row", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const packageId = "item-a-box-24-v1";
     await inventory.stock.receive({
-      operationId: "lot-packages", occurredAtEpochMs: time0,
-      to: loosePosition("store", { lotId: "lot-pack" }), amount: packageAmount(1, packageId),
-    });
-    await inventory.stock.receive({
-      operationId: "unlabelled-packages", occurredAtEpochMs: time1,
-      to: loosePosition("store"), amount: packageAmount(3, packageId),
+      operationId: "unlabelled-packages", occurredAtEpochMs: time0,
+      to: loosePosition("store"), amount: packageAmount(1, packageId),
     });
     const result = await inventory.stock.transfer({
       operationId: "reported-packages", occurredAtEpochMs: time2,
-      from: loosePosition("store", { lotId: "lot-pack" }), toPlacementNodeId: "destination",
+      from: loosePosition("store"), toPlacementNodeId: "destination",
       amount: packageAmount(2, packageId),
     });
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       from: { packagingRevisionId: packageId }, to: { packagingRevisionId: packageId },
       measurements: { primary: { quantity: { amountMinor: 24 } } },
     }]);
+    expect(result.event.stockEffects).toMatchObject([
+      { position: { placementNodeId: "destination" }, evidence: { packageCount: "2" } },
+      { position: { placementNodeId: "store" }, evidence: { packageCount: "2" } },
+    ]);
     expect(await inventory.read.positions(selector)).toMatchObject([{
       key: { packagingRevisionId: packageId },
-      measurements: { primary: { quantity: { amountMinor: 48 } } },
+      measurements: { primary: { quantity: { amountMinor: -24 } } },
     }]);
   });
 
@@ -1898,6 +1933,68 @@ describe("indexed stock planning and availability", () => {
     expect(await reopened.stock.transferManyByPolicy(command)).toEqual(replay);
     expect(write).toHaveBeenCalledTimes(2);
     expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("reads shared placement paths once and keeps the pool's ancestry at its captured revision", async () => {
+    const depth = 384;
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog);
+    /** Stable identities keep different stock positions on the same deep path. */
+    const nodeId = (index: number) => "deep-" + String(index).padStart(3, "0");
+    for (const [index, useByEpochMs] of [[0, time3], [128, time2]] as const) {
+      await inventory.placement.define({
+        operationId: "define-" + nodeId(index), occurredAtEpochMs: time0,
+        nodeId: nodeId(index), placementNode: { useByEpochMs },
+      });
+    }
+    for (let index = depth - 1; index > 0; index -= 1) {
+      await inventory.placement.move({
+        operationId: "place-" + nodeId(index), occurredAtEpochMs: time1,
+        nodeId: nodeId(index), into: nodeId(index - 1),
+      });
+    }
+    await inventory.stock.receiveMany({
+      operationId: "receive-deep-stock", occurredAtEpochMs: time1,
+      lines: Array.from({ length: depth }, (_, index) => ({
+        to: loosePosition(nodeId(index)), amount: stockAmount("1", "piece"),
+      })),
+    });
+    const parentReads = vi.spyOn(InMemoryInventorySegmentedPlacementStore.prototype, "parentNodeId");
+    const fullPaths = vi.spyOn(InMemoryInventorySegmentedPlacementStore.prototype, "ancestry");
+    try {
+      const request = {
+        itemRevisionId: "item-a-v2", selector: inventoryStockSelector("item-a"), reservationAtEpochMs: time2,
+      };
+      const pool = storage.readSegmentedStockPool(request);
+      expect(pool.positions).toHaveLength(depth);
+      expect(parentReads).toHaveBeenCalledTimes(depth);
+      expect(fullPaths).not.toHaveBeenCalled();
+      const last = pool.positions.find((row) => row.position.key.placementNodeId === nodeId(depth - 1));
+      expect(last?.effectiveUseByEpochMs).toBe(time2);
+      const within = inventoryStockSelector("item-a", { withinPlacementNodeIds: [nodeId(32)] });
+      parentReads.mockClear();
+      const availability = await readInventoryScopedStockAvailability({
+        storage, catalog, selector: within, itemRevisionId: request.itemRevisionId, atEpochMs: time2,
+      });
+      expect(availability.physicalOnHand.primary.quantity).toEqual(parseQuantity("352", "piece"));
+      expect(availability.expiredOnHand.primary.quantity).toEqual(parseQuantity("256", "piece"));
+      expect(parentReads.mock.calls.length).toBeLessThanOrEqual(depth * 2);
+      expect(fullPaths).not.toHaveBeenCalled();
+      await inventory.placement.move({
+        operationId: "move-deep-subtree", occurredAtEpochMs: time2, nodeId: nodeId(128), into: "new-root",
+      });
+      expect(last?.ancestry).toEqual(Array.from({ length: depth }, (_, index) => nodeId(depth - 1 - index)));
+      const moved = storage.readSegmentedStockPool(request).positions.find(
+        (row) => row.position.key.placementNodeId === nodeId(depth - 1),
+      );
+      expect(moved?.ancestry).toEqual([
+        ...Array.from({ length: depth - 128 }, (_, index) => nodeId(depth - 1 - index)), "new-root",
+      ]);
+    } finally {
+      fullPaths.mockRestore();
+      parentReads.mockRestore();
+    }
   });
 
   it("matches canonical physical availability for holds, signed deficits and ancestor expiry", async () => {

@@ -655,21 +655,32 @@ export class InMemoryInventorySegmentedPositionStore
   applyDelta(
     input: ApplyInventorySegmentedPositionDeltaInput
   ): ApplyInventorySegmentedPositionDeltaResult {
-    if (input.expectedRevision !== this.currentRevision) {
+    this.assertStockWriteRevision(input.expectedRevision, input.nextRevision);
+    return this.publishDelta(input);
+  }
+
+  /** Check the generation before using current stock to evaluate a planned write. */
+  private assertStockWriteRevision(expectedRevision: number, nextRevision: number): void {
+    if (expectedRevision !== this.currentRevision) {
       throw new InventorySegmentRevisionConflictError(
-        input.expectedRevision,
+        expectedRevision,
         this.currentRevision
       );
     }
     if (
-      !Number.isSafeInteger(input.nextRevision) ||
-      input.nextRevision !== input.expectedRevision + 1
+      !Number.isSafeInteger(nextRevision) ||
+      nextRevision !== expectedRevision + 1
     ) {
       throw new Error(
         "Inventory segmented position nextRevision must be exactly expectedRevision + 1."
       );
     }
+  }
 
+  /** Publish an exact delta after its revision has been checked in this synchronous call. */
+  private publishDelta(
+    input: ApplyInventorySegmentedPositionDeltaInput
+  ): ApplyInventorySegmentedPositionDeltaResult {
     const explicitRemovals = new Set(input.removePositionIds ?? []);
     for (const positionId of explicitRemovals) {
       if (!this.positions.has(positionId)) {
@@ -771,6 +782,7 @@ export class InMemoryInventorySegmentedPositionStore
   applyStockEffects(
     input: ApplyInventorySegmentedStockEffectsInput
   ): ApplyInventorySegmentedPositionDeltaResult {
+    this.assertStockWriteRevision(input.expectedRevision, input.nextRevision);
     // Compute the complete changed set before mutating the published index.
     const nextRows = new Map<string, InventoryStockPosition | undefined>();
     /** Validated historical revisions may improve an existing deficit without closing it. */
@@ -842,7 +854,7 @@ export class InMemoryInventorySegmentedPositionStore
       if (position === undefined) removePositionIds.push(positionId);
       else upsertPositions.push(position);
     }
-    return this.applyDelta({
+    return this.publishDelta({
       expectedRevision: input.expectedRevision,
       nextRevision: input.nextRevision,
       positiveLayerStarts,
@@ -855,12 +867,8 @@ export class InMemoryInventorySegmentedPositionStore
   replaceExactPosition(
     input: ReplaceInventorySegmentedPositionInput
   ): ReplaceInventorySegmentedPositionResult {
-    if (!this.positions.has(input.fromPositionId)) {
-      throw new Error(
-        `Unknown inventory segmented source position '${input.fromPositionId}'.`
-      );
-    }
     const toPositionId = inventoryStockPositionIdentity(input.to.key);
+    // The delta checks the generation before looking up its removals.
     const result = this.applyDelta({
       expectedRevision: input.expectedRevision,
       nextRevision: input.expectedRevision + 1,

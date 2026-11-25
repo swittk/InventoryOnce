@@ -166,6 +166,7 @@ import {
   type InventoryHistoricalAssertion,
   type InventoryHistoricalImpact,
   type InventoryStockEffect,
+  type InventoryPositiveLayerProvenanceTransfer,
   type InventoryTraceabilityRelationChange,
 } from "./events.js";
 import {
@@ -4132,43 +4133,52 @@ interface PlanRecordedExactTransferInput {
 async function planRecordedExactTransfer({
   catalog, event, readPosition,
 }: PlanRecordedExactTransferInput): Promise<InventoryEventDraft> {
-  const sourceEffects = new Map<string, InventoryStockEffect>();
+  /** The normalized one-to-one draft provides both exact postings for each route. */
+  const effectsByPosition = new Map<string, InventoryStockEffect>();
   for (const effect of event.stockEffects) {
-    if (effect.measurementsDelta.primary.quantity.amountMinor < 0) {
-      sourceEffects.set(inventoryStockPositionIdentity(effect.position), effect);
-    }
+    effectsByPosition.set(inventoryStockPositionIdentity(effect.position), effect);
   }
-  const witnessed: InventoryTransferLine[] = [];
+  /** Keep fully backed postings verbatim, including explicit optional measurements. */
+  const witnessedEffects: InventoryStockEffect[] = [];
+  /** Every backed portion carries its original exact FIFO route. */
+  const witnessedRoutes: InventoryPositiveLayerProvenanceTransfer[] = [];
+  /** Only partial witnesses need new amounts and signed postings. */
+  const partial: InventoryTransferLine[] = [];
+  /** Unbacked remainders are posted independently of witnessed lots. */
   const unknown: InventoryUnwitnessedMovementLine[] = [];
   for (const route of event.positiveLayerProvenanceTransfers ?? []) {
     const sourceId = inventoryStockPositionIdentity(route.from);
-    const effect = sourceEffects.get(sourceId);
+    const effect = effectsByPosition.get(sourceId);
+    const destination = effectsByPosition.get(inventoryStockPositionIdentity(route.to));
     const toPlacementNodeId = route.to.placementNodeId;
-    if (effect === undefined || toPlacementNodeId === undefined) {
-      throw new Error("Exact transfer lost its signed source or direct destination.");
+    if (effect === undefined || destination === undefined || toPlacementNodeId === undefined) {
+      throw new Error("Exact transfer lost a signed route endpoint.");
     }
     const requested = negateInventoryMeasurements(effect.measurementsDelta);
     const current = await readPosition(sourceId);
     const backed = current !== undefined && current.measurements.primary.quantity.amountMinor > 0;
-    const fullyWitnessed = backed && inventoryMeasurementsCoverRequired(current.measurements, requested);
+    if (backed && inventoryMeasurementsCoverRequired(current.measurements, requested)) {
+      witnessedEffects.push(effect, destination);
+      witnessedRoutes.push(route);
+      continue;
+    }
     // Independently measured axes cannot be apportioned from the primary
     // count. A partial witness must be the whole source, with a valid remainder.
-    if (backed && !fullyWitnessed && (
+    if (backed && (
       compareQuantity(requested.primary.quantity, current.measurements.primary.quantity) <= 0 ||
       !inventoryMeasurementsCoverRequired(requested, current.measurements)
     )) {
       throw new Error("Reported transfer cannot partition independent measurements into an exact witness and remainder.");
     }
     const { itemRevisionId, ...from } = route.from;
-    const witnessedMeasurements = fullyWitnessed ? requested : backed ? current.measurements : undefined;
+    const witnessedMeasurements = backed ? current.measurements : undefined;
     if (witnessedMeasurements !== undefined) {
-      witnessed.push({
+      partial.push({
         from, toPlacementNodeId, itemRevisionId,
         amount: transferAmountForVector(catalog, route.from, witnessedMeasurements),
         ...(effect.metadata === undefined ? {} : { metadata: effect.metadata }),
       });
     }
-    if (fullyWitnessed) continue;
     if (from.serialId !== undefined) {
       throw new Error("Unwitnessed transfer cannot claim a serial identity.");
     }
@@ -4184,11 +4194,16 @@ async function planRecordedExactTransfer({
     });
   }
   if (unknown.length === 0) return event;
+  const partialEvent = partial.length === 0 ? undefined : createInventoryTransferManyEvent({
+    catalog, operationId: event.operationId, occurredAtEpochMs: event.occurredAtEpochMs, lines: partial,
+  });
+  for (const effect of partialEvent?.stockEffects ?? []) witnessedEffects.push(effect);
+  for (const route of partialEvent?.positiveLayerProvenanceTransfers ?? []) witnessedRoutes.push(route);
   return createInventoryRecordedMovement({
     catalog, header: inventoryCommandHeaderFromPlacementInput(event), kind: InventoryEventKind.Transfer,
-    witnessed: witnessed.length === 0 ? undefined : createInventoryTransferManyEvent({
-      ...event, catalog, lines: witnessed,
-    }),
+    witnessed: witnessedEffects.length === 0 ? undefined : {
+      ...event, stockEffects: witnessedEffects, positiveLayerProvenanceTransfers: witnessedRoutes,
+    },
     unknown,
   });
 }
@@ -4380,9 +4395,9 @@ interface PolicyPoolAfterPriorRequestsInput {
   /** Original published stock and claim facts for this pool. */
   readonly published: PolicyBatchPoolView;
   /** All exact rows changed by earlier requests in the batch. */
-  readonly changed: ReadonlyMap<string, InventoryPolicyWorkingRow>;
+  readonly changed: ReadonlyMap<string, InventoryPolicyWorkingPosition>;
   /** Newly introduced deficit candidates for this revision and direct placement constraint. */
-  readonly addedDeficits: Iterable<[string, InventoryPolicyWorkingRow]>;
+  readonly addedDeficits: Iterable<[string, PolicyBatchDeficitRow]>;
   /** Signed pool selector used to admit new rows. */
   readonly selector: InventoryStockSelector;
 }
@@ -4397,7 +4412,11 @@ function policyPoolAfterPriorRequests({
   for (const [id, row] of published.rowsById) {
     const next = changed.get(id);
     // Prior requests change balances. The published pool still owns age and expiry.
-    const current = next === undefined ? row : { ...row, position: next.position };
+    const current = next === undefined ? row : {
+      position: next,
+      ...(row.layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs: row.layerStartedAtEpochMs }),
+      ...(row.effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs: row.effectiveUseByEpochMs }),
+    };
     positions.push(current);
     rowsById.set(id, current);
   }
@@ -4409,19 +4428,25 @@ function policyPoolAfterPriorRequests({
   return { pool: { positions, reservations: published.pool.reservations }, rowsById };
 }
 
+/** A new deficit needs its ancestry when admitting it to a different request's pool. */
+interface PolicyBatchDeficitRow extends InventoryPolicyWorkingRow {
+  /** Direct placement and its ancestors at the batch's publication fence. */
+  readonly ancestry: readonly string[];
+}
+
 /** Newly introduced batch deficits grouped by exact position and direct placement. */
 interface PolicyBatchDeficitRows {
   /** All rows for one revision, including stock without a direct placement. */
-  readonly all: Map<string, InventoryPolicyWorkingRow>;
+  readonly all: Map<string, PolicyBatchDeficitRow>;
   /** Direct nodes with new rows, for pools that name one or more exact nodes. */
-  readonly byPlacement: Map<string, Map<string, InventoryPolicyWorkingRow>>;
+  readonly byPlacement: Map<string, Map<string, PolicyBatchDeficitRow>>;
 }
 
 /** Select candidate deficits without walking earlier requests from other bins. */
 function* policyBatchDeficitCandidates(
   deficits: PolicyBatchDeficitRows | undefined,
   placementNodeIds: readonly string[] | undefined
-): IterableIterator<[string, InventoryPolicyWorkingRow]> {
+): IterableIterator<[string, PolicyBatchDeficitRow]> {
   if (deficits === undefined) return;
   if (placementNodeIds === undefined) {
     yield* deficits.all.entries();
@@ -4493,7 +4518,7 @@ async function commitInventoryPolicyBatch(
       /** Keep each original pool once even when several requests share a bin and revision. */
       const pools = new Map<string, PolicyBatchPoolView>();
       /** Exact rows changed by earlier requests in this same logical event. */
-      const changed = new Map<string, InventoryPolicyWorkingRow>();
+      const changed = new Map<string, InventoryPolicyWorkingPosition>();
       /** Newly negative rows absent from the published pools, grouped by revision and placement. */
       const addedDeficits = new Map<string, PolicyBatchDeficitRows>();
       const allocations: InventoryOncePolicyBatchAllocation[] = [];
@@ -4544,35 +4569,35 @@ async function commitInventoryPolicyBatch(
           const id = inventoryStockPositionIdentity(line.position);
           const row = currentRows.get(id);
           if (row === undefined) throw new Error(`Inventory policy allocation lost position '${id}'.`);
-          changed.set(id, {
-            ...row,
-            position: debitPolicyBatchPosition(row.position, row.position.key,
-              resolveInventoryAmount(internals.catalog, selection.item, line.amount).measurements),
-          });
+          changed.set(id, debitPolicyBatchPosition(
+            row.position, row.position.key,
+            resolveInventoryAmount(internals.catalog, selection.item, line.amount).measurements,
+          ));
         }
         if (deficit !== undefined) {
           deficitLines.push(deficit.line);
           const position = deficit.evidence.position;
           const id = inventoryStockPositionIdentity(position);
-          const prior = changed.get(id) ?? currentRows.get(id);
-          const published = prior?.position ?? await source.position(id);
+          const prior = changed.get(id) ?? currentRows.get(id)?.position ?? await source.position(id);
           const measurements = resolveInventoryAmount(internals.catalog, selection.item, deficit.evidence.amount).measurements;
           // An unwitnessed debit may leave positive stock with its original FIFO and expiry facts.
-          const deficitRow: InventoryPolicyWorkingRow = {
-            ...prior,
-            position: debitPolicyBatchPosition(published, position, measurements),
-            ancestry: prior?.ancestry ?? (position.placementNodeId === undefined
-              ? [] : await source.ancestry(position.placementNodeId)),
-          };
-          changed.set(id, deficitRow);
-          if (published === undefined || addedDeficits.get(revisionId)?.all.has(id)) {
-            let revisionDeficits = addedDeficits.get(revisionId);
+          const debited = debitPolicyBatchPosition(prior, position, measurements);
+          changed.set(id, debited);
+          let revisionDeficits = addedDeficits.get(revisionId);
+          const existingDeficit = revisionDeficits?.all.get(id);
+          if (prior === undefined || existingDeficit !== undefined) {
             if (revisionDeficits === undefined) {
               revisionDeficits = { all: new Map(), byPlacement: new Map() };
               addedDeficits.set(revisionId, revisionDeficits);
             }
-            revisionDeficits.all.set(id, deficitRow);
             const nodeId = position.placementNodeId;
+            const deficitRow: PolicyBatchDeficitRow = {
+              /** Current signed balance after this request. */
+              position: debited,
+              /** The first request captures ancestry for admission to later pools. */
+              ancestry: existingDeficit?.ancestry ?? (nodeId === undefined ? [] : await source.ancestry(nodeId)),
+            };
+            revisionDeficits.all.set(id, deficitRow);
             if (nodeId !== undefined) {
               let placementDeficits = revisionDeficits.byPlacement.get(nodeId);
               if (placementDeficits === undefined) {
@@ -7219,7 +7244,9 @@ function planInventoryDirectContentsMove(
   const header = inventoryCommandHeaderFromPlacementInput(input);
   const stockEvent = positions.length === 0 ? undefined : createInventoryTransferManyEvent({
     catalog,
-    ...header,
+    // Transfer supplies the postings only. The enclosing placement event owns the audit header.
+    operationId: input.operationId,
+    occurredAtEpochMs: input.occurredAtEpochMs,
     lines: positions.map(
       /** Move each whole direct row using its exact measured or package amount. */
       (position) => ({ ...placementContentsSourceLine(catalog, position), toPlacementNodeId: input.into })

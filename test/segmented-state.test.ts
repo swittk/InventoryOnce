@@ -132,6 +132,32 @@ async function expectSegmentMatchesPublishedWorld(
 }
 
 describe("segmented inventory position store", () => {
+  it("reports a stale stock-effects revision before evaluating its old placement witness", async () => {
+    const planner = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const concurrent = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const amount = stockAmount("1", "piece");
+    const to = loosePosition("source");
+    for (const inventory of [planner, concurrent]) {
+      await inventory.stock.receive({ operationId: "stale-stock-receive", occurredAtEpochMs: time0, to, amount });
+    }
+    const positions = await planner.read.positions({ itemId: "item-a" });
+    const segment = createInMemoryInventorySegmentedPositionStore({
+      revision: 1, positions,
+      positiveLayerStarts: Object.fromEntries(positions.map((position) => [inventoryStockPositionIdentity(position.key), time0])),
+    });
+    const { event: planned } = await planner.placement.moveContents({
+      operationId: "stale-stock-plan", occurredAtEpochMs: time2, nodeId: "source", into: "destination",
+    });
+    const { event: issue } = await concurrent.stock.issue({
+      operationId: "stale-stock-concurrent", occurredAtEpochMs: time1, from: loosePosition("destination"), amount,
+    });
+    segment.applyStockEffects({ expectedRevision: 1, nextRevision: 2, event: issue, deficitPolicy: InventoryDeficitPolicy.Record });
+    expect(() => segment.applyStockEffects({
+      expectedRevision: 1, nextRevision: 2, event: planned, deficitPolicy: InventoryDeficitPolicy.Record,
+    })).toThrow(InventorySegmentRevisionConflictError);
+    expect(segment.revision()).toBe(2);
+  });
+
   it("publishes a validated age-only correction with its exact segment revision", async () => {
     const inventory = createTestInventory();
     const to = loosePosition("age-only", { lotId: "age-only-lot" });
@@ -886,6 +912,13 @@ describe("segmented inventory position store", () => {
       store.replaceExactPosition({
         expectedRevision: 7,
         fromPositionId: result.toPositionId,
+        to: carrier,
+      })
+    ).toThrow(InventorySegmentRevisionConflictError);
+    expect(() =>
+      store.replaceExactPosition({
+        expectedRevision: 7,
+        fromPositionId: result.fromPositionId,
         to: carrier,
       })
     ).toThrow(InventorySegmentRevisionConflictError);
