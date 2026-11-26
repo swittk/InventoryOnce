@@ -1393,6 +1393,59 @@ describe("derived pool summaries and exact member movements", () => {
     expect(reservation?.allocations).toEqual([{ position: position.key, quantity: requested }]);
   });
 
+  it("records a fungible transfer with an unrelated broad package claim beyond the feasibility search bound", async () => {
+    const member = oldBrand();
+    const alternative = newBrand();
+    const unrelated = doubleStrength();
+    const packaging = defineScalarInventoryPackaging({
+      revisionId: "unrelated-claim-pack", item: unrelated, packageUnit: "pack", contains: "2",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "brand-claim-pool", revisionId: "brand-claim-pool-v1", basisUnit: "equivalent",
+      members: [{ item: member }, { item: alternative }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [member, alternative, unrelated],
+      activeItemRevisionIds: {
+        [member.itemId]: member.revisionId, [alternative.itemId]: alternative.revisionId, [unrelated.itemId]: unrelated.revisionId,
+      },
+      packagingRevisions: [packaging], fungibilityRevisions: [pool],
+      activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
+    });
+    const outside = { itemId: unrelated.itemId, placementNodeId: "elsewhere", packagingRevisionId: packaging.revisionId };
+    await inventory.stock.receive({
+      operationId: "receive-package-claim-stock", occurredAtEpochMs: time0,
+      to: outside, amount: packageAmount(100_002, packaging.revisionId),
+    });
+    await inventory.reservations.reserve({
+      operationId: "reserve-package-claim", reservationId: "package-claim", itemRevisionId: unrelated.revisionId,
+      selector: inventoryStockSelector(unrelated.itemId, { placementNodeIds: [outside.placementNodeId] }),
+      requested: parseQuantity("200004", "piece"), createdAtEpochMs: time1,
+    });
+    await inventory.stock.issue({
+      operationId: "shorten-package-claim", occurredAtEpochMs: time1,
+      from: outside, amount: packageAmount(1, packaging.revisionId),
+    });
+    await receiveMember({ inventory, itemId: member.itemId, itemRevisionId: member.revisionId,
+      lotId: "pool-member", quantity: "4", operationId: "receive-pool-member", occurredAtEpochMs: time1 });
+    const before = await inventory.read.positions(inventoryStockSelector(unrelated.itemId));
+    const claim = await inventory.read.reservation("package-claim");
+    const moved = await inventory.fungibility.transfer({
+      operationId: "transfer-pool-member", occurredAtEpochMs: time2, fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("4", "equivalent"), method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] }, toPlacementNodeId: "room",
+    });
+    expect(moved.event.stockEffects).toMatchObject([
+      { position: { itemId: member.itemId, placementNodeId: "room" }, measurementsDelta: { primary: { quantity: parseQuantity("4", "piece") } } },
+      { position: { itemId: member.itemId, placementNodeId: "store" }, measurementsDelta: { primary: { quantity: parseQuantity("-4", "piece") } } },
+    ]);
+    expect(await inventory.read.positions(inventoryStockSelector(unrelated.itemId))).toEqual(before);
+    expect(await inventory.read.reservation("package-claim")).toEqual(claim);
+  });
+
   it("preserves a broad claim when fungible stock moves into another eligible location", async () => {
     const catalog = fungibilityCatalog();
     const inventory = createInventoryOnce({

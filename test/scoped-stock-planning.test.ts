@@ -2218,6 +2218,29 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
+  it.each([false, true])("replays a Reject-mode exact transfer from the journal under either deficit policy (canonical=%s)", async (canonical) => {
+    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : undefined);
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Reject);
+    const from = loosePosition("store", { serialId: "reject-replay-serial" });
+    await inventory.stock.receive({
+      operationId: "receive-reject-replay-serial", occurredAtEpochMs: time0,
+      to: from, amount: stockAmount("1", "piece"),
+    });
+    const command = {
+      operationId: "reject-replay-transfer", occurredAtEpochMs: time1,
+      from, toPlacementNodeId: "destination", amount: stockAmount("1", "piece"),
+    };
+    const moved = await inventory.stock.transfer(command);
+    const world = await inventory.read.world();
+    for (const deficitPolicy of [InventoryDeficitPolicy.Record, InventoryDeficitPolicy.Reject]) {
+      const coldStorage = createInMemoryInventoryDurableStorage({ initialWorld: world });
+      const reopened = createTestInventory(coldStorage, undefined, clockAt(time3), deficitPolicy);
+      expect(await reopened.stock.transfer(command)).toEqual({ ...moved, replayed: true });
+      await expect(reopened.stock.transfer({ ...command, reason: "changed" })).rejects.toThrow("changed intent");
+      expect(coldStorage.readSegmentedStockHead().worldRevision).toBe(world.revision);
+    }
+  });
+
   it("replays a serialized reported transfer after reopening the exact journal", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const serial = loosePosition("store", { serialId: "one" });

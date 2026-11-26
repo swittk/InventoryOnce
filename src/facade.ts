@@ -4094,23 +4094,22 @@ interface InventoryPolicyStockSource {
   directContents(nodeId: string, into: string): InventorySegmentedResult<InventorySegmentedDirectContents>;
 }
 
-/** Preserve fully witnessed transfers and partition Record shortfalls at the same publication fence. */
+/** Freeze exact transfer replay evidence and partition Record shortfalls at the same publication fence. */
 async function commitInventoryReportedExactTransfer(
   owner: InventoryOnce,
   event: InventoryEventDraft
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  if (internals.deficitPolicy !== InventoryDeficitPolicy.Record) {
-    return commitInventoryEventDraft(owner, event);
-  }
   const intentFingerprint = inventoryEventIntentFingerprint(event);
   return commitInventoryScopedMovement({
     internals,
     operationId: event.operationId,
     intentFingerprint,
-    /** Split only the exact positive witnesses from the signed report. */
+    /** Retain replay evidence for either policy and partition only Record reports. */
     plan: async (source, _recordedAtEpochMs, nextWorldRevision) => {
-      const planned = await planRecordedExactTransfer({ catalog: internals.catalog, event, readPosition: source.position });
+      const planned = internals.deficitPolicy === InventoryDeficitPolicy.Record
+        ? await planRecordedExactTransfer({ catalog: internals.catalog, event, readPosition: source.position })
+        : event;
       return {
         ...planned,
         metadata: {
@@ -4342,7 +4341,9 @@ async function commitInventoryScopedMovement({
 }: CommitInventoryScopedMovementInput): Promise<InventoryOnceEventResult> {
   const { storage, catalog, clock, deficitPolicy } = internals;
   const catalogSnapshot = inventoryCatalogSnapshot(catalog);
-  if (inventoryStorageSupportsSegmentedStockPlanning(storage)) {
+  // Indexed reads can remain available when writes use the canonical coordinator.
+  if (inventoryStorageSupportsSegmentedStockEventCommit(storage) &&
+      inventoryStorageSupportsSegmentedStockPlanning(storage)) {
     /** Replay from the scoped receipt, or use the canonical path when it holds the event. */
     const readScopedReplay = async (): Promise<InventoryOnceEventResult | null | undefined> => {
       const existing = await storage.readOperation(operationId);
