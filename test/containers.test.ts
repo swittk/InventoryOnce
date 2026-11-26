@@ -81,6 +81,38 @@ it("declines standalone unplacement and independent routes through the stock com
   expect(storage.readPlacementSegment().parentNodeId("child")).toBeUndefined();
 });
 
+it("declines a single-node move into its sibling through the contents commit hook", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const catalog = createTabletCatalog();
+  const inventory = createTestInventory(storage, catalog);
+  for (const nodeId of ["child", "sibling"]) {
+    await inventory.placement.move({
+      operationId: `place-${nodeId}`, occurredAtEpochMs: time0, nodeId, into: "parent",
+    });
+  }
+  const before = storage.readSegmentedStockHead();
+  const event = createInventoryPlacementEvent({
+    catalog, operationId: "nest-child", occurredAtEpochMs: time1,
+    nodeId: "child", fromParentNodeId: "parent", toParentNodeId: "sibling",
+  });
+  await expect(storage.commitSegmentedStockEvent({
+    catalog: inventoryCatalogSnapshot(catalog), operationId: event.operationId,
+    intentFingerprint: inventoryEventIntentFingerprint(event), recordedAtEpochMs: time2,
+    expectedWorldRevision: before.worldRevision, expectedRecordSequence: before.recordSequence,
+    deficitPolicy: InventoryDeficitPolicy.Reject, event,
+  })).resolves.toBeUndefined();
+  expect(storage.readSegmentedStockHead()).toEqual(before);
+  expect(await storage.readOperation(event.operationId)).toBeUndefined();
+  expect(await inventory.read.placementAncestry("child")).toEqual(["child", "parent"]);
+
+  const moved = await inventory.placement.move({
+    operationId: event.operationId, occurredAtEpochMs: time1, nodeId: "child", into: "sibling",
+  });
+  expect(moved.event.placementChanges).toEqual(event.placementChanges);
+  expect(await inventory.read.placementAncestry("child")).toEqual(["child", "sibling", "parent"]);
+  expect(storage.readSegmentedStockHead().worldRevision).toBe(before.worldRevision + 1);
+});
+
 it("replays a contents move published between the operation lookup and head read", async () => {
   const storage = createInMemoryInventoryDurableStorage();
   const inventory = createTestInventory(storage);

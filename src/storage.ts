@@ -59,6 +59,7 @@ import {
   type InventorySegmentedPlacementReader,
   type InventorySegmentedPlacementResult,
 } from "./segmented-placement.js";
+import { inventoryPlacementDestinationWithinSource } from "./segmented-placement-admission.js";
 import { createInventoryPlacementEvent, type InventoryCommandHeader } from "./commands.js";
 import { inventorySerialIdentity, inventoryStockPositionIdentity, type InventoryStockPosition } from "./model.js";
 import type { InventoryPlacementChange } from "./placement.js";
@@ -1982,9 +1983,17 @@ export class InMemoryInventoryDurableStorage
     }
 
     this.eventJournal.validateAppend(event);
-    const publishContentsEdges = event.kind === InventoryEventKind.Placement
-      ? this.prepareSegmentedDirectContentsEdges(event)
-      : undefined;
+    /** Prepared edge updates to publish with the stock effects. */
+    let publishContentsEdges: (() => void) | undefined;
+    if (event.kind === InventoryEventKind.Placement) {
+      try {
+        publishContentsEdges = this.prepareSegmentedDirectContentsEdges(event);
+      } catch (error) {
+        // An exact placement into a sibling can belong to the ordinary placement path.
+        if (error instanceof Error && error.cause === inventoryPlacementDestinationWithinSource) return undefined;
+        throw error;
+      }
+    }
     await this.fire(
       InventoryStorageWriteStage.PublishWorld,
       "before",

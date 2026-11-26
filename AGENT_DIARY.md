@@ -1999,3 +1999,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A positive measured remainder can be required even when some eligible rows contribute to that axis. The picker uses the sum of their eligible row measurements as an upper bound and still checks every chosen witness exactly.
 - Seeded segmented rows need their retained FIFO starts before they can serve as conserved source layers.
+
+## 2026-11-26 — placement fallback before publication
+
+- When a valid single-node move targets another branch within its current parent, the stock event hook leaves it to the ordinary placement path before publishing. The placement preparer owns the subtree check.

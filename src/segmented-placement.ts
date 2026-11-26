@@ -10,6 +10,7 @@ import {
   createInventorySparseRecord,
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
+import { inventoryPlacementDestinationWithinSource } from "./segmented-placement-admission.js";
 import type { InventorySubtreeStockPostings } from "./stock-scope.js";
 
 /** Adapter-local placement reads may be synchronous or asynchronous. */
@@ -333,8 +334,13 @@ export class InMemoryInventorySegmentedPlacementStore
     const first = changes[0];
     const source = first?.fromParentNodeId;
     const destination = first?.toParentNodeId;
-    if (source === undefined || destination === undefined || this.ancestry(destination).includes(source)) {
-      throw new Error("Placement contents require a common source and a destination outside its subtree.");
+    const destinationWithinSource =
+      source !== undefined && destination !== undefined && this.ancestry(destination).includes(source);
+    if (source === undefined || destination === undefined || destinationWithinSource) {
+      throw new Error(
+        "Placement contents require a common source and a destination outside its subtree.",
+        destinationWithinSource ? { cause: inventoryPlacementDestinationWithinSource } : undefined
+      );
     }
     const originals: InventoryPlacementRelation[] = [];
     for (const change of changes) {
