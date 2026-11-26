@@ -2008,3 +2008,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Measured recording can use its first policy-ordered pick when it reaches the proven positive-remainder floor and passes the exact movement predicate. The recursive search still applies when the shortcut cannot establish an optimal witness.
 - Fungibility previews skip members without matching positive direct stock before applying exact hold rules. Contributing members still use their full signed pools for deficit attribution.
+
+## 2026-11-26 — shared fungibility claim snapshot
+
+- A fungibility plan reads its reservation snapshot once at the selected reservation time. Preview members without matching positive stock skip claim preparation, and contributing members still use their full signed position pools for deficit attribution.

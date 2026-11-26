@@ -40,8 +40,9 @@ import {
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
 import {
-  inventoryAllocationPoolFromWorld,
+  inventoryAllocationPoolSelector,
   inventoryAmountForPrimaryAllocation,
+  inventoryStockPoolRowsFromProjection,
   prepareInventoryPolicyAllocationPool,
 } from "./picking.js";
 import {
@@ -51,6 +52,8 @@ import {
 import {
   InventoryReservationFeasibilityStatus,
   inspectInventoryReservationFeasibility,
+  inventoryReservationsAt,
+  type InventoryReservation,
 } from "./reservations.js";
 import {
   compareQuantity,
@@ -401,6 +404,8 @@ function planInventoryFungibilityAllocationWithHolds({
   const memberStock: FungibilityMemberStock[] = [];
   // Remember whether any active member reservation remained broad rather than position-bound.
   let unallocatedReservationsPresent = false;
+  /** All contributing members use the same published claim snapshot and reservation time. */
+  let reservations: readonly InventoryReservation[] | undefined;
 
   for (const member of definition.members) {
     const item = catalog.itemRevision(member.itemRevisionId);
@@ -411,21 +416,24 @@ function planInventoryFungibilityAllocationWithHolds({
     }
     const selector = selectorForFungibilityMember(item, normalizedScope);
     const selection = { item, selector };
-    const pool = inventoryAllocationPoolFromWorld(world, selection, reservationAtEpochMs);
+    const positions = inventoryStockPoolRowsFromProjection(
+      world.projection, inventoryAllocationPoolSelector(selection)
+    );
     if (!recording) {
       // The signed pool already applies subtree selection. Check the remaining scope before reading member holds.
       const { withinPlacementNodeIds: _withinPlacementNodeIds, ...directSelector } = selector;
-      if (!pool.positions.some(
+      if (!positions.some(
         /** Only matching positive physical stock can contribute preview picks. */
         ({ position }) => position.key.transferId === undefined && position.key.placementNodeId !== undefined &&
           position.measurements.primary.quantity.amountMinor > 0 &&
           inventoryStockPositionMatchesNormalizedSelector(position.key, directSelector)
       )) continue;
     }
+    reservations ??= inventoryReservationsAt(world.reservations, reservationAtEpochMs);
     const { candidateResult, deficitAdjusted } = prepareInventoryPolicyAllocationPool({
       catalog,
       selection,
-      pool,
+      pool: { positions, reservations },
       method,
       atEpochMs,
       reservationAtEpochMs,
