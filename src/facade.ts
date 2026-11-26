@@ -5792,9 +5792,8 @@ async function policyRecordedDeficit({
     item,
     unwitnessed
   );
-  const transfer = kind === InventoryPolicyMovementKind.Transfer;
-  // Infer only exact identity choices for a default transfer shortage bucket.
-  const defaultScope = transfer && input.deficitPosition === undefined ? allocation.selector : undefined;
+  // Infer only exact identity choices for a default unwitnessed shortage bucket.
+  const defaultScope = unwitnessed && input.deficitPosition === undefined ? allocation.selector : undefined;
   const defaultOwnerId = inventorySingleSelectedDeficitIdentity(defaultScope?.owner);
   const defaultStatusId = inventorySingleSelectedDeficitIdentity(defaultScope?.status);
   const defaultCustodianId = inventorySingleSelectedDeficitIdentity(defaultScope?.custodian);
@@ -5846,15 +5845,15 @@ async function policyRecordedDeficit({
         row.effectiveUseByEpochMs <= input.occurredAtEpochMs) {
       assertPolicyAllocationComplete({ ...allocation, expiredStockWasExcluded: true });
     }
-  } else if (transfer && !inventoryScopedStockMatches(position, settlementScope, ancestry)) {
+  } else if (unwitnessed && !inventoryScopedStockMatches(position, settlementScope, ancestry)) {
     const { owner, status } = settlementScope;
     if (owner !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, owner })) {
-      throw new Error("Inventory policy transfer deficit position is outside the selected owner scope.");
+      throw new Error("Inventory policy deficit position is outside the selected owner scope.");
     }
     if (status !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, status })) {
-      throw new Error("Inventory policy transfer deficit position is outside the selected status scope.");
+      throw new Error("Inventory policy deficit position is outside the selected status scope.");
     }
-    throw new Error("Inventory policy transfer deficit position is outside the selected stock scope.");
+    throw new Error("Inventory policy deficit position is outside the selected stock scope.");
   }
   const { itemRevisionId, ...exactFrom } = position;
   return {

@@ -277,6 +277,35 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("keeps an empty policy scrap shortage in the selected custodian scope", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const before = storage.readSegmentedStockHead();
+    const scrap = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], custodianIds: ["carrier-a"] }),
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("2", "piece"),
+      occurredAtEpochMs: time1, reason: "Discarded",
+    };
+    const rejectedOperationId = "scrap-empty-other-carrier";
+    await expect(inventory.stock.scrapByPolicy({
+      ...scrap, operationId: rejectedOperationId, deficitPosition: loosePosition("store", { custodianId: "carrier-b" }),
+    })).rejects.toThrow("outside the selected stock scope");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await storage.readOperation(rejectedOperationId)).toBeUndefined();
+
+    const selected = loosePosition("store", { custodianId: "carrier-a" });
+    const explicit = await inventory.stock.scrapByPolicy({
+      ...scrap, operationId: "scrap-empty-selected-carrier", deficitPosition: selected,
+    });
+    const inferred = await inventory.stock.scrapByPolicy({ ...scrap, operationId: "scrap-inferred-carrier" });
+    for (const result of [explicit, inferred]) {
+      expect(result.event.unwitnessedStockMovements).toMatchObject([{
+        from: selected, measurements: { primary: { quantity: parseQuantity("2", "piece") } },
+      }]);
+      expect(result.event.unwitnessedStockMovements?.[0]?.to).toBeUndefined();
+    }
+  });
+
   it("plans from positive stock when an independent-axis hold remains on a deficit", async () => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("weight"), clockAt(time3), InventoryDeficitPolicy.Record);
     const selector = inventoryStockSelector("measured", { placementNodeIds: ["store", "other"] });

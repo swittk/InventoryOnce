@@ -2044,3 +2044,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A measured witness bound is rounded down to the common selectable increment before looking for an optimal partial pick. The exact measurement predicate still checks the chosen lines.
 - A completed placement move or unplacement replays its original receipt even when the retry clock precedes the occurrence. New publications still check the current record time.
+
+## 2026-11-27 — unwitnessed scrap scope
+
+- An empty scrap shortage follows the same stock scope as an empty transfer shortage. An exact singleton selector can supply the default bucket identity.
