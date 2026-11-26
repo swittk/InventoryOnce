@@ -1463,6 +1463,39 @@ describe("derived pool summaries and exact member movements", () => {
     expect(await inventory.read.reservation("package-claim")).toEqual(claim);
   });
 
+  it("records a fungible transfer after claim-preserving picks exhaust the exact search budget", async () => {
+    const inventory = createInventoryOnce({
+      catalog: fungibilityCatalog(), storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
+    });
+    const from = { itemId: "old-brand", placementNodeId: "store" };
+    for (const [lotId, occurredAtEpochMs] of [["claimed-old", time0], ["claimed-new", time1]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}`, occurredAtEpochMs,
+        to: { ...from, lotId }, amount: stockAmount("60000", "piece"),
+      });
+    }
+    await inventory.reservations.reserve({
+      operationId: "reserve-exact-search-pool", reservationId: "claim-exact-search", itemRevisionId: "old-brand-v1",
+      selector: inventoryStockSelector("old-brand", { placementNodeIds: ["store"] }),
+      requested: parseQuantity("120000", "piece"), createdAtEpochMs: time1,
+    });
+    const claim = await inventory.read.reservation("claim-exact-search");
+    const result = await inventory.fungibility.transfer({
+      operationId: "transfer-after-exact-search-limit", occurredAtEpochMs: time2,
+      fungibilityRevisionId: "brand-pool-v2", method: InventoryAllocationMethod.Fifo,
+      requested: parseQuantity("60001", "dose-equivalent"), scope: { placementNodeIds: ["store"] },
+      toPlacementNodeId: "room",
+    });
+    expect(result.event.stockEffects).toMatchObject([
+      { position: { lotId: "claimed-new", placementNodeId: "room" }, measurementsDelta: { primary: { quantity: parseQuantity("1", "piece") } } },
+      { position: { lotId: "claimed-old", placementNodeId: "room" }, measurementsDelta: { primary: { quantity: parseQuantity("60000", "piece") } } },
+      { position: { lotId: "claimed-new", placementNodeId: "store" }, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+      { position: { lotId: "claimed-old", placementNodeId: "store" }, measurementsDelta: { primary: { quantity: parseQuantity("-60000", "piece") } } },
+    ]);
+    expect(await inventory.read.reservation("claim-exact-search")).toEqual(claim);
+    expect((await inventory.read.reservationFeasibility(time3)).groups[0]?.shortage).toEqual(parseQuantity("60001", "piece"));
+  }, 15_000);
+
   it("preserves a broad claim when fungible stock moves into another eligible location", async () => {
     const catalog = fungibilityCatalog();
     const inventory = createInventoryOnce({

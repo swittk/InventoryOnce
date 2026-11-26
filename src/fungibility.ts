@@ -3,6 +3,7 @@ import {
   allocateWorkingInventory,
   inventoryAllocationCandidateCapacity,
   InventoryAllocationMethod,
+  InventoryExactAllocationLimitError,
   type InventoryAllocation,
   type InventoryWorkingAllocationCandidate,
 } from "./allocation.js";
@@ -361,8 +362,9 @@ export function planInventoryFungibilityRecordingAllocation(
     const preferred = planInventoryFungibilityAllocationWithHolds(input, true);
     if (preferred.shortfall.amountMinor === 0) return preferred;
   } catch (error) {
-    // An exhausted claim search cannot decide whether the pick preserves claims.
-    if (!(error instanceof InventoryReservationFeasibilityLimitError)) throw error;
+    // Either advisory search can run out of budget before it finds a claim-preserving pick.
+    if (!(error instanceof InventoryReservationFeasibilityLimitError) &&
+        !(error instanceof InventoryExactAllocationLimitError)) throw error;
   }
   return planInventoryFungibilityAllocationWithHolds({ ...input, allowAllocatedStock: true }, true);
 }

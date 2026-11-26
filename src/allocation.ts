@@ -126,6 +126,9 @@ export interface InventoryAllocationResult {
 /** Maximum exact-allocation search choices before callers must narrow the candidate set. */
 export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 
+/** The exact allocator reached its depth or state budget before it could decide the pick. */
+export class InventoryExactAllocationLimitError extends Error {}
+
 /** Maximum recursive exact-search depth before callers must narrow the candidate set. */
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
 
@@ -496,7 +499,7 @@ function searchInventoryAllocations({
   }
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
     if (ignoreIncrements) return undefined;
-    throw new Error(
+    throw new InventoryExactAllocationLimitError(
       "Exact allocation exceeded its safe search bound; narrow the candidates or request."
     );
   }
@@ -569,7 +572,7 @@ function searchInventoryAllocations({
       if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
         // A diagnostic without a proven improvement must leave the accepted plan usable.
         if (ignoreIncrements) return true;
-        throw new Error(
+        throw new InventoryExactAllocationLimitError(
           "Exact allocation exceeded its safe search bound; narrow the candidates or request."
         );
       }
