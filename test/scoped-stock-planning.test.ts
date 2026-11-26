@@ -1022,6 +1022,77 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("checks for a measured split after the primary-only plan fills the request", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, pieces, weight, occurredAtEpochMs] of [
+      ["first", "3", "6", time0], ["witness", "1", "1", time1], ["whole", "4", "4", time2],
+    ] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}`, occurredAtEpochMs,
+        to: { itemId: "measured", placementNodeId: "store", lotId },
+        amount: measuredStockAmount(pieces, "piece", [{ axisId: "weight", value: weight, unit: "kg" }]),
+      });
+    }
+    const transfer = {
+      occurredAtEpochMs: time3, toPlacementNodeId: "destination",
+      selector: { itemId: "measured", placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+    };
+    const before = storage.readSegmentedStockHead();
+    await expect(inventory.stock.transferByPolicy({
+      ...transfer, operationId: "reject-retry-split",
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "3", unit: "kg" }]),
+    })).rejects.toThrow("intact package/serial increments");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    const shortage = await inventory.stock.transferByPolicy({
+      ...transfer, operationId: "record-retry-shortage",
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]),
+    });
+    expect(shortage.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("2", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("3", "kg") }],
+      },
+    }]);
+  });
+
+  it.each(["1", "2"])("searches only compatible whole witnesses for a %s L report", async (volume) => {
+    const item = defineInventoryItem({
+      itemId: "material", revisionId: "material-v1",
+      primaryAxis: { axisId: "weight", role: InventoryMeasurementAxisRole.Primary, unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required },
+      independentAxes: [{ axisId: "volume", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional }],
+      reservationAxisId: "weight",
+      tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional },
+      qualifiedDimensions: [],
+    });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "receive-loose", occurredAtEpochMs: time0, to: { itemId: item.itemId, placementNodeId: "store", lotId: "loose" },
+      amount: stockAmount("5.000000", "kg"),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-measured", occurredAtEpochMs: time1, to: { itemId: item.itemId, placementNodeId: "store", lotId: "whole" },
+      amount: measuredStockAmount("5", "kg", [{ axisId: "volume", value: "2", unit: "L" }]),
+    });
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "move-measured-material", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("10", "kg", [{ axisId: "volume", value: volume, unit: "L" }]),
+    });
+    expect(moved.event.positiveLayerProvenanceTransfers?.map(({ from }) => from.lotId)).toEqual(volume === "1" ? ["loose"] : ["loose", "whole"]);
+    if (volume === "2") {
+      expect(moved.event.unwitnessedStockMovements).toBeUndefined();
+      return;
+    }
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("5.000000", "kg") },
+        independent: [{ axisId: "volume", quantity: parseQuantity("1", "L") }],
+      },
+    }]);
+  });
+
   it("records an exact measured shortfall after a FIFO prefix exceeds the storage scale", async () => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
     for (const [lotId, pieces, occurredAtEpochMs] of [["first", "1.1", time0], ["second", "1.9", time1]] as const) {
@@ -2379,6 +2450,37 @@ describe("indexed stock planning and availability", () => {
     });
     expect(scoped.deficit.primary.quantity.amountMinor).toBe(2);
     expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it("includes full selected deficits and attributed burden only in their own bins", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "receive-third-bin", occurredAtEpochMs: time0,
+      to: loosePosition("c", { lotId: "selected" }), amount: stockAmount("2", "piece"),
+    });
+    for (const [bin, lotId, pieces] of [
+      ["a", "selected", "1"], ["a", "other", "1"], ["b", "other", "4"], ["c", "other", "1"],
+    ] as const) {
+      await inventory.stock.issue({
+        operationId: `record-${bin}-${lotId}`, occurredAtEpochMs: time1,
+        from: loosePosition(bin, { lotId }), amount: stockAmount(pieces, "piece"),
+      });
+    }
+    const selection = inventoryStockSelector("item-a", {
+      itemRevisionIds: ["item-a-v2"], placementNodeIds: ["a", "b", "c"], lotIds: ["selected"],
+    });
+    const canonical = (await inventory.read.availability(selection, time2)).revisions[0];
+    const scoped = await readInventoryScopedStockAvailability({
+      storage, catalog, selector: selection, itemRevisionId: "item-a-v2", atEpochMs: time2,
+    });
+    for (const result of [canonical, scoped]) {
+      expect(result?.physicalOnHand.primary.quantity.amountMinor).toBe(2);
+      expect(result?.deficit.primary.quantity.amountMinor).toBe(3);
+      expect(result?.onHand.primary.quantity.amountMinor).toBe(-1);
+      expect(result?.usableDeficit.primary.quantity.amountMinor).toBe(1);
+    }
   });
 
   it("keeps an exact hold on a signed deficit out of usable allocations", async () => {

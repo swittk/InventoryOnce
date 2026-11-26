@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4220,
-    "compilerCallGraphEdges": 11886,
+    "compilerCallGraphCallables": 4226,
+    "compilerCallGraphEdges": 11922,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -1567,7 +1567,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 9,
           "path": "src/availability.ts"
         },
         {
@@ -6901,7 +6901,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 9,
           "path": "src/availability.ts"
         },
         {
@@ -11057,10 +11057,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:103774:<anonymous@1798>",
+              "id": "test/scoped-stock-planning.test.ts:107925:<anonymous@1869>",
               "kind": "ArrowFunction",
-              "line": 1798,
-              "name": "<anonymous@1798>",
+              "line": 1869,
+              "name": "<anonymous@1869>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -11703,10 +11703,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:103774:<anonymous@1798>",
+              "id": "test/scoped-stock-planning.test.ts:107925:<anonymous@1869>",
               "kind": "ArrowFunction",
-              "line": 1798,
-              "name": "<anonymous@1798>",
+              "line": 1869,
+              "name": "<anonymous@1869>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -13723,10 +13723,10 @@
               "column": 98,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:129997:<anonymous@2237>",
+              "id": "test/scoped-stock-planning.test.ts:134148:<anonymous@2308>",
               "kind": "ArrowFunction",
-              "line": 2237,
-              "name": "<anonymous@2237>",
+              "line": 2308,
+              "name": "<anonymous@2308>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14208,10 +14208,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:108595:<anonymous@1870>",
+              "id": "test/scoped-stock-planning.test.ts:112746:<anonymous@1941>",
               "kind": "ArrowFunction",
-              "line": 1870,
-              "name": "<anonymous@1870>",
+              "line": 1941,
+              "name": "<anonymous@1941>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14711,10 +14711,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:108595:<anonymous@1870>",
+              "id": "test/scoped-stock-planning.test.ts:112746:<anonymous@1941>",
               "kind": "ArrowFunction",
-              "line": 1870,
-              "name": "<anonymous@1870>",
+              "line": 1941,
+              "name": "<anonymous@1941>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -18665,7 +18665,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 15,
+          "occurrences": 14,
           "path": "src/availability.ts"
         },
         {
@@ -19725,7 +19725,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 71,
+          "occurrences": 75,
           "path": "src/availability.ts"
         },
         {
@@ -19797,7 +19797,7 @@
           "path": "src/model.ts"
         },
         {
-          "occurrences": 94,
+          "occurrences": 97,
           "path": "src/picking.ts"
         },
         {
@@ -21133,7 +21133,7 @@
           "path": "src/authority.ts"
         },
         {
-          "occurrences": 15,
+          "occurrences": 14,
           "path": "src/availability.ts"
         },
         {
@@ -30610,10 +30610,10 @@
               "column": 73,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:100233:<anonymous@1740>",
+              "id": "test/scoped-stock-planning.test.ts:104384:<anonymous@1811>",
               "kind": "ArrowFunction",
-              "line": 1740,
-              "name": "<anonymous@1740>",
+              "line": 1811,
+              "name": "<anonymous@1811>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34940,9 +34940,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:52327:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:53551:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 1155,
+              "line": 1178,
               "name": "inventoryAmountForPrimaryAllocation",
               "reason": "resolved-call"
             }
@@ -34951,9 +34951,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:52327:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:53551:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1155,
+            "line": 1178,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -34976,9 +34976,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:52327:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:53551:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1155,
+          "line": 1178,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -38845,10 +38845,6 @@
         },
         {
           "occurrences": 2,
-          "path": "src/availability.ts"
-        },
-        {
-          "occurrences": 2,
           "path": "src/measurement-schema.ts"
         },
         {
@@ -39169,10 +39165,6 @@
         {
           "occurrences": 3,
           "path": "src/amounts.ts"
-        },
-        {
-          "occurrences": 2,
-          "path": "src/availability.ts"
         },
         {
           "occurrences": 2,
@@ -41393,9 +41385,9 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6858:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6749:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 161,
+              "line": 154,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             },
@@ -42253,7 +42245,7 @@
           "path": "src/migrations.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 11,
           "path": "src/picking.ts"
         },
         {
@@ -47251,7 +47243,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 31,
+          "occurrences": 30,
           "path": "src/availability.ts"
         },
         {
@@ -47319,7 +47311,7 @@
           "path": "src/measurements.ts"
         },
         {
-          "occurrences": 46,
+          "occurrences": 50,
           "path": "src/picking.ts"
         },
         {
@@ -49721,9 +49713,9 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6858:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6749:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 161,
+              "line": 154,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             }
@@ -49732,9 +49724,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6858:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6749:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 161,
+            "line": 154,
             "name": "summarizeInventoryAvailability"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -49761,9 +49753,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6858:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6749:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 161,
+          "line": 154,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -58644,9 +58636,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:52327:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:53551:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 1155,
+              "line": 1178,
               "name": "inventoryAmountForPrimaryAllocation",
               "reason": "resolved-call"
             }
@@ -58655,9 +58647,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:52327:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:53551:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1155,
+            "line": 1178,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -58680,9 +58672,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:52327:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:53551:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1155,
+          "line": 1178,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -60448,10 +60440,6 @@
         },
         {
           "occurrences": 2,
-          "path": "src/availability.ts"
-        },
-        {
-          "occurrences": 2,
           "path": "src/measurement-schema.ts"
         },
         {
@@ -60772,10 +60760,6 @@
         {
           "occurrences": 3,
           "path": "src/amounts.ts"
-        },
-        {
-          "occurrences": 2,
-          "path": "src/availability.ts"
         },
         {
           "occurrences": 2,
@@ -65017,7 +65001,7 @@
           "path": "src/amounts.ts"
         },
         {
-          "occurrences": 31,
+          "occurrences": 30,
           "path": "src/availability.ts"
         },
         {
@@ -65085,7 +65069,7 @@
           "path": "src/measurements.ts"
         },
         {
-          "occurrences": 46,
+          "occurrences": 50,
           "path": "src/picking.ts"
         },
         {
@@ -67197,9 +67181,9 @@
               "column": 1,
               "file": "src/availability.ts",
               "hasBody": true,
-              "id": "src/availability.ts:6858:summarizeInventoryAvailability",
+              "id": "src/availability.ts:6749:summarizeInventoryAvailability",
               "kind": "FunctionDeclaration",
-              "line": 161,
+              "line": 154,
               "name": "summarizeInventoryAvailability",
               "reason": "resolved-call"
             }
@@ -67208,9 +67192,9 @@
             "column": 1,
             "file": "src/availability.ts",
             "hasBody": true,
-            "id": "src/availability.ts:6858:summarizeInventoryAvailability",
+            "id": "src/availability.ts:6749:summarizeInventoryAvailability",
             "kind": "FunctionDeclaration",
-            "line": 161,
+            "line": 154,
             "name": "summarizeInventoryAvailability"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -67237,9 +67221,9 @@
           "column": 1,
           "file": "src/availability.ts",
           "hasBody": true,
-          "id": "src/availability.ts:6858:summarizeInventoryAvailability",
+          "id": "src/availability.ts:6749:summarizeInventoryAvailability",
           "kind": "FunctionDeclaration",
-          "line": 161,
+          "line": 154,
           "name": "summarizeInventoryAvailability"
         }
       ],
@@ -75037,7 +75021,7 @@
       "inputMapping": "Collection revision and optional scope map to frozen member identities and selector constraints.",
       "internalReferences": [
         {
-          "occurrences": 6,
+          "occurrences": 5,
           "path": "src/availability.ts"
         },
         {
@@ -77609,7 +77593,7 @@
       "inputMapping": "Pool revision, exact basis quantity, scope, method, and eligibility flags map to revision-frozen member candidates.",
       "internalReferences": [
         {
-          "occurrences": 6,
+          "occurrences": 5,
           "path": "src/availability.ts"
         },
         {
@@ -80731,7 +80715,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 7,
           "path": "src/availability.ts"
         },
         {
@@ -83183,7 +83167,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 6,
+          "occurrences": 5,
           "path": "src/availability.ts"
         },
         {
@@ -83357,7 +83341,7 @@
       "inputMapping": "Selector/identity/direct-placement/subtree/time fields map to a query over one fully published abstract world.",
       "internalReferences": [
         {
-          "occurrences": 9,
+          "occurrences": 1,
           "path": "src/availability.ts"
         },
         {
@@ -86688,7 +86672,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 8,
+          "occurrences": 7,
           "path": "src/availability.ts"
         },
         {
@@ -88814,7 +88798,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 6,
+          "occurrences": 5,
           "path": "src/availability.ts"
         },
         {
@@ -88976,7 +88960,7 @@
       "inputMapping": "One public snapshot freezes one published world revision including stock, placement topology, catalogue, claims, and counts.",
       "internalReferences": [
         {
-          "occurrences": 9,
+          "occurrences": 1,
           "path": "src/availability.ts"
         },
         {
@@ -97976,10 +97960,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:103774:<anonymous@1798>",
+              "id": "test/scoped-stock-planning.test.ts:107925:<anonymous@1869>",
               "kind": "ArrowFunction",
-              "line": 1798,
-              "name": "<anonymous@1798>",
+              "line": 1869,
+              "name": "<anonymous@1869>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -98316,10 +98300,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:103774:<anonymous@1798>",
+              "id": "test/scoped-stock-planning.test.ts:107925:<anonymous@1869>",
               "kind": "ArrowFunction",
-              "line": 1798,
-              "name": "<anonymous@1798>",
+              "line": 1869,
+              "name": "<anonymous@1869>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99720,10 +99704,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:108595:<anonymous@1870>",
+              "id": "test/scoped-stock-planning.test.ts:112746:<anonymous@1941>",
               "kind": "ArrowFunction",
-              "line": 1870,
-              "name": "<anonymous@1870>",
+              "line": 1941,
+              "name": "<anonymous@1941>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -100220,10 +100204,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:108595:<anonymous@1870>",
+              "id": "test/scoped-stock-planning.test.ts:112746:<anonymous@1941>",
               "kind": "ArrowFunction",
-              "line": 1870,
-              "name": "<anonymous@1870>",
+              "line": 1941,
+              "name": "<anonymous@1941>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -102046,5 +102030,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "fe8ce0fe4c8731e569afedfbd166907822d1b808c746dbb0d5bb2057deed5113"
+  "surfaceSha256": "2f76a30f2caed04cff1fcfdb8024f2952041df7d6e87af074eedde128e9c3b7d"
 }

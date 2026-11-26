@@ -2017,3 +2017,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - The measured split check subtracts accepted witnesses from each row's eligible capacity. A package left in the same row can still show that the report requires a split.
 - Fungibility errors name the exact member allocation increments. Loose stock also follows its configured reference increment.
+
+## 2026-11-26 — measured retry limits and scoped deficit totals
+
+- Measured retries leave out rows whose smallest legal increment exceeds a reported axis. Split detection also checks the final remainder when the first primary-only pick filled the requested quantity.
+- A signed availability read counts the full liability only in physical pools with a selected negative row. Other pools contribute the deficit burden on selected positive rows.

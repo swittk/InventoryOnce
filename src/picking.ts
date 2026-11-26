@@ -328,7 +328,8 @@ export function planWorkingInventoryAllocation({
       }) !== undefined);
     const canRecordPartial = deferMeasuredShortfall && allowMeasuredShortfall;
     // A genuine physical shortage may leave no usable witness, including when a whole pick cannot leave a storable remainder.
-    const incrementBlocked = allocated.shortfall.amountMinor > 0 && allocated.incrementBlockedStock;
+    const primaryWasFilled = allocated.shortfall.amountMinor === 0;
+    const incrementBlocked = !primaryWasFilled && allocated.incrementBlockedStock;
     const rawCapacityCoversBlockedRequest = canRecordPartial && incrementBlocked &&
       policyPrimaryCapacityCoversRequest(allocationInput);
     const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0 && !rawCapacityCoversBlockedRequest;
@@ -341,11 +342,14 @@ export function planWorkingInventoryAllocation({
         /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
         acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && acceptsLines(buildLines(choices)),
       };
+      const measuredCandidates = canRecordPartial ? selectableMeasuredWitnesses({
+        catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
+      }) : measuredInput.candidates;
       const measured = canRecordPartial
         ? allocateInventoryUpTo({
-            ...measuredInput, assessIncrementBlockage: false,
+            ...measuredInput, candidates: measuredCandidates, assessIncrementBlockage: false,
             requiresPositiveShortfall: reportAxisExceedsSelectableMeasurements({
-              catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
+              report: resolved.measurements, candidates: measuredCandidates, rows: candidateResult.rowsById,
             }),
           })
         : allocateWorkingInventory(measuredInput);
@@ -353,7 +357,9 @@ export function planWorkingInventoryAllocation({
         allocated = measured;
         lines = buildLines(measured.allocations);
       }
-      if (rawCapacityCoversBlockedRequest && lines !== undefined && allocated.shortfall.amountMinor > 0) {
+      // An initially full primary pick also proves that raw capacity covered the request.
+      if ((rawCapacityCoversBlockedRequest || (canRecordPartial && primaryWasFilled)) &&
+          lines !== undefined && allocated.shortfall.amountMinor > 0) {
         const remainder = inventoryPolicyMovementRemainder({
           catalog, item: selected.item, report: resolved.measurements, lines,
         });
@@ -395,8 +401,8 @@ export function planWorkingInventoryAllocation({
   };
 }
 
-/** Inputs for proving that a measured report needs a nonempty unwitnessed remainder. */
-interface ReportAxisExceedsSelectableMeasurementsInput {
+/** Inputs for excluding rows that cannot witness any increment of a measured report. */
+interface SelectableMeasuredWitnessesInput {
   /** Retained fixed contents for candidates that can be picked by package. */
   readonly catalog: InventoryCatalog;
   /** Measurements that the movement needs to explain. */
@@ -407,16 +413,47 @@ interface ReportAxisExceedsSelectableMeasurementsInput {
   readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
 }
 
+/** Keep a candidate only if at least one legal increment can fit the reported axes. */
+function selectableMeasuredWitnesses({
+  catalog, report, candidates, rows,
+}: SelectableMeasuredWitnessesInput): readonly InventoryWorkingAllocationCandidate[] {
+  const primary = report.primary;
+  return candidates.filter(
+    /** Exclude rows when even their smallest legal pick exceeds a reported quantity. */
+    ({ position, available, allocationIncrement }) => {
+      if (allocationIncrement === undefined) return true;
+      if (compareWorkingQuantities(allocationIncrement, primary.quantity) > 0 ||
+          compareWorkingQuantities(allocationIncrement, available) > 0) return false;
+      const row = rows.get(inventoryStockPositionIdentity(position));
+      if (row === undefined) return true;
+      const fullPrimary = inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit);
+      if (compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
+        return report.independent.every(
+          /** A whole-only row must fit every reported independent axis as it stands. */
+          ({ axisId, quantity }) => compareWorkingQuantities(
+            inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit), quantity,
+          ) <= 0,
+        );
+      }
+      if (position.packagingRevisionId === undefined) return true;
+      const fixed = catalog.packagingRevision(position.packagingRevisionId).fixedContents;
+      return report.independent.every(
+        /** Compare the contents of one package for rows that allow a partial pick. */
+        ({ axisId, quantity }) => compareQuantity(inventoryMeasurementAt(fixed, axisId, quantity.unit), quantity) <= 0,
+      );
+    }
+  );
+}
+
 /** Prove a positive primary remainder is needed when even the eligible measurement total falls short. */
 function reportAxisExceedsSelectableMeasurements({
-  catalog, report, candidates, rows,
-}: ReportAxisExceedsSelectableMeasurementsInput): boolean {
-  const primary = report.primary;
+  report, candidates, rows,
+}: Omit<SelectableMeasuredWitnessesInput, "catalog">): boolean {
   for (const { axisId, quantity } of report.independent) {
     if (quantity.amountMinor === 0) continue;
     /** Exact difference from a conservative total of all rows that can contribute to this axis. */
     const unaccounted: ExactQuantityDigits = { minor: BigInt(quantity.amountMinor), decimals: quantity.decimals };
-    for (const { position, available, allocationIncrement } of candidates) {
+    for (const { position } of candidates) {
       const row = rows.get(inventoryStockPositionIdentity(position));
       if (row === undefined) {
         // An unknown candidate's measurements cannot prove a shortage.
@@ -424,20 +461,6 @@ function reportAxisExceedsSelectableMeasurements({
       }
       const measured = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
       if (measured.amountMinor <= 0n) continue;
-      if (allocationIncrement !== undefined) {
-        if (compareWorkingQuantities(allocationIncrement, primary.quantity) > 0 ||
-            compareWorkingQuantities(allocationIncrement, available) > 0) continue;
-        const fullPrimary = inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit);
-        if (compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
-          if (compareWorkingQuantities(measured, quantity) > 0) continue;
-        } else if (position.packagingRevisionId !== undefined) {
-          // A divisible fixed package contributes at least its contents per package.
-          const fixed = inventoryMeasurementAt(
-            catalog.packagingRevision(position.packagingRevisionId).fixedContents, axisId, quantity.unit
-          );
-          if (compareQuantity(fixed, quantity) > 0) continue;
-        }
-      }
       // Counting the whole row can overestimate what fits together, so it only proves a shortfall.
       addExactQuantityDigits(unaccounted, -BigInt(measured.amountMinor), measured.decimals);
       if (unaccounted.minor <= 0n) break;

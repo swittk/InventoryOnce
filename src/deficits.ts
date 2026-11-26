@@ -352,7 +352,7 @@ function recordedDeficitByLocation(
 }
 
 /** Stable internal physical-pool identity for broad deficit accounting without inventing a placement. */
-function inventoryDeficitPhysicalPoolIdentity(
+export function inventoryDeficitPhysicalPoolIdentity(
   position: InventoryStockPositionKey
 ): string {
   if (position.placementNodeId !== undefined) {
