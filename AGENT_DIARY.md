@@ -2003,3 +2003,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-26 — placement fallback before publication
 
 - When a valid single-node move targets another branch within its current parent, the stock event hook leaves it to the ordinary placement path before publishing. The placement preparer owns the subtree check.
+
+## 2026-11-26 — measured search bounds and member scope
+
+- Measured recording can use its first policy-ordered pick when it reaches the proven positive-remainder floor and passes the exact movement predicate. The recursive search still applies when the shortcut cannot establish an optimal witness.
+- Fungibility previews skip members without matching positive direct stock before applying exact hold rules. Contributing members still use their full signed pools for deficit attribution.

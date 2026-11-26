@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4213,
-    "compilerCallGraphEdges": 11842,
+    "compilerCallGraphCallables": 4218,
+    "compilerCallGraphEdges": 11859,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -11057,10 +11057,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:99462:<anonymous@1719>",
+              "id": "test/scoped-stock-planning.test.ts:101403:<anonymous@1756>",
               "kind": "ArrowFunction",
-              "line": 1719,
-              "name": "<anonymous@1719>",
+              "line": 1756,
+              "name": "<anonymous@1756>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -11703,10 +11703,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:99462:<anonymous@1719>",
+              "id": "test/scoped-stock-planning.test.ts:101403:<anonymous@1756>",
               "kind": "ArrowFunction",
-              "line": 1719,
-              "name": "<anonymous@1719>",
+              "line": 1756,
+              "name": "<anonymous@1756>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -13723,10 +13723,10 @@
               "column": 98,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:125685:<anonymous@2158>",
+              "id": "test/scoped-stock-planning.test.ts:127626:<anonymous@2195>",
               "kind": "ArrowFunction",
-              "line": 2158,
-              "name": "<anonymous@2158>",
+              "line": 2195,
+              "name": "<anonymous@2195>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14208,10 +14208,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:104283:<anonymous@1791>",
+              "id": "test/scoped-stock-planning.test.ts:106224:<anonymous@1828>",
               "kind": "ArrowFunction",
-              "line": 1791,
-              "name": "<anonymous@1791>",
+              "line": 1828,
+              "name": "<anonymous@1828>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14711,10 +14711,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:104283:<anonymous@1791>",
+              "id": "test/scoped-stock-planning.test.ts:106224:<anonymous@1828>",
               "kind": "ArrowFunction",
-              "line": 1791,
-              "name": "<anonymous@1791>",
+              "line": 1828,
+              "name": "<anonymous@1828>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -19773,7 +19773,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 41,
+          "occurrences": 46,
           "path": "src/fungibility.ts"
         },
         {
@@ -25375,9 +25375,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:38982:compareInventoryAllocationCandidates",
+              "id": "src/allocation.ts:39476:compareInventoryAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 845,
+              "line": 851,
               "name": "compareInventoryAllocationCandidates",
               "reason": "resolved-call"
             }
@@ -25386,9 +25386,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:38982:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:39476:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 845,
+            "line": 851,
             "name": "compareInventoryAllocationCandidates"
           },
           "test": "test/allocation.test.ts"
@@ -25415,9 +25415,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:38982:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:39476:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 845,
+          "line": 851,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -30610,10 +30610,10 @@
               "column": 73,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:95921:<anonymous@1661>",
+              "id": "test/scoped-stock-planning.test.ts:97862:<anonymous@1698>",
               "kind": "ArrowFunction",
-              "line": 1661,
-              "name": "<anonymous@1661>",
+              "line": 1698,
+              "name": "<anonymous@1698>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34920,9 +34920,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 343,
+              "line": 344,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             },
@@ -34930,9 +34930,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:15352:planInventoryFungibilityAllocationWithHolds",
+              "id": "src/fungibility.ts:15403:planInventoryFungibilityAllocationWithHolds",
               "kind": "FunctionDeclaration",
-              "line": 357,
+              "line": 358,
               "name": "planInventoryFungibilityAllocationWithHolds",
               "reason": "resolved-call"
             },
@@ -37528,9 +37528,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
+              "id": "src/fungibility.ts:3831:inventoryFungibilityScopeIdentity",
               "kind": "FunctionDeclaration",
-              "line": 117,
+              "line": 118,
               "name": "inventoryFungibilityScopeIdentity",
               "reason": "resolved-call"
             }
@@ -37539,9 +37539,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:3831:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 117,
+            "line": 118,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "test": "test/catalog-publication.test.ts"
@@ -37564,9 +37564,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:3831:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 117,
+          "line": 118,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -42440,6 +42440,10 @@
         },
         {
           "occurrences": 2,
+          "path": "src/fungibility.ts"
+        },
+        {
+          "occurrences": 2,
           "path": "src/picking.ts"
         },
         {
@@ -45379,9 +45383,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
+              "id": "src/fungibility.ts:3392:normalizeInventoryFungibilityScope",
               "kind": "FunctionDeclaration",
-              "line": 103,
+              "line": 104,
               "name": "normalizeInventoryFungibilityScope",
               "reason": "resolved-call"
             }
@@ -45390,9 +45394,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3392:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 103,
+            "line": 104,
             "name": "normalizeInventoryFungibilityScope"
           },
           "test": "test/catalog-publication.test.ts"
@@ -45415,9 +45419,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3392:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 103,
+          "line": 104,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -46591,9 +46595,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 343,
+              "line": 344,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             }
@@ -46602,9 +46606,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 343,
+            "line": 344,
             "name": "planInventoryFungibilityAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -46627,9 +46631,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 343,
+          "line": 344,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -47283,7 +47287,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 16,
+          "occurrences": 17,
           "path": "src/fungibility.ts"
         },
         {
@@ -50014,9 +50018,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
+              "id": "src/fungibility.ts:6602:summarizeInventoryFungibility",
               "kind": "FunctionDeclaration",
-              "line": 174,
+              "line": 175,
               "name": "summarizeInventoryFungibility",
               "reason": "resolved-call"
             }
@@ -50025,9 +50029,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6602:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 174,
+            "line": 175,
             "name": "summarizeInventoryFungibility"
           },
           "test": "test/fungibility.test.ts"
@@ -50050,9 +50054,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6602:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 174,
+          "line": 175,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -58616,9 +58620,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 343,
+              "line": 344,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             },
@@ -58626,9 +58630,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:15352:planInventoryFungibilityAllocationWithHolds",
+              "id": "src/fungibility.ts:15403:planInventoryFungibilityAllocationWithHolds",
               "kind": "FunctionDeclaration",
-              "line": 357,
+              "line": 358,
               "name": "planInventoryFungibilityAllocationWithHolds",
               "reason": "resolved-call"
             },
@@ -59745,9 +59749,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
+              "id": "src/fungibility.ts:3831:inventoryFungibilityScopeIdentity",
               "kind": "FunctionDeclaration",
-              "line": 117,
+              "line": 118,
               "name": "inventoryFungibilityScopeIdentity",
               "reason": "resolved-call"
             }
@@ -59756,9 +59760,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:3831:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 117,
+            "line": 118,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "test": "test/catalog-publication.test.ts"
@@ -59781,9 +59785,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:3831:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 117,
+          "line": 118,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -63623,9 +63627,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
+              "id": "src/fungibility.ts:3392:normalizeInventoryFungibilityScope",
               "kind": "FunctionDeclaration",
-              "line": 103,
+              "line": 104,
               "name": "normalizeInventoryFungibilityScope",
               "reason": "resolved-call"
             }
@@ -63634,9 +63638,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3392:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 103,
+            "line": 104,
             "name": "normalizeInventoryFungibilityScope"
           },
           "test": "test/catalog-publication.test.ts"
@@ -63659,9 +63663,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3392:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 103,
+          "line": 104,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -64232,9 +64236,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 343,
+              "line": 344,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             }
@@ -64243,9 +64247,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 343,
+            "line": 344,
             "name": "planInventoryFungibilityAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -64268,9 +64272,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:14780:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 343,
+          "line": 344,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -65049,7 +65053,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 16,
+          "occurrences": 17,
           "path": "src/fungibility.ts"
         },
         {
@@ -67363,9 +67367,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
+              "id": "src/fungibility.ts:6602:summarizeInventoryFungibility",
               "kind": "FunctionDeclaration",
-              "line": 174,
+              "line": 175,
               "name": "summarizeInventoryFungibility",
               "reason": "resolved-call"
             }
@@ -67374,9 +67378,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6602:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 174,
+            "line": 175,
             "name": "summarizeInventoryFungibility"
           },
           "test": "test/fungibility.test.ts"
@@ -67399,9 +67403,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6602:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 174,
+          "line": 175,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -82375,7 +82379,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 18,
+          "occurrences": 19,
           "path": "src/fungibility.ts"
         },
         {
@@ -88240,7 +88244,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 18,
+          "occurrences": 19,
           "path": "src/fungibility.ts"
         },
         {
@@ -97964,10 +97968,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:99462:<anonymous@1719>",
+              "id": "test/scoped-stock-planning.test.ts:101403:<anonymous@1756>",
               "kind": "ArrowFunction",
-              "line": 1719,
-              "name": "<anonymous@1719>",
+              "line": 1756,
+              "name": "<anonymous@1756>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -98304,10 +98308,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:99462:<anonymous@1719>",
+              "id": "test/scoped-stock-planning.test.ts:101403:<anonymous@1756>",
               "kind": "ArrowFunction",
-              "line": 1719,
-              "name": "<anonymous@1719>",
+              "line": 1756,
+              "name": "<anonymous@1756>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99708,10 +99712,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:104283:<anonymous@1791>",
+              "id": "test/scoped-stock-planning.test.ts:106224:<anonymous@1828>",
               "kind": "ArrowFunction",
-              "line": 1791,
-              "name": "<anonymous@1791>",
+              "line": 1828,
+              "name": "<anonymous@1828>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -100208,10 +100212,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:104283:<anonymous@1791>",
+              "id": "test/scoped-stock-planning.test.ts:106224:<anonymous@1828>",
               "kind": "ArrowFunction",
-              "line": 1791,
-              "name": "<anonymous@1791>",
+              "line": 1828,
+              "name": "<anonymous@1828>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -102034,5 +102038,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "41780495114b3a144d378fdbbf416f719c57f7d482a3819564563acb9a452daa"
+  "surfaceSha256": "be43373c2fc24b11d602d91271d70e76d67601a113722ab628feb5cbe642294d"
 }

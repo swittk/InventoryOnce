@@ -432,10 +432,13 @@ function searchInventoryAllocations({
       }
     }
   }
-  if (totalCapacity > requestedMinor) {
-    /** The first lexicographic plan fills in order without backtracking. */
+  // When the measured predicate requires a remainder, reaching its proven floor is optimal.
+  const greedyShortfallMinor = acceptPartial && acceptAllocations !== undefined ? minimumShortfallMinor : 0n;
+  const greedyTargetMinor = requestedMinor - greedyShortfallMinor;
+  if (greedyTargetMinor > 0n && totalCapacity > greedyTargetMinor) {
+    /** The first policy-ordered plan fills the target without backtracking. */
     const picks: bigint[] = [];
-    let remaining = requestedMinor;
+    let remaining = greedyTargetMinor;
     for (let index = 0; index < candidates.length && remaining > 0n; index += 1) {
       const capacity = capacityMinor[index] ?? 0n;
       const increment = incrementMinor[index] ?? 1n;
@@ -446,9 +449,12 @@ function searchInventoryAllocations({
       remaining -= take;
     }
     if (remaining === 0n) {
-      const allocations = materializeExactAllocations(candidates, picks, decimals);
-      if (acceptAllocations === undefined || acceptAllocations(allocations)) {
-        return { allocations, shortfall: zeroQuantity(requested.unit, requested.decimals) };
+      const shortfall = greedyShortfallMinor === 0n
+        ? zeroQuantity(requested.unit, requested.decimals)
+        : inventoryAllocationQuantityIfStorable(greedyShortfallMinor, decimals, requested.unit);
+      if (shortfall !== undefined) {
+        const allocations = materializeExactAllocations(candidates, picks, decimals);
+        if (acceptAllocations === undefined || acceptAllocations(allocations)) return { allocations, shortfall };
       }
     }
   }

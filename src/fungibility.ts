@@ -72,6 +72,7 @@ import {
   type InventoryWorkingQuantity,
 } from "./quantity-storage.js";
 import {
+  inventoryStockPositionMatchesNormalizedSelector,
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
 } from "./selectors.js";
@@ -410,10 +411,21 @@ function planInventoryFungibilityAllocationWithHolds({
     }
     const selector = selectorForFungibilityMember(item, normalizedScope);
     const selection = { item, selector };
+    const pool = inventoryAllocationPoolFromWorld(world, selection, reservationAtEpochMs);
+    if (!recording) {
+      // The signed pool already applies subtree selection. Check the remaining scope before reading member holds.
+      const { withinPlacementNodeIds: _withinPlacementNodeIds, ...directSelector } = selector;
+      if (!pool.positions.some(
+        /** Only matching positive physical stock can contribute preview picks. */
+        ({ position }) => position.key.transferId === undefined && position.key.placementNodeId !== undefined &&
+          position.measurements.primary.quantity.amountMinor > 0 &&
+          inventoryStockPositionMatchesNormalizedSelector(position.key, directSelector)
+      )) continue;
+    }
     const { candidateResult, deficitAdjusted } = prepareInventoryPolicyAllocationPool({
       catalog,
       selection,
-      pool: inventoryAllocationPoolFromWorld(world, selection, reservationAtEpochMs),
+      pool,
       method,
       atEpochMs,
       reservationAtEpochMs,

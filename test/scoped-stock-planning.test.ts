@@ -1088,6 +1088,43 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("records a proven measured remainder when the stock pool exceeds the search depth", async () => {
+    const base = measuredItemCatalog("pieces").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base,
+      independentAxes: base.independentAxes.map((axis) => ({ ...axis, requirement: InventoryMeasurementRequirement.Optional })),
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receiveMany({
+      operationId: "receive-deep-measured-pool", occurredAtEpochMs: time0,
+      lines: Array.from({ length: 5_001 }, (_, index) => ({
+        to: { itemId: item.itemId, placementNodeId: "store", lotId: `lot-${String(index).padStart(4, "0")}` },
+        amount: stockAmount("1", "piece"),
+      })),
+    });
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "record-deep-measured-pool", occurredAtEpochMs: time1, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+    });
+    const selected = result.event.stockEffects.filter((effect) =>
+      effect.position.placementNodeId === "destination" && effect.position.lotId !== undefined
+    );
+    expect(selected).toMatchObject([{
+      position: { lotId: "lot-0000" },
+      measurementsDelta: { primary: { quantity: parseQuantity("1", "piece") } },
+    }]);
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("1", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
+      },
+    }]);
+  }, 15_000);
+
   it("records a measured two-piece remainder from a whole-package allocation", async () => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({

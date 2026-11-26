@@ -1307,6 +1307,20 @@ describe("derived pool summaries and exact member movements", () => {
     });
     await receiveMember({ inventory, itemId: unheld.itemId, itemRevisionId: unheld.revisionId,
       lotId: "unheld-member", quantity: "4", operationId: "receive-unheld-member", occurredAtEpochMs: time1 });
+    const command = {
+      occurredAtEpochMs: time2, fungibilityRevisionId: pool.revisionId, requested: parseQuantity("4", "equivalent"),
+      method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] }, toPlacementNodeId: "room",
+    };
+    const preview = await inventory.fungibility.plan({
+      fungibilityRevisionId: command.fungibilityRevisionId, requested: command.requested, method: command.method,
+      scope: { ...command.scope, lotIds: ["unheld-member"] }, atEpochMs: time2,
+    });
+    expect(preview.lines).toMatchObject([{
+      position: { itemId: unheld.itemId, lotId: "unheld-member" },
+      memberQuantity: parseQuantity("4", "piece"),
+    }]);
+    expect(preview.shortfall).toEqual(parseQuantity("0", "equivalent"));
+
     const outside = { itemId: unrelated.itemId, placementNodeId: "elsewhere" };
     const one = stockAmount("1", "piece");
     await inventory.stock.receive({ operationId: "receive-outside-pool", occurredAtEpochMs: time0, to: outside, amount: one });
@@ -1316,10 +1330,6 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
     });
     await inventory.stock.issue({ operationId: "deplete-outside-pool", occurredAtEpochMs: time1, from: outside, amount: one });
-    const command = {
-      occurredAtEpochMs: time2, fungibilityRevisionId: pool.revisionId, requested: parseQuantity("4", "equivalent"),
-      method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] }, toPlacementNodeId: "room",
-    };
     const preferred = await inventory.fungibility.transfer({ ...command, operationId: "move-unheld-member" });
     expect(preferred.event.stockEffects.map((effect) => [
       effect.position.itemId, effect.position.placementNodeId, effect.measurementsDelta.primary.quantity,
