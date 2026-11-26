@@ -903,6 +903,55 @@ describe("derived pool summaries and exact member movements", () => {
       lines: [{ itemRevisionId: newer.revisionId, memberQuantity: parseQuantity("3", "piece") }],
       shortfall: parseQuantity("0.0", "equivalent"), incrementBlockedStock: true,
     });
+    await inventory.stock.receive({
+      operationId: "receive-three-boxes", occurredAtEpochMs: time1,
+      to: { itemId: older.itemId, placementNodeId: "three-box-store" }, amount: packageAmount(3, pack.revisionId),
+    });
+    const threeBoxes = { ...plan, scope: { placementNodeIds: ["three-box-store"] } };
+    const allThree = parseQuantity("4.5", "equivalent");
+    expect(await inventory.fungibility.plan({ ...threeBoxes, requested: allThree })).toMatchObject({
+      lines: [], shortfall: allThree, incrementBlockedStock: true,
+    });
+    expect(await inventory.fungibility.plan({ ...threeBoxes, requested: parseQuantity("3", "equivalent") })).toMatchObject({
+      lines: [{ amount: packageAmount(2, pack.revisionId) }],
+      shortfall: parseQuantity("0", "equivalent"), incrementBlockedStock: false,
+    });
+  });
+
+  it("skips a 180 kg drum that cannot supply an exact whole-pound pool pick", async () => {
+    const drumMaterial = defineScalarInventoryItem({
+      itemId: "drum-material", revisionId: "drum-material-v1", axisId: "weight", unit: "kg",
+    });
+    const looseMaterial = defineScalarInventoryItem({
+      itemId: "loose-material", revisionId: "loose-material-v1", axisId: "weight", unit: "[lb_av]",
+    });
+    const drum = defineScalarInventoryPackaging({
+      revisionId: "drum-180kg", item: drumMaterial, packageUnit: "drum", contains: "180",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "material-by-pound", revisionId: "material-by-pound-v1", basisUnit: "equivalent",
+      members: [{ item: drumMaterial, memberQuantity: "0.45359237" }, { item: looseMaterial }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [drumMaterial, looseMaterial],
+      activeItemRevisionIds: { [drumMaterial.itemId]: drumMaterial.revisionId, [looseMaterial.itemId]: looseMaterial.revisionId },
+      packagingRevisions: [drum], fungibilityRevisions: [pool], activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    await inventory.stock.receive({
+      operationId: "receive-180kg-drum", occurredAtEpochMs: time0,
+      to: { itemId: drumMaterial.itemId, placementNodeId: "store" }, amount: packageAmount(1, drum.revisionId),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-loose-pound", occurredAtEpochMs: time1,
+      to: { itemId: looseMaterial.itemId, placementNodeId: "store" }, amount: stockAmount("1", "[lb_av]"),
+    });
+    const plan = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId, requested: parseQuantity("1", "equivalent"),
+      method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] }, atEpochMs: time2,
+    });
+    expect(plan.lines).toMatchObject([{ itemRevisionId: looseMaterial.revisionId, amount: stockAmount("1", "[lb_av]") }]);
+    expect(plan.shortfall).toEqual(parseQuantity("0", "equivalent"));
   });
 
   it("returns a complete whole-package plan without rechecking fractional package picks", async () => {

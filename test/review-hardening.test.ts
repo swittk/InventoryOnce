@@ -775,6 +775,9 @@ describe("package and serial reservation granularity", () => {
       from: position.key,
       packageCount: 1,
     });
+    expect((await inventory.read.positions({ itemId: "item-a" }))
+      .find(({ key }) => key.packagingRevisionId === undefined)?.measurements.primary.quantity)
+      .toEqual(parseQuantity("20", "piece"));
     expect((await inventory.read.reservationFeasibility(time2)).groups[0]).toMatchObject({
       reservationIds: ["first-box-claim"], shortage: parseQuantity("20", "piece"),
     });

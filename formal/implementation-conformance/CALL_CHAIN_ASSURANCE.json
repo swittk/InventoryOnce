@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4195,
-    "edges": 11723,
+    "callables": 4204,
+    "edges": 11758,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -5488,10 +5488,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:92173:<anonymous@1585>",
+                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
                 "kind": "ArrowFunction",
-                "line": 1585,
-                "name": "<anonymous@1585>",
+                "line": 1624,
+                "name": "<anonymous@1624>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -5782,10 +5782,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:92173:<anonymous@1585>",
+                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
                 "kind": "ArrowFunction",
-                "line": 1585,
-                "name": "<anonymous@1585>",
+                "line": 1624,
+                "name": "<anonymous@1624>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6684,10 +6684,10 @@
                 "column": 98,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:116659:<anonymous@1997>",
+                "id": "test/scoped-stock-planning.test.ts:119499:<anonymous@2046>",
                 "kind": "ArrowFunction",
-                "line": 1997,
-                "name": "<anonymous@1997>",
+                "line": 2046,
+                "name": "<anonymous@2046>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -8991,9 +8991,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:26925:applyDelta",
+          "id": "src/segmented-state.ts:27093:applyDelta",
           "kind": "MethodDeclaration",
-          "line": 655,
+          "line": 656,
           "name": "applyDelta"
         }
       ],
@@ -9004,9 +9004,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:26925:applyDelta",
+            "id": "src/segmented-state.ts:27093:applyDelta",
             "kind": "MethodDeclaration",
-            "line": 655,
+            "line": 656,
             "name": "applyDelta"
           },
           "witness": {
@@ -9044,9 +9044,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:26925:applyDelta",
+                "id": "src/segmented-state.ts:27093:applyDelta",
                 "kind": "MethodDeclaration",
-                "line": 655,
+                "line": 656,
                 "name": "applyDelta",
                 "reason": "resolved-call"
               }
@@ -9062,9 +9062,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:31668:applyStockEffects",
+          "id": "src/segmented-state.ts:31836:applyStockEffects",
           "kind": "MethodDeclaration",
-          "line": 782,
+          "line": 783,
           "name": "applyStockEffects"
         }
       ],
@@ -9075,9 +9075,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:31668:applyStockEffects",
+            "id": "src/segmented-state.ts:31836:applyStockEffects",
             "kind": "MethodDeclaration",
-            "line": 782,
+            "line": 783,
             "name": "applyStockEffects"
           },
           "witness": {
@@ -9115,9 +9115,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               }
@@ -9133,9 +9133,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:19688:contentRoot",
+          "id": "src/segmented-state.ts:19856:contentRoot",
           "kind": "MethodDeclaration",
-          "line": 447,
+          "line": 448,
           "name": "contentRoot"
         }
       ],
@@ -9146,9 +9146,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:19688:contentRoot",
+            "id": "src/segmented-state.ts:19856:contentRoot",
             "kind": "MethodDeclaration",
-            "line": 447,
+            "line": 448,
             "name": "contentRoot"
           },
           "witness": {
@@ -9186,9 +9186,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:19688:contentRoot",
+                "id": "src/segmented-state.ts:19856:contentRoot",
                 "kind": "MethodDeclaration",
-                "line": 447,
+                "line": 448,
                 "name": "contentRoot",
                 "reason": "resolved-call"
               }
@@ -9204,9 +9204,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:36683:materialize",
+          "id": "src/segmented-state.ts:36851:materialize",
           "kind": "MethodDeclaration",
-          "line": 886,
+          "line": 887,
           "name": "materialize"
         }
       ],
@@ -9217,9 +9217,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:36683:materialize",
+            "id": "src/segmented-state.ts:36851:materialize",
             "kind": "MethodDeclaration",
-            "line": 886,
+            "line": 887,
             "name": "materialize"
           },
           "witness": {
@@ -9247,9 +9247,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:36683:materialize",
+                "id": "src/segmented-state.ts:36851:materialize",
                 "kind": "MethodDeclaration",
-                "line": 886,
+                "line": 887,
                 "name": "materialize",
                 "reason": "resolved-call"
               }
@@ -9265,9 +9265,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:20064:position",
+          "id": "src/segmented-state.ts:20232:position",
           "kind": "MethodDeclaration",
-          "line": 459,
+          "line": 460,
           "name": "position"
         }
       ],
@@ -9278,9 +9278,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:20064:position",
+            "id": "src/segmented-state.ts:20232:position",
             "kind": "MethodDeclaration",
-            "line": 459,
+            "line": 460,
             "name": "position"
           },
           "witness": {
@@ -9318,9 +9318,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:20064:position",
+                "id": "src/segmented-state.ts:20232:position",
                 "kind": "MethodDeclaration",
-                "line": 459,
+                "line": 460,
                 "name": "position",
                 "reason": "resolved-call"
               }
@@ -9336,9 +9336,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:20949:positionsByItem",
+          "id": "src/segmented-state.ts:21117:positionsByItem",
           "kind": "MethodDeclaration",
-          "line": 483,
+          "line": 484,
           "name": "positionsByItem"
         }
       ],
@@ -9349,9 +9349,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:20949:positionsByItem",
+            "id": "src/segmented-state.ts:21117:positionsByItem",
             "kind": "MethodDeclaration",
-            "line": 483,
+            "line": 484,
             "name": "positionsByItem"
           },
           "witness": {
@@ -9389,9 +9389,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:20949:positionsByItem",
+                "id": "src/segmented-state.ts:21117:positionsByItem",
                 "kind": "MethodDeclaration",
-                "line": 483,
+                "line": 484,
                 "name": "positionsByItem",
                 "reason": "resolved-call"
               }
@@ -9407,9 +9407,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:21173:positionsByItemRevision",
+          "id": "src/segmented-state.ts:21341:positionsByItemRevision",
           "kind": "MethodDeclaration",
-          "line": 488,
+          "line": 489,
           "name": "positionsByItemRevision"
         }
       ],
@@ -9420,9 +9420,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:21173:positionsByItemRevision",
+            "id": "src/segmented-state.ts:21341:positionsByItemRevision",
             "kind": "MethodDeclaration",
-            "line": 488,
+            "line": 489,
             "name": "positionsByItemRevision"
           },
           "witness": {
@@ -9460,9 +9460,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:21173:positionsByItemRevision",
+                "id": "src/segmented-state.ts:21341:positionsByItemRevision",
                 "kind": "MethodDeclaration",
-                "line": 488,
+                "line": 489,
                 "name": "positionsByItemRevision",
                 "reason": "resolved-call"
               }
@@ -9478,9 +9478,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:21431:positionsByPlacement",
+          "id": "src/segmented-state.ts:21599:positionsByPlacement",
           "kind": "MethodDeclaration",
-          "line": 497,
+          "line": 498,
           "name": "positionsByPlacement"
         }
       ],
@@ -9491,9 +9491,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:21431:positionsByPlacement",
+            "id": "src/segmented-state.ts:21599:positionsByPlacement",
             "kind": "MethodDeclaration",
-            "line": 497,
+            "line": 498,
             "name": "positionsByPlacement"
           },
           "witness": {
@@ -9531,9 +9531,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:21431:positionsByPlacement",
+                "id": "src/segmented-state.ts:21599:positionsByPlacement",
                 "kind": "MethodDeclaration",
-                "line": 497,
+                "line": 498,
                 "name": "positionsByPlacement",
                 "reason": "resolved-call"
               }
@@ -9549,9 +9549,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:20764:positiveLayerStart",
+          "id": "src/segmented-state.ts:20932:positiveLayerStart",
           "kind": "MethodDeclaration",
-          "line": 478,
+          "line": 479,
           "name": "positiveLayerStart"
         }
       ],
@@ -9562,9 +9562,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:20764:positiveLayerStart",
+            "id": "src/segmented-state.ts:20932:positiveLayerStart",
             "kind": "MethodDeclaration",
-            "line": 478,
+            "line": 479,
             "name": "positiveLayerStart"
           },
           "witness": {
@@ -9602,9 +9602,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:20764:positiveLayerStart",
+                "id": "src/segmented-state.ts:20932:positiveLayerStart",
                 "kind": "MethodDeclaration",
-                "line": 478,
+                "line": 479,
                 "name": "positiveLayerStart",
                 "reason": "resolved-call"
               }
@@ -9620,9 +9620,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:20363:positivePositionBySerial",
+          "id": "src/segmented-state.ts:20531:positivePositionBySerial",
           "kind": "MethodDeclaration",
-          "line": 467,
+          "line": 468,
           "name": "positivePositionBySerial"
         }
       ],
@@ -9633,9 +9633,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:20363:positivePositionBySerial",
+            "id": "src/segmented-state.ts:20531:positivePositionBySerial",
             "kind": "MethodDeclaration",
-            "line": 467,
+            "line": 468,
             "name": "positivePositionBySerial"
           },
           "witness": {
@@ -9673,9 +9673,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:20363:positivePositionBySerial",
+                "id": "src/segmented-state.ts:20531:positivePositionBySerial",
                 "kind": "MethodDeclaration",
-                "line": 467,
+                "line": 468,
                 "name": "positivePositionBySerial",
                 "reason": "resolved-call"
               }
@@ -9691,9 +9691,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:21719:queryPositions",
+          "id": "src/segmented-state.ts:21887:queryPositions",
           "kind": "MethodDeclaration",
-          "line": 506,
+          "line": 507,
           "name": "queryPositions"
         }
       ],
@@ -9704,9 +9704,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:21719:queryPositions",
+            "id": "src/segmented-state.ts:21887:queryPositions",
             "kind": "MethodDeclaration",
-            "line": 506,
+            "line": 507,
             "name": "queryPositions"
           },
           "witness": {
@@ -9744,9 +9744,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:21719:queryPositions",
+                "id": "src/segmented-state.ts:21887:queryPositions",
                 "kind": "MethodDeclaration",
-                "line": 506,
+                "line": 507,
                 "name": "queryPositions",
                 "reason": "resolved-call"
               }
@@ -9762,9 +9762,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:35989:replaceExactPosition",
+          "id": "src/segmented-state.ts:36157:replaceExactPosition",
           "kind": "MethodDeclaration",
-          "line": 867,
+          "line": 868,
           "name": "replaceExactPosition"
         }
       ],
@@ -9775,9 +9775,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:35989:replaceExactPosition",
+            "id": "src/segmented-state.ts:36157:replaceExactPosition",
             "kind": "MethodDeclaration",
-            "line": 867,
+            "line": 868,
             "name": "replaceExactPosition"
           },
           "witness": {
@@ -9815,9 +9815,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:35989:replaceExactPosition",
+                "id": "src/segmented-state.ts:36157:replaceExactPosition",
                 "kind": "MethodDeclaration",
-                "line": 867,
+                "line": 868,
                 "name": "replaceExactPosition",
                 "reason": "resolved-call"
               }
@@ -9833,9 +9833,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:19544:revision",
+          "id": "src/segmented-state.ts:19712:revision",
           "kind": "MethodDeclaration",
-          "line": 442,
+          "line": 443,
           "name": "revision"
         }
       ],
@@ -9846,9 +9846,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:19544:revision",
+            "id": "src/segmented-state.ts:19712:revision",
             "kind": "MethodDeclaration",
-            "line": 442,
+            "line": 443,
             "name": "revision"
           },
           "witness": {
@@ -9886,9 +9886,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:19544:revision",
+                "id": "src/segmented-state.ts:19712:revision",
                 "kind": "MethodDeclaration",
-                "line": 442,
+                "line": 443,
                 "name": "revision",
                 "reason": "resolved-call"
               }
@@ -10359,7 +10359,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:5356:addQuantity",
+          "id": "src/quantity.ts:5423:addQuantity",
           "kind": "FunctionDeclaration",
           "line": 129,
           "name": "addQuantity"
@@ -10372,7 +10372,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:5356:addQuantity",
+            "id": "src/quantity.ts:5423:addQuantity",
             "kind": "FunctionDeclaration",
             "line": 129,
             "name": "addQuantity"
@@ -10422,7 +10422,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5356:addQuantity",
+                "id": "src/quantity.ts:5423:addQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 129,
                 "name": "addQuantity",
@@ -10440,9 +10440,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:5128:allocateInventory",
+          "id": "src/allocation.ts:5267:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 119,
+          "line": 121,
           "name": "allocateInventory"
         }
       ],
@@ -10453,9 +10453,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:5128:allocateInventory",
+            "id": "src/allocation.ts:5267:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 119,
+            "line": 121,
             "name": "allocateInventory"
           },
           "witness": {
@@ -10493,9 +10493,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:5128:allocateInventory",
+                "id": "src/allocation.ts:5267:allocateInventory",
                 "kind": "FunctionDeclaration",
-                "line": 119,
+                "line": 121,
                 "name": "allocateInventory",
                 "reason": "resolved-call"
               }
@@ -11284,9 +11284,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               },
@@ -11636,7 +11636,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:4427:assertSameUnit",
+          "id": "src/quantity.ts:4494:assertSameUnit",
           "kind": "FunctionDeclaration",
           "line": 108,
           "name": "assertSameUnit"
@@ -11649,7 +11649,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:4427:assertSameUnit",
+            "id": "src/quantity.ts:4494:assertSameUnit",
             "kind": "FunctionDeclaration",
             "line": 108,
             "name": "assertSameUnit"
@@ -11658,55 +11658,55 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/review-hardening.test.ts",
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/review-hardening.test.ts",
+                "id": "test-root:test/formal-public-surface-direct.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/review-hardening.test.ts"
+                "name": "test/formal-public-surface-direct.test.ts"
               },
               {
-                "column": 37,
-                "file": "test/review-hardening.test.ts",
+                "column": 70,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:1793:<anonymous@66>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 66,
-                "name": "<anonymous@66>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 89,
-                "file": "test/review-hardening.test.ts",
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:2258:<anonymous@77>",
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
                 "kind": "ArrowFunction",
-                "line": 77,
-                "name": "<anonymous@77>",
+                "line": 59,
+                "name": "<anonymous@59>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5766:subtractQuantity",
+                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
-                "line": 139,
-                "name": "subtractQuantity",
+                "line": 227,
+                "name": "leastCommonQuantityMultiple",
                 "reason": "resolved-call"
               },
               {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:4427:assertSameUnit",
+                "id": "src/quantity.ts:4494:assertSameUnit",
                 "kind": "FunctionDeclaration",
                 "line": 108,
                 "name": "assertSameUnit",
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/review-hardening.test.ts"
+            "test": "test/formal-public-surface-direct.test.ts"
           }
         }
       ]
@@ -11960,9 +11960,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:38174:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:38695:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 832,
+          "line": 840,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -11973,9 +11973,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:38174:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:38695:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 832,
+            "line": 840,
             "name": "compareInventoryAllocationCandidates"
           },
           "witness": {
@@ -12013,9 +12013,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:38174:compareInventoryAllocationCandidates",
+                "id": "src/allocation.ts:38695:compareInventoryAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 832,
+                "line": 840,
                 "name": "compareInventoryAllocationCandidates",
                 "reason": "resolved-call"
               }
@@ -12031,7 +12031,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:4660:compareQuantity",
+          "id": "src/quantity.ts:4727:compareQuantity",
           "kind": "FunctionDeclaration",
           "line": 113,
           "name": "compareQuantity"
@@ -12044,7 +12044,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:4660:compareQuantity",
+            "id": "src/quantity.ts:4727:compareQuantity",
             "kind": "FunctionDeclaration",
             "line": 113,
             "name": "compareQuantity"
@@ -12094,7 +12094,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:4660:compareQuantity",
+                "id": "src/quantity.ts:4727:compareQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 113,
                 "name": "compareQuantity",
@@ -12203,9 +12203,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:11128:convertQuantityByReferenceExact",
+          "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
           "kind": "FunctionDeclaration",
-          "line": 279,
+          "line": 275,
           "name": "convertQuantityByReferenceExact"
         }
       ],
@@ -12216,9 +12216,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:11128:convertQuantityByReferenceExact",
+            "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
             "kind": "FunctionDeclaration",
-            "line": 279,
+            "line": 275,
             "name": "convertQuantityByReferenceExact"
           },
           "witness": {
@@ -12286,9 +12286,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:11128:convertQuantityByReferenceExact",
+                "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
                 "kind": "FunctionDeclaration",
-                "line": 279,
+                "line": 275,
                 "name": "convertQuantityByReferenceExact",
                 "reason": "resolved-call"
               }
@@ -12304,9 +12304,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:10529:convertQuantityExact",
+          "id": "src/quantity.ts:10444:convertQuantityExact",
           "kind": "FunctionDeclaration",
-          "line": 261,
+          "line": 257,
           "name": "convertQuantityExact"
         }
       ],
@@ -12317,9 +12317,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:10529:convertQuantityExact",
+            "id": "src/quantity.ts:10444:convertQuantityExact",
             "kind": "FunctionDeclaration",
-            "line": 261,
+            "line": 257,
             "name": "convertQuantityExact"
           },
           "witness": {
@@ -12337,29 +12337,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
-                "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 63,
-                "file": "test/formal-public-surface-direct.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1868:<anonymous@58>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
                 "line": 58,
                 "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
+                "hasBody": true,
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+                "kind": "ArrowFunction",
+                "line": 59,
+                "name": "<anonymous@59>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:10529:convertQuantityExact",
+                "id": "src/quantity.ts:10444:convertQuantityExact",
                 "kind": "FunctionDeclaration",
-                "line": 261,
+                "line": 257,
                 "name": "convertQuantityExact",
                 "reason": "resolved-call"
               }
@@ -14888,10 +14888,10 @@
                 "column": 73,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:88632:<anonymous@1527>",
+                "id": "test/scoped-stock-planning.test.ts:90907:<anonymous@1566>",
                 "kind": "ArrowFunction",
-                "line": 1527,
-                "name": "<anonymous@1527>",
+                "line": 1566,
+                "name": "<anonymous@1566>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -15415,20 +15415,20 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:2887:<anonymous@95>",
+                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 98,
+                "name": "<anonymous@98>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -16500,20 +16500,20 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:2887:<anonymous@95>",
+                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 98,
+                "name": "<anonymous@98>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -16984,9 +16984,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:13013:integerAtDecimals",
+          "id": "src/quantity.ts:12954:integerAtDecimals",
           "kind": "FunctionDeclaration",
-          "line": 346,
+          "line": 342,
           "name": "integerAtDecimals"
         }
       ],
@@ -16997,9 +16997,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:13013:integerAtDecimals",
+            "id": "src/quantity.ts:12954:integerAtDecimals",
             "kind": "FunctionDeclaration",
-            "line": 346,
+            "line": 342,
             "name": "integerAtDecimals"
           },
           "witness": {
@@ -17037,7 +17037,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5766:subtractQuantity",
+                "id": "src/quantity.ts:5833:subtractQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 139,
                 "name": "subtractQuantity",
@@ -17047,9 +17047,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:13013:integerAtDecimals",
+                "id": "src/quantity.ts:12954:integerAtDecimals",
                 "kind": "FunctionDeclaration",
-                "line": 346,
+                "line": 342,
                 "name": "integerAtDecimals",
                 "reason": "resolved-call"
               }
@@ -17065,9 +17065,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:48830:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:50298:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1094,
+          "line": 1123,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -17078,9 +17078,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:48830:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:50298:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1094,
+            "line": 1123,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -17138,9 +17138,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 334,
+                "line": 342,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               },
@@ -17148,9 +17148,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:15202:planInventoryFungibilityAllocationWithHolds",
+                "id": "src/fungibility.ts:15319:planInventoryFungibilityAllocationWithHolds",
                 "kind": "FunctionDeclaration",
-                "line": 348,
+                "line": 356,
                 "name": "planInventoryFungibilityAllocationWithHolds",
                 "reason": "resolved-call"
               },
@@ -17158,9 +17158,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:48830:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:50298:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1094,
+                "line": 1123,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -18542,9 +18542,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3630:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 108,
+          "line": 116,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -18555,9 +18555,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3630:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 108,
+            "line": 116,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "witness": {
@@ -18625,9 +18625,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3630:inventoryFungibilityScopeIdentity",
+                "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
                 "kind": "FunctionDeclaration",
-                "line": 108,
+                "line": 116,
                 "name": "inventoryFungibilityScopeIdentity",
                 "reason": "resolved-call"
               }
@@ -21612,20 +21612,20 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:2887:<anonymous@95>",
+                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 98,
+                "name": "<anonymous@98>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -21741,7 +21741,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9132:leastCommonQuantityMultiple",
+          "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
           "kind": "FunctionDeclaration",
           "line": 227,
           "name": "leastCommonQuantityMultiple"
@@ -21754,7 +21754,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9132:leastCommonQuantityMultiple",
+            "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
             "kind": "FunctionDeclaration",
             "line": 227,
             "name": "leastCommonQuantityMultiple"
@@ -21763,105 +21763,45 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/fungibility.test.ts",
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/fungibility.test.ts",
+                "id": "test-root:test/formal-public-surface-direct.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/fungibility.test.ts"
+                "name": "test/formal-public-surface-direct.test.ts"
               },
               {
-                "column": 63,
-                "file": "test/fungibility.test.ts",
+                "column": 70,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:8077:<anonymous@232>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 232,
-                "name": "<anonymous@232>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 82,
-                "file": "test/fungibility.test.ts",
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:9524:<anonymous@277>",
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
                 "kind": "ArrowFunction",
-                "line": 277,
-                "name": "<anonymous@277>",
+                "line": 59,
+                "name": "<anonymous@59>",
                 "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 3,
-                "file": "src/facade.ts",
-                "hasBody": false,
-                "id": "src/facade.ts:66824:plan",
-                "kind": "MethodSignature",
-                "line": 1631,
-                "name": "plan",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 3,
-                "file": "src/facade.ts",
-                "hasBody": true,
-                "id": "src/facade.ts:117504:plan",
-                "kind": "MethodDeclaration",
-                "line": 2856,
-                "name": "plan",
-                "reason": "interface-to-implementation"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
-                "kind": "FunctionDeclaration",
-                "line": 334,
-                "name": "planInventoryFungibilityAllocation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:15202:planInventoryFungibilityAllocationWithHolds",
-                "kind": "FunctionDeclaration",
-                "line": 348,
-                "name": "planInventoryFungibilityAllocationWithHolds",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:33349:addFungibilityCandidate",
-                "kind": "FunctionDeclaration",
-                "line": 828,
-                "name": "addFungibilityCandidate",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:35448:fungibilityMemberAllocationIncrement",
-                "kind": "FunctionDeclaration",
-                "line": 884,
-                "name": "fungibilityMemberAllocationIncrement",
-                "reason": "resolved-call"
               },
               {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9132:leastCommonQuantityMultiple",
+                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
                 "line": 227,
                 "name": "leastCommonQuantityMultiple",
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/fungibility.test.ts"
+            "test": "test/formal-public-surface-direct.test.ts"
           }
         }
       ]
@@ -22186,7 +22126,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:7251:multiplyQuantityByFactor",
+          "id": "src/quantity.ts:7318:multiplyQuantityByFactor",
           "kind": "FunctionDeclaration",
           "line": 179,
           "name": "multiplyQuantityByFactor"
@@ -22199,7 +22139,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:7251:multiplyQuantityByFactor",
+            "id": "src/quantity.ts:7318:multiplyQuantityByFactor",
             "kind": "FunctionDeclaration",
             "line": 179,
             "name": "multiplyQuantityByFactor"
@@ -22219,27 +22159,27 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
-                "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 63,
-                "file": "test/formal-public-surface-direct.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1868:<anonymous@58>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
                 "line": 58,
                 "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
+                "hasBody": true,
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+                "kind": "ArrowFunction",
+                "line": 59,
+                "name": "<anonymous@59>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:7251:multiplyQuantityByFactor",
+                "id": "src/quantity.ts:7318:multiplyQuantityByFactor",
                 "kind": "FunctionDeclaration",
                 "line": 179,
                 "name": "multiplyQuantityByFactor",
@@ -22257,7 +22197,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:6833:multiplyQuantityByWholeNumber",
+          "id": "src/quantity.ts:6900:multiplyQuantityByWholeNumber",
           "kind": "FunctionDeclaration",
           "line": 165,
           "name": "multiplyQuantityByWholeNumber"
@@ -22270,7 +22210,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:6833:multiplyQuantityByWholeNumber",
+            "id": "src/quantity.ts:6900:multiplyQuantityByWholeNumber",
             "kind": "FunctionDeclaration",
             "line": 165,
             "name": "multiplyQuantityByWholeNumber"
@@ -22330,7 +22270,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:6833:multiplyQuantityByWholeNumber",
+                "id": "src/quantity.ts:6900:multiplyQuantityByWholeNumber",
                 "kind": "FunctionDeclaration",
                 "line": 165,
                 "name": "multiplyQuantityByWholeNumber",
@@ -22429,7 +22369,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:6568:negateQuantity",
+          "id": "src/quantity.ts:6635:negateQuantity",
           "kind": "FunctionDeclaration",
           "line": 156,
           "name": "negateQuantity"
@@ -22442,7 +22382,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:6568:negateQuantity",
+            "id": "src/quantity.ts:6635:negateQuantity",
             "kind": "FunctionDeclaration",
             "line": 156,
             "name": "negateQuantity"
@@ -22492,7 +22432,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:6568:negateQuantity",
+                "id": "src/quantity.ts:6635:negateQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 156,
                 "name": "negateQuantity",
@@ -22563,9 +22503,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               },
@@ -22692,9 +22632,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3191:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 94,
+          "line": 102,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -22705,9 +22645,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3191:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 94,
+            "line": 102,
             "name": "normalizeInventoryFungibilityScope"
           },
           "witness": {
@@ -22775,9 +22715,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3191:normalizeInventoryFungibilityScope",
+                "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
                 "kind": "FunctionDeclaration",
-                "line": 94,
+                "line": 102,
                 "name": "normalizeInventoryFungibilityScope",
                 "reason": "resolved-call"
               }
@@ -23148,7 +23088,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:2368:parseQuantity",
+          "id": "src/quantity.ts:2435:parseQuantity",
           "kind": "FunctionDeclaration",
           "line": 62,
           "name": "parseQuantity"
@@ -23161,7 +23101,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:2368:parseQuantity",
+            "id": "src/quantity.ts:2435:parseQuantity",
             "kind": "FunctionDeclaration",
             "line": 62,
             "name": "parseQuantity"
@@ -23191,7 +23131,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:2368:parseQuantity",
+                "id": "src/quantity.ts:2435:parseQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 62,
                 "name": "parseQuantity",
@@ -23280,9 +23220,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 334,
+          "line": 342,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -23293,9 +23233,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 334,
+            "line": 342,
             "name": "planInventoryFungibilityAllocation"
           },
           "witness": {
@@ -23353,9 +23293,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 334,
+                "line": 342,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               }
@@ -23452,7 +23392,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:4170:positiveQuantity",
+          "id": "src/quantity.ts:4237:positiveQuantity",
           "kind": "FunctionDeclaration",
           "line": 102,
           "name": "positiveQuantity"
@@ -23465,7 +23405,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:4170:positiveQuantity",
+            "id": "src/quantity.ts:4237:positiveQuantity",
             "kind": "FunctionDeclaration",
             "line": 102,
             "name": "positiveQuantity"
@@ -23515,7 +23455,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:4170:positiveQuantity",
+                "id": "src/quantity.ts:4237:positiveQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 102,
                 "name": "positiveQuantity",
@@ -23604,7 +23544,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:1997:quantity",
+          "id": "src/quantity.ts:2064:quantity",
           "kind": "FunctionDeclaration",
           "line": 51,
           "name": "quantity"
@@ -23617,7 +23557,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:1997:quantity",
+            "id": "src/quantity.ts:2064:quantity",
             "kind": "FunctionDeclaration",
             "line": 51,
             "name": "quantity"
@@ -23647,7 +23587,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:2368:parseQuantity",
+                "id": "src/quantity.ts:2435:parseQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 62,
                 "name": "parseQuantity",
@@ -23657,7 +23597,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:1997:quantity",
+                "id": "src/quantity.ts:2064:quantity",
                 "kind": "FunctionDeclaration",
                 "line": 51,
                 "name": "quantity",
@@ -23675,7 +23615,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:5132:quantityEq",
+          "id": "src/quantity.ts:5199:quantityEq",
           "kind": "FunctionDeclaration",
           "line": 124,
           "name": "quantityEq"
@@ -23688,7 +23628,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:5132:quantityEq",
+            "id": "src/quantity.ts:5199:quantityEq",
             "kind": "FunctionDeclaration",
             "line": 124,
             "name": "quantityEq"
@@ -23738,7 +23678,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5132:quantityEq",
+                "id": "src/quantity.ts:5199:quantityEq",
                 "kind": "FunctionDeclaration",
                 "line": 124,
                 "name": "quantityEq",
@@ -23756,7 +23696,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:7785:quantityIsWholeMultipleOf",
+          "id": "src/quantity.ts:7852:quantityIsWholeMultipleOf",
           "kind": "FunctionDeclaration",
           "line": 197,
           "name": "quantityIsWholeMultipleOf"
@@ -23769,7 +23709,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:7785:quantityIsWholeMultipleOf",
+            "id": "src/quantity.ts:7852:quantityIsWholeMultipleOf",
             "kind": "FunctionDeclaration",
             "line": 197,
             "name": "quantityIsWholeMultipleOf"
@@ -23829,7 +23769,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:7785:quantityIsWholeMultipleOf",
+                "id": "src/quantity.ts:7852:quantityIsWholeMultipleOf",
                 "kind": "FunctionDeclaration",
                 "line": 197,
                 "name": "quantityIsWholeMultipleOf",
@@ -23847,9 +23787,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9858:quantityRatio",
+          "id": "src/quantity.ts:9747:quantityRatio",
           "kind": "FunctionDeclaration",
-          "line": 247,
+          "line": 243,
           "name": "quantityRatio"
         }
       ],
@@ -23860,9 +23800,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9858:quantityRatio",
+            "id": "src/quantity.ts:9747:quantityRatio",
             "kind": "FunctionDeclaration",
-            "line": 247,
+            "line": 243,
             "name": "quantityRatio"
           },
           "witness": {
@@ -23880,29 +23820,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
-                "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 63,
-                "file": "test/formal-public-surface-direct.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1868:<anonymous@58>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
                 "line": 58,
                 "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
+                "hasBody": true,
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+                "kind": "ArrowFunction",
+                "line": 59,
+                "name": "<anonymous@59>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9858:quantityRatio",
+                "id": "src/quantity.ts:9747:quantityRatio",
                 "kind": "FunctionDeclaration",
-                "line": 247,
+                "line": 243,
                 "name": "quantityRatio",
                 "reason": "resolved-call"
               }
@@ -23918,7 +23858,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:3386:quantityToDecimalString",
+          "id": "src/quantity.ts:3453:quantityToDecimalString",
           "kind": "FunctionDeclaration",
           "line": 86,
           "name": "quantityToDecimalString"
@@ -23931,7 +23871,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:3386:quantityToDecimalString",
+            "id": "src/quantity.ts:3453:quantityToDecimalString",
             "kind": "FunctionDeclaration",
             "line": 86,
             "name": "quantityToDecimalString"
@@ -23981,7 +23921,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:3386:quantityToDecimalString",
+                "id": "src/quantity.ts:3453:quantityToDecimalString",
                 "kind": "FunctionDeclaration",
                 "line": 86,
                 "name": "quantityToDecimalString",
@@ -23999,7 +23939,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:8328:quantityWholeMultipleCount",
+          "id": "src/quantity.ts:8395:quantityWholeMultipleCount",
           "kind": "FunctionDeclaration",
           "line": 210,
           "name": "quantityWholeMultipleCount"
@@ -24012,7 +23952,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:8328:quantityWholeMultipleCount",
+            "id": "src/quantity.ts:8395:quantityWholeMultipleCount",
             "kind": "FunctionDeclaration",
             "line": 210,
             "name": "quantityWholeMultipleCount"
@@ -24062,7 +24002,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:8328:quantityWholeMultipleCount",
+                "id": "src/quantity.ts:8395:quantityWholeMultipleCount",
                 "kind": "FunctionDeclaration",
                 "line": 210,
                 "name": "quantityWholeMultipleCount",
@@ -24455,9 +24395,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:14045:safeNumber",
+          "id": "src/quantity.ts:13696:safeNumber",
           "kind": "FunctionDeclaration",
-          "line": 381,
+          "line": 365,
           "name": "safeNumber"
         }
       ],
@@ -24468,9 +24408,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:14045:safeNumber",
+            "id": "src/quantity.ts:13696:safeNumber",
             "kind": "FunctionDeclaration",
-            "line": 381,
+            "line": 365,
             "name": "safeNumber"
           },
           "witness": {
@@ -24498,7 +24438,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:2368:parseQuantity",
+                "id": "src/quantity.ts:2435:parseQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 62,
                 "name": "parseQuantity",
@@ -24508,9 +24448,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:14045:safeNumber",
+                "id": "src/quantity.ts:13696:safeNumber",
                 "kind": "FunctionDeclaration",
-                "line": 381,
+                "line": 365,
                 "name": "safeNumber",
                 "reason": "resolved-call"
               }
@@ -24800,7 +24740,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:5766:subtractQuantity",
+          "id": "src/quantity.ts:5833:subtractQuantity",
           "kind": "FunctionDeclaration",
           "line": 139,
           "name": "subtractQuantity"
@@ -24813,7 +24753,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:5766:subtractQuantity",
+            "id": "src/quantity.ts:5833:subtractQuantity",
             "kind": "FunctionDeclaration",
             "line": 139,
             "name": "subtractQuantity"
@@ -24853,7 +24793,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5766:subtractQuantity",
+                "id": "src/quantity.ts:5833:subtractQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 139,
                 "name": "subtractQuantity",
@@ -25013,9 +24953,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6401:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 165,
+          "line": 173,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -25026,9 +24966,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6401:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 165,
+            "line": 173,
             "name": "summarizeInventoryFungibility"
           },
           "witness": {
@@ -25086,9 +25026,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:6401:summarizeInventoryFungibility",
+                "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
                 "kind": "FunctionDeclaration",
-                "line": 165,
+                "line": 173,
                 "name": "summarizeInventoryFungibility",
                 "reason": "resolved-call"
               }
@@ -25195,7 +25135,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:1719:unitCode",
+          "id": "src/quantity.ts:1786:unitCode",
           "kind": "FunctionDeclaration",
           "line": 44,
           "name": "unitCode"
@@ -25208,7 +25148,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:1719:unitCode",
+            "id": "src/quantity.ts:1786:unitCode",
             "kind": "FunctionDeclaration",
             "line": 44,
             "name": "unitCode"
@@ -25248,7 +25188,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:1719:unitCode",
+                "id": "src/quantity.ts:1786:unitCode",
                 "kind": "FunctionDeclaration",
                 "line": 44,
                 "name": "unitCode",
@@ -25319,9 +25259,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               },
@@ -25347,7 +25287,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:3952:zeroQuantity",
+          "id": "src/quantity.ts:4019:zeroQuantity",
           "kind": "FunctionDeclaration",
           "line": 97,
           "name": "zeroQuantity"
@@ -25360,7 +25300,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:3952:zeroQuantity",
+            "id": "src/quantity.ts:4019:zeroQuantity",
             "kind": "FunctionDeclaration",
             "line": 97,
             "name": "zeroQuantity"
@@ -25410,7 +25350,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:3952:zeroQuantity",
+                "id": "src/quantity.ts:4019:zeroQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 97,
                 "name": "zeroQuantity",
@@ -26827,7 +26767,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:5356:addQuantity",
+          "id": "src/quantity.ts:5423:addQuantity",
           "kind": "FunctionDeclaration",
           "line": 129,
           "name": "addQuantity"
@@ -26840,7 +26780,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:5356:addQuantity",
+            "id": "src/quantity.ts:5423:addQuantity",
             "kind": "FunctionDeclaration",
             "line": 129,
             "name": "addQuantity"
@@ -26890,7 +26830,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5356:addQuantity",
+                "id": "src/quantity.ts:5423:addQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 129,
                 "name": "addQuantity",
@@ -27113,9 +27053,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               },
@@ -27303,7 +27243,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:4427:assertSameUnit",
+          "id": "src/quantity.ts:4494:assertSameUnit",
           "kind": "FunctionDeclaration",
           "line": 108,
           "name": "assertSameUnit"
@@ -27316,7 +27256,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:4427:assertSameUnit",
+            "id": "src/quantity.ts:4494:assertSameUnit",
             "kind": "FunctionDeclaration",
             "line": 108,
             "name": "assertSameUnit"
@@ -27325,55 +27265,55 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/review-hardening.test.ts",
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/review-hardening.test.ts",
+                "id": "test-root:test/formal-public-surface-direct.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/review-hardening.test.ts"
+                "name": "test/formal-public-surface-direct.test.ts"
               },
               {
-                "column": 37,
-                "file": "test/review-hardening.test.ts",
+                "column": 70,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:1793:<anonymous@66>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 66,
-                "name": "<anonymous@66>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 89,
-                "file": "test/review-hardening.test.ts",
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:2258:<anonymous@77>",
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
                 "kind": "ArrowFunction",
-                "line": 77,
-                "name": "<anonymous@77>",
+                "line": 59,
+                "name": "<anonymous@59>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5766:subtractQuantity",
+                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
-                "line": 139,
-                "name": "subtractQuantity",
+                "line": 227,
+                "name": "leastCommonQuantityMultiple",
                 "reason": "resolved-call"
               },
               {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:4427:assertSameUnit",
+                "id": "src/quantity.ts:4494:assertSameUnit",
                 "kind": "FunctionDeclaration",
                 "line": 108,
                 "name": "assertSameUnit",
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/review-hardening.test.ts"
+            "test": "test/formal-public-surface-direct.test.ts"
           }
         }
       ]
@@ -27678,7 +27618,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:4660:compareQuantity",
+          "id": "src/quantity.ts:4727:compareQuantity",
           "kind": "FunctionDeclaration",
           "line": 113,
           "name": "compareQuantity"
@@ -27691,7 +27631,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:4660:compareQuantity",
+            "id": "src/quantity.ts:4727:compareQuantity",
             "kind": "FunctionDeclaration",
             "line": 113,
             "name": "compareQuantity"
@@ -27741,7 +27681,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:4660:compareQuantity",
+                "id": "src/quantity.ts:4727:compareQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 113,
                 "name": "compareQuantity",
@@ -27759,9 +27699,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:11128:convertQuantityByReferenceExact",
+          "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
           "kind": "FunctionDeclaration",
-          "line": 279,
+          "line": 275,
           "name": "convertQuantityByReferenceExact"
         }
       ],
@@ -27772,9 +27712,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:11128:convertQuantityByReferenceExact",
+            "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
             "kind": "FunctionDeclaration",
-            "line": 279,
+            "line": 275,
             "name": "convertQuantityByReferenceExact"
           },
           "witness": {
@@ -27842,9 +27782,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:11128:convertQuantityByReferenceExact",
+                "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
                 "kind": "FunctionDeclaration",
-                "line": 279,
+                "line": 275,
                 "name": "convertQuantityByReferenceExact",
                 "reason": "resolved-call"
               }
@@ -27860,9 +27800,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:10529:convertQuantityExact",
+          "id": "src/quantity.ts:10444:convertQuantityExact",
           "kind": "FunctionDeclaration",
-          "line": 261,
+          "line": 257,
           "name": "convertQuantityExact"
         }
       ],
@@ -27873,9 +27813,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:10529:convertQuantityExact",
+            "id": "src/quantity.ts:10444:convertQuantityExact",
             "kind": "FunctionDeclaration",
-            "line": 261,
+            "line": 257,
             "name": "convertQuantityExact"
           },
           "witness": {
@@ -27893,29 +27833,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
-                "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 63,
-                "file": "test/formal-public-surface-direct.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1868:<anonymous@58>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
                 "line": 58,
                 "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
+                "hasBody": true,
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+                "kind": "ArrowFunction",
+                "line": 59,
+                "name": "<anonymous@59>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:10529:convertQuantityExact",
+                "id": "src/quantity.ts:10444:convertQuantityExact",
                 "kind": "FunctionDeclaration",
-                "line": 261,
+                "line": 257,
                 "name": "convertQuantityExact",
                 "reason": "resolved-call"
               }
@@ -28319,20 +28259,20 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:2887:<anonymous@95>",
+                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 98,
+                "name": "<anonymous@98>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -29442,9 +29382,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:13013:integerAtDecimals",
+          "id": "src/quantity.ts:12954:integerAtDecimals",
           "kind": "FunctionDeclaration",
-          "line": 346,
+          "line": 342,
           "name": "integerAtDecimals"
         }
       ],
@@ -29455,9 +29395,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:13013:integerAtDecimals",
+            "id": "src/quantity.ts:12954:integerAtDecimals",
             "kind": "FunctionDeclaration",
-            "line": 346,
+            "line": 342,
             "name": "integerAtDecimals"
           },
           "witness": {
@@ -29495,7 +29435,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5766:subtractQuantity",
+                "id": "src/quantity.ts:5833:subtractQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 139,
                 "name": "subtractQuantity",
@@ -29505,9 +29445,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:13013:integerAtDecimals",
+                "id": "src/quantity.ts:12954:integerAtDecimals",
                 "kind": "FunctionDeclaration",
-                "line": 346,
+                "line": 342,
                 "name": "integerAtDecimals",
                 "reason": "resolved-call"
               }
@@ -29523,9 +29463,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:48830:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:50298:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1094,
+          "line": 1123,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -29536,9 +29476,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:48830:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:50298:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1094,
+            "line": 1123,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -29596,9 +29536,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 334,
+                "line": 342,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               },
@@ -29606,9 +29546,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:15202:planInventoryFungibilityAllocationWithHolds",
+                "id": "src/fungibility.ts:15319:planInventoryFungibilityAllocationWithHolds",
                 "kind": "FunctionDeclaration",
-                "line": 348,
+                "line": 356,
                 "name": "planInventoryFungibilityAllocationWithHolds",
                 "reason": "resolved-call"
               },
@@ -29616,9 +29556,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:48830:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:50298:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1094,
+                "line": 1123,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -30120,9 +30060,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3630:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 108,
+          "line": 116,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -30133,9 +30073,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3630:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 108,
+            "line": 116,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "witness": {
@@ -30203,9 +30143,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3630:inventoryFungibilityScopeIdentity",
+                "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
                 "kind": "FunctionDeclaration",
-                "line": 108,
+                "line": 116,
                 "name": "inventoryFungibilityScopeIdentity",
                 "reason": "resolved-call"
               }
@@ -31436,7 +31376,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9132:leastCommonQuantityMultiple",
+          "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
           "kind": "FunctionDeclaration",
           "line": 227,
           "name": "leastCommonQuantityMultiple"
@@ -31449,7 +31389,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9132:leastCommonQuantityMultiple",
+            "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
             "kind": "FunctionDeclaration",
             "line": 227,
             "name": "leastCommonQuantityMultiple"
@@ -31458,105 +31398,45 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/fungibility.test.ts",
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/fungibility.test.ts",
+                "id": "test-root:test/formal-public-surface-direct.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/fungibility.test.ts"
+                "name": "test/formal-public-surface-direct.test.ts"
               },
               {
-                "column": 63,
-                "file": "test/fungibility.test.ts",
+                "column": 70,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:8077:<anonymous@232>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 232,
-                "name": "<anonymous@232>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 82,
-                "file": "test/fungibility.test.ts",
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:9524:<anonymous@277>",
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
                 "kind": "ArrowFunction",
-                "line": 277,
-                "name": "<anonymous@277>",
+                "line": 59,
+                "name": "<anonymous@59>",
                 "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 3,
-                "file": "src/facade.ts",
-                "hasBody": false,
-                "id": "src/facade.ts:66824:plan",
-                "kind": "MethodSignature",
-                "line": 1631,
-                "name": "plan",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 3,
-                "file": "src/facade.ts",
-                "hasBody": true,
-                "id": "src/facade.ts:117504:plan",
-                "kind": "MethodDeclaration",
-                "line": 2856,
-                "name": "plan",
-                "reason": "interface-to-implementation"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
-                "kind": "FunctionDeclaration",
-                "line": 334,
-                "name": "planInventoryFungibilityAllocation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:15202:planInventoryFungibilityAllocationWithHolds",
-                "kind": "FunctionDeclaration",
-                "line": 348,
-                "name": "planInventoryFungibilityAllocationWithHolds",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:33349:addFungibilityCandidate",
-                "kind": "FunctionDeclaration",
-                "line": 828,
-                "name": "addFungibilityCandidate",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/fungibility.ts",
-                "hasBody": true,
-                "id": "src/fungibility.ts:35448:fungibilityMemberAllocationIncrement",
-                "kind": "FunctionDeclaration",
-                "line": 884,
-                "name": "fungibilityMemberAllocationIncrement",
-                "reason": "resolved-call"
               },
               {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9132:leastCommonQuantityMultiple",
+                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
                 "line": 227,
                 "name": "leastCommonQuantityMultiple",
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/fungibility.test.ts"
+            "test": "test/formal-public-surface-direct.test.ts"
           }
         }
       ]
@@ -31810,7 +31690,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:7251:multiplyQuantityByFactor",
+          "id": "src/quantity.ts:7318:multiplyQuantityByFactor",
           "kind": "FunctionDeclaration",
           "line": 179,
           "name": "multiplyQuantityByFactor"
@@ -31823,7 +31703,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:7251:multiplyQuantityByFactor",
+            "id": "src/quantity.ts:7318:multiplyQuantityByFactor",
             "kind": "FunctionDeclaration",
             "line": 179,
             "name": "multiplyQuantityByFactor"
@@ -31843,27 +31723,27 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
-                "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 63,
-                "file": "test/formal-public-surface-direct.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1868:<anonymous@58>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
                 "line": 58,
                 "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
+                "hasBody": true,
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+                "kind": "ArrowFunction",
+                "line": 59,
+                "name": "<anonymous@59>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:7251:multiplyQuantityByFactor",
+                "id": "src/quantity.ts:7318:multiplyQuantityByFactor",
                 "kind": "FunctionDeclaration",
                 "line": 179,
                 "name": "multiplyQuantityByFactor",
@@ -31881,7 +31761,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:6833:multiplyQuantityByWholeNumber",
+          "id": "src/quantity.ts:6900:multiplyQuantityByWholeNumber",
           "kind": "FunctionDeclaration",
           "line": 165,
           "name": "multiplyQuantityByWholeNumber"
@@ -31894,7 +31774,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:6833:multiplyQuantityByWholeNumber",
+            "id": "src/quantity.ts:6900:multiplyQuantityByWholeNumber",
             "kind": "FunctionDeclaration",
             "line": 165,
             "name": "multiplyQuantityByWholeNumber"
@@ -31954,7 +31834,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:6833:multiplyQuantityByWholeNumber",
+                "id": "src/quantity.ts:6900:multiplyQuantityByWholeNumber",
                 "kind": "FunctionDeclaration",
                 "line": 165,
                 "name": "multiplyQuantityByWholeNumber",
@@ -32053,7 +31933,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:6568:negateQuantity",
+          "id": "src/quantity.ts:6635:negateQuantity",
           "kind": "FunctionDeclaration",
           "line": 156,
           "name": "negateQuantity"
@@ -32066,7 +31946,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:6568:negateQuantity",
+            "id": "src/quantity.ts:6635:negateQuantity",
             "kind": "FunctionDeclaration",
             "line": 156,
             "name": "negateQuantity"
@@ -32116,7 +31996,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:6568:negateQuantity",
+                "id": "src/quantity.ts:6635:negateQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 156,
                 "name": "negateQuantity",
@@ -32187,9 +32067,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               },
@@ -32215,9 +32095,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3191:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 94,
+          "line": 102,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -32228,9 +32108,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3191:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 94,
+            "line": 102,
             "name": "normalizeInventoryFungibilityScope"
           },
           "witness": {
@@ -32298,9 +32178,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3191:normalizeInventoryFungibilityScope",
+                "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
                 "kind": "FunctionDeclaration",
-                "line": 94,
+                "line": 102,
                 "name": "normalizeInventoryFungibilityScope",
                 "reason": "resolved-call"
               }
@@ -32387,7 +32267,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:2368:parseQuantity",
+          "id": "src/quantity.ts:2435:parseQuantity",
           "kind": "FunctionDeclaration",
           "line": 62,
           "name": "parseQuantity"
@@ -32400,7 +32280,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:2368:parseQuantity",
+            "id": "src/quantity.ts:2435:parseQuantity",
             "kind": "FunctionDeclaration",
             "line": 62,
             "name": "parseQuantity"
@@ -32430,7 +32310,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:2368:parseQuantity",
+                "id": "src/quantity.ts:2435:parseQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 62,
                 "name": "parseQuantity",
@@ -32519,9 +32399,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 334,
+          "line": 342,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -32532,9 +32412,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 334,
+            "line": 342,
             "name": "planInventoryFungibilityAllocation"
           },
           "witness": {
@@ -32592,9 +32472,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14579:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 334,
+                "line": 342,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               }
@@ -32691,7 +32571,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:4170:positiveQuantity",
+          "id": "src/quantity.ts:4237:positiveQuantity",
           "kind": "FunctionDeclaration",
           "line": 102,
           "name": "positiveQuantity"
@@ -32704,7 +32584,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:4170:positiveQuantity",
+            "id": "src/quantity.ts:4237:positiveQuantity",
             "kind": "FunctionDeclaration",
             "line": 102,
             "name": "positiveQuantity"
@@ -32754,7 +32634,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:4170:positiveQuantity",
+                "id": "src/quantity.ts:4237:positiveQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 102,
                 "name": "positiveQuantity",
@@ -32914,7 +32794,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:1997:quantity",
+          "id": "src/quantity.ts:2064:quantity",
           "kind": "FunctionDeclaration",
           "line": 51,
           "name": "quantity"
@@ -32927,7 +32807,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:1997:quantity",
+            "id": "src/quantity.ts:2064:quantity",
             "kind": "FunctionDeclaration",
             "line": 51,
             "name": "quantity"
@@ -32957,7 +32837,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:2368:parseQuantity",
+                "id": "src/quantity.ts:2435:parseQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 62,
                 "name": "parseQuantity",
@@ -32967,7 +32847,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:1997:quantity",
+                "id": "src/quantity.ts:2064:quantity",
                 "kind": "FunctionDeclaration",
                 "line": 51,
                 "name": "quantity",
@@ -32985,7 +32865,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:5132:quantityEq",
+          "id": "src/quantity.ts:5199:quantityEq",
           "kind": "FunctionDeclaration",
           "line": 124,
           "name": "quantityEq"
@@ -32998,7 +32878,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:5132:quantityEq",
+            "id": "src/quantity.ts:5199:quantityEq",
             "kind": "FunctionDeclaration",
             "line": 124,
             "name": "quantityEq"
@@ -33048,7 +32928,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5132:quantityEq",
+                "id": "src/quantity.ts:5199:quantityEq",
                 "kind": "FunctionDeclaration",
                 "line": 124,
                 "name": "quantityEq",
@@ -33066,7 +32946,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:7785:quantityIsWholeMultipleOf",
+          "id": "src/quantity.ts:7852:quantityIsWholeMultipleOf",
           "kind": "FunctionDeclaration",
           "line": 197,
           "name": "quantityIsWholeMultipleOf"
@@ -33079,7 +32959,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:7785:quantityIsWholeMultipleOf",
+            "id": "src/quantity.ts:7852:quantityIsWholeMultipleOf",
             "kind": "FunctionDeclaration",
             "line": 197,
             "name": "quantityIsWholeMultipleOf"
@@ -33139,7 +33019,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:7785:quantityIsWholeMultipleOf",
+                "id": "src/quantity.ts:7852:quantityIsWholeMultipleOf",
                 "kind": "FunctionDeclaration",
                 "line": 197,
                 "name": "quantityIsWholeMultipleOf",
@@ -33157,9 +33037,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9858:quantityRatio",
+          "id": "src/quantity.ts:9747:quantityRatio",
           "kind": "FunctionDeclaration",
-          "line": 247,
+          "line": 243,
           "name": "quantityRatio"
         }
       ],
@@ -33170,9 +33050,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9858:quantityRatio",
+            "id": "src/quantity.ts:9747:quantityRatio",
             "kind": "FunctionDeclaration",
-            "line": 247,
+            "line": 243,
             "name": "quantityRatio"
           },
           "witness": {
@@ -33190,29 +33070,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
-                "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 63,
-                "file": "test/formal-public-surface-direct.test.ts",
-                "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1868:<anonymous@58>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
                 "line": 58,
                 "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
+                "column": 73,
+                "file": "test/formal-public-surface-direct.test.ts",
+                "hasBody": true,
+                "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+                "kind": "ArrowFunction",
+                "line": 59,
+                "name": "<anonymous@59>",
+                "reason": "external-callback-dispatch"
+              },
+              {
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9858:quantityRatio",
+                "id": "src/quantity.ts:9747:quantityRatio",
                 "kind": "FunctionDeclaration",
-                "line": 247,
+                "line": 243,
                 "name": "quantityRatio",
                 "reason": "resolved-call"
               }
@@ -33228,7 +33108,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:3386:quantityToDecimalString",
+          "id": "src/quantity.ts:3453:quantityToDecimalString",
           "kind": "FunctionDeclaration",
           "line": 86,
           "name": "quantityToDecimalString"
@@ -33241,7 +33121,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:3386:quantityToDecimalString",
+            "id": "src/quantity.ts:3453:quantityToDecimalString",
             "kind": "FunctionDeclaration",
             "line": 86,
             "name": "quantityToDecimalString"
@@ -33291,7 +33171,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:3386:quantityToDecimalString",
+                "id": "src/quantity.ts:3453:quantityToDecimalString",
                 "kind": "FunctionDeclaration",
                 "line": 86,
                 "name": "quantityToDecimalString",
@@ -33309,7 +33189,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:8328:quantityWholeMultipleCount",
+          "id": "src/quantity.ts:8395:quantityWholeMultipleCount",
           "kind": "FunctionDeclaration",
           "line": 210,
           "name": "quantityWholeMultipleCount"
@@ -33322,7 +33202,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:8328:quantityWholeMultipleCount",
+            "id": "src/quantity.ts:8395:quantityWholeMultipleCount",
             "kind": "FunctionDeclaration",
             "line": 210,
             "name": "quantityWholeMultipleCount"
@@ -33372,7 +33252,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:8328:quantityWholeMultipleCount",
+                "id": "src/quantity.ts:8395:quantityWholeMultipleCount",
                 "kind": "FunctionDeclaration",
                 "line": 210,
                 "name": "quantityWholeMultipleCount",
@@ -33674,9 +33554,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:14045:safeNumber",
+          "id": "src/quantity.ts:13696:safeNumber",
           "kind": "FunctionDeclaration",
-          "line": 381,
+          "line": 365,
           "name": "safeNumber"
         }
       ],
@@ -33687,9 +33567,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:14045:safeNumber",
+            "id": "src/quantity.ts:13696:safeNumber",
             "kind": "FunctionDeclaration",
-            "line": 381,
+            "line": 365,
             "name": "safeNumber"
           },
           "witness": {
@@ -33717,7 +33597,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:2368:parseQuantity",
+                "id": "src/quantity.ts:2435:parseQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 62,
                 "name": "parseQuantity",
@@ -33727,9 +33607,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:14045:safeNumber",
+                "id": "src/quantity.ts:13696:safeNumber",
                 "kind": "FunctionDeclaration",
-                "line": 381,
+                "line": 365,
                 "name": "safeNumber",
                 "reason": "resolved-call"
               }
@@ -33948,7 +33828,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:5766:subtractQuantity",
+          "id": "src/quantity.ts:5833:subtractQuantity",
           "kind": "FunctionDeclaration",
           "line": 139,
           "name": "subtractQuantity"
@@ -33961,7 +33841,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:5766:subtractQuantity",
+            "id": "src/quantity.ts:5833:subtractQuantity",
             "kind": "FunctionDeclaration",
             "line": 139,
             "name": "subtractQuantity"
@@ -34001,7 +33881,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:5766:subtractQuantity",
+                "id": "src/quantity.ts:5833:subtractQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 139,
                 "name": "subtractQuantity",
@@ -34090,9 +33970,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6401:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 165,
+          "line": 173,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -34103,9 +33983,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6401:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 165,
+            "line": 173,
             "name": "summarizeInventoryFungibility"
           },
           "witness": {
@@ -34163,9 +34043,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:6401:summarizeInventoryFungibility",
+                "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
                 "kind": "FunctionDeclaration",
-                "line": 165,
+                "line": 173,
                 "name": "summarizeInventoryFungibility",
                 "reason": "resolved-call"
               }
@@ -34272,7 +34152,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:1719:unitCode",
+          "id": "src/quantity.ts:1786:unitCode",
           "kind": "FunctionDeclaration",
           "line": 44,
           "name": "unitCode"
@@ -34285,7 +34165,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:1719:unitCode",
+            "id": "src/quantity.ts:1786:unitCode",
             "kind": "FunctionDeclaration",
             "line": 44,
             "name": "unitCode"
@@ -34325,7 +34205,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:1719:unitCode",
+                "id": "src/quantity.ts:1786:unitCode",
                 "kind": "FunctionDeclaration",
                 "line": 44,
                 "name": "unitCode",
@@ -34396,9 +34276,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               },
@@ -34424,7 +34304,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:3952:zeroQuantity",
+          "id": "src/quantity.ts:4019:zeroQuantity",
           "kind": "FunctionDeclaration",
           "line": 97,
           "name": "zeroQuantity"
@@ -34437,7 +34317,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:3952:zeroQuantity",
+            "id": "src/quantity.ts:4019:zeroQuantity",
             "kind": "FunctionDeclaration",
             "line": 97,
             "name": "zeroQuantity"
@@ -34487,7 +34367,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:3952:zeroQuantity",
+                "id": "src/quantity.ts:4019:zeroQuantity",
                 "kind": "FunctionDeclaration",
                 "line": 97,
                 "name": "zeroQuantity",
@@ -34728,9 +34608,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:18526:InMemoryInventorySegmentedPositionStore",
+          "id": "src/segmented-state.ts:18694:InMemoryInventorySegmentedPositionStore",
           "kind": "Constructor",
-          "line": 417,
+          "line": 418,
           "name": "InMemoryInventorySegmentedPositionStore"
         }
       ],
@@ -34741,9 +34621,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:18526:InMemoryInventorySegmentedPositionStore",
+            "id": "src/segmented-state.ts:18694:InMemoryInventorySegmentedPositionStore",
             "kind": "Constructor",
-            "line": 417,
+            "line": 418,
             "name": "InMemoryInventorySegmentedPositionStore"
           },
           "witness": {
@@ -34781,9 +34661,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:50723:createInMemoryInventorySegmentedPositionStore",
+                "id": "src/segmented-state.ts:50891:createInMemoryInventorySegmentedPositionStore",
                 "kind": "FunctionDeclaration",
-                "line": 1336,
+                "line": 1337,
                 "name": "createInMemoryInventorySegmentedPositionStore",
                 "reason": "resolved-call"
               },
@@ -34791,9 +34671,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:18526:InMemoryInventorySegmentedPositionStore",
+                "id": "src/segmented-state.ts:18694:InMemoryInventorySegmentedPositionStore",
                 "kind": "Constructor",
-                "line": 417,
+                "line": 418,
                 "name": "InMemoryInventorySegmentedPositionStore",
                 "reason": "resolved-call"
               }
@@ -34991,9 +34871,9 @@
           "column": 3,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:14515:InventorySegmentRevisionConflictError",
+          "id": "src/segmented-state.ts:14683:InventorySegmentRevisionConflictError",
           "kind": "Constructor",
-          "line": 322,
+          "line": 323,
           "name": "InventorySegmentRevisionConflictError"
         }
       ],
@@ -35004,9 +34884,9 @@
             "column": 3,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:14515:InventorySegmentRevisionConflictError",
+            "id": "src/segmented-state.ts:14683:InventorySegmentRevisionConflictError",
             "kind": "Constructor",
-            "line": 322,
+            "line": 323,
             "name": "InventorySegmentRevisionConflictError"
           },
           "witness": {
@@ -35044,9 +34924,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:31668:applyStockEffects",
+                "id": "src/segmented-state.ts:31836:applyStockEffects",
                 "kind": "MethodDeclaration",
-                "line": 782,
+                "line": 783,
                 "name": "applyStockEffects",
                 "reason": "resolved-call"
               },
@@ -35054,9 +34934,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:27249:assertStockWriteRevision",
+                "id": "src/segmented-state.ts:27417:assertStockWriteRevision",
                 "kind": "MethodDeclaration",
-                "line": 663,
+                "line": 664,
                 "name": "assertStockWriteRevision",
                 "reason": "resolved-call"
               },
@@ -35064,9 +34944,9 @@
                 "column": 3,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:14515:InventorySegmentRevisionConflictError",
+                "id": "src/segmented-state.ts:14683:InventorySegmentRevisionConflictError",
                 "kind": "Constructor",
-                "line": 322,
+                "line": 323,
                 "name": "InventorySegmentRevisionConflictError",
                 "reason": "resolved-call"
               }
@@ -35669,9 +35549,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:50723:createInMemoryInventorySegmentedPositionStore",
+          "id": "src/segmented-state.ts:50891:createInMemoryInventorySegmentedPositionStore",
           "kind": "FunctionDeclaration",
-          "line": 1336,
+          "line": 1337,
           "name": "createInMemoryInventorySegmentedPositionStore"
         }
       ],
@@ -35682,9 +35562,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:50723:createInMemoryInventorySegmentedPositionStore",
+            "id": "src/segmented-state.ts:50891:createInMemoryInventorySegmentedPositionStore",
             "kind": "FunctionDeclaration",
-            "line": 1336,
+            "line": 1337,
             "name": "createInMemoryInventorySegmentedPositionStore"
           },
           "witness": {
@@ -35722,9 +35602,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:50723:createInMemoryInventorySegmentedPositionStore",
+                "id": "src/segmented-state.ts:50891:createInMemoryInventorySegmentedPositionStore",
                 "kind": "FunctionDeclaration",
-                "line": 1336,
+                "line": 1337,
                 "name": "createInMemoryInventorySegmentedPositionStore",
                 "reason": "resolved-call"
               }
@@ -36077,20 +35957,20 @@
                 "column": 62,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59297:<anonymous@1525>",
+                "id": "test/review-hardening.test.ts:59505:<anonymous@1528>",
                 "kind": "ArrowFunction",
-                "line": 1525,
-                "name": "<anonymous@1525>",
+                "line": 1528,
+                "name": "<anonymous@1528>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59417:<anonymous@1526>",
+                "id": "test/review-hardening.test.ts:59625:<anonymous@1529>",
                 "kind": "ArrowFunction",
-                "line": 1526,
-                "name": "<anonymous@1526>",
+                "line": 1529,
+                "name": "<anonymous@1529>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36341,20 +36221,20 @@
                 "column": 62,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59297:<anonymous@1525>",
+                "id": "test/review-hardening.test.ts:59505:<anonymous@1528>",
                 "kind": "ArrowFunction",
-                "line": 1525,
-                "name": "<anonymous@1525>",
+                "line": 1528,
+                "name": "<anonymous@1528>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59417:<anonymous@1526>",
+                "id": "test/review-hardening.test.ts:59625:<anonymous@1529>",
                 "kind": "ArrowFunction",
-                "line": 1526,
-                "name": "<anonymous@1526>",
+                "line": 1529,
+                "name": "<anonymous@1529>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36551,9 +36431,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:10859:inventoryStorageSupportsSegmentedPositions",
+          "id": "src/segmented-state.ts:11027:inventoryStorageSupportsSegmentedPositions",
           "kind": "FunctionDeclaration",
-          "line": 242,
+          "line": 243,
           "name": "inventoryStorageSupportsSegmentedPositions"
         }
       ],
@@ -36564,9 +36444,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:10859:inventoryStorageSupportsSegmentedPositions",
+            "id": "src/segmented-state.ts:11027:inventoryStorageSupportsSegmentedPositions",
             "kind": "FunctionDeclaration",
-            "line": 242,
+            "line": 243,
             "name": "inventoryStorageSupportsSegmentedPositions"
           },
           "witness": {
@@ -36614,9 +36494,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:10859:inventoryStorageSupportsSegmentedPositions",
+                "id": "src/segmented-state.ts:11027:inventoryStorageSupportsSegmentedPositions",
                 "kind": "FunctionDeclaration",
-                "line": 242,
+                "line": 243,
                 "name": "inventoryStorageSupportsSegmentedPositions",
                 "reason": "resolved-call"
               }
@@ -36632,9 +36512,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:5167:inventoryStorageSupportsSegmentedStockEventCommit",
+          "id": "src/segmented-state.ts:5335:inventoryStorageSupportsSegmentedStockEventCommit",
           "kind": "FunctionDeclaration",
-          "line": 124,
+          "line": 125,
           "name": "inventoryStorageSupportsSegmentedStockEventCommit"
         }
       ],
@@ -36645,9 +36525,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:5167:inventoryStorageSupportsSegmentedStockEventCommit",
+            "id": "src/segmented-state.ts:5335:inventoryStorageSupportsSegmentedStockEventCommit",
             "kind": "FunctionDeclaration",
-            "line": 124,
+            "line": 125,
             "name": "inventoryStorageSupportsSegmentedStockEventCommit"
           },
           "witness": {
@@ -36715,9 +36595,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:5167:inventoryStorageSupportsSegmentedStockEventCommit",
+                "id": "src/segmented-state.ts:5335:inventoryStorageSupportsSegmentedStockEventCommit",
                 "kind": "FunctionDeclaration",
-                "line": 124,
+                "line": 125,
                 "name": "inventoryStorageSupportsSegmentedStockEventCommit",
                 "reason": "resolved-call"
               }
@@ -36928,29 +36808,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3751:<anonymous@125>",
+                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
                 "kind": "ArrowFunction",
-                "line": 125,
-                "name": "<anonymous@125>",
+                "line": 128,
+                "name": "<anonymous@128>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1325:expectDirectValidationFailure",
+                "id": "test/formal-public-surface-direct.test.ts:1356:expectDirectValidationFailure",
                 "kind": "FunctionDeclaration",
-                "line": 40,
+                "line": 41,
                 "name": "expectDirectValidationFailure",
                 "reason": "resolved-call"
               },
@@ -36958,10 +36838,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4834:<anonymous@161>",
+                "id": "test/formal-public-surface-direct.test.ts:5017:<anonymous@164>",
                 "kind": "ArrowFunction",
-                "line": 161,
-                "name": "<anonymous@161>",
+                "line": 164,
+                "name": "<anonymous@164>",
                 "reason": "callback-dispatch"
               },
               {
@@ -37019,29 +36899,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3751:<anonymous@125>",
+                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
                 "kind": "ArrowFunction",
-                "line": 125,
-                "name": "<anonymous@125>",
+                "line": 128,
+                "name": "<anonymous@128>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1325:expectDirectValidationFailure",
+                "id": "test/formal-public-surface-direct.test.ts:1356:expectDirectValidationFailure",
                 "kind": "FunctionDeclaration",
-                "line": 40,
+                "line": 41,
                 "name": "expectDirectValidationFailure",
                 "reason": "resolved-call"
               },
@@ -37049,10 +36929,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4264:<anonymous@140>",
+                "id": "test/formal-public-surface-direct.test.ts:4447:<anonymous@143>",
                 "kind": "ArrowFunction",
-                "line": 140,
-                "name": "<anonymous@140>",
+                "line": 143,
+                "name": "<anonymous@143>",
                 "reason": "callback-dispatch"
               },
               {
@@ -37148,9 +37028,9 @@
           "column": 1,
           "file": "src/segmented-state.ts",
           "hasBody": true,
-          "id": "src/segmented-state.ts:11672:readInventorySegmentedPositionSnapshot",
+          "id": "src/segmented-state.ts:11840:readInventorySegmentedPositionSnapshot",
           "kind": "FunctionDeclaration",
-          "line": 261,
+          "line": 262,
           "name": "readInventorySegmentedPositionSnapshot"
         }
       ],
@@ -37161,9 +37041,9 @@
             "column": 1,
             "file": "src/segmented-state.ts",
             "hasBody": true,
-            "id": "src/segmented-state.ts:11672:readInventorySegmentedPositionSnapshot",
+            "id": "src/segmented-state.ts:11840:readInventorySegmentedPositionSnapshot",
             "kind": "FunctionDeclaration",
-            "line": 261,
+            "line": 262,
             "name": "readInventorySegmentedPositionSnapshot"
           },
           "witness": {
@@ -37211,9 +37091,9 @@
                 "column": 1,
                 "file": "src/segmented-state.ts",
                 "hasBody": true,
-                "id": "src/segmented-state.ts:11672:readInventorySegmentedPositionSnapshot",
+                "id": "src/segmented-state.ts:11840:readInventorySegmentedPositionSnapshot",
                 "kind": "FunctionDeclaration",
-                "line": 261,
+                "line": 262,
                 "name": "readInventorySegmentedPositionSnapshot",
                 "reason": "resolved-call"
               }
@@ -37404,29 +37284,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3751:<anonymous@125>",
+                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
                 "kind": "ArrowFunction",
-                "line": 125,
-                "name": "<anonymous@125>",
+                "line": 128,
+                "name": "<anonymous@128>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1325:expectDirectValidationFailure",
+                "id": "test/formal-public-surface-direct.test.ts:1356:expectDirectValidationFailure",
                 "kind": "FunctionDeclaration",
-                "line": 40,
+                "line": 41,
                 "name": "expectDirectValidationFailure",
                 "reason": "resolved-call"
               },
@@ -37434,10 +37314,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3942:<anonymous@129>",
+                "id": "test/formal-public-surface-direct.test.ts:4125:<anonymous@132>",
                 "kind": "ArrowFunction",
-                "line": 129,
-                "name": "<anonymous@129>",
+                "line": 132,
+                "name": "<anonymous@132>",
                 "reason": "callback-dispatch"
               },
               {
@@ -37495,29 +37375,29 @@
                 "column": 70,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1798:<anonymous@57>",
+                "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
                 "kind": "ArrowFunction",
-                "line": 57,
-                "name": "<anonymous@57>",
+                "line": 58,
+                "name": "<anonymous@58>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3751:<anonymous@125>",
+                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
                 "kind": "ArrowFunction",
-                "line": 125,
-                "name": "<anonymous@125>",
+                "line": 128,
+                "name": "<anonymous@128>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:1325:expectDirectValidationFailure",
+                "id": "test/formal-public-surface-direct.test.ts:1356:expectDirectValidationFailure",
                 "kind": "FunctionDeclaration",
-                "line": 40,
+                "line": 41,
                 "name": "expectDirectValidationFailure",
                 "reason": "resolved-call"
               },
@@ -37525,10 +37405,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4461:<anonymous@148>",
+                "id": "test/formal-public-surface-direct.test.ts:4644:<anonymous@151>",
                 "kind": "ArrowFunction",
-                "line": 148,
-                "name": "<anonymous@148>",
+                "line": 151,
+                "name": "<anonymous@151>",
                 "reason": "callback-dispatch"
               },
               {
@@ -39358,10 +39238,10 @@
                 "column": 93,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:36031:<anonymous@956>",
+                "id": "test/fungibility.test.ts:39057:<anonymous@1005>",
                 "kind": "ArrowFunction",
-                "line": 956,
-                "name": "<anonymous@956>",
+                "line": 1005,
+                "name": "<anonymous@1005>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47701,20 +47581,20 @@
                 "column": 68,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:60912:<anonymous@1559>",
+                "id": "test/review-hardening.test.ts:61120:<anonymous@1562>",
                 "kind": "ArrowFunction",
-                "line": 1559,
-                "name": "<anonymous@1559>",
+                "line": 1562,
+                "name": "<anonymous@1562>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:62566:<anonymous@1584>",
+                "id": "test/review-hardening.test.ts:62774:<anonymous@1587>",
                 "kind": "ArrowFunction",
-                "line": 1584,
-                "name": "<anonymous@1584>",
+                "line": 1587,
+                "name": "<anonymous@1587>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47944,20 +47824,20 @@
                 "column": 68,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:60912:<anonymous@1559>",
+                "id": "test/review-hardening.test.ts:61120:<anonymous@1562>",
                 "kind": "ArrowFunction",
-                "line": 1559,
-                "name": "<anonymous@1559>",
+                "line": 1562,
+                "name": "<anonymous@1562>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:62566:<anonymous@1584>",
+                "id": "test/review-hardening.test.ts:62774:<anonymous@1587>",
                 "kind": "ArrowFunction",
-                "line": 1584,
-                "name": "<anonymous@1584>",
+                "line": 1587,
+                "name": "<anonymous@1587>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48025,20 +47905,20 @@
                 "column": 68,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:60912:<anonymous@1559>",
+                "id": "test/review-hardening.test.ts:61120:<anonymous@1562>",
                 "kind": "ArrowFunction",
-                "line": 1559,
-                "name": "<anonymous@1559>",
+                "line": 1562,
+                "name": "<anonymous@1562>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:62566:<anonymous@1584>",
+                "id": "test/review-hardening.test.ts:62774:<anonymous@1587>",
                 "kind": "ArrowFunction",
-                "line": 1584,
-                "name": "<anonymous@1584>",
+                "line": 1587,
+                "name": "<anonymous@1587>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48865,10 +48745,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:92173:<anonymous@1585>",
+                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
                 "kind": "ArrowFunction",
-                "line": 1585,
-                "name": "<anonymous@1585>",
+                "line": 1624,
+                "name": "<anonymous@1624>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49027,10 +48907,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:92173:<anonymous@1585>",
+                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
                 "kind": "ArrowFunction",
-                "line": 1585,
-                "name": "<anonymous@1585>",
+                "line": 1624,
+                "name": "<anonymous@1624>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -50033,5 +49913,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "351113f7b3f6bf2498fe0dcb1aa07c2835a6ea04bfca73c1d358401a7e8fee38"
+  "surfaceSha256": "59850558a4c752cbc5a8e9be969b2b6263ccd3a6e247b4564e71c92b3e6c83ca"
 }

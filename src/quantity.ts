@@ -1,5 +1,5 @@
 /** Exact physical-quantity arithmetic. InventoryOnce never uses epsilon comparisons. */
-import { storableQuantityDigits } from "./quantity-storage.js";
+import { leastCommonWorkingQuantityMultiple, quantityGreatestCommonDivisor, storableQuantityDigits } from "./quantity-storage.js";
 
 declare const unitCodeBrand: unique symbol;
 
@@ -231,14 +231,10 @@ export function leastCommonQuantityMultiple(
   assertSameUnit(left, right);
   positiveQuantity(left, "Left quantity multiple");
   positiveQuantity(right, "Right quantity multiple");
-  const decimals = Math.max(left.decimals, right.decimals);
-  const leftInteger = integerAtDecimals(left, decimals);
-  const rightInteger = integerAtDecimals(right, decimals);
-  const divisor = gcd(leftInteger, rightInteger);
-  const multiple = (leftInteger / divisor) * rightInteger;
+  const multiple = leastCommonWorkingQuantityMultiple(left, right);
   return quantity({
-    amountMinor: safeNumber(multiple, "Least common quantity multiple"),
-    decimals,
+    amountMinor: safeNumber(BigInt(multiple.amountMinor), "Least common quantity multiple"),
+    decimals: multiple.decimals,
     unit: left.unit,
   });
 }
@@ -250,7 +246,7 @@ export function quantityRatio(numerator: number, denominator = 1): QuantityRatio
   if (numerator <= 0 || denominator <= 0) {
     throw new Error("Quantity conversion ratio must be positive.");
   }
-  const divisor = gcd(BigInt(numerator), BigInt(denominator));
+  const divisor = quantityGreatestCommonDivisor(BigInt(numerator), BigInt(denominator));
   return {
     numerator: safeNumber(BigInt(numerator) / divisor, "Quantity ratio numerator"),
     denominator: safeNumber(BigInt(denominator) / divisor, "Quantity ratio denominator"),
@@ -312,7 +308,7 @@ function exactFractionQuantity(
   }
   let numerator = rawNumerator;
   let denominator = rawDenominator;
-  const divisor = gcd(abs(numerator), denominator);
+  const divisor = quantityGreatestCommonDivisor(abs(numerator), denominator);
   numerator /= divisor;
   denominator /= divisor;
 
@@ -352,18 +348,6 @@ export function integerAtDecimals(
     throw new Error("Target decimals cannot remove exact quantity digits.");
   }
   return BigInt(value.amountMinor) * powerOfTen(targetDecimals - value.decimals);
-}
-
-/** Return the greatest common divisor for two integers used in exact conversion math. */
-function gcd(left: bigint, right: bigint): bigint {
-  let a = abs(left);
-  let b = abs(right);
-  while (b !== 0n) {
-    const next = a % b;
-    a = b;
-    b = next;
-  }
-  return a === 0n ? 1n : a;
 }
 
 /** Return a non-negative bigint without converting through floating point. */

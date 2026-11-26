@@ -342,7 +342,12 @@ export function planWorkingInventoryAllocation({
         acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && acceptsLines(buildLines(choices)),
       };
       const measured = canRecordPartial
-        ? allocateInventoryUpTo({ ...measuredInput, assessIncrementBlockage: false })
+        ? allocateInventoryUpTo({
+            ...measuredInput, assessIncrementBlockage: false,
+            requiresPositiveShortfall: reportHasUnwitnessedAxis({
+              report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
+            }),
+          })
         : allocateWorkingInventory(measuredInput);
       if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
         allocated = measured;
@@ -388,6 +393,30 @@ export function planWorkingInventoryAllocation({
     unallocatedReservationsPresent:
       candidateResult.unallocatedReservationsPresent,
   };
+}
+
+/** Inputs for proving that a measured report needs a nonempty unwitnessed remainder. */
+interface ReportHasUnwitnessedAxisInput {
+  /** Measurements that the movement needs to explain. */
+  readonly report: InventoryMeasurementVector;
+  /** Exact source rows still eligible after scope, holds, expiry, and deficit selection. */
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+  /** Published or batch-local measurement evidence for those candidates. */
+  readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
+}
+
+/** The report needs a positive primary remainder if no eligible row supplies one reported axis. */
+function reportHasUnwitnessedAxis({ report, candidates, rows }: ReportHasUnwitnessedAxisInput): boolean {
+  return report.independent.some(
+    /** A reported zero needs no positive witness. */
+    ({ axisId, quantity }) => quantity.amountMinor > 0 && candidates.every(
+      /** A positive measurement on any candidate could still explain this axis. */
+      ({ position }) => {
+        const row = rows.get(inventoryStockPositionIdentity(position));
+        return row !== undefined && inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit).amountMinor <= 0n;
+      }
+    )
+  );
 }
 
 /** Physical policy inputs shared with capacity-only member selection. */

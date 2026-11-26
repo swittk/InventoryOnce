@@ -342,7 +342,9 @@ describe("atomic conserved split/merge/reclassification", () => {
     }]);
     expect((await inventory.read.reservation("reclassification-claim"))?.allocations)
       .toEqual([{ position: position.key, quantity: parseQuantity("1", "piece") }]);
-    expect((await inventory.read.reservationFeasibility(time2)).status)
-      .toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(await inventory.read.reservationFeasibility(time2)).toMatchObject({
+      status: InventoryReservationFeasibilityStatus.Shortage,
+      groups: [{ reservationIds: ["reclassification-claim"], shortage: parseQuantity("1", "piece") }],
+    });
   });
 });

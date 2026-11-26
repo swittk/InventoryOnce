@@ -1970,3 +1970,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-26 — fungibility increment diagnostics
 
 - Reservation-aware diagnostic trials keep physical increments when they equal the pool allocation increment. A reservation trial needs physically realizable stock amounts to check the claim book. A positive eligible member row below one legal pool pick still supplies increment evidence for a physical shortfall.
+
+## 2026-11-26 — measured remainders and whole-package choices
+
+- A report can need a positive primary remainder when eligible stock has no evidence for one of its positive independent measurements. The picker can stop once it finds a valid plan with the smallest positive remainder at the search scale.
+- Fungibility tests whether whole-package member increments fit using exact working digits before storing an increment. Indivisible stock discarded by the pool increment remains evidence for the shortfall diagnostic.

@@ -26,6 +26,27 @@ export function workingQuantityAtDecimals(value: InventoryWorkingQuantity, decim
   return BigInt(value.amountMinor) * 10n ** BigInt(decimals - value.decimals);
 }
 
+/** Return the greatest common divisor used by exact quantity ratios. */
+export function quantityGreatestCommonDivisor(left: bigint, right: bigint): bigint {
+  let a = left < 0n ? -left : left;
+  let b = right < 0n ? -right : right;
+  while (b !== 0n) {
+    const next = a % b;
+    a = b;
+    b = next;
+  }
+  return a === 0n ? 1n : a;
+}
+
+/** Return the least common multiple of positive same-unit quantities before applying storage limits. */
+export function leastCommonWorkingQuantityMultiple(left: Quantity, right: Quantity): InventoryWorkingQuantity {
+  const decimals = Math.max(left.decimals, right.decimals);
+  const leftInteger = workingQuantityAtDecimals(left, decimals);
+  const rightInteger = workingQuantityAtDecimals(right, decimals);
+  const divisor = quantityGreatestCommonDivisor(leftInteger, rightInteger);
+  return { amountMinor: (leftInteger / divisor) * rightInteger, decimals, unit: left.unit };
+}
+
 /** Compare same-unit working balances without narrowing either one. */
 export function compareWorkingQuantities(left: InventoryWorkingQuantity, right: InventoryWorkingQuantity): -1 | 0 | 1 {
   if (left.unit !== right.unit) throw new Error("Quantity units must match.");

@@ -56,12 +56,20 @@ import {
   compareQuantity,
   convertQuantityByReferenceExact,
   integerAtDecimals,
-  leastCommonQuantityMultiple,
   positiveQuantity,
   quantity,
   type Quantity,
 } from "./quantity.js";
-import { addExactQuantityDigits, compareWorkingQuantities, storableQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
+import {
+  addExactQuantityDigits,
+  compareWorkingQuantities,
+  leastCommonWorkingQuantityMultiple,
+  materializeInventoryWorkingQuantity,
+  storableQuantityDigits,
+  workingQuantityAtDecimals,
+  type ExactQuantityDigits,
+  type InventoryWorkingQuantity,
+} from "./quantity-storage.js";
 import {
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
@@ -385,8 +393,8 @@ function planInventoryFungibilityAllocationWithHolds({
   let expiredStockWasExcluded = false;
   // Remember whether any member was blocked by intact package or serial increments.
   let incrementBlockedStock = false;
-  /** Positive indivisible stock too small to supply one legal common-basis pick. */
-  let belowMemberIncrement = false;
+  /** Indivisible member stock left over after enforcing the combined pool increment. */
+  let discardedIndivisibleCapacity = false;
   // Remember whether any active member reservation remained broad rather than position-bound.
   let unallocatedReservationsPresent = false;
 
@@ -420,7 +428,7 @@ function planInventoryFungibilityAllocationWithHolds({
       const capacity = inventoryAllocationCandidateCapacity(source);
       incrementBlockedStock ||= capacity.incrementBlockedStock;
       if (capacity.quantity.amountMinor === 0) continue;
-      const belowIncrement = addFungibilityCandidate({
+      const discardedCapacity = addFungibilityCandidate({
         catalog,
         world,
         member,
@@ -430,7 +438,7 @@ function planInventoryFungibilityAllocationWithHolds({
         candidates,
         evidenceByPosition,
       });
-      belowMemberIncrement ||= belowIncrement;
+      discardedIndivisibleCapacity ||= discardedCapacity;
     }
   }
 
@@ -513,7 +521,7 @@ function planInventoryFungibilityAllocationWithHolds({
     expiredStockWasExcluded,
     incrementBlockedStock:
       incrementBlockedStock || allocated.incrementBlockedStock ||
-      (belowMemberIncrement && allocated.shortfall.amountMinor > 0 && !allocated.allocationConstraintBlockedStock),
+      (discardedIndivisibleCapacity && allocated.shortfall.amountMinor > 0 && !allocated.allocationConstraintBlockedStock),
     allocationConstraintBlockedStock:
       allocated.allocationConstraintBlockedStock,
     unallocatedReservationsPresent,
@@ -824,7 +832,7 @@ interface AddFungibilityCandidateInput {
   >;
 }
 
-/** Register one common-basis candidate or report indivisible stock below one legal pick. */
+/** Register the exact common-basis picks and report any discarded indivisible capacity. */
 function addFungibilityCandidate({
   catalog,
   world,
@@ -849,11 +857,16 @@ function addFungibilityCandidate({
     item,
     memberAvailable,
   });
-  // Only whole legal member increments belong to this candidate. The physical remainder stays in stock.
+  // Compare wide digits first. An increment larger than the row never needs to be stored.
   const decimals = Math.max(memberAvailable.decimals, memberIncrement.decimals);
-  const increments = integerAtDecimals(memberAvailable, decimals) / integerAtDecimals(memberIncrement, decimals);
-  if (increments === 0n) return source.allocationIncrement !== undefined;
-  const allocationIncrement = convertQuantityByReferenceExact(memberIncrement, member.memberQuantity, member.poolQuantity);
+  const availableDigits = integerAtDecimals(memberAvailable, decimals);
+  const incrementDigits = workingQuantityAtDecimals(memberIncrement, decimals);
+  const increments = availableDigits / incrementDigits;
+  const discardedCapacity = source.allocationIncrement !== undefined && availableDigits % incrementDigits !== 0n;
+  if (increments === 0n) return discardedCapacity;
+  const allocationIncrement = convertQuantityByReferenceExact(
+    materializeInventoryWorkingQuantity(memberIncrement, "Fungibility member increment"), member.memberQuantity, member.poolQuantity,
+  );
   // The reservation trial needs a real physical pick. Preserve this bound when it equals the member increment.
   const keepIncrementForAcceptance = source.allocationIncrement !== undefined &&
     compareWorkingQuantities(source.allocationIncrement, memberIncrement) === 0;
@@ -877,7 +890,7 @@ function addFungibilityCandidate({
     position,
     source,
   });
-  return false;
+  return discardedCapacity;
 }
 
 /** Find the smallest member pick that preserves physical increments and converts to whole pool references. */
@@ -892,7 +905,7 @@ function fungibilityMemberAllocationIncrement(input: {
   readonly item: InventoryItemDefinitionRevision;
   /** Member-side capacity of this source position. */
   readonly memberAvailable: Quantity;
-}): Quantity {
+}): InventoryWorkingQuantity {
   if (
     input.position.key.serialId !== undefined ||
     positionHasUnfixedIndependentMeasuredContents(
@@ -901,7 +914,7 @@ function fungibilityMemberAllocationIncrement(input: {
       input.item
     )
   ) {
-    return leastCommonQuantityMultiple(
+    return leastCommonWorkingQuantityMultiple(
       input.member.memberQuantity,
       input.memberAvailable
     );
@@ -916,7 +929,7 @@ function fungibilityMemberAllocationIncrement(input: {
     input.member.measurementAxisId,
     input.member.memberQuantity.unit
   );
-  return leastCommonQuantityMultiple(
+  return leastCommonWorkingQuantityMultiple(
     input.member.memberQuantity,
     onePackageMemberQuantity
   );

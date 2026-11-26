@@ -93,11 +93,11 @@ export interface CommitInventorySegmentedStockEventInput {
   readonly expectedRecordSequence?: number;
   /** Whether this command may leave a signed physical deficit. */
   readonly deficitPolicy: InventoryDeficitPolicy;
-  /** Already domain-validated stock event draft. */
+  /** Domain-validated stock or direct-contents placement event draft. */
   readonly event: InventoryEventDraft;
 }
 
-/** Result of one adapter-native stock-only event commit or replay. */
+/** Result of one adapter-native stock or direct-contents event commit or replay. */
 export interface CommitInventorySegmentedStockEventResult {
   /** Exact published world revision for this operation. */
   readonly worldRevision: number;
@@ -109,11 +109,12 @@ export interface CommitInventorySegmentedStockEventResult {
   readonly replayed: boolean;
 }
 
-/** Optional storage capability for one stock-only event without whole-world materialization. */
+/** Optional storage capability for one stock or direct-contents event without whole-world materialization. */
 export interface InventorySegmentedStockEventCommitCapability {
   /**
-   * Commit one eligible stock-only event atomically.
-   * Return undefined when current adapter/world state requires the canonical whole-world coordinator.
+   * Commit stock effects and direct-contents placement changes as one atomic event.
+   * A direct-contents placement event may contain only child placement changes.
+   * Return undefined without publishing any part when the event needs the canonical whole-world coordinator.
    */
   commitSegmentedStockEvent(
     input: CommitInventorySegmentedStockEventInput

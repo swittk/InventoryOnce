@@ -998,6 +998,45 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("records the oldest 5 kg witness when no lot has the reported optional volume", async () => {
+    const item = defineInventoryItem({
+      itemId: "material", revisionId: "material-v1",
+      primaryAxis: {
+        axisId: "weight", role: InventoryMeasurementAxisRole.Primary,
+        unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [{
+        axisId: "volume", role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional,
+      }],
+      reservationAxisId: "weight",
+      tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional },
+      qualifiedDimensions: [],
+    });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { material: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, occurredAtEpochMs] of [["older", time0], ["newer", time1]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}`, occurredAtEpochMs,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: stockAmount("5", "kg"),
+      });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "transfer-with-unwitnessed-volume", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("5.000001", "kg", [{ axisId: "volume", value: "0.001", unit: "L" }]),
+    });
+    const arrived = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
+    expect(arrived.find(({ key }) => key.lotId === "older")?.measurements.primary.quantity).toEqual(parseQuantity("5.000000", "kg"));
+    expect(arrived.some(({ key }) => key.lotId === "newer")).toBe(false);
+    expect(result.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("0.000001", "kg") },
+        independent: [{ axisId: "volume", quantity: parseQuantity("0.001", "L") }],
+      },
+    }]);
+  });
+
   it.each([true, false])("records a measured report with an unstorable trial (later witness: %s)", async (hasLaterWitness) => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
     const fractional = { lotId: "fractional", pieces: "1.9", weight: "1", occurredAtEpochMs: time1 };
@@ -1661,11 +1700,21 @@ describe("indexed stock planning and availability", () => {
       operationId: "receive-serial", occurredAtEpochMs: time0,
       to: serial, amount: stockAmount("1", "piece"),
     });
+    await inventory.stock.receive({
+      operationId: "receive-spare-for-claim", occurredAtEpochMs: time0,
+      to: loosePosition("spare"), amount: stockAmount("1", "piece"),
+    });
+    await inventory.reservations.reserve({
+      operationId: "earlier-claim", reservationId: "earlier-claim", itemRevisionId: "item-a-v2",
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["spare"] }),
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time0,
+    });
     const command = {
       operationId: "report-serial-transfer", occurredAtEpochMs: time1,
       from: serial, toPlacementNodeId: "destination", amount: stockAmount("1", "piece"),
     };
     const moved = await inventory.stock.transfer(command);
+    expect(moved.receipt.worldRevision).not.toBe(moved.event.recordSequence);
     await inventory.reservations.reserve({
       operationId: "later-claim", reservationId: "later-claim", itemRevisionId: "item-a-v2",
       selector: inventoryStockSelector("item-a", { placementNodeIds: ["destination"] }),
@@ -2007,6 +2056,10 @@ describe("indexed stock planning and availability", () => {
         nodeId: nodeId(index), placementNode: { useByEpochMs },
       });
     }
+    await inventory.placement.define({
+      operationId: "define-new-root", occurredAtEpochMs: time0,
+      nodeId: "new-root", placementNode: { useByEpochMs: time1 },
+    });
     for (let index = depth - 1; index > 0; index -= 1) {
       await inventory.placement.move({
         operationId: "place-" + nodeId(index), occurredAtEpochMs: time1,
@@ -2044,12 +2097,14 @@ describe("indexed stock planning and availability", () => {
         operationId: "move-deep-subtree", occurredAtEpochMs: time2, nodeId: nodeId(128), into: "new-root",
       });
       expect(last?.ancestry).toEqual(Array.from({ length: depth }, (_, index) => nodeId(depth - 1 - index)));
+      expect(last?.effectiveUseByEpochMs).toBe(time2);
       const moved = storage.readSegmentedStockPool(request).positions.find(
         (row) => row.position.key.placementNodeId === nodeId(depth - 1),
       );
       expect(moved?.ancestry).toEqual([
         ...Array.from({ length: depth - 128 }, (_, index) => nodeId(depth - 1 - index)), "new-root",
       ]);
+      expect(moved?.effectiveUseByEpochMs).toBe(time1);
     } finally {
       fullPaths.mockRestore();
       parentReads.mockRestore();

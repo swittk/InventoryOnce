@@ -85,6 +85,8 @@ export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInp
 interface AllocateInventoryUpToInput extends AllocateWorkingInventoryInput {
   /** Skip relaxed trials when measured evidence cannot be inferred for a split. */
   readonly assessIncrementBlockage?: boolean;
+  /** The reported movement needs a positive primary remainder for an unwitnessed axis. */
+  readonly requiresPositiveShortfall?: boolean;
 }
 
 /** One exact position/quantity chosen by automatic allocation. */
@@ -139,6 +141,7 @@ function allocateInventoryCandidates({
   allowExpired = false,
   acceptAllocations,
   assessIncrementBlockage = true,
+  requiresPositiveShortfall = false,
 }: AllocateInventoryUpToInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
@@ -168,7 +171,7 @@ function allocateInventoryCandidates({
     ...(acceptAllocations === undefined ? {} : { acceptAllocations }),
   };
   // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
-  const assignment = searchInventoryAllocations({ ...searchInput, acceptPartial });
+  const assignment = searchInventoryAllocations({ ...searchInput, acceptPartial, requiresPositiveShortfall });
   if (assignment !== undefined) {
     return {
       allocations: assignment.allocations,
@@ -326,6 +329,8 @@ interface SearchInventoryAllocationsInput {
   readonly acceptAllocations?: AllocateInventoryInput["acceptAllocations"];
   /** Whether a coherent assignment can leave part of the request unwitnessed. */
   readonly acceptPartial: boolean;
+  /** A measured predicate cannot accept zero shortfall. */
+  readonly requiresPositiveShortfall?: boolean;
   /** Test whether relaxing indivisible increments admits a storable split. */
   readonly ignoreIncrements?: boolean;
   /** Stop a diagnostic trial at the first accepted remainder strictly below this one. */
@@ -334,7 +339,8 @@ interface SearchInventoryAllocationsInput {
 
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
 function searchInventoryAllocations({
-  requested, candidates, acceptAllocations: predicate, acceptPartial, ignoreIncrements = false, improveOnShortfall,
+  requested, candidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
+  ignoreIncrements = false, improveOnShortfall,
 }: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
   /** Relaxed trials can present fractional packages that a normal predicate cannot represent. */
   const acceptAllocations = predicate === undefined || !ignoreIncrements ? predicate :
@@ -354,6 +360,8 @@ function searchInventoryAllocations({
     }
   }
   const requestedMinor = integerAtDecimals(requested, decimals);
+  /** At this scale a positive shortfall needs at least one digit. */
+  const minimumShortfallMinor = requiresPositiveShortfall ? 1n : 0n;
   const capacityMinor = candidates.map(
     /** Put every candidate capacity on one exact integer scale for the bounded search. */
     (candidate) => workingQuantityAtDecimals(candidate.available, decimals)
@@ -460,7 +468,7 @@ function searchInventoryAllocations({
         limit: integerAtDecimals(improveOnShortfall, decimals) - 1n, increment: 1n,
       }) ?? 0n) + 1n;
 
-  /** Search in policy order until an exact plan or the requested diagnostic improvement is found. */
+  /** Search in policy order until a smallest possible shortfall or diagnostic improvement is found. */
   const findExactSuffix = (index: number, remainingMinor: bigint): boolean => {
     const complete = remainingMinor === 0n;
     if (complete || index >= candidates.length) {
@@ -474,7 +482,7 @@ function searchInventoryAllocations({
       if (acceptAllocations !== undefined && !acceptAllocations(allocations)) return false;
       bestRemainingMinor = remainingMinor;
       bestAssignment = { allocations, shortfall };
-      return complete || improveOnShortfall !== undefined;
+      return remainingMinor === minimumShortfallMinor || improveOnShortfall !== undefined;
     }
     const capacityFromHere = suffixCapacity[index] ?? 0n;
     const divisorFromHere = suffixDivisor[index] ?? 0n;
