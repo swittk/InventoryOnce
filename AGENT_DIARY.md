@@ -2039,3 +2039,8 @@ The R105 portable-current-input authority and final publication both continue to
 - A report's independent axis bounds the combined primary witness across rows. The picker uses the best eligible primary-to-axis ratio as an upper bound, then checks the chosen lines exactly.
 - An unlabelled transfer shortage follows the selected stock scope apart from the lot. Exact singleton constraints can identify the default bucket.
 - An independent-axis hold stays recorded after a source balance becomes nonpositive. That row cannot supply a pick and does not constrain selection from positive rows.
+
+## 2026-11-27 — measured increments and topology replay
+
+- A measured witness bound is rounded down to the common selectable increment before looking for an optimal partial pick. The exact measurement predicate still checks the chosen lines.
+- A completed placement move or unplacement replays its original receipt even when the retry clock precedes the occurrence. New publications still check the current record time.

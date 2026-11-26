@@ -410,17 +410,18 @@ function searchInventoryAllocations({
   }
   /** Proven lower bound on the primary remainder. */
   let minimumShortfallMinor = 0n;
+  const divisor = suffixDivisor[0] ?? 0n;
   if (requiresPositiveShortfall) {
-    const divisor = suffixDivisor[0] ?? 0n;
     // Selected totals are multiples of the common divisor. Exclude zero for unwitnessed measurements.
     minimumShortfallMinor = divisor === 0n ? requestedMinor : requestedMinor % divisor || divisor;
   }
   if (maximumWitnessPrimary !== undefined) {
-    // Round the upper bound down to an integer on the search scale.
+    // Every witness total is a multiple of the common increment on the search scale.
     const boundDecimals = Math.max(decimals, maximumWitnessPrimary.decimals);
     const bound = workingQuantityAtDecimals(maximumWitnessPrimary, boundDecimals) /
       10n ** BigInt(boundDecimals - decimals);
-    const remainder = requestedMinor - bound;
+    const roundedBound = divisor === 0n ? 0n : bound - bound % divisor;
+    const remainder = requestedMinor - roundedBound;
     if (remainder > minimumShortfallMinor) minimumShortfallMinor = remainder;
   }
   const totalCapacity = suffixCapacity[0] ?? 0n;

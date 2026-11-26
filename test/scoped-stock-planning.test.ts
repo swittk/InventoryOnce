@@ -1201,6 +1201,47 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it.each(["210.000", "210.0000"])("rounds a %s kg reported witness to intact package increments", async (primary) => {
+    const item = defineInventoryItem({
+      itemId: "material", revisionId: "material-v1",
+      primaryAxis: { axisId: "weight", role: InventoryMeasurementAxisRole.Primary, unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required },
+      independentAxes: [{ axisId: "volume", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional }],
+      reservationAxisId: "weight",
+      tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional }, qualifiedDimensions: [],
+    });
+    const packageId = "measured-pack";
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [{
+        revisionId: packageId, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+        fixedContents: {
+          primary: { axisId: "weight", quantity: parseQuantity("0.001", "kg") },
+          independent: [{ axisId: "volume", quantity: parseQuantity("0.004", "L") }],
+        },
+      }],
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, occurredAtEpochMs] of [["older", time0], ["newer", time1]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}`, occurredAtEpochMs,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId },
+        amount: packageAmount(100_001, packageId),
+      });
+    }
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "move-measured-packs", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount(primary, "kg", [{ axisId: "volume", value: "400.006", unit: "L" }]),
+    });
+    expect(moved.event.positiveLayerProvenanceTransfers?.map(({ from }) => from.lotId)).toEqual(["older"]);
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity(primary === "210.000" ? "109.999" : "109.9990", "kg") },
+        independent: [{ axisId: "volume", quantity: parseQuantity("0.002", "L") }],
+      },
+    }]);
+  });
+
   it.each(["fixed packages", "separate measured lots"] as const)("caps the measured search for %s within the reported axis", async (stock) => {
     const item = defineInventoryItem({
       itemId: "material", revisionId: "material-v1",

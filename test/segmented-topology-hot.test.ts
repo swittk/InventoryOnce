@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { InventoryDeficitPolicy, InventoryEventKind, InventoryReservationFeasibilityStatus, parseQuantity, stockAmount } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
+  clockAt,
   createTestInventory,
   loosePosition,
   time0,
@@ -96,24 +97,27 @@ describe("adapter-native standalone topology events", () => {
       expect(await inventory.read.placementAncestry("TRAY")).toEqual([
         "TRAY", "ROOM",
       ]);
-      const replay = await inventory.placement.move(move);
+      const earlierClock = createTestInventory(storage, undefined, clockAt(time0));
+      const replay = await earlierClock.placement.move(move);
       expect(replay.replayed).toBe(true);
       expect(replay.event).toEqual(first.event);
+      expect(replay.receipt).toEqual(first.receipt);
 
       await expect(
-        inventory.placement.move({
+        earlierClock.placement.move({
           ...move,
           into: "OTHER",
         })
       ).rejects.toThrow("changed intent");
       expect(storage.readPositionSegment().revision()).toBe(beforeRevision + 1);
 
-      const unplaced = await inventory.placement.unplace({
+      const unplace = {
         operationId: "topology-hot-unplace-tray",
         occurredAtEpochMs: time2,
         nodeId: "TRAY",
         expectedParent: "ROOM",
-      });
+      } as const;
+      const unplaced = await inventory.placement.unplace(unplace);
       expect(unplaced.event.kind).toBe(InventoryEventKind.Placement);
       expect(unplaced.event.placementChanges).toEqual([
         { nodeId: "TRAY", fromParentNodeId: "ROOM" },
@@ -121,6 +125,12 @@ describe("adapter-native standalone topology events", () => {
       expect(await inventory.read.placementParent("TRAY")).toBeUndefined();
       expect(await inventory.read.placementChildren("ROOM")).toEqual([]);
       expect(await inventory.read.placementAncestry("TRAY")).toEqual(["TRAY"]);
+      const unplaceReplay = await earlierClock.placement.unplace(unplace);
+      expect(unplaceReplay).toEqual({ ...unplaced, replayed: true });
+      await expect(earlierClock.placement.move({
+        ...move, operationId: "topology-hot-future-move",
+      })).rejects.toThrow("cannot occur after its durable record time");
+      expect(await storage.readOperation("topology-hot-future-move")).toBeUndefined();
       expect(storage.readPositionSegment().revision()).toBe(beforeRevision + 2);
       expect(readWorld).not.toHaveBeenCalled();
     } finally {

@@ -1654,12 +1654,6 @@ export class InMemoryInventoryDurableStorage
       input.occurredAtEpochMs,
       "segmented placement occurredAtEpochMs"
     );
-    if (input.occurredAtEpochMs > input.recordedAtEpochMs) {
-      throw new Error(
-        "placement topology change cannot occur after its durable record time."
-      );
-    }
-
     const existing = this.operations.get(input.operationId);
     if (existing !== undefined) {
       assertSameInventoryOperationIntent(existing.value, input.intentFingerprint);
@@ -1683,6 +1677,12 @@ export class InMemoryInventoryDurableStorage
       // Restored snapshots retain journal facts but not their original receipt
       // revision. The canonical coordinator must resolve that replay instead.
       return undefined;
+    }
+    // The occurrence time is checked against the clock only for a new publication.
+    if (input.occurredAtEpochMs > input.recordedAtEpochMs) {
+      throw new Error(
+        "placement topology change cannot occur after its durable record time."
+      );
     }
     if (
       this.failpoint !== undefined ||
