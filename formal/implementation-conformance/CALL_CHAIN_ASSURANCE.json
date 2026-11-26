@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4235,
-    "edges": 11999,
+    "callables": 4238,
+    "edges": 12004,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -5478,20 +5478,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:122057:<anonymous@2093>",
+                "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
                 "kind": "ArrowFunction",
-                "line": 2093,
-                "name": "<anonymous@2093>",
+                "line": 2108,
+                "name": "<anonymous@2108>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -5772,20 +5772,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:122057:<anonymous@2093>",
+                "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
                 "kind": "ArrowFunction",
-                "line": 2093,
-                "name": "<anonymous@2093>",
+                "line": 2108,
+                "name": "<anonymous@2108>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6664,20 +6664,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 98,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:148280:<anonymous@2532>",
+                "id": "test/scoped-stock-planning.test.ts:149371:<anonymous@2547>",
                 "kind": "ArrowFunction",
-                "line": 2532,
-                "name": "<anonymous@2532>",
+                "line": 2547,
+                "name": "<anonymous@2547>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6887,20 +6887,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:126878:<anonymous@2165>",
+                "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
                 "kind": "ArrowFunction",
-                "line": 2165,
-                "name": "<anonymous@2165>",
+                "line": 2180,
+                "name": "<anonymous@2180>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -7140,20 +7140,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:126878:<anonymous@2165>",
+                "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
                 "kind": "ArrowFunction",
-                "line": 2165,
-                "name": "<anonymous@2165>",
+                "line": 2180,
+                "name": "<anonymous@2180>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -10390,9 +10390,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:5407:allocateInventory",
+          "id": "src/allocation.ts:6014:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 123,
+          "line": 133,
           "name": "allocateInventory"
         }
       ],
@@ -10403,9 +10403,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:5407:allocateInventory",
+            "id": "src/allocation.ts:6014:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 123,
+            "line": 133,
             "name": "allocateInventory"
           },
           "witness": {
@@ -10443,9 +10443,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:5407:allocateInventory",
+                "id": "src/allocation.ts:6014:allocateInventory",
                 "kind": "FunctionDeclaration",
-                "line": 123,
+                "line": 133,
                 "name": "allocateInventory",
                 "reason": "resolved-call"
               }
@@ -11910,9 +11910,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:40365:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:42764:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 868,
+          "line": 902,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -11923,9 +11923,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:40365:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:42764:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 868,
+            "line": 902,
             "name": "compareInventoryAllocationCandidates"
           },
           "witness": {
@@ -11963,9 +11963,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:40365:compareInventoryAllocationCandidates",
+                "id": "src/allocation.ts:42764:compareInventoryAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 868,
+                "line": 902,
                 "name": "compareInventoryAllocationCandidates",
                 "reason": "resolved-call"
               }
@@ -12003,42 +12003,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/containers.test.ts",
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/containers.test.ts",
+                "id": "test-root:test/scoped-stock-planning.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/containers.test.ts"
+                "name": "test/scoped-stock-planning.test.ts"
               },
               {
-                "column": 92,
-                "file": "test/containers.test.ts",
+                "column": 53,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:1078:<anonymous@41>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 41,
-                "name": "<anonymous@41>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 1,
-                "file": "src/events.ts",
+                "column": 63,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28991:defineInventoryEvent",
-                "kind": "FunctionDeclaration",
-                "line": 645,
-                "name": "defineInventoryEvent",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/events.ts",
-                "hasBody": true,
-                "id": "src/events.ts:69288:normalizeStockEffects",
-                "kind": "FunctionDeclaration",
-                "line": 1648,
-                "name": "normalizeStockEffects",
-                "reason": "resolved-call"
+                "id": "test/scoped-stock-planning.test.ts:79217:<anonymous@1357>",
+                "kind": "ArrowFunction",
+                "line": 1357,
+                "name": "<anonymous@1357>",
+                "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
@@ -12051,7 +12041,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/containers.test.ts"
+            "test": "test/scoped-stock-planning.test.ts"
           }
         }
       ]
@@ -14828,20 +14818,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:118516:<anonymous@2035>",
+                "id": "test/scoped-stock-planning.test.ts:119607:<anonymous@2050>",
                 "kind": "ArrowFunction",
-                "line": 2035,
-                "name": "<anonymous@2035>",
+                "line": 2050,
+                "name": "<anonymous@2050>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -17015,9 +17005,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:56555:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:58439:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1239,
+          "line": 1274,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -17028,9 +17018,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:56555:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:58439:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1239,
+            "line": 1274,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -17108,9 +17098,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:56555:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:58439:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1239,
+                "line": 1274,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -23099,9 +23089,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6475:planInventoryAllocation",
+          "id": "src/picking.ts:6550:planInventoryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 161,
+          "line": 163,
           "name": "planInventoryAllocation"
         }
       ],
@@ -23112,9 +23102,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6475:planInventoryAllocation",
+            "id": "src/picking.ts:6550:planInventoryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 161,
+            "line": 163,
             "name": "planInventoryAllocation"
           },
           "witness": {
@@ -23152,9 +23142,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6475:planInventoryAllocation",
+                "id": "src/picking.ts:6550:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 161,
+                "line": 163,
                 "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               }
@@ -27590,42 +27580,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/containers.test.ts",
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/containers.test.ts",
+                "id": "test-root:test/scoped-stock-planning.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/containers.test.ts"
+                "name": "test/scoped-stock-planning.test.ts"
               },
               {
-                "column": 92,
-                "file": "test/containers.test.ts",
+                "column": 53,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:1078:<anonymous@41>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 41,
-                "name": "<anonymous@41>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 1,
-                "file": "src/events.ts",
+                "column": 63,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "src/events.ts:28991:defineInventoryEvent",
-                "kind": "FunctionDeclaration",
-                "line": 645,
-                "name": "defineInventoryEvent",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/events.ts",
-                "hasBody": true,
-                "id": "src/events.ts:69288:normalizeStockEffects",
-                "kind": "FunctionDeclaration",
-                "line": 1648,
-                "name": "normalizeStockEffects",
-                "reason": "resolved-call"
+                "id": "test/scoped-stock-planning.test.ts:79217:<anonymous@1357>",
+                "kind": "ArrowFunction",
+                "line": 1357,
+                "name": "<anonymous@1357>",
+                "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
@@ -27638,7 +27618,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/containers.test.ts"
+            "test": "test/scoped-stock-planning.test.ts"
           }
         }
       ]
@@ -29413,9 +29393,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:56555:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:58439:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1239,
+          "line": 1274,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -29426,9 +29406,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:56555:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:58439:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1239,
+            "line": 1274,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -29506,9 +29486,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:56555:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:58439:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1239,
+                "line": 1274,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -32278,9 +32258,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:6475:planInventoryAllocation",
+          "id": "src/picking.ts:6550:planInventoryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 161,
+          "line": 163,
           "name": "planInventoryAllocation"
         }
       ],
@@ -32291,9 +32271,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:6475:planInventoryAllocation",
+            "id": "src/picking.ts:6550:planInventoryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 161,
+            "line": 163,
             "name": "planInventoryAllocation"
           },
           "witness": {
@@ -32331,9 +32311,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:6475:planInventoryAllocation",
+                "id": "src/picking.ts:6550:planInventoryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 161,
+                "line": 163,
                 "name": "planInventoryAllocation",
                 "reason": "resolved-call"
               }
@@ -36940,20 +36920,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 86,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:27133:<anonymous@472>",
+                "id": "test/scoped-stock-planning.test.ts:27152:<anonymous@473>",
                 "kind": "ArrowFunction",
-                "line": 472,
-                "name": "<anonymous@472>",
+                "line": 473,
+                "name": "<anonymous@473>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47055,20 +47035,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 101,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:34840:<anonymous@592>",
+                "id": "test/scoped-stock-planning.test.ts:34859:<anonymous@593>",
                 "kind": "ArrowFunction",
-                "line": 592,
-                "name": "<anonymous@592>",
+                "line": 593,
+                "name": "<anonymous@593>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48685,20 +48665,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:122057:<anonymous@2093>",
+                "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
                 "kind": "ArrowFunction",
-                "line": 2093,
-                "name": "<anonymous@2093>",
+                "line": 2108,
+                "name": "<anonymous@2108>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48847,20 +48827,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:122057:<anonymous@2093>",
+                "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
                 "kind": "ArrowFunction",
-                "line": 2093,
-                "name": "<anonymous@2093>",
+                "line": 2108,
+                "name": "<anonymous@2108>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49435,20 +49415,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:126878:<anonymous@2165>",
+                "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
                 "kind": "ArrowFunction",
-                "line": 2165,
-                "name": "<anonymous@2165>",
+                "line": 2180,
+                "name": "<anonymous@2180>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49688,20 +49668,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
+                "id": "test/scoped-stock-planning.test.ts:3462:<anonymous@96>",
                 "kind": "ArrowFunction",
-                "line": 95,
-                "name": "<anonymous@95>",
+                "line": 96,
+                "name": "<anonymous@96>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:126878:<anonymous@2165>",
+                "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
                 "kind": "ArrowFunction",
-                "line": 2165,
-                "name": "<anonymous@2165>",
+                "line": 2180,
+                "name": "<anonymous@2180>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49813,5 +49793,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "b6b15f69fdcac975f90dbf83497f9b1b88dd233e0136c8374043953f4e0c8bca"
+  "surfaceSha256": "82a5cfc2b51acb27a440f1c6188da781c2d87872bc838407e23fc7d574d4fcc0"
 }

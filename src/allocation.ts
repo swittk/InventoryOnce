@@ -81,6 +81,14 @@ export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInp
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
 }
 
+/** Limit on stock without a reported measurement in a fully witnessed assignment. */
+export interface InventoryFullWitnessPrimaryBudget {
+  /** Candidate keys that contribute to at least one positively reported independent axis. */
+  readonly measuredPositions: ReadonlySet<InventoryStockPositionKey>;
+  /** Most primary stock the full witness can pick without contributing to those axes. */
+  readonly axisFreeLimit: InventoryWorkingQuantity;
+}
+
 /** Inputs for selecting a partial witness with an optional primary-increment diagnosis. */
 interface AllocateInventoryUpToInput extends AllocateWorkingInventoryInput {
   /** Skip relaxed trials when measured evidence cannot be inferred for a split. */
@@ -89,6 +97,8 @@ interface AllocateInventoryUpToInput extends AllocateWorkingInventoryInput {
   readonly requiresPositiveShortfall?: boolean;
   /** Proven upper limit on primary stock that can fit the measured report. */
   readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
+  /** Primary capacity that must remain available for a complete measured witness. */
+  readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
 }
 
 /** One exact position/quantity chosen by automatic allocation. */
@@ -145,6 +155,7 @@ function allocateInventoryCandidates({
   assessIncrementBlockage = true,
   requiresPositiveShortfall = false,
   maximumWitnessPrimary,
+  fullWitnessPrimaryBudget,
 }: AllocateInventoryUpToInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
@@ -177,6 +188,7 @@ function allocateInventoryCandidates({
   const assignment = searchInventoryAllocations({
     ...searchInput, acceptPartial, requiresPositiveShortfall,
     ...(maximumWitnessPrimary === undefined ? {} : { maximumWitnessPrimary }),
+    ...(fullWitnessPrimaryBudget === undefined ? {} : { fullWitnessPrimaryBudget }),
   });
   if (assignment !== undefined) {
     return {
@@ -339,6 +351,8 @@ interface SearchInventoryAllocationsInput {
   readonly requiresPositiveShortfall?: boolean;
   /** Proven upper limit on primary stock that can fit the measured report. */
   readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
+  /** Primary capacity that must remain available for a complete measured witness. */
+  readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
   /** Test whether relaxing indivisible increments admits a storable split. */
   readonly ignoreIncrements?: boolean;
   /** Stop a diagnostic trial at the first accepted remainder strictly below this one. */
@@ -348,7 +362,7 @@ interface SearchInventoryAllocationsInput {
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
 function searchInventoryAllocations({
   requested, candidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
-  maximumWitnessPrimary, ignoreIncrements = false, improveOnShortfall,
+  maximumWitnessPrimary, fullWitnessPrimaryBudget, ignoreIncrements = false, improveOnShortfall,
 }: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
   /** Relaxed trials can present fractional packages that a normal predicate cannot represent. */
   const acceptAllocations = predicate === undefined || !ignoreIncrements ? predicate :
@@ -411,9 +425,11 @@ function searchInventoryAllocations({
   /** Proven lower bound on the primary remainder. */
   let minimumShortfallMinor = 0n;
   const divisor = suffixDivisor[0] ?? 0n;
+  /** Every nonzero remainder is at least this large on the shared scale. */
+  const minimumPositiveShortfallMinor = divisor === 0n ? requestedMinor : requestedMinor % divisor || divisor;
   if (requiresPositiveShortfall) {
     // Selected totals are multiples of the common divisor. Exclude zero for unwitnessed measurements.
-    minimumShortfallMinor = divisor === 0n ? requestedMinor : requestedMinor % divisor || divisor;
+    minimumShortfallMinor = minimumPositiveShortfallMinor;
   }
   if (maximumWitnessPrimary !== undefined) {
     // Every witness total is a multiple of the common increment on the search scale.
@@ -486,6 +502,17 @@ function searchInventoryAllocations({
   const chosenMinor = new Array<bigint>(candidates.length).fill(0n);
   /** Failed index/remainder pairs already exhausted by the bounded search. */
   const failedStates = new Set<string>();
+  /** Shared-scale limit on axis-free primary stock when the only improvement is a complete witness. */
+  const axisFreeLimit = fullWitnessPrimaryBudget?.axisFreeLimit;
+  const axisFreeLimitMinor = axisFreeLimit === undefined ? undefined :
+    workingQuantityAtDecimals(axisFreeLimit, Math.max(decimals, axisFreeLimit.decimals)) /
+      10n ** BigInt(Math.max(0, axisFreeLimit.decimals - decimals));
+  /** Rows that use the axis-free budget when picked. */
+  const axisFreeRows = fullWitnessPrimaryBudget === undefined ? undefined : candidates.map(
+    /** Membership is based on the exact candidate key retained during sorting. */
+    ({ position }) => !fullWitnessPrimaryBudget.measuredPositions.has(position)
+  );
+  /** Count trial steps, including jumps that skip recursion. */
   let exploredChoices = 0;
   /** Best coherent result so far. Equal quantities keep the first policy choice. */
   let bestAssignment: InventoryAllocationAssignment | undefined;
@@ -497,7 +524,7 @@ function searchInventoryAllocations({
       }) ?? 0n) + 1n;
 
   /** Search in policy order until a smallest possible shortfall or diagnostic improvement is found. */
-  const findExactSuffix = (index: number, remainingMinor: bigint): boolean => {
+  const findExactSuffix = (index: number, remainingMinor: bigint, axisFreePicked: bigint): boolean => {
     const complete = remainingMinor === 0n;
     if (complete || index >= candidates.length) {
       if (!complete && (!acceptPartial || remainingMinor >= bestRemainingMinor)) return false;
@@ -532,6 +559,7 @@ function searchInventoryAllocations({
     /** A zero-capacity suffix can only accept a zero pending amount. */
     const exactDivisor = acceptPartial ? undefined : (laterDivisor === 0n ? remainingMinor + 1n : laterDivisor);
     const terminalPartial = acceptPartial && laterCapacity === 0n;
+    const axisFree = axisFreeRows?.[index] === true;
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
       exploredChoices += 1;
@@ -541,6 +569,12 @@ function searchInventoryAllocations({
         throw new Error(
           "Exact allocation exceeded its safe search bound; narrow the candidates or request."
         );
+      }
+      if (axisFreeLimitMinor !== undefined && bestRemainingMinor <= minimumPositiveShortfallMinor) {
+        // A better result now needs every reported measure. Reserve enough primary capacity for it.
+        const axisFreeRemaining = axisFreeLimitMinor - axisFreePicked;
+        if (axisFreeRemaining < 0n) break;
+        if (axisFree && take > axisFreeRemaining) take = axisFreeRemaining - axisFreeRemaining % increment;
       }
       if (exactDivisor !== undefined || storableQuantityScale(take, decimals) === undefined ||
           (terminalPartial && storableQuantityScale(remainingMinor - take, decimals) === undefined)) {
@@ -597,7 +631,7 @@ function searchInventoryAllocations({
         continue;
       }
       chosenMinor[index] = take;
-      if (findExactSuffix(index + 1, remainingMinor - take)) return true;
+      if (findExactSuffix(index + 1, remainingMinor - take, axisFree ? axisFreePicked + take : axisFreePicked)) return true;
       if (acceptPartial && bestRemainingMinor <= minimumRemainder) break;
       if (take === 0n) break;
       take -= increment;
@@ -607,7 +641,7 @@ function searchInventoryAllocations({
     return false;
   };
 
-  findExactSuffix(0, requestedMinor);
+  findExactSuffix(0, requestedMinor, 0n);
   return bestAssignment;
 }
 

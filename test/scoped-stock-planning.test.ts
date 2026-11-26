@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  compareQuantity,
   defineInventoryCatalog,
   defineInventoryItem,
   defineScalarInventoryItem,
@@ -1350,6 +1351,9 @@ describe("indexed stock planning and availability", () => {
     { volumeCase: "fixed-package-volume", volume: "1" },
     { volumeCase: "insufficient-volume", volume: "0.0006" },
     { volumeCase: "combined-volume", volume: "0.0006" },
+    { volumeCase: "unreachable-volume-increments", volume: "0.0006" },
+    { volumeCase: "reachable-whole-lot", volume: "0.001" },
+    { volumeCase: "reachable-fixed-package", volume: "1" },
   ])("records exact witnesses and remainder for $volumeCase", async ({ volumeCase, volume }) => {
     const item = defineInventoryItem({
       itemId: "material", revisionId: "material-v1",
@@ -1383,7 +1387,7 @@ describe("indexed stock planning and availability", () => {
       });
     }
     if (volume !== undefined) {
-      const amount = volumeCase === "fixed-package-volume"
+      const amount = volumeCase === "fixed-package-volume" || volumeCase === "reachable-fixed-package"
         ? packageAmount(2, packaging.revisionId)
         : measuredStockAmount(volumeCase === "primary" ? "6" : "1", "kg", [
             { axisId: "volume", value: volume, unit: "L" },
@@ -1395,23 +1399,34 @@ describe("indexed stock planning and availability", () => {
       });
     }
     const combinedVolume = volumeCase === "combined-volume";
-    if (combinedVolume) {
+    if (combinedVolume || volumeCase === "unreachable-volume-increments") {
       await inventory.stock.receive({
         operationId: "receive-other-measured-lot", occurredAtEpochMs: time2,
         to: { itemId: item.itemId, placementNodeId: "store", lotId: "measured-other" },
-        amount: measuredStockAmount("1", "kg", [{ axisId: "volume", value: "0.0004", unit: "L" }]),
+        amount: measuredStockAmount("1", "kg", [{
+          axisId: "volume", value: combinedVolume ? "0.0004" : "0.0006", unit: "L",
+        }]),
       });
     }
     const result = await inventory.stock.transferByPolicy({
       operationId: "transfer-with-unwitnessed-volume", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
       selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
       amount: measuredStockAmount(combinedVolume ? "7" : "5.000001", "kg", [
-        { axisId: "volume", value: "0.001", unit: "L" },
+        { axisId: "volume", value: volumeCase === "reachable-fixed-package" ? "1" : "0.001", unit: "L" },
       ]),
     });
     const arrived = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
     if (combinedVolume) {
       expect(arrived.map(({ key }) => key.lotId).sort()).toEqual(["measured-later", "measured-other", "older"]);
+      expect(result.event.unwitnessedStockMovements).toBeUndefined();
+      return;
+    }
+    if (volumeCase === "reachable-whole-lot" || volumeCase === "reachable-fixed-package") {
+      expect(arrived.map(({ key }) => key.lotId).sort()).toEqual(["measured-later", "older"]);
+      expect(arrived.find(({ key }) => key.lotId === "older")?.measurements.primary.quantity).toEqual(parseQuantity("4.000001", "kg"));
+      const measured = arrived.find(({ key }) => key.lotId === "measured-later");
+      if (measured === undefined) throw new Error("Expected the whole measured witness.");
+      expect(compareQuantity(measured.measurements.primary.quantity, parseQuantity("1", "kg"))).toBe(0);
       expect(result.event.unwitnessedStockMovements).toBeUndefined();
       return;
     }

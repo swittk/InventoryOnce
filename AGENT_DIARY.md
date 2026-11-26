@@ -2048,3 +2048,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — unwitnessed scrap scope
 
 - An empty scrap shortage follows the same stock scope as an empty transfer shortage. An exact singleton selector can supply the default bucket identity.
+
+## 2026-11-27 — measured witness search
+
+- A reported axis must be divisible by the common increment of its selectable measurements to admit a complete witness. The allocator can stop once a partial witness reaches the resulting primary remainder bound.
+- When only a complete witness can improve the best result, the search reserves enough primary stock to carry the reported measurements before trying smaller axis-free picks.

@@ -7,6 +7,7 @@ import {
   InventoryAllocationMethod,
   type AllocateWorkingInventoryInput,
   type InventoryAllocation,
+  type InventoryFullWitnessPrimaryBudget,
   type InventoryWorkingAllocationCandidate,
 } from "./allocation.js";
 import {
@@ -46,6 +47,7 @@ import {
   addExactQuantityDigits,
   compareWorkingQuantities,
   materializeInventoryWorkingQuantity,
+  quantityGreatestCommonDivisor,
   subtractWorkingQuantity,
   workingQuantityAtDecimals,
   type ExactQuantityDigits,
@@ -348,13 +350,10 @@ export function planWorkingInventoryAllocation({
         catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
       };
       const measuredCandidates = canRecordPartial ? selectableMeasuredWitnesses(selectable) : measuredInput.candidates;
-      const measuredScope = { ...selectable, candidates: measuredCandidates };
-      const maximumWitnessPrimary = canRecordPartial ? sharedMeasuredWitnessLimit(measuredScope) : undefined;
       const measured = canRecordPartial
         ? allocateInventoryUpTo({
             ...measuredInput, candidates: measuredCandidates, assessIncrementBlockage: false,
-            requiresPositiveShortfall: reportAxisExceedsSelectableMeasurements(measuredScope),
-            ...(maximumWitnessPrimary === undefined ? {} : { maximumWitnessPrimary }),
+            ...measuredWitnessBounds({ ...selectable, candidates: measuredCandidates }),
           })
         : allocateWorkingInventory(measuredInput);
       if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
@@ -466,67 +465,103 @@ function selectableMeasuredWitnesses({
   return selectable;
 }
 
-/** Bound the combined primary witness using each independent report axis as a shared budget. */
-function sharedMeasuredWitnessLimit({
-  report, candidates, rows,
-}: Omit<SelectableMeasuredWitnessesInput, "catalog">): InventoryWorkingQuantity | undefined {
+/** Conservative limits proved by the reported axes and the available whole measurement increments. */
+interface MeasuredWitnessBounds {
+  /** The reported quantities cannot all be witnessed, so there must be a positive primary remainder. */
+  readonly requiresPositiveShortfall?: boolean;
+  /** Upper bound on the primary quantity of any witness. */
+  readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
+  /** Primary budget for axis-free rows of a complete witness. */
+  readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
+}
+
+/** Bound any witness and the measured primary capacity needed for a complete witness. */
+function measuredWitnessBounds({
+  catalog, report, candidates, rows,
+}: SelectableMeasuredWitnessesInput): MeasuredWitnessBounds {
   const primary = report.primary;
   const decimals = MAXIMUM_QUANTITY_DECIMALS;
+  const requested = workingQuantityAtDecimals(primary.quantity, decimals);
   /** The tightest limit from all independently reported axes. */
-  let maximum = workingQuantityAtDecimals(primary.quantity, decimals);
+  let maximum = requested;
+  /** Largest per-axis lower bound on primary stock that must carry measurements. */
+  let requiredMeasuredPrimary = 0n;
+  /** Known absence of a complete witness on at least one reported axis. */
+  let requiresPositiveShortfall = false;
+  /** Rows supplying at least one positively reported independent axis. */
+  const measuredPositions = new Set<InventoryStockPositionKey>();
   for (const { axisId, quantity } of report.independent) {
+    const reported = workingQuantityAtDecimals(quantity, decimals);
     /** Capacity that does not consume this axis. */
     let axisFreePrimary = 0n;
-    /** Best primary-to-axis ratio, which can overestimate capacity when rows are indivisible. */
-    let bestPrimary = 0n;
-    let bestMeasured = 1n;
-    for (const { position, available } of candidates) {
+    /** Greatest and least primary-to-axis ratios among the rows that carry this measurement. */
+    let largestPrimary = 0n;
+    let largestMeasured = 1n;
+    /** A zero measured denominator means the least ratio has no contributing row yet. */
+    let smallestPrimary = 0n;
+    let smallestMeasured = 0n;
+    /** Gross upper bound and common digit increment for selectable contributions on the axis. */
+    let selectableMeasured = 0n;
+    let measuredDivisor = 0n;
+    for (const { position, available, allocationIncrement } of candidates) {
       const row = rows.get(inventoryStockPositionIdentity(position));
-      if (row === undefined) return undefined;
+      if (row === undefined) return {};
       const axis = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
       if (BigInt(axis.amountMinor) === 0n) {
         axisFreePrimary += workingQuantityAtDecimals(available, decimals);
         continue;
       }
       // Measured loose rows are picked whole, and selectable package rows keep their fixed ratio.
-      const rowPrimary = workingQuantityAtDecimals(
-        inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit), decimals,
-      );
+      const fullPrimary = inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit);
+      const rowPrimary = workingQuantityAtDecimals(fullPrimary, decimals);
       const rowMeasured = workingQuantityAtDecimals(axis, decimals);
-      if (rowPrimary * bestMeasured > bestPrimary * rowMeasured) {
-        bestPrimary = rowPrimary;
-        bestMeasured = rowMeasured;
+      if (rowPrimary * largestMeasured > largestPrimary * rowMeasured) {
+        largestPrimary = rowPrimary;
+        largestMeasured = rowMeasured;
+      }
+      if (reported === 0n) continue;
+      measuredPositions.add(position);
+      if (smallestMeasured === 0n || rowPrimary * smallestMeasured < smallestPrimary * rowMeasured) {
+        smallestPrimary = rowPrimary;
+        smallestMeasured = rowMeasured;
+      }
+      // The whole-row sum can only overestimate what the candidates can contribute together.
+      selectableMeasured += rowMeasured;
+      if (measuredDivisor !== 1n) {
+        if (allocationIncrement !== undefined && compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
+          measuredDivisor = quantityGreatestCommonDivisor(measuredDivisor, rowMeasured);
+        } else if (allocationIncrement !== undefined && position.packagingRevisionId !== undefined) {
+          const fixed = catalog.packagingRevision(position.packagingRevisionId).fixedContents;
+          const perPackage = inventoryMeasurementAt(fixed, axisId, quantity.unit);
+          // If this axis cannot be attributed to each package, disable the divisibility proof.
+          measuredDivisor = perPackage.amountMinor === 0 ? 1n :
+            quantityGreatestCommonDivisor(measuredDivisor, workingQuantityAtDecimals(perPackage, decimals));
+        } else {
+          measuredDivisor = 1n;
+        }
       }
     }
-    const limit = axisFreePrimary + workingQuantityAtDecimals(quantity, decimals) * bestPrimary / bestMeasured;
+    const limit = axisFreePrimary + reported * largestPrimary / largestMeasured;
     if (limit < maximum) maximum = limit;
-  }
-  return { amountMinor: maximum, decimals, unit: primary.quantity.unit };
-}
-
-/** Prove a positive primary remainder is needed when even the eligible measurement total falls short. */
-function reportAxisExceedsSelectableMeasurements({
-  report, candidates, rows,
-}: Omit<SelectableMeasuredWitnessesInput, "catalog">): boolean {
-  for (const { axisId, quantity } of report.independent) {
-    if (quantity.amountMinor === 0) continue;
-    /** Exact difference from a conservative total of all rows that can contribute to this axis. */
-    const unaccounted: ExactQuantityDigits = { minor: BigInt(quantity.amountMinor), decimals: quantity.decimals };
-    for (const { position } of candidates) {
-      const row = rows.get(inventoryStockPositionIdentity(position));
-      if (row === undefined) {
-        // An unknown candidate's measurements cannot prove a shortage.
-        return false;
-      }
-      const measured = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
-      if (measured.amountMinor <= 0n) continue;
-      // Counting the whole row can overestimate what fits together, so it only proves a shortfall.
-      addExactQuantityDigits(unaccounted, -BigInt(measured.amountMinor), measured.decimals);
-      if (unaccounted.minor <= 0n) break;
+    if (reported > selectableMeasured || (measuredDivisor > 1n && reported % measuredDivisor !== 0n)) {
+      requiresPositiveShortfall = true;
     }
-    if (unaccounted.minor > 0n) return true;
+    if (smallestMeasured !== 0n) {
+      const required = (reported * smallestPrimary + smallestMeasured - 1n) / smallestMeasured;
+      if (required > requiredMeasuredPrimary) requiredMeasuredPrimary = required;
+    }
   }
-  return false;
+  requiresPositiveShortfall ||= requiredMeasuredPrimary > requested;
+  return {
+    requiresPositiveShortfall,
+    maximumWitnessPrimary: { amountMinor: maximum, decimals, unit: primary.quantity.unit },
+    ...(requiresPositiveShortfall || requiredMeasuredPrimary === 0n ? {} : {
+      fullWitnessPrimaryBudget: {
+        measuredPositions,
+        axisFreeLimit: { amountMinor: requested - requiredMeasuredPrimary, decimals, unit: primary.quantity.unit },
+      },
+    }),
+  };
 }
 
 /** Physical policy inputs shared with capacity-only member selection. */
