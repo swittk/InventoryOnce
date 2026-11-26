@@ -7,6 +7,7 @@ import {
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
   InventoryReservationFeasibilityStatus,
+  InventoryReservationStatus,
   InventoryTrackingRequirement,
   createInventoryOnce,
   defineInventoryCatalog,
@@ -924,6 +925,41 @@ describe("derived pool summaries and exact member movements", () => {
     });
   });
 
+  it("reports a pool increment obstruction for loose stock with enough raw capacity", async () => {
+    const material = defineScalarInventoryItem({
+      itemId: "loose-material", revisionId: "loose-material-v1", axisId: "weight", unit: "kg",
+    });
+    const alternative = defineScalarInventoryItem({
+      itemId: "other-material", revisionId: "other-material-v1", axisId: "weight", unit: "kg",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "whole-reference", revisionId: "whole-reference-v1", basisUnit: "equivalent",
+      members: [{ item: material, memberQuantity: "2" }, { item: alternative }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [material, alternative],
+      activeItemRevisionIds: { [material.itemId]: material.revisionId, [alternative.itemId]: alternative.revisionId },
+      fungibilityRevisions: [pool], activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    await inventory.stock.receive({
+      operationId: "receive-seven-loose-kilograms", occurredAtEpochMs: time0,
+      to: { itemId: material.itemId, placementNodeId: "store" }, amount: stockAmount("7", "kg"),
+    });
+    const plan = {
+      fungibilityRevisionId: pool.revisionId, method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] }, atEpochMs: time2,
+    };
+    const exactCapacity = parseQuantity("3.5", "equivalent");
+    const aboveCapacity = parseQuantity("4", "equivalent");
+    expect(await inventory.fungibility.plan({ ...plan, requested: exactCapacity })).toMatchObject({
+      lines: [], shortfall: exactCapacity, incrementBlockedStock: true,
+    });
+    expect(await inventory.fungibility.plan({ ...plan, requested: aboveCapacity })).toMatchObject({
+      lines: [], shortfall: aboveCapacity, incrementBlockedStock: false,
+    });
+  });
+
   it("compares repeating raw member equivalents exactly at the increment boundary", async () => {
     const older = oldBrand();
     const newer = newBrand();
@@ -1302,7 +1338,9 @@ describe("derived pool summaries and exact member movements", () => {
       expect.objectContaining({ reservationIds: ["outside-pool"], shortage: parseQuantity("1", "piece") }),
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("8", "kg") }),
     ]));
-    expect((await inventory.read.reservation("weighed-hold"))?.allocations).toEqual([{ position: position.key, quantity: requested }]);
+    const reservation = await inventory.read.reservation("weighed-hold");
+    expect(reservation?.status).toBe(InventoryReservationStatus.Active);
+    expect(reservation?.allocations).toEqual([{ position: position.key, quantity: requested }]);
   });
 
   it("preserves a broad claim when fungible stock moves into another eligible location", async () => {

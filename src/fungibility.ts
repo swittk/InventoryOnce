@@ -394,8 +394,8 @@ function planInventoryFungibilityAllocationWithHolds({
   let expiredStockWasExcluded = false;
   // Remember whether any member was blocked by intact package or serial increments.
   let incrementBlockedStock = false;
-  /** Indivisible member stock left over after enforcing the combined pool increment. */
-  let discardedIndivisibleCapacity = false;
+  /** Member stock left over after enforcing the combined pool and physical increments. */
+  let discardedIncrementCapacity = false;
   /** Reuse the scoped member capacity only if a shortfall needs an increment diagnosis. */
   const memberStock: FungibilityMemberStock[] = [];
   // Remember whether any active member reservation remained broad rather than position-bound.
@@ -442,7 +442,7 @@ function planInventoryFungibilityAllocationWithHolds({
         candidates,
         evidenceByPosition,
       });
-      discardedIndivisibleCapacity ||= discardedCapacity;
+      discardedIncrementCapacity ||= discardedCapacity;
     }
   }
 
@@ -519,7 +519,7 @@ function planInventoryFungibilityAllocationWithHolds({
   const incrementEvidence = incrementBlockedStock || allocated.incrementBlockedStock;
   const incrementBlockage = allocated.shortfall.amountMinor === 0
     ? incrementEvidence
-    : (incrementEvidence || discardedIndivisibleCapacity) && !allocated.allocationConstraintBlockedStock &&
+    : (incrementEvidence || discardedIncrementCapacity) && !allocated.allocationConstraintBlockedStock &&
       fungibilityRawCapacityCoversRequest(requested, memberStock);
   return {
     definition,
@@ -871,7 +871,7 @@ interface AddFungibilityCandidateInput {
   >;
 }
 
-/** Register the exact common-basis picks and report any discarded indivisible capacity. */
+/** Register exact common-basis picks and report any capacity discarded by their increment. */
 function addFungibilityCandidate({
   catalog,
   world,
@@ -901,7 +901,8 @@ function addFungibilityCandidate({
   const availableDigits = integerAtDecimals(memberAvailable, decimals);
   const incrementDigits = workingQuantityAtDecimals(memberIncrement, decimals);
   const increments = availableDigits / incrementDigits;
-  const discardedCapacity = source.allocationIncrement !== undefined && availableDigits % incrementDigits !== 0n;
+  // Even loose stock can leave a remainder below one pool reference.
+  const discardedCapacity = availableDigits % incrementDigits !== 0n;
   if (increments === 0n) return discardedCapacity;
   const allocationIncrement = convertQuantityByReferenceExact(
     materializeInventoryWorkingQuantity(memberIncrement, "Fungibility member increment"), member.memberQuantity, member.poolQuantity,

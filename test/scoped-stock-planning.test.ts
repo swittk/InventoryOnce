@@ -998,7 +998,7 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
-  it("records the oldest 5 kg witness when no lot has the reported optional volume", async () => {
+  it.each([false, true])("records the oldest 5 kg witness when no selectable lot has the reported volume (oversize lot: %s)", async (withOversizeLot) => {
     const item = defineInventoryItem({
       itemId: "material", revisionId: "material-v1",
       primaryAxis: {
@@ -1021,14 +1021,21 @@ describe("indexed stock planning and availability", () => {
         to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: stockAmount("5", "kg"),
       });
     }
+    if (withOversizeLot) {
+      await inventory.stock.receive({
+        operationId: "receive-oversize-measured-lot", occurredAtEpochMs: time2,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId: "oversize" },
+        amount: measuredStockAmount("6", "kg", [{ axisId: "volume", value: "0.001", unit: "L" }]),
+      });
+    }
     const result = await inventory.stock.transferByPolicy({
-      operationId: "transfer-with-unwitnessed-volume", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      operationId: "transfer-with-unwitnessed-volume", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
       selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
       amount: measuredStockAmount("5.000001", "kg", [{ axisId: "volume", value: "0.001", unit: "L" }]),
     });
     const arrived = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
     expect(arrived.find(({ key }) => key.lotId === "older")?.measurements.primary.quantity).toEqual(parseQuantity("5.000000", "kg"));
-    expect(arrived.some(({ key }) => key.lotId === "newer")).toBe(false);
+    expect(arrived.filter(({ key }) => key.lotId !== undefined).map(({ key }) => key.lotId)).toEqual(["older"]);
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
         primary: { quantity: parseQuantity("0.000001", "kg") },
@@ -1207,8 +1214,9 @@ describe("indexed stock planning and availability", () => {
     ]) {
       const native = await inventory.read.planAllocation({ ...request, selector });
       expect(native).toEqual(planInventoryAllocation({ ...request, selector, catalog, world }));
-      expect(native.recordedDeficit.amountMinor).toBe(deficit);
-      expect(native.uncoveredDeficit.amountMinor).toBe(deficit);
+      const expected = parseQuantity(String(deficit), "piece");
+      expect(native.recordedDeficit).toEqual(expected);
+      expect(native.uncoveredDeficit).toEqual(expected);
     }
     expect(readWorld).not.toHaveBeenCalled();
   });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   InventoryEventKind,
   InventoryReservationFeasibilityStatus,
+  InventoryReservationStatus,
   inventoryStockSelector,
   packageAmount,
   parseQuantity,
@@ -340,8 +341,9 @@ describe("atomic conserved split/merge/reclassification", () => {
       key: { statusId: "quarantine" },
       measurements: { primary: { quantity: parseQuantity("2", "piece") } },
     }]);
-    expect((await inventory.read.reservation("reclassification-claim"))?.allocations)
-      .toEqual([{ position: position.key, quantity: parseQuantity("1", "piece") }]);
+    const reservation = await inventory.read.reservation("reclassification-claim");
+    expect(reservation?.status).toBe(InventoryReservationStatus.Active);
+    expect(reservation?.allocations).toEqual([{ position: position.key, quantity: parseQuantity("1", "piece") }]);
     expect(await inventory.read.reservationFeasibility(time2)).toMatchObject({
       status: InventoryReservationFeasibilityStatus.Shortage,
       groups: [{ reservationIds: ["reclassification-claim"], shortage: parseQuantity("1", "piece") }],

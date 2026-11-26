@@ -405,15 +405,19 @@ interface ReportHasUnwitnessedAxisInput {
   readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
 }
 
-/** The report needs a positive primary remainder if no eligible row supplies one reported axis. */
+/** A positive primary remainder is required when no selectable row supplies a reported axis. */
 function reportHasUnwitnessedAxis({ report, candidates, rows }: ReportHasUnwitnessedAxisInput): boolean {
   return report.independent.some(
     /** A reported zero needs no positive witness. */
     ({ axisId, quantity }) => quantity.amountMinor > 0 && candidates.every(
-      /** A positive measurement on any candidate could still explain this axis. */
-      ({ position }) => {
+      /** A measured row can explain this axis only if its smallest legal pick fits. */
+      ({ position, available, allocationIncrement }) => {
         const row = rows.get(inventoryStockPositionIdentity(position));
-        return row !== undefined && inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit).amountMinor <= 0n;
+        if (row === undefined) return false;
+        if (inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit).amountMinor <= 0n) return true;
+        return allocationIncrement !== undefined &&
+          (compareWorkingQuantities(allocationIncrement, report.primary.quantity) > 0 ||
+            compareWorkingQuantities(allocationIncrement, available) > 0);
       }
     )
   );

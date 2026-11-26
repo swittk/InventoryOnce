@@ -1980,3 +1980,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A measured pick with a required positive remainder uses the common divisor of selectable increments to stop at the first optimal witness. Fungibility compares actual eligible capacity across members in exact ratios before attributing a shortfall to increments.
 - A reopened reported transfer can prove stage completion from its journal receipt. Claim postings use the final lifecycle time even when all changes preceded the Unix epoch.
+
+## 2026-11-26 — selectable measured witnesses and loose pool increments
+
+- A measured row cannot explain a report axis when its smallest pick exceeds the request or its remaining capacity. The planner can prove a positive remainder without exploring smaller divisible picks in that case.
+- Loose stock can have enough raw capacity while falling short of the pool's exact reference increments. The increment diagnostic includes that discarded capacity and still checks whether divisible stock could cover the request.
