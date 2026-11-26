@@ -87,6 +87,8 @@ interface AllocateInventoryUpToInput extends AllocateWorkingInventoryInput {
   readonly assessIncrementBlockage?: boolean;
   /** The reported movement needs a positive primary remainder for an unwitnessed axis. */
   readonly requiresPositiveShortfall?: boolean;
+  /** Proven upper limit on primary stock that can fit the measured report. */
+  readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
 }
 
 /** One exact position/quantity chosen by automatic allocation. */
@@ -142,6 +144,7 @@ function allocateInventoryCandidates({
   acceptAllocations,
   assessIncrementBlockage = true,
   requiresPositiveShortfall = false,
+  maximumWitnessPrimary,
 }: AllocateInventoryUpToInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
@@ -171,7 +174,10 @@ function allocateInventoryCandidates({
     ...(acceptAllocations === undefined ? {} : { acceptAllocations }),
   };
   // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
-  const assignment = searchInventoryAllocations({ ...searchInput, acceptPartial, requiresPositiveShortfall });
+  const assignment = searchInventoryAllocations({
+    ...searchInput, acceptPartial, requiresPositiveShortfall,
+    ...(maximumWitnessPrimary === undefined ? {} : { maximumWitnessPrimary }),
+  });
   if (assignment !== undefined) {
     return {
       allocations: assignment.allocations,
@@ -331,6 +337,8 @@ interface SearchInventoryAllocationsInput {
   readonly acceptPartial: boolean;
   /** A measured predicate cannot accept zero shortfall. */
   readonly requiresPositiveShortfall?: boolean;
+  /** Proven upper limit on primary stock that can fit the measured report. */
+  readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
   /** Test whether relaxing indivisible increments admits a storable split. */
   readonly ignoreIncrements?: boolean;
   /** Stop a diagnostic trial at the first accepted remainder strictly below this one. */
@@ -340,7 +348,7 @@ interface SearchInventoryAllocationsInput {
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
 function searchInventoryAllocations({
   requested, candidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
-  ignoreIncrements = false, improveOnShortfall,
+  maximumWitnessPrimary, ignoreIncrements = false, improveOnShortfall,
 }: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
   /** Relaxed trials can present fractional packages that a normal predicate cannot represent. */
   const acceptAllocations = predicate === undefined || !ignoreIncrements ? predicate :
@@ -400,12 +408,20 @@ function searchInventoryAllocations({
       increment === 1n || laterDivisor === 1n ? 1n :
       allocationModularCoefficients(increment, laterDivisor).divisor;
   }
-  /** Smallest positive remainder consistent with all selectable increments, when the report needs one. */
+  /** Proven lower bound on the primary remainder. */
   let minimumShortfallMinor = 0n;
   if (requiresPositiveShortfall) {
     const divisor = suffixDivisor[0] ?? 0n;
     // Selected totals are multiples of the common divisor. Exclude zero for unwitnessed measurements.
     minimumShortfallMinor = divisor === 0n ? requestedMinor : requestedMinor % divisor || divisor;
+  }
+  if (maximumWitnessPrimary !== undefined) {
+    // Round the upper bound down to an integer on the search scale.
+    const boundDecimals = Math.max(decimals, maximumWitnessPrimary.decimals);
+    const bound = workingQuantityAtDecimals(maximumWitnessPrimary, boundDecimals) /
+      10n ** BigInt(boundDecimals - decimals);
+    const remainder = requestedMinor - bound;
+    if (remainder > minimumShortfallMinor) minimumShortfallMinor = remainder;
   }
   const totalCapacity = suffixCapacity[0] ?? 0n;
   if (!acceptPartial && totalCapacity < requestedMinor) return undefined;
@@ -432,7 +448,7 @@ function searchInventoryAllocations({
       }
     }
   }
-  // When the measured predicate requires a remainder, reaching its proven floor is optimal.
+  // A measured witness that reaches the proven remainder floor is optimal.
   const greedyShortfallMinor = acceptPartial && acceptAllocations !== undefined ? minimumShortfallMinor : 0n;
   const greedyTargetMinor = requestedMinor - greedyShortfallMinor;
   if (greedyTargetMinor > 0n && totalCapacity > greedyTargetMinor) {

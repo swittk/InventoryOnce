@@ -5792,15 +5792,20 @@ async function policyRecordedDeficit({
     item,
     unwitnessed
   );
-  const transferOwner = kind === InventoryPolicyMovementKind.Transfer ? allocation.selector.owner : undefined;
-  const transferStatus = kind === InventoryPolicyMovementKind.Transfer ? allocation.selector.status : undefined;
-  // A single selected owner or status can identify the default shortage bucket.
-  const defaultOwnerId = input.deficitPosition === undefined &&
-    transferOwner?.kind === InventoryOptionalIdentityConstraintKind.Allowed && transferOwner.valueIds?.length === 1
-    ? transferOwner.valueIds[0] : undefined;
-  const defaultStatusId = input.deficitPosition === undefined &&
-    transferStatus?.kind === InventoryOptionalIdentityConstraintKind.Allowed && transferStatus.valueIds?.length === 1
-    ? transferStatus.valueIds[0] : undefined;
+  const transfer = kind === InventoryPolicyMovementKind.Transfer;
+  // Infer only exact identity choices for a default transfer shortage bucket.
+  const defaultScope = transfer && input.deficitPosition === undefined ? allocation.selector : undefined;
+  const defaultOwnerId = inventorySingleSelectedDeficitIdentity(defaultScope?.owner);
+  const defaultStatusId = inventorySingleSelectedDeficitIdentity(defaultScope?.status);
+  const defaultCustodianId = inventorySingleSelectedDeficitIdentity(defaultScope?.custodian);
+  const defaultDispositionAuthorityId = inventorySingleSelectedDeficitIdentity(defaultScope?.dispositionAuthority);
+  /** Exact selected dimension values available for the default bucket. */
+  const defaultDimensions: InventoryQualifiedDimension[] = [];
+  for (const dimension of defaultScope?.qualifiedDimensions ?? []) {
+    if (dimension.kind !== InventoryOptionalIdentityConstraintKind.Allowed || dimension.valueIds?.length !== 1) continue;
+    const valueId = dimension.valueIds[0];
+    if (valueId !== undefined) defaultDimensions.push({ dimensionId: dimension.dimensionId, valueId });
+  }
   const resolved = resolveInventoryAmount(catalog, item, amount);
   const packagingRevisionId = resolved.packaging?.revisionId;
   if (from.packagingRevisionId !== undefined && from.packagingRevisionId !== packagingRevisionId) {
@@ -5811,6 +5816,9 @@ async function policyRecordedDeficit({
     itemRevisionId: item.revisionId,
     ...(defaultOwnerId === undefined ? {} : { ownerId: defaultOwnerId }),
     ...(defaultStatusId === undefined ? {} : { statusId: defaultStatusId }),
+    ...(defaultCustodianId === undefined ? {} : { custodianId: defaultCustodianId }),
+    ...(defaultDispositionAuthorityId === undefined ? {} : { dispositionAuthorityId: defaultDispositionAuthorityId }),
+    ...(defaultDimensions.length === 0 ? {} : { qualifiedDimensions: defaultDimensions }),
     ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
   });
   assertPositionMatchesItem(item, position);
@@ -5821,6 +5829,8 @@ async function policyRecordedDeficit({
   if (!inventoryScopedStockMatches(position, placementScope, ancestry)) {
     throw new Error("Inventory policy deficit position is outside the selected placement scope or whereabouts.");
   }
+  // An unlabelled source cannot inherit the selected lot, but must preserve the other stock facts.
+  const { lot: _lot, lotIds: _lotIds, ...settlementScope } = allocation.selector;
   const row = settlementRow(inventoryStockPositionIdentity(position));
   if (row !== undefined && inventoryPolicyPositionMeasurement(
     row.position, item.primaryAxis.axisId, item.primaryAxis.unit
@@ -5828,9 +5838,6 @@ async function policyRecordedDeficit({
     if (!unwitnessed) {
       throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
     }
-    // The unlabelled row may absorb an unknown lot, while the other stock
-    // constraints still govern any existing physical stock it would debit.
-    const { lot: _lot, lotIds: _lotIds, ...settlementScope } = allocation.selector;
     if (!inventoryScopedStockMatches(position, settlementScope, ancestry)) {
       throw new Error("Inventory policy deficit position contains positive stock outside the selected stock scope.");
     }
@@ -5839,12 +5846,15 @@ async function policyRecordedDeficit({
         row.effectiveUseByEpochMs <= input.occurredAtEpochMs) {
       assertPolicyAllocationComplete({ ...allocation, expiredStockWasExcluded: true });
     }
-  }
-  if (transferOwner !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, owner: transferOwner })) {
-    throw new Error("Inventory policy transfer deficit position is outside the selected owner scope.");
-  }
-  if (transferStatus !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, status: transferStatus })) {
-    throw new Error("Inventory policy transfer deficit position is outside the selected status scope.");
+  } else if (transfer && !inventoryScopedStockMatches(position, settlementScope, ancestry)) {
+    const { owner, status } = settlementScope;
+    if (owner !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, owner })) {
+      throw new Error("Inventory policy transfer deficit position is outside the selected owner scope.");
+    }
+    if (status !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, status })) {
+      throw new Error("Inventory policy transfer deficit position is outside the selected status scope.");
+    }
+    throw new Error("Inventory policy transfer deficit position is outside the selected stock scope.");
   }
   const { itemRevisionId, ...exactFrom } = position;
   return {
@@ -5859,6 +5869,12 @@ async function policyRecordedDeficit({
       primary: allocation.shortfall,
     },
   };
+}
+
+/** Infer a shortage bucket identity only when the selector provides exactly one value. */
+function inventorySingleSelectedDeficitIdentity(constraint: InventoryOptionalIdentityConstraint | undefined): string | undefined {
+  return constraint?.kind === InventoryOptionalIdentityConstraintKind.Allowed && constraint.valueIds?.length === 1
+    ? constraint.valueIds[0] : undefined;
 }
 
 /** Resolve one unallocated deficit position without pretending it is a selected lot/serial identity. */

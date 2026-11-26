@@ -2033,3 +2033,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A policy transfer keeps its recorded shortage within the selected stock status. A single selected status also identifies the default shortage bucket.
 - The reported-transfer planner stamps reserved journal replay evidence from the accepted intent and next revision. Publication relies on the planner and revision fence for those facts, and journal restoration still reads that evidence.
+
+## 2026-11-26 — shared measurement limits and transfer scope
+
+- A report's independent axis bounds the combined primary witness across rows. The picker uses the best eligible primary-to-axis ratio as an upper bound, then checks the chosen lines exactly.
+- An unlabelled transfer shortage follows the selected stock scope apart from the lot. Exact singleton constraints can identify the default bucket.
+- An independent-axis hold stays recorded after a source balance becomes nonpositive. That row cannot supply a pick and does not constrain selection from positive rows.

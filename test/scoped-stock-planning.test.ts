@@ -252,6 +252,64 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("applies the transfer custodian scope to an empty explicit shortage", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const before = storage.readSegmentedStockHead();
+    const transfer = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], custodianIds: ["carrier-a"] }),
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("2", "piece"),
+      occurredAtEpochMs: time1, toPlacementNodeId: "destination",
+    };
+    await expect(inventory.stock.transferByPolicy({
+      ...transfer, operationId: "reject-other-carrier", deficitPosition: loosePosition("store", { custodianId: "carrier-b" }),
+    })).rejects.toThrow("outside the selected stock scope");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    const moved = await inventory.stock.transferByPolicy({
+      ...transfer, operationId: "record-selected-carrier", deficitPosition: loosePosition("store", { custodianId: "carrier-a" }),
+    });
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      from: { custodianId: "carrier-a" }, to: { custodianId: "carrier-a", placementNodeId: "destination" },
+    }]);
+    const inferred = await inventory.stock.transferByPolicy({ ...transfer, operationId: "record-inferred-carrier" });
+    expect(inferred.event.unwitnessedStockMovements).toMatchObject([{
+      from: { custodianId: "carrier-a" }, to: { custodianId: "carrier-a", placementNodeId: "destination" },
+    }]);
+  });
+
+  it("plans from positive stock when an independent-axis hold remains on a deficit", async () => {
+    const inventory = createTestInventory(undefined, measuredItemCatalog("weight"), clockAt(time3), InventoryDeficitPolicy.Record);
+    const selector = inventoryStockSelector("measured", { placementNodeIds: ["store", "other"] });
+    const held = { itemId: selector.itemId, placementNodeId: "store", lotId: "held" };
+    const heldScope = { itemId: selector.itemId, placementNodeIds: ["store"], lotIds: ["held"] };
+    const amount = measuredStockAmount("2", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]);
+    await inventory.stock.receive({ operationId: "seed-held", occurredAtEpochMs: time0, to: held, amount });
+    await inventory.stock.receive({
+      operationId: "seed-free", occurredAtEpochMs: time0, to: { ...held, placementNodeId: "other", lotId: "free" },
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "6", unit: "kg" }]),
+    });
+    const [position] = await inventory.read.positions(heldScope);
+    if (position === undefined) throw new Error("Missing held stock.");
+    const quantity = parseQuantity("4", "kg");
+    await inventory.reservations.reserve({
+      operationId: "reserve-held-weight", reservationId: "held-weight", itemRevisionId: "measured-v1",
+      selector: heldScope, requested: quantity, createdAtEpochMs: time1,
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate-held-weight", reservationId: "held-weight", occurredAtEpochMs: time1,
+      allocations: [{ position: position.key, quantity }],
+    });
+    await inventory.stock.issue({
+      operationId: "overdraw-held-weight", occurredAtEpochMs: time2, from: held,
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "6", unit: "kg" }]),
+    });
+    const plan = await inventory.read.planAllocation({
+      selector, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "6", unit: "kg" }]),
+    });
+    expect(plan.lines).toMatchObject([{ position: { lotId: "free" }, allocatedPrimary: parseQuantity("3", "piece") }]);
+  });
+
   it.each([
     { verb: "receive", values: ["0.1", "9007199254740990", "0.9"] },
     { verb: "transfer", values: ["9007199254740990", "0.9", "0.1"] },
@@ -1143,7 +1201,7 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
-  it("caps the measured search by the number of packages that can fit a reported axis", async () => {
+  it.each(["fixed packages", "separate measured lots"] as const)("caps the measured search for %s within the reported axis", async (stock) => {
     const item = defineInventoryItem({
       itemId: "material", revisionId: "material-v1",
       primaryAxis: { axisId: "weight", role: InventoryMeasurementAxisRole.Primary, unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required },
@@ -1167,16 +1225,20 @@ describe("indexed stock planning and availability", () => {
       operationId: "receive-loose", occurredAtEpochMs: time0, to: { itemId: item.itemId, placementNodeId: "store", lotId: "loose" },
       amount: stockAmount("5.000000", "kg"),
     });
-    await inventory.stock.receive({
-      operationId: "receive-packages", occurredAtEpochMs: time1, to: { itemId: item.itemId, placementNodeId: "store", lotId: "packed" },
-      amount: packageAmount(5, packageId),
-    });
+    const from = { itemId: item.itemId, placementNodeId: "store", lotId: "measured-first" };
+    if (stock === "fixed packages") {
+      await inventory.stock.receive({ operationId: "receive-packages", occurredAtEpochMs: time1, to: from, amount: packageAmount(5, packageId) });
+    } else {
+      const measured = measuredStockAmount("1", "kg", [{ axisId: "volume", value: "0.4", unit: "L" }]);
+      await inventory.stock.receive({ operationId: "receive-first", occurredAtEpochMs: time1, to: from, amount: measured });
+      await inventory.stock.receive({ operationId: "receive-second", occurredAtEpochMs: time2, to: { ...from, lotId: "measured-second" }, amount: measured });
+    }
     const moved = await inventory.stock.transferByPolicy({
       operationId: "move-with-package-cap", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
       selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
       amount: measuredStockAmount("10", "kg", [{ axisId: "volume", value: "0.4", unit: "L" }]),
     });
-    expect(moved.event.positiveLayerProvenanceTransfers?.map(({ from }) => from.lotId)).toEqual(["loose", "packed"]);
+    expect(moved.event.positiveLayerProvenanceTransfers?.map(({ from }) => from.lotId)).toEqual(["loose", "measured-first"]);
     expect(moved.event.unwitnessedStockMovements).toMatchObject([{
       measurements: {
         primary: { quantity: parseQuantity("4.000000", "kg") },

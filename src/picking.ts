@@ -58,6 +58,7 @@ import {
 } from "./stock-scope.js";
 import {
   compareQuantity,
+  MAXIMUM_QUANTITY_DECIMALS,
   positiveQuantity,
   quantity,
   quantityEq,
@@ -343,15 +344,17 @@ export function planWorkingInventoryAllocation({
         /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
         acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && acceptsLines(buildLines(choices)),
       };
-      const measuredCandidates = canRecordPartial ? selectableMeasuredWitnesses({
+      const selectable = {
         catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
-      }) : measuredInput.candidates;
+      };
+      const measuredCandidates = canRecordPartial ? selectableMeasuredWitnesses(selectable) : measuredInput.candidates;
+      const measuredScope = { ...selectable, candidates: measuredCandidates };
+      const maximumWitnessPrimary = canRecordPartial ? sharedMeasuredWitnessLimit(measuredScope) : undefined;
       const measured = canRecordPartial
         ? allocateInventoryUpTo({
             ...measuredInput, candidates: measuredCandidates, assessIncrementBlockage: false,
-            requiresPositiveShortfall: reportAxisExceedsSelectableMeasurements({
-              report: resolved.measurements, candidates: measuredCandidates, rows: candidateResult.rowsById,
-            }),
+            requiresPositiveShortfall: reportAxisExceedsSelectableMeasurements(measuredScope),
+            ...(maximumWitnessPrimary === undefined ? {} : { maximumWitnessPrimary }),
           })
         : allocateWorkingInventory(measuredInput);
       if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
@@ -461,6 +464,44 @@ function selectableMeasuredWitnesses({
     if (capped.amountMinor > 0) selectable.push(capped === available ? candidate : { ...candidate, available: capped });
   }
   return selectable;
+}
+
+/** Bound the combined primary witness using each independent report axis as a shared budget. */
+function sharedMeasuredWitnessLimit({
+  report, candidates, rows,
+}: Omit<SelectableMeasuredWitnessesInput, "catalog">): InventoryWorkingQuantity | undefined {
+  const primary = report.primary;
+  const decimals = MAXIMUM_QUANTITY_DECIMALS;
+  /** The tightest limit from all independently reported axes. */
+  let maximum = workingQuantityAtDecimals(primary.quantity, decimals);
+  for (const { axisId, quantity } of report.independent) {
+    /** Capacity that does not consume this axis. */
+    let axisFreePrimary = 0n;
+    /** Best primary-to-axis ratio, which can overestimate capacity when rows are indivisible. */
+    let bestPrimary = 0n;
+    let bestMeasured = 1n;
+    for (const { position, available } of candidates) {
+      const row = rows.get(inventoryStockPositionIdentity(position));
+      if (row === undefined) return undefined;
+      const axis = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
+      if (BigInt(axis.amountMinor) === 0n) {
+        axisFreePrimary += workingQuantityAtDecimals(available, decimals);
+        continue;
+      }
+      // Measured loose rows are picked whole, and selectable package rows keep their fixed ratio.
+      const rowPrimary = workingQuantityAtDecimals(
+        inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit), decimals,
+      );
+      const rowMeasured = workingQuantityAtDecimals(axis, decimals);
+      if (rowPrimary * bestMeasured > bestPrimary * rowMeasured) {
+        bestPrimary = rowPrimary;
+        bestMeasured = rowMeasured;
+      }
+    }
+    const limit = axisFreePrimary + workingQuantityAtDecimals(quantity, decimals) * bestPrimary / bestMeasured;
+    if (limit < maximum) maximum = limit;
+  }
+  return { amountMinor: maximum, decimals, unit: primary.quantity.unit };
 }
 
 /** Prove a positive primary remainder is needed when even the eligible measurement total falls short. */
@@ -1065,10 +1106,12 @@ function createExactPrimaryReservationSummary({
       const row = positions.get(positionIdentity);
       if (row === undefined) continue;
       if (item.reservationAxisId !== item.primaryAxis.axisId) {
+        const onHand = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
+        // A stranded hold remains a claim, but its depleted row cannot supply a pick.
+        if (onHand.amountMinor <= 0n) continue;
         if (keepIndependentHoldsWhole) {
           // One primary count cannot be inferred from an independently measured hold.
-          reservedPrimaryByPositionIdentity.set(positionIdentity,
-            inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit));
+          reservedPrimaryByPositionIdentity.set(positionIdentity, onHand);
           continue;
         }
         throw new Error(
