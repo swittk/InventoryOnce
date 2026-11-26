@@ -360,8 +360,6 @@ function searchInventoryAllocations({
     }
   }
   const requestedMinor = integerAtDecimals(requested, decimals);
-  /** At this scale a positive shortfall needs at least one digit. */
-  const minimumShortfallMinor = requiresPositiveShortfall ? 1n : 0n;
   const capacityMinor = candidates.map(
     /** Put every candidate capacity on one exact integer scale for the bounded search. */
     (candidate) => workingQuantityAtDecimals(candidate.available, decimals)
@@ -401,6 +399,13 @@ function searchInventoryAllocations({
       laterDivisor === 0n ? increment :
       increment === 1n || laterDivisor === 1n ? 1n :
       allocationModularCoefficients(increment, laterDivisor).divisor;
+  }
+  /** Smallest positive remainder consistent with all selectable increments, when the report needs one. */
+  let minimumShortfallMinor = 0n;
+  if (requiresPositiveShortfall) {
+    const divisor = suffixDivisor[0] ?? 0n;
+    // Selected totals are multiples of the common divisor. Exclude zero for unwitnessed measurements.
+    minimumShortfallMinor = divisor === 0n ? requestedMinor : requestedMinor % divisor || divisor;
   }
   const totalCapacity = suffixCapacity[0] ?? 0n;
   if (!acceptPartial && totalCapacity < requestedMinor) return undefined;

@@ -1037,6 +1037,43 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("records a measured two-piece remainder from a whole-package allocation", async () => {
+    const base = measuredItemCatalog("pieces").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base,
+      independentAxes: base.independentAxes.map((axis) => ({ ...axis, requirement: InventoryMeasurementRequirement.Optional })),
+    });
+    const packageId = "two-piece-pack";
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
+      packagingRevisions: [{
+        revisionId: packageId, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+        fixedContents: { primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") }, independent: [] },
+      }],
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, occurredAtEpochMs] of [["older", time0], ["newer", time1]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}-packs`, occurredAtEpochMs,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: packageAmount(150_000, packageId),
+      });
+    }
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "transfer-with-unwitnessed-package-weight", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], packagingRevisionIds: [packageId] },
+      method: InventoryAllocationMethod.Fifo,
+      amount: packageAmount(250_000, packageId, [{ axisId: "weight", value: "1", unit: "kg" }]),
+    });
+    const arrived = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
+    expect(arrived.find(({ key }) => key.lotId === "older")?.measurements.primary.quantity).toEqual(parseQuantity("300000", "piece"));
+    expect(arrived.find(({ key }) => key.lotId === "newer")?.measurements.primary.quantity).toEqual(parseQuantity("199998", "piece"));
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("2", "piece") }, independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
+      },
+    }]);
+  });
+
   it.each([true, false])("records a measured report with an unstorable trial (later witness: %s)", async (hasLaterWitness) => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
     const fractional = { lotId: "fractional", pieces: "1.9", weight: "1", occurredAtEpochMs: time1 };
@@ -1115,7 +1152,7 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.read.positions(selection)).toMatchObject([{ key: { lotId: "light" } }]);
     if (held) {
       expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([
-        { reservationIds: ["hold-exact"], shortage: { amountMinor: 4 } },
+        { reservationIds: ["hold-exact"], shortage: parseQuantity("4", "piece") },
       ]);
     }
   });
@@ -1724,6 +1761,12 @@ describe("indexed stock planning and availability", () => {
     const storage = createInMemoryInventoryDurableStorage({ initialWorld: world });
     const reopened = createTestInventory(storage, undefined, clockAt(time3), InventoryDeficitPolicy.Record);
     const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const completed = await storage.readOperation(command.operationId);
+    expect(completed).toMatchObject({ state: "completed", receipt: moved.receipt });
+    for (const stage of ["writeEvent", "writeProjection", "writeReservations", "writeCounts", "writeReceipt"] as const) {
+      await expect(storage[stage](command.operationId)).resolves.toEqual(completed);
+    }
+    await expect(storage.writeReceipt("unknown-transfer")).rejects.toThrow("Unknown inventory durable operation");
     expect(await reopened.stock.transfer(command)).toEqual({ ...moved, replayed: true });
     await expect(reopened.stock.transfer({ ...command, toPlacementNodeId: "changed" })).rejects.toThrow("changed intent");
     await expect(reopened.stock.transfer({ ...command, operationId: "new-empty-serial" })).rejects.toThrow("cannot claim a serial");
@@ -2263,6 +2306,26 @@ describe("indexed stock planning and availability", () => {
     const earlier = storage.readSegmentedStockPool(request);
     expect(earlier.reservations).toEqual([current]);
     expect(Object.isFrozen(earlier.reservations[0]?.allocations[0]?.quantity)).toBe(true);
+  });
+
+  it("uses current broad leaders for a pre-epoch claim query after the last change", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, clockAt(-500));
+    await inventory.stock.receive({
+      operationId: "receive-archived-stock", occurredAtEpochMs: -4_000,
+      to: loosePosition("store"), amount: stockAmount("3", "piece"),
+    });
+    for (const [id, time, expiry] of [["first", -3_000, 1_000], ["second", -2_000, 2_000], ["third", -1_000, 3_000]] as const) {
+      await inventory.reservations.reserve({
+        operationId: `reserve-${id}`, reservationId: id, itemRevisionId: "item-a-v2",
+        selector, requested: parseQuantity("1", "piece"), createdAtEpochMs: time, expiresAtEpochMs: expiry,
+      });
+    }
+    const request = { selector, itemRevisionId: "item-a-v2", exactHoldsOnly: false };
+    expect(storage.readSegmentedStockPool({ ...request, reservationAtEpochMs: -500 }).reservations.map(({ reservationId }) => reservationId))
+      .toEqual(["third", "second"]);
+    expect(storage.readSegmentedStockPool({ ...request, reservationAtEpochMs: -1_500 }).reservations.map(({ reservationId }) => reservationId))
+      .toEqual(["first", "second"]);
   });
 
   it("samples default preview time after reading the published claim revision", async () => {

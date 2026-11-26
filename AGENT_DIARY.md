@@ -1975,3 +1975,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A report can need a positive primary remainder when eligible stock has no evidence for one of its positive independent measurements. The picker can stop once it finds a valid plan with the smallest positive remainder at the search scale.
 - Fungibility tests whether whole-package member increments fit using exact working digits before storing an increment. Indivisible stock discarded by the pool increment remains evidence for the shortfall diagnostic.
+
+## 2026-11-26 — legal shortfalls and retained completions
+
+- A measured pick with a required positive remainder uses the common divisor of selectable increments to stop at the first optimal witness. Fungibility compares actual eligible capacity across members in exact ratios before attributing a shortfall to increments.
+- A reopened reported transfer can prove stage completion from its journal receipt. Claim postings use the final lifecycle time even when all changes preceded the Unix epoch.

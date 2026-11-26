@@ -65,6 +65,7 @@ import {
   compareWorkingQuantities,
   leastCommonWorkingQuantityMultiple,
   materializeInventoryWorkingQuantity,
+  quantityGreatestCommonDivisor,
   storableQuantityDigits,
   workingQuantityAtDecimals,
   type ExactQuantityDigits,
@@ -395,6 +396,8 @@ function planInventoryFungibilityAllocationWithHolds({
   let incrementBlockedStock = false;
   /** Indivisible member stock left over after enforcing the combined pool increment. */
   let discardedIndivisibleCapacity = false;
+  /** Reuse the scoped member capacity only if a shortfall needs an increment diagnosis. */
+  const memberStock: FungibilityMemberStock[] = [];
   // Remember whether any active member reservation remained broad rather than position-bound.
   let unallocatedReservationsPresent = false;
 
@@ -423,6 +426,7 @@ function planInventoryFungibilityAllocationWithHolds({
     unallocatedReservationsPresent =
       unallocatedReservationsPresent ||
       candidateResult.unallocatedReservationsPresent;
+    memberStock.push({ member, candidates: deficitAdjusted.candidates });
     // Convert each eligible row separately. The sum is needed only by the common-basis allocator.
     for (const source of deficitAdjusted.candidates) {
       const capacity = inventoryAllocationCandidateCapacity(source);
@@ -512,6 +516,11 @@ function planInventoryFungibilityAllocationWithHolds({
         : { expiresAtEpochMs: evidence.source.expiresAtEpochMs }),
     });
   }
+  const incrementEvidence = incrementBlockedStock || allocated.incrementBlockedStock;
+  const incrementBlockage = allocated.shortfall.amountMinor === 0
+    ? incrementEvidence
+    : (incrementEvidence || discardedIndivisibleCapacity) && !allocated.allocationConstraintBlockedStock &&
+      fungibilityRawCapacityCoversRequest(requested, memberStock);
   return {
     definition,
     scope: normalizedScope,
@@ -519,13 +528,43 @@ function planInventoryFungibilityAllocationWithHolds({
     lines,
     shortfall: allocated.shortfall,
     expiredStockWasExcluded,
-    incrementBlockedStock:
-      incrementBlockedStock || allocated.incrementBlockedStock ||
-      (discardedIndivisibleCapacity && allocated.shortfall.amountMinor > 0 && !allocated.allocationConstraintBlockedStock),
+    incrementBlockedStock: incrementBlockage,
     allocationConstraintBlockedStock:
       allocated.allocationConstraintBlockedStock,
     unallocatedReservationsPresent,
   };
+}
+
+/** One member and its eligible physical capacity before applying indivisible increments. */
+interface FungibilityMemberStock {
+  /** Frozen reference quantities for converting this member to the pool basis. */
+  readonly member: InventoryFungibilityMemberDefinition;
+  /** Scoped capacities after applying holds, expiry and signed deficits. */
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+}
+
+/** Check whether actual eligible capacity would cover the request if every row were divisible. */
+function fungibilityRawCapacityCoversRequest(requested: Quantity, memberStock: readonly FungibilityMemberStock[]): boolean {
+  /** Exact pool remainder. Member reference ratios need not terminate in decimal. */
+  let remainingNumerator = BigInt(requested.amountMinor);
+  let remainingDenominator = 10n ** BigInt(requested.decimals);
+  for (const { member: { memberQuantity, poolQuantity }, candidates } of memberStock) {
+    /** All eligible digits on this member's native measurement axis. */
+    const available: ExactQuantityDigits = { minor: 0n, decimals: 0 };
+    for (const { available: capacity } of candidates) {
+      addExactQuantityDigits(available, BigInt(capacity.amountMinor), capacity.decimals);
+    }
+    if (available.minor === 0n) continue;
+    const poolNumerator = available.minor * BigInt(poolQuantity.amountMinor) * 10n ** BigInt(memberQuantity.decimals);
+    const poolDenominator = BigInt(memberQuantity.amountMinor) * 10n ** BigInt(available.decimals + poolQuantity.decimals);
+    remainingNumerator = remainingNumerator * poolDenominator - poolNumerator * remainingDenominator;
+    if (remainingNumerator <= 0n) return true;
+    remainingDenominator *= poolDenominator;
+    const divisor = quantityGreatestCommonDivisor(remainingNumerator, remainingDenominator);
+    remainingNumerator /= divisor;
+    remainingDenominator /= divisor;
+  }
+  return false;
 }
 
 /** Validate deplete/transfer claim effects before any exact search begins. */

@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4204,
-    "edges": 11758,
+    "callables": 4213,
+    "edges": 11806,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -5488,10 +5488,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
+                "id": "test/scoped-stock-planning.test.ts:96756:<anonymous@1661>",
                 "kind": "ArrowFunction",
-                "line": 1624,
-                "name": "<anonymous@1624>",
+                "line": 1661,
+                "name": "<anonymous@1661>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -5782,10 +5782,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
+                "id": "test/scoped-stock-planning.test.ts:96756:<anonymous@1661>",
                 "kind": "ArrowFunction",
-                "line": 1624,
-                "name": "<anonymous@1624>",
+                "line": 1661,
+                "name": "<anonymous@1661>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6684,10 +6684,10 @@
                 "column": 98,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:119499:<anonymous@2046>",
+                "id": "test/scoped-stock-planning.test.ts:122292:<anonymous@2089>",
                 "kind": "ArrowFunction",
-                "line": 2046,
-                "name": "<anonymous@2046>",
+                "line": 2089,
+                "name": "<anonymous@2089>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6886,52 +6886,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/reservation-closure-shortage.test.ts",
+                "id": "test-root:test/scoped-stock-planning.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/reservation-closure-shortage.test.ts"
+                "name": "test/scoped-stock-planning.test.ts"
               },
               {
-                "column": 81,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "column": 53,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:1110:<anonymous@40>",
+                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
                 "kind": "ArrowFunction",
-                "line": 40,
-                "name": "<anonymous@40>",
+                "line": 94,
+                "name": "<anonymous@94>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 1,
-                "file": "src/coordinator.ts",
+                "column": 82,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:5331:commitInventoryOperation",
-                "kind": "FunctionDeclaration",
-                "line": 135,
-                "name": "commitInventoryOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/coordinator.ts",
-                "hasBody": true,
-                "id": "src/coordinator.ts:24736:resumeInventoryDurableOperation",
-                "kind": "FunctionDeclaration",
-                "line": 665,
-                "name": "resumeInventoryDurableOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 3,
-                "file": "src/storage.ts",
-                "hasBody": false,
-                "id": "src/storage.ts:22389:writeEvent",
-                "kind": "MethodSignature",
-                "line": 479,
-                "name": "writeEvent",
-                "reason": "resolved-call"
+                "id": "test/scoped-stock-planning.test.ts:101577:<anonymous@1733>",
+                "kind": "ArrowFunction",
+                "line": 1733,
+                "name": "<anonymous@1733>",
+                "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
@@ -6941,10 +6921,10 @@
                 "kind": "MethodDeclaration",
                 "line": 1348,
                 "name": "writeEvent",
-                "reason": "interface-to-implementation"
+                "reason": "resolved-call"
               }
             ],
-            "test": "test/reservation-closure-shortage.test.ts"
+            "test": "test/scoped-stock-planning.test.ts"
           }
         }
       ]
@@ -7159,52 +7139,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/reservation-closure-shortage.test.ts",
+                "id": "test-root:test/scoped-stock-planning.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/reservation-closure-shortage.test.ts"
+                "name": "test/scoped-stock-planning.test.ts"
               },
               {
-                "column": 81,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "column": 53,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:1110:<anonymous@40>",
+                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
                 "kind": "ArrowFunction",
-                "line": 40,
-                "name": "<anonymous@40>",
+                "line": 94,
+                "name": "<anonymous@94>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 1,
-                "file": "src/coordinator.ts",
+                "column": 82,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:5331:commitInventoryOperation",
-                "kind": "FunctionDeclaration",
-                "line": 135,
-                "name": "commitInventoryOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/coordinator.ts",
-                "hasBody": true,
-                "id": "src/coordinator.ts:24736:resumeInventoryDurableOperation",
-                "kind": "FunctionDeclaration",
-                "line": 665,
-                "name": "resumeInventoryDurableOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 3,
-                "file": "src/storage.ts",
-                "hasBody": false,
-                "id": "src/storage.ts:22896:writeReceipt",
-                "kind": "MethodSignature",
-                "line": 487,
-                "name": "writeReceipt",
-                "reason": "resolved-call"
+                "id": "test/scoped-stock-planning.test.ts:101577:<anonymous@1733>",
+                "kind": "ArrowFunction",
+                "line": 1733,
+                "name": "<anonymous@1733>",
+                "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
@@ -7214,10 +7174,10 @@
                 "kind": "MethodDeclaration",
                 "line": 1464,
                 "name": "writeReceipt",
-                "reason": "interface-to-implementation"
+                "reason": "resolved-call"
               }
             ],
-            "test": "test/reservation-closure-shortage.test.ts"
+            "test": "test/scoped-stock-planning.test.ts"
           }
         }
       ]
@@ -11960,9 +11920,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:38695:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:38982:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 840,
+          "line": 845,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -11973,9 +11933,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:38695:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:38982:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 840,
+            "line": 845,
             "name": "compareInventoryAllocationCandidates"
           },
           "witness": {
@@ -12013,9 +11973,9 @@
                 "column": 1,
                 "file": "src/allocation.ts",
                 "hasBody": true,
-                "id": "src/allocation.ts:38695:compareInventoryAllocationCandidates",
+                "id": "src/allocation.ts:38982:compareInventoryAllocationCandidates",
                 "kind": "FunctionDeclaration",
-                "line": 840,
+                "line": 845,
                 "name": "compareInventoryAllocationCandidates",
                 "reason": "resolved-call"
               }
@@ -14888,10 +14848,10 @@
                 "column": 73,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:90907:<anonymous@1566>",
+                "id": "test/scoped-stock-planning.test.ts:93215:<anonymous@1603>",
                 "kind": "ArrowFunction",
-                "line": 1566,
-                "name": "<anonymous@1566>",
+                "line": 1603,
+                "name": "<anonymous@1603>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -17138,9 +17098,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 342,
+                "line": 343,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               },
@@ -17148,9 +17108,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:15319:planInventoryFungibilityAllocationWithHolds",
+                "id": "src/fungibility.ts:15352:planInventoryFungibilityAllocationWithHolds",
                 "kind": "FunctionDeclaration",
-                "line": 356,
+                "line": 357,
                 "name": "planInventoryFungibilityAllocationWithHolds",
                 "reason": "resolved-call"
               },
@@ -18542,9 +18502,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 116,
+          "line": 117,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -18555,9 +18515,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 116,
+            "line": 117,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "witness": {
@@ -18625,9 +18585,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
+                "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
                 "kind": "FunctionDeclaration",
-                "line": 116,
+                "line": 117,
                 "name": "inventoryFungibilityScopeIdentity",
                 "reason": "resolved-call"
               }
@@ -22632,9 +22592,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 102,
+          "line": 103,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -22645,9 +22605,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 102,
+            "line": 103,
             "name": "normalizeInventoryFungibilityScope"
           },
           "witness": {
@@ -22715,9 +22675,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
+                "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
                 "kind": "FunctionDeclaration",
-                "line": 102,
+                "line": 103,
                 "name": "normalizeInventoryFungibilityScope",
                 "reason": "resolved-call"
               }
@@ -23220,9 +23180,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 342,
+          "line": 343,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -23233,9 +23193,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 342,
+            "line": 343,
             "name": "planInventoryFungibilityAllocation"
           },
           "witness": {
@@ -23293,9 +23253,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 342,
+                "line": 343,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               }
@@ -24953,9 +24913,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 173,
+          "line": 174,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -24966,9 +24926,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 173,
+            "line": 174,
             "name": "summarizeInventoryFungibility"
           },
           "witness": {
@@ -25026,9 +24986,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
+                "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
                 "kind": "FunctionDeclaration",
-                "line": 173,
+                "line": 174,
                 "name": "summarizeInventoryFungibility",
                 "reason": "resolved-call"
               }
@@ -29536,9 +29496,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 342,
+                "line": 343,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               },
@@ -29546,9 +29506,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:15319:planInventoryFungibilityAllocationWithHolds",
+                "id": "src/fungibility.ts:15352:planInventoryFungibilityAllocationWithHolds",
                 "kind": "FunctionDeclaration",
-                "line": 356,
+                "line": 357,
                 "name": "planInventoryFungibilityAllocationWithHolds",
                 "reason": "resolved-call"
               },
@@ -30060,9 +30020,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 116,
+          "line": 117,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -30073,9 +30033,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 116,
+            "line": 117,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "witness": {
@@ -30143,9 +30103,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3747:inventoryFungibilityScopeIdentity",
+                "id": "src/fungibility.ts:3780:inventoryFungibilityScopeIdentity",
                 "kind": "FunctionDeclaration",
-                "line": 116,
+                "line": 117,
                 "name": "inventoryFungibilityScopeIdentity",
                 "reason": "resolved-call"
               }
@@ -32095,9 +32055,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 102,
+          "line": 103,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -32108,9 +32068,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 102,
+            "line": 103,
             "name": "normalizeInventoryFungibilityScope"
           },
           "witness": {
@@ -32178,9 +32138,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:3308:normalizeInventoryFungibilityScope",
+                "id": "src/fungibility.ts:3341:normalizeInventoryFungibilityScope",
                 "kind": "FunctionDeclaration",
-                "line": 102,
+                "line": 103,
                 "name": "normalizeInventoryFungibilityScope",
                 "reason": "resolved-call"
               }
@@ -32399,9 +32359,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 342,
+          "line": 343,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -32412,9 +32372,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 342,
+            "line": 343,
             "name": "planInventoryFungibilityAllocation"
           },
           "witness": {
@@ -32472,9 +32432,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:14696:planInventoryFungibilityAllocation",
+                "id": "src/fungibility.ts:14729:planInventoryFungibilityAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 342,
+                "line": 343,
                 "name": "planInventoryFungibilityAllocation",
                 "reason": "resolved-call"
               }
@@ -33970,9 +33930,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 173,
+          "line": 174,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -33983,9 +33943,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 173,
+            "line": 174,
             "name": "summarizeInventoryFungibility"
           },
           "witness": {
@@ -34043,9 +34003,9 @@
                 "column": 1,
                 "file": "src/fungibility.ts",
                 "hasBody": true,
-                "id": "src/fungibility.ts:6518:summarizeInventoryFungibility",
+                "id": "src/fungibility.ts:6551:summarizeInventoryFungibility",
                 "kind": "FunctionDeclaration",
-                "line": 173,
+                "line": 174,
                 "name": "summarizeInventoryFungibility",
                 "reason": "resolved-call"
               }
@@ -35146,9 +35106,9 @@
                 "column": 1,
                 "file": "src/storage.ts",
                 "hasBody": true,
-                "id": "src/storage.ts:110621:validateInventoryDurablePlanAgainstBase",
+                "id": "src/storage.ts:110887:validateInventoryDurablePlanAgainstBase",
                 "kind": "FunctionDeclaration",
-                "line": 2623,
+                "line": 2626,
                 "name": "validateInventoryDurablePlanAgainstBase",
                 "reason": "resolved-call"
               },
@@ -35257,9 +35217,9 @@
                 "column": 1,
                 "file": "src/storage.ts",
                 "hasBody": true,
-                "id": "src/storage.ts:110621:validateInventoryDurablePlanAgainstBase",
+                "id": "src/storage.ts:110887:validateInventoryDurablePlanAgainstBase",
                 "kind": "FunctionDeclaration",
-                "line": 2623,
+                "line": 2626,
                 "name": "validateInventoryDurablePlanAgainstBase",
                 "reason": "resolved-call"
               },
@@ -35346,9 +35306,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:105990:createInMemoryInventoryDurableStorage",
+          "id": "src/storage.ts:106256:createInMemoryInventoryDurableStorage",
           "kind": "FunctionDeclaration",
-          "line": 2488,
+          "line": 2491,
           "name": "createInMemoryInventoryDurableStorage"
         }
       ],
@@ -35359,9 +35319,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:105990:createInMemoryInventoryDurableStorage",
+            "id": "src/storage.ts:106256:createInMemoryInventoryDurableStorage",
             "kind": "FunctionDeclaration",
-            "line": 2488,
+            "line": 2491,
             "name": "createInMemoryInventoryDurableStorage"
           },
           "witness": {
@@ -35389,9 +35349,9 @@
                 "column": 1,
                 "file": "src/storage.ts",
                 "hasBody": true,
-                "id": "src/storage.ts:105990:createInMemoryInventoryDurableStorage",
+                "id": "src/storage.ts:106256:createInMemoryInventoryDurableStorage",
                 "kind": "FunctionDeclaration",
-                "line": 2488,
+                "line": 2491,
                 "name": "createInMemoryInventoryDurableStorage",
                 "reason": "resolved-call"
               }
@@ -36775,9 +36735,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:107075:materializeInventoryDurableMigrationWorld",
+          "id": "src/storage.ts:107341:materializeInventoryDurableMigrationWorld",
           "kind": "FunctionDeclaration",
-          "line": 2517,
+          "line": 2520,
           "name": "materializeInventoryDurableMigrationWorld"
         }
       ],
@@ -36788,9 +36748,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:107075:materializeInventoryDurableMigrationWorld",
+            "id": "src/storage.ts:107341:materializeInventoryDurableMigrationWorld",
             "kind": "FunctionDeclaration",
-            "line": 2517,
+            "line": 2520,
             "name": "materializeInventoryDurableMigrationWorld"
           },
           "witness": {
@@ -36848,9 +36808,9 @@
                 "column": 1,
                 "file": "src/storage.ts",
                 "hasBody": true,
-                "id": "src/storage.ts:107075:materializeInventoryDurableMigrationWorld",
+                "id": "src/storage.ts:107341:materializeInventoryDurableMigrationWorld",
                 "kind": "FunctionDeclaration",
-                "line": 2517,
+                "line": 2520,
                 "name": "materializeInventoryDurableMigrationWorld",
                 "reason": "resolved-call"
               }
@@ -36866,9 +36826,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:106519:materializeInventoryDurableOperationWorld",
+          "id": "src/storage.ts:106785:materializeInventoryDurableOperationWorld",
           "kind": "FunctionDeclaration",
-          "line": 2502,
+          "line": 2505,
           "name": "materializeInventoryDurableOperationWorld"
         }
       ],
@@ -36879,9 +36839,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:106519:materializeInventoryDurableOperationWorld",
+            "id": "src/storage.ts:106785:materializeInventoryDurableOperationWorld",
             "kind": "FunctionDeclaration",
-            "line": 2502,
+            "line": 2505,
             "name": "materializeInventoryDurableOperationWorld"
           },
           "witness": {
@@ -36939,9 +36899,9 @@
                 "column": 1,
                 "file": "src/storage.ts",
                 "hasBody": true,
-                "id": "src/storage.ts:106519:materializeInventoryDurableOperationWorld",
+                "id": "src/storage.ts:106785:materializeInventoryDurableOperationWorld",
                 "kind": "FunctionDeclaration",
-                "line": 2502,
+                "line": 2505,
                 "name": "materializeInventoryDurableOperationWorld",
                 "reason": "resolved-call"
               }
@@ -37251,9 +37211,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:106273:validateInventoryDurableOperationBeginInput",
+          "id": "src/storage.ts:106539:validateInventoryDurableOperationBeginInput",
           "kind": "FunctionDeclaration",
-          "line": 2495,
+          "line": 2498,
           "name": "validateInventoryDurableOperationBeginInput"
         }
       ],
@@ -37264,9 +37224,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:106273:validateInventoryDurableOperationBeginInput",
+            "id": "src/storage.ts:106539:validateInventoryDurableOperationBeginInput",
             "kind": "FunctionDeclaration",
-            "line": 2495,
+            "line": 2498,
             "name": "validateInventoryDurableOperationBeginInput"
           },
           "witness": {
@@ -37324,9 +37284,9 @@
                 "column": 1,
                 "file": "src/storage.ts",
                 "hasBody": true,
-                "id": "src/storage.ts:106273:validateInventoryDurableOperationBeginInput",
+                "id": "src/storage.ts:106539:validateInventoryDurableOperationBeginInput",
                 "kind": "FunctionDeclaration",
-                "line": 2495,
+                "line": 2498,
                 "name": "validateInventoryDurableOperationBeginInput",
                 "reason": "resolved-call"
               }
@@ -37342,9 +37302,9 @@
           "column": 1,
           "file": "src/storage.ts",
           "hasBody": true,
-          "id": "src/storage.ts:106826:validateInventoryMigrationManifestBeginInput",
+          "id": "src/storage.ts:107092:validateInventoryMigrationManifestBeginInput",
           "kind": "FunctionDeclaration",
-          "line": 2510,
+          "line": 2513,
           "name": "validateInventoryMigrationManifestBeginInput"
         }
       ],
@@ -37355,9 +37315,9 @@
             "column": 1,
             "file": "src/storage.ts",
             "hasBody": true,
-            "id": "src/storage.ts:106826:validateInventoryMigrationManifestBeginInput",
+            "id": "src/storage.ts:107092:validateInventoryMigrationManifestBeginInput",
             "kind": "FunctionDeclaration",
-            "line": 2510,
+            "line": 2513,
             "name": "validateInventoryMigrationManifestBeginInput"
           },
           "witness": {
@@ -37415,9 +37375,9 @@
                 "column": 1,
                 "file": "src/storage.ts",
                 "hasBody": true,
-                "id": "src/storage.ts:106826:validateInventoryMigrationManifestBeginInput",
+                "id": "src/storage.ts:107092:validateInventoryMigrationManifestBeginInput",
                 "kind": "FunctionDeclaration",
-                "line": 2510,
+                "line": 2513,
                 "name": "validateInventoryMigrationManifestBeginInput",
                 "reason": "resolved-call"
               }
@@ -39238,10 +39198,10 @@
                 "column": 93,
                 "file": "test/fungibility.test.ts",
                 "hasBody": true,
-                "id": "test/fungibility.test.ts:39057:<anonymous@1005>",
+                "id": "test/fungibility.test.ts:41518:<anonymous@1045>",
                 "kind": "ArrowFunction",
-                "line": 1005,
-                "name": "<anonymous@1005>",
+                "line": 1045,
+                "name": "<anonymous@1045>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48745,10 +48705,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
+                "id": "test/scoped-stock-planning.test.ts:96756:<anonymous@1661>",
                 "kind": "ArrowFunction",
-                "line": 1624,
-                "name": "<anonymous@1624>",
+                "line": 1661,
+                "name": "<anonymous@1661>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48907,10 +48867,10 @@
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:94448:<anonymous@1624>",
+                "id": "test/scoped-stock-planning.test.ts:96756:<anonymous@1661>",
                 "kind": "ArrowFunction",
-                "line": 1624,
-                "name": "<anonymous@1624>",
+                "line": 1661,
+                "name": "<anonymous@1661>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49484,52 +49444,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/reservation-closure-shortage.test.ts",
+                "id": "test-root:test/scoped-stock-planning.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/reservation-closure-shortage.test.ts"
+                "name": "test/scoped-stock-planning.test.ts"
               },
               {
-                "column": 81,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "column": 53,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:1110:<anonymous@40>",
+                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
                 "kind": "ArrowFunction",
-                "line": 40,
-                "name": "<anonymous@40>",
+                "line": 94,
+                "name": "<anonymous@94>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 1,
-                "file": "src/coordinator.ts",
+                "column": 82,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:5331:commitInventoryOperation",
-                "kind": "FunctionDeclaration",
-                "line": 135,
-                "name": "commitInventoryOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/coordinator.ts",
-                "hasBody": true,
-                "id": "src/coordinator.ts:24736:resumeInventoryDurableOperation",
-                "kind": "FunctionDeclaration",
-                "line": 665,
-                "name": "resumeInventoryDurableOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 3,
-                "file": "src/storage.ts",
-                "hasBody": false,
-                "id": "src/storage.ts:22389:writeEvent",
-                "kind": "MethodSignature",
-                "line": 479,
-                "name": "writeEvent",
-                "reason": "resolved-call"
+                "id": "test/scoped-stock-planning.test.ts:101577:<anonymous@1733>",
+                "kind": "ArrowFunction",
+                "line": 1733,
+                "name": "<anonymous@1733>",
+                "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
@@ -49539,10 +49479,10 @@
                 "kind": "MethodDeclaration",
                 "line": 1348,
                 "name": "writeEvent",
-                "reason": "interface-to-implementation"
+                "reason": "resolved-call"
               }
             ],
-            "test": "test/reservation-closure-shortage.test.ts"
+            "test": "test/scoped-stock-planning.test.ts"
           }
         }
       ]
@@ -49757,52 +49697,32 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/reservation-closure-shortage.test.ts",
+                "id": "test-root:test/scoped-stock-planning.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/reservation-closure-shortage.test.ts"
+                "name": "test/scoped-stock-planning.test.ts"
               },
               {
-                "column": 81,
-                "file": "test/reservation-closure-shortage.test.ts",
+                "column": 53,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:1110:<anonymous@40>",
+                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
                 "kind": "ArrowFunction",
-                "line": 40,
-                "name": "<anonymous@40>",
+                "line": 94,
+                "name": "<anonymous@94>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 1,
-                "file": "src/coordinator.ts",
+                "column": 82,
+                "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "src/coordinator.ts:5331:commitInventoryOperation",
-                "kind": "FunctionDeclaration",
-                "line": 135,
-                "name": "commitInventoryOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 1,
-                "file": "src/coordinator.ts",
-                "hasBody": true,
-                "id": "src/coordinator.ts:24736:resumeInventoryDurableOperation",
-                "kind": "FunctionDeclaration",
-                "line": 665,
-                "name": "resumeInventoryDurableOperation",
-                "reason": "resolved-call"
-              },
-              {
-                "column": 3,
-                "file": "src/storage.ts",
-                "hasBody": false,
-                "id": "src/storage.ts:22896:writeReceipt",
-                "kind": "MethodSignature",
-                "line": 487,
-                "name": "writeReceipt",
-                "reason": "resolved-call"
+                "id": "test/scoped-stock-planning.test.ts:101577:<anonymous@1733>",
+                "kind": "ArrowFunction",
+                "line": 1733,
+                "name": "<anonymous@1733>",
+                "reason": "external-callback-dispatch"
               },
               {
                 "column": 3,
@@ -49812,10 +49732,10 @@
                 "kind": "MethodDeclaration",
                 "line": 1464,
                 "name": "writeReceipt",
-                "reason": "interface-to-implementation"
+                "reason": "resolved-call"
               }
             ],
-            "test": "test/reservation-closure-shortage.test.ts"
+            "test": "test/scoped-stock-planning.test.ts"
           }
         }
       ]
@@ -49913,5 +49833,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "59850558a4c752cbc5a8e9be969b2b6263ccd3a6e247b4564e71c92b3e6c83ca"
+  "surfaceSha256": "2dfa86a082e17379babbdf466a4e474522b5ea26aa8c14a81017b20bce9abf06"
 }

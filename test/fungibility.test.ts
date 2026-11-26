@@ -882,6 +882,12 @@ describe("derived pool summaries and exact member movements", () => {
     expect(await inventory.fungibility.plan({ ...plan, requested: wantOne })).toMatchObject({
       lines: [], shortfall: wantOne, incrementBlockedStock: true,
     });
+    const wantHundred = parseQuantity("100", "equivalent");
+    for (const allowAllocatedStock of [false, true]) {
+      expect(await inventory.fungibility.plan({ ...plan, requested: wantHundred, allowAllocatedStock })).toMatchObject({
+        lines: [], shortfall: wantHundred, incrementBlockedStock: false,
+      });
+    }
     await inventory.stock.receive({
       operationId: "receive-loose-alternative", occurredAtEpochMs: time1,
       to: { itemId: newer.itemId, placementNodeId: "store" }, amount: stockAmount("3", "piece"),
@@ -915,6 +921,40 @@ describe("derived pool summaries and exact member movements", () => {
     expect(await inventory.fungibility.plan({ ...threeBoxes, requested: parseQuantity("3", "equivalent") })).toMatchObject({
       lines: [{ amount: packageAmount(2, pack.revisionId) }],
       shortfall: parseQuantity("0", "equivalent"), incrementBlockedStock: false,
+    });
+  });
+
+  it("compares repeating raw member equivalents exactly at the increment boundary", async () => {
+    const older = oldBrand();
+    const newer = newBrand();
+    const single = defineScalarInventoryPackaging({ revisionId: "single", item: older, packageUnit: "pack", contains: "1" });
+    const double = defineScalarInventoryPackaging({ revisionId: "double", item: newer, packageUnit: "pack", contains: "2" });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "thirds", revisionId: "thirds-v1", basisUnit: "equivalent",
+      members: [{ item: older, memberQuantity: "3" }, { item: newer, memberQuantity: "3" }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [older, newer],
+      activeItemRevisionIds: { [older.itemId]: older.revisionId, [newer.itemId]: newer.revisionId },
+      packagingRevisions: [single, double], fungibilityRevisions: [pool], activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    await inventory.stock.receiveMany({
+      operationId: "receive-one-third-and-two-thirds", occurredAtEpochMs: time0,
+      lines: [
+        { to: { itemId: older.itemId, placementNodeId: "store" }, amount: packageAmount(1, single.revisionId) },
+        { to: { itemId: newer.itemId, placementNodeId: "store" }, amount: packageAmount(1, double.revisionId) },
+      ],
+    });
+    const plan = { fungibilityRevisionId: pool.revisionId, method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] }, atEpochMs: time2 };
+    const exactCapacity = parseQuantity("1", "equivalent");
+    const aboveCapacity = parseQuantity("1.01", "equivalent");
+    expect(await inventory.fungibility.plan({ ...plan, requested: exactCapacity })).toMatchObject({
+      lines: [], shortfall: exactCapacity, incrementBlockedStock: true,
+    });
+    expect(await inventory.fungibility.plan({ ...plan, requested: aboveCapacity })).toMatchObject({
+      lines: [], shortfall: aboveCapacity, incrementBlockedStock: false,
     });
   });
 
@@ -1262,6 +1302,7 @@ describe("derived pool summaries and exact member movements", () => {
       expect.objectContaining({ reservationIds: ["outside-pool"], shortage: parseQuantity("1", "piece") }),
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("8", "kg") }),
     ]));
+    expect((await inventory.read.reservation("weighed-hold"))?.allocations).toEqual([{ position: position.key, quantity: requested }]);
   });
 
   it("preserves a broad claim when fungible stock moves into another eligible location", async () => {

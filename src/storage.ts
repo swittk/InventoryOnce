@@ -2400,9 +2400,12 @@ export class InMemoryInventoryDurableStorage
 
   /** Load one operation writable by staged-write calls; completed rows are returned for idempotent no-ops. */
   private requireWritableOperation(operationId: string): StoredInventoryOperation {
-    const stored = this.requireStored(operationId);
-    if (stored.value.state === InventoryDurableOperationState.Completed) {
-      return stored;
+    const stored = this.operations.get(operationId);
+    if (stored === undefined) {
+      // A reopened journal can prove completion even when the staged row is absent.
+      const completed = retainedInventoryReportedTransferOperation(this.eventJournal.eventByOperation(operationId));
+      if (completed === undefined) throw new Error("Unknown inventory durable operation.");
+      return { value: completed };
     }
     if (stored.value.state === InventoryDurableOperationState.Aborted) {
       throw new Error("Aborted inventory operation cannot be written.");

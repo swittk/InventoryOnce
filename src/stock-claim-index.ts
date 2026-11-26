@@ -54,7 +54,7 @@ export class InventoryStockClaimIndex {
   forPool({
     revisionId, positions, atEpochMs, exactHoldsOnly,
   }: InventoryStockClaimsForPoolInput): readonly InventoryReservation[] {
-    if (atEpochMs < (this.latestByRevision.get(revisionId) ?? 0)) {
+    if (atEpochMs < (this.latestByRevision.get(revisionId) ?? -Infinity)) {
       // Historical replay is confined to the requested revision and uses the retained lifecycle order.
       const latest = new Map<string, InventoryReservationOperation>();
       for (const operation of this.historyByRevision.get(revisionId) ?? []) {
@@ -124,7 +124,7 @@ export class InventoryStockClaimIndex {
       this.historyByRevision.set(itemRevisionId, operations);
     }
     operations.push(operation);
-    if (lastChangedAtEpochMs > (this.latestByRevision.get(itemRevisionId) ?? 0)) {
+    if (lastChangedAtEpochMs > (this.latestByRevision.get(itemRevisionId) ?? -Infinity)) {
       this.latestByRevision.set(itemRevisionId, lastChangedAtEpochMs);
     }
   }
