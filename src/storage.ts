@@ -1,8 +1,5 @@
 import { InventoryStockClaimIndex } from "./stock-claim-index.js";
-import {
-  assertInventoryPublishedTransferReplayEvidence,
-  inventoryReportedTransferReplayEvidence,
-} from "./reported-transfer-replay.js";
+import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
 import { inventoryStockPoolRowReader, type InventoryScopedStockPool, type InventoryScopedStockPosition } from "./stock-scope.js";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
@@ -1951,7 +1948,6 @@ export class InMemoryInventoryDurableStorage
     });
 
     const baseRevision = currentRevision;
-    assertInventoryPublishedTransferReplayEvidence(normalizedEvent, input.intentFingerprint, baseRevision + 1);
     const event = commitInventoryEvent(
       normalizedEvent,
       input.recordedAtEpochMs,
@@ -2439,6 +2435,18 @@ export class InMemoryInventoryDurableStorage
       () => this.failpoint?.({ stage, timing, operationId })
     );
   }
+}
+
+/** Read the replay evidence stored only on a plain reported transfer. */
+function inventoryReportedTransferReplayEvidence(event: InventoryEventDraft | undefined) {
+  if (event?.kind !== InventoryEventKind.Transfer || event.transferLifecycle !== undefined) return undefined;
+  const replay = event.metadata?.[inventoryReportedTransferReplayMetadataKey];
+  if (typeof replay !== "object" || replay === null || !("intentFingerprint" in replay) || !("worldRevision" in replay)) {
+    return undefined;
+  }
+  const { intentFingerprint, worldRevision } = replay;
+  if (typeof intentFingerprint !== "string" || typeof worldRevision !== "number") return undefined;
+  return { intentFingerprint, worldRevision };
 }
 
 /** Restore the exact original receipt from the journal when reopening a published world. */

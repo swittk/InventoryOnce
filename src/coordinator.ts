@@ -40,7 +40,6 @@ import {
 import { inventoryMeasurementAt } from "./measurements.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 import { compareQuantity, negateQuantity, quantityEq } from "./quantity.js";
-import { assertInventoryPublishedTransferReplayEvidence } from "./reported-transfer-replay.js";
 import { inventoryStockSelectorIdentity } from "./selectors.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
@@ -172,7 +171,6 @@ export async function commitInventoryOperation({
     try {
       assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
       const logicalPlan = await plan({ world, recordedAtEpochMs });
-      assertInventoryPublishedTransferReplayEvidence(logicalPlan.event, intentFingerprint, world.revision + 1);
       durablePlan = createDurableOperationPlan({ catalog, world, recordedAtEpochMs, operationId, deficitPolicy, logicalPlan });
     } catch (error) {
       // A matching caller may have published before this attempt read its planning world.

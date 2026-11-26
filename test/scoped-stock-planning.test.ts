@@ -21,7 +21,6 @@ import {
   unitCode,
 } from "../src/index.js";
 import {
-  commitInventoryOperation,
   createInMemoryInventoryDurableStorage,
   readInventoryScopedStockAvailability,
   type InventorySegmentedStockPlanningCapability,
@@ -228,36 +227,29 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
-  it.each([
-    { native: false, revisionOffset: 0, journalIntent: "transfer-intent" },
-    { native: true, revisionOffset: 1, journalIntent: "different-intent" },
-  ])("rejects inconsistent transfer replay evidence before publication (native: $native)", async ({ native, revisionOffset, journalIntent }) => {
+  it("applies the transfer status scope to an empty shortage and preserves a matching status", async () => {
     const storage = createInMemoryInventoryDurableStorage();
-    const catalog = createTabletCatalog();
-    const inventory = createTestInventory(storage, catalog);
-    const from = loosePosition("store");
-    const amount = stockAmount("1", "piece");
-    await inventory.stock.receive({ operationId: "receive-replay-check", occurredAtEpochMs: time0, to: from, amount });
-    const operationId = "transfer-replay-check";
-    const before = (await storage.readWorld()).revision;
-    const draft = createInventoryTransferManyEvent({
-      catalog, operationId, occurredAtEpochMs: time1, lines: [{ from, amount, toPlacementNodeId: "destination" }],
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const before = storage.readSegmentedStockHead();
+    const transfer = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], statusIds: ["available"] }),
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("2", "piece"),
+      occurredAtEpochMs: time1, toPlacementNodeId: "destination",
+    };
+    await expect(inventory.stock.transferByPolicy({
+      ...transfer, operationId: "reject-empty-quarantined", deficitPosition: loosePosition("store", { statusId: "quarantined" }),
+    })).rejects.toThrow("outside the selected status scope");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    const explicit = await inventory.stock.transferByPolicy({
+      ...transfer, operationId: "record-empty-available", deficitPosition: loosePosition("store", { statusId: "available" }),
     });
-    const event = defineInventoryEvent({ catalog, event: {
-      ...draft, metadata: { inventoryOnceReportedTransferReplay: { intentFingerprint: journalIntent, worldRevision: before + revisionOffset } },
-    } });
-    const publication = native
-      ? storage.commitSegmentedStockEvent({
-          catalog: inventoryCatalogSnapshot(catalog), operationId, intentFingerprint: "transfer-intent",
-          recordedAtEpochMs: time2, deficitPolicy: InventoryDeficitPolicy.Reject, event,
-        })
-      : commitInventoryOperation({
-          catalog, storage, operationId, intentFingerprint: "transfer-intent", clock: clockAt(time2),
-          deficitPolicy: InventoryDeficitPolicy.Reject, plan: () => ({ event }),
-        });
-    await expect(publication).rejects.toThrow("transfer replay evidence must match");
-    expect((await storage.readWorld()).revision).toBe(before);
-    expect(await storage.readOperation(operationId)).toBeUndefined();
+    expect(explicit.event.unwitnessedStockMovements).toMatchObject([{
+      from: { statusId: "available" }, to: { statusId: "available", placementNodeId: "destination" },
+    }]);
+    const inferred = await inventory.stock.transferByPolicy({ ...transfer, operationId: "record-inferred-available" });
+    expect(inferred.event.unwitnessedStockMovements).toMatchObject([{
+      from: { statusId: "available" }, to: { statusId: "available", placementNodeId: "destination" },
+    }]);
   });
 
   it.each([

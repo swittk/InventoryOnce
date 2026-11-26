@@ -5793,10 +5793,14 @@ async function policyRecordedDeficit({
     unwitnessed
   );
   const transferOwner = kind === InventoryPolicyMovementKind.Transfer ? allocation.selector.owner : undefined;
-  // A single selected owner can identify the default shortage bucket without inventing ownership.
+  const transferStatus = kind === InventoryPolicyMovementKind.Transfer ? allocation.selector.status : undefined;
+  // A single selected owner or status can identify the default shortage bucket.
   const defaultOwnerId = input.deficitPosition === undefined &&
     transferOwner?.kind === InventoryOptionalIdentityConstraintKind.Allowed && transferOwner.valueIds?.length === 1
     ? transferOwner.valueIds[0] : undefined;
+  const defaultStatusId = input.deficitPosition === undefined &&
+    transferStatus?.kind === InventoryOptionalIdentityConstraintKind.Allowed && transferStatus.valueIds?.length === 1
+    ? transferStatus.valueIds[0] : undefined;
   const resolved = resolveInventoryAmount(catalog, item, amount);
   const packagingRevisionId = resolved.packaging?.revisionId;
   if (from.packagingRevisionId !== undefined && from.packagingRevisionId !== packagingRevisionId) {
@@ -5806,6 +5810,7 @@ async function policyRecordedDeficit({
     ...from,
     itemRevisionId: item.revisionId,
     ...(defaultOwnerId === undefined ? {} : { ownerId: defaultOwnerId }),
+    ...(defaultStatusId === undefined ? {} : { statusId: defaultStatusId }),
     ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
   });
   assertPositionMatchesItem(item, position);
@@ -5837,6 +5842,9 @@ async function policyRecordedDeficit({
   }
   if (transferOwner !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, owner: transferOwner })) {
     throw new Error("Inventory policy transfer deficit position is outside the selected owner scope.");
+  }
+  if (transferStatus !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, status: transferStatus })) {
+    throw new Error("Inventory policy transfer deficit position is outside the selected status scope.");
   }
   const { itemRevisionId, ...exactFrom } = position;
   return {

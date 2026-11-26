@@ -2028,3 +2028,8 @@ The R105 portable-current-input authority and final publication both continue to
 - Each reported independent axis caps how many fixed packages a row can witness. The resulting primary bound lets the picker retain a complete feasible prefix without exploring smaller divisible picks.
 - A policy transfer settles an unwitnessed remainder within its selected owner scope. A single selected owner can identify the default shortage bucket.
 - Plain transfer replay evidence must match the accepted operation intent and next world revision before either publication path can retain it.
+
+## 2026-11-26 — transfer status scope and replay ownership
+
+- A policy transfer keeps its recorded shortage within the selected stock status. A single selected status also identifies the default shortage bucket.
+- The reported-transfer planner stamps reserved journal replay evidence from the accepted intent and next revision. Publication relies on the planner and revision fence for those facts, and journal restoration still reads that evidence.
