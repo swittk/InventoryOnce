@@ -344,7 +344,7 @@ export function planWorkingInventoryAllocation({
       const measured = canRecordPartial
         ? allocateInventoryUpTo({
             ...measuredInput, assessIncrementBlockage: false,
-            requiresPositiveShortfall: reportHasUnwitnessedAxis({
+            requiresPositiveShortfall: reportAxisExceedsSelectableMeasurements({
               catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
             }),
           })
@@ -396,7 +396,7 @@ export function planWorkingInventoryAllocation({
 }
 
 /** Inputs for proving that a measured report needs a nonempty unwitnessed remainder. */
-interface ReportHasUnwitnessedAxisInput {
+interface ReportAxisExceedsSelectableMeasurementsInput {
   /** Retained fixed contents for candidates that can be picked by package. */
   readonly catalog: InventoryCatalog;
   /** Measurements that the movement needs to explain. */
@@ -407,33 +407,44 @@ interface ReportHasUnwitnessedAxisInput {
   readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
 }
 
-/** A positive primary remainder is required when no selectable row supplies a reported axis. */
-function reportHasUnwitnessedAxis({ catalog, report, candidates, rows }: ReportHasUnwitnessedAxisInput): boolean {
+/** Prove a positive primary remainder is needed when even the eligible measurement total falls short. */
+function reportAxisExceedsSelectableMeasurements({
+  catalog, report, candidates, rows,
+}: ReportAxisExceedsSelectableMeasurementsInput): boolean {
   const primary = report.primary;
-  return report.independent.some(
-    /** A reported zero needs no positive witness. */
-    ({ axisId, quantity }) => quantity.amountMinor > 0 && candidates.every(
-      /** The smallest legal pick must fit both the primary and independent quantities. */
-      ({ position, available, allocationIncrement }) => {
-        const row = rows.get(inventoryStockPositionIdentity(position));
-        if (row === undefined) return false;
-        const measured = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
-        if (measured.amountMinor <= 0n) return true;
-        if (allocationIncrement === undefined) return false;
+  for (const { axisId, quantity } of report.independent) {
+    if (quantity.amountMinor === 0) continue;
+    /** Exact difference from a conservative total of all rows that can contribute to this axis. */
+    const unaccounted: ExactQuantityDigits = { minor: BigInt(quantity.amountMinor), decimals: quantity.decimals };
+    for (const { position, available, allocationIncrement } of candidates) {
+      const row = rows.get(inventoryStockPositionIdentity(position));
+      if (row === undefined) {
+        // An unknown candidate's measurements cannot prove a shortage.
+        return false;
+      }
+      const measured = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
+      if (measured.amountMinor <= 0n) continue;
+      if (allocationIncrement !== undefined) {
         if (compareWorkingQuantities(allocationIncrement, primary.quantity) > 0 ||
-            compareWorkingQuantities(allocationIncrement, available) > 0) return true;
+            compareWorkingQuantities(allocationIncrement, available) > 0) continue;
         const fullPrimary = inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit);
         if (compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
-          return compareWorkingQuantities(measured, quantity) > 0;
+          if (compareWorkingQuantities(measured, quantity) > 0) continue;
+        } else if (position.packagingRevisionId !== undefined) {
+          // A divisible fixed package contributes at least its contents per package.
+          const fixed = inventoryMeasurementAt(
+            catalog.packagingRevision(position.packagingRevisionId).fixedContents, axisId, quantity.unit
+          );
+          if (compareQuantity(fixed, quantity) > 0) continue;
         }
-        // A smaller increment from a measured package contributes its fixed amount per package.
-        const packageId = position.packagingRevisionId;
-        if (packageId === undefined) return false;
-        const fixed = inventoryMeasurementAt(catalog.packagingRevision(packageId).fixedContents, axisId, quantity.unit);
-        return compareQuantity(fixed, quantity) > 0;
       }
-    )
-  );
+      // Counting the whole row can overestimate what fits together, so it only proves a shortfall.
+      addExactQuantityDigits(unaccounted, -BigInt(measured.amountMinor), measured.decimals);
+      if (unaccounted.minor <= 0n) break;
+    }
+    if (unaccounted.minor > 0n) return true;
+  }
+  return false;
 }
 
 /** Physical policy inputs shared with capacity-only member selection. */

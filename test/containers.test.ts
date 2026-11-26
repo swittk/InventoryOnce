@@ -164,6 +164,11 @@ it("publishes direct stock, standalone children, and embodied children at one na
   expect(result.receipt.worldRevision).toBe(before.worldRevision + 1);
   expect(await native.read.placementAncestry("case")).toEqual(["case", "destination"]);
   expect(await native.read.placementAncestry("standalone")).toEqual(["standalone", "destination"]);
+  const nativePlacement = storage.readPlacementSegment();
+  const canonicalPlacement = canonicalStorage.readPlacementSegment();
+  expect(await nativePlacement.childNodeIds("source")).toEqual(await canonicalPlacement.childNodeIds("source"));
+  expect(await nativePlacement.childNodeIds("destination")).toEqual(await canonicalPlacement.childNodeIds("destination"));
+  expect(await nativePlacement.contentRoot()).toEqual(await canonicalPlacement.contentRoot());
   expect(await native.read.positions({ itemId: "item-b", placementNodeIds: ["case"] })).toHaveLength(1);
   expect(await native.read.positions({ itemId: "item-a", placementNodeIds: ["source"] })).toEqual([]);
   const destinationRows = await native.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] });

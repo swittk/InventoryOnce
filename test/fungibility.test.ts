@@ -817,9 +817,10 @@ describe("derived pool summaries and exact member movements", () => {
     expect(blocked.shortfall).toEqual(parseQuantity(poolQuantity, "equivalent"));
     expect(blocked.incrementBlockedStock).toBe(true);
 
+    const legalAmount = parseQuantity(poolQuantity === "1" ? "2" : "3", "equivalent");
     const legal = await inventory.fungibility.plan({
       fungibilityRevisionId: pool.revisionId,
-      requested: parseQuantity(poolQuantity === "1" ? "2" : "3", "equivalent"),
+      requested: legalAmount,
       method: InventoryAllocationMethod.Fifo,
       scope: { placementNodeIds: ["store"] },
       atEpochMs: time1,
@@ -830,6 +831,8 @@ describe("derived pool summaries and exact member movements", () => {
       packagingRevisionId: pack2.revisionId,
     });
     expect(legal.lines[0]?.memberQuantity).toEqual(parseQuantity("6", "piece"));
+    expect(legal.lines[0]?.poolQuantity).toEqual(legalAmount);
+    expect(legal.shortfall).toEqual(parseQuantity("0", "equivalent"));
     await inventory.stock.receive({
       operationId: "receive-loose-remainder", occurredAtEpochMs: time0,
       to: { itemId: packaged.itemId, placementNodeId: "loose-store" },

@@ -1994,3 +1994,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-26 — policy batch pool lifetime
 
 - A batch keeps published pool rows for reuse only through the last request that can use them. Ordered balance changes and new deficit rows remain available through the entire atomic plan.
+
+## 2026-11-26 — measured report capacity
+
+- A positive measured remainder can be required even when some eligible rows contribute to that axis. The picker uses the sum of their eligible row measurements as an upper bound and still checks every chosen witness exactly.
+- Seeded segmented rows need their retained FIFO starts before they can serve as conserved source layers.

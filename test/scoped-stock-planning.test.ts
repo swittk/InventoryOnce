@@ -195,6 +195,7 @@ describe("indexed stock planning and availability", () => {
     });
     expect(moved.event.unwitnessedStockMovements).toMatchObject([{
       from: inside, to: { ownerId: "owner-a", placementNodeId: "destination" },
+      measurements: { primary: { quantity: parseQuantity("2", "piece") } },
     }]);
     expect(await inventory.read.positions({ itemId: "item-a", ownerIds: ["owner-b"] })).toMatchObject([
       { key: outside, measurements: { primary: { quantity: parseQuantity("5", "piece") } } },
@@ -1005,7 +1006,14 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
-  it.each(["none", "primary", "volume", "fixed-package-volume"] as const)("records the oldest 5 kg witness when no selectable lot has the reported volume (oversize axis: %s)", async (oversizeAxis) => {
+  it.each([
+    { volumeCase: "none", volume: undefined },
+    { volumeCase: "primary", volume: "0.001" },
+    { volumeCase: "volume", volume: "1" },
+    { volumeCase: "fixed-package-volume", volume: "1" },
+    { volumeCase: "insufficient-volume", volume: "0.0006" },
+    { volumeCase: "combined-volume", volume: "0.0006" },
+  ])("records exact witnesses and remainder for $volumeCase", async ({ volumeCase, volume }) => {
     const item = defineInventoryItem({
       itemId: "material", revisionId: "material-v1",
       primaryAxis: {
@@ -1037,24 +1045,39 @@ describe("indexed stock planning and availability", () => {
         to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: stockAmount("5", "kg"),
       });
     }
-    if (oversizeAxis !== "none") {
-      const amount = oversizeAxis === "fixed-package-volume"
+    if (volume !== undefined) {
+      const amount = volumeCase === "fixed-package-volume"
         ? packageAmount(2, packaging.revisionId)
-        : measuredStockAmount(oversizeAxis === "primary" ? "6" : "1", "kg", [
-            { axisId: "volume", value: oversizeAxis === "primary" ? "0.001" : "1", unit: "L" },
+        : measuredStockAmount(volumeCase === "primary" ? "6" : "1", "kg", [
+            { axisId: "volume", value: volume, unit: "L" },
           ]);
       await inventory.stock.receive({
-        operationId: "receive-oversize-measured-lot", occurredAtEpochMs: time2,
-        to: { itemId: item.itemId, placementNodeId: "store", lotId: "oversize" },
+        operationId: "receive-later-measured-lot", occurredAtEpochMs: time2,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId: "measured-later" },
         amount,
+      });
+    }
+    const combinedVolume = volumeCase === "combined-volume";
+    if (combinedVolume) {
+      await inventory.stock.receive({
+        operationId: "receive-other-measured-lot", occurredAtEpochMs: time2,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId: "measured-other" },
+        amount: measuredStockAmount("1", "kg", [{ axisId: "volume", value: "0.0004", unit: "L" }]),
       });
     }
     const result = await inventory.stock.transferByPolicy({
       operationId: "transfer-with-unwitnessed-volume", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
       selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
-      amount: measuredStockAmount("5.000001", "kg", [{ axisId: "volume", value: "0.001", unit: "L" }]),
+      amount: measuredStockAmount(combinedVolume ? "7" : "5.000001", "kg", [
+        { axisId: "volume", value: "0.001", unit: "L" },
+      ]),
     });
     const arrived = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
+    if (combinedVolume) {
+      expect(arrived.map(({ key }) => key.lotId).sort()).toEqual(["measured-later", "measured-other", "older"]);
+      expect(result.event.unwitnessedStockMovements).toBeUndefined();
+      return;
+    }
     expect(arrived.find(({ key }) => key.lotId === "older")?.measurements.primary.quantity).toEqual(parseQuantity("5.000000", "kg"));
     expect(arrived.filter(({ key }) => key.lotId !== undefined).map(({ key }) => key.lotId)).toEqual(["older"]);
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
@@ -1433,11 +1456,11 @@ describe("indexed stock planning and availability", () => {
         }) : await inventory.stock.scrapByPolicy({ ...policy, reason: "Destroyed stock" });
         expect(result.event.unwitnessedStockMovements).toHaveLength(1);
         const portion = result.event.unwitnessedStockMovements?.[0];
-        expect(portion?.measurements.primary.quantity.amountMinor).toBe(2);
+        expect(portion?.measurements.primary.quantity).toEqual(parseQuantity("2", "piece"));
         expect(portion?.from.lotId).toBeUndefined();
         const source = await inventory.read.positions(selector);
-        expect(source.map((row) => [row.key.lotId, row.measurements.primary.quantity.amountMinor])).toEqual([
-          ["young", 2], [undefined, 3],
+        expect(source.map((row) => [row.key.lotId, row.measurements.primary.quantity])).toEqual([
+          ["young", parseQuantity("2", "piece")], [undefined, parseQuantity("3", "piece")],
         ]);
         if (verb !== "policy scrap") {
           expect(portion?.to).toMatchObject({ placementNodeId: "destination" });
@@ -1446,8 +1469,8 @@ describe("indexed stock planning and availability", () => {
             selector: inventoryStockSelector("item-a", { placementNodeIds: ["destination"] }),
             amount: stockAmount("4", "piece"), method: InventoryAllocationMethod.Fifo, atEpochMs: time3,
           });
-          expect(arrival.lines.map((line) => [line.position.lotId, line.allocatedPrimary.amountMinor, line.layerStartedAtEpochMs])).toEqual([
-            ["old", 2, time0], [undefined, 2, time2],
+          expect(arrival.lines.map((line) => [line.position.lotId, line.allocatedPrimary, line.layerStartedAtEpochMs])).toEqual([
+            ["old", parseQuantity("2", "piece"), time0], [undefined, parseQuantity("2", "piece"), time2],
           ]);
         } else {
           expect(result.event.reason).toBe("Destroyed stock");
@@ -2350,7 +2373,10 @@ describe("indexed stock planning and availability", () => {
     });
     expect(storage.readSegmentedStockPool({ ...request, reservationAtEpochMs: time2 }).reservations).toEqual([]);
     const earlier = storage.readSegmentedStockPool(request);
-    expect(earlier.reservations).toEqual([current]);
+    expect(earlier.reservations).toMatchObject([{
+      reservationId: "store", status: InventoryReservationStatus.Active,
+      allocations: [{ position: loosePosition("store"), quantity: parseQuantity("1", "piece") }],
+    }]);
     expect(Object.isFrozen(earlier.reservations[0]?.allocations[0]?.quantity)).toBe(true);
   });
 
@@ -2383,6 +2409,7 @@ describe("indexed stock planning and availability", () => {
     const planning: InventorySegmentedStockPlanningCapability = storage;
     vi.spyOn(planning, "readSegmentedStockHead").mockImplementationOnce(async () => {
       // The async adapter yields while another client publishes a newer hold.
+      await Promise.resolve();
       now = time2;
       await inventory.reservations.reserve({
         operationId: "claim-preview", reservationId: "preview", itemRevisionId: "item-a-v2",

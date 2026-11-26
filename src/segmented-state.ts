@@ -290,7 +290,7 @@ export interface InventorySegmentedPositionStore
   applyDelta(
     input: ApplyInventorySegmentedPositionDeltaInput
   ): InventorySegmentedResult<ApplyInventorySegmentedPositionDeltaResult>;
-  /** Apply one validated event's signed stock effects without touching unrelated rows. */
+  /** Apply one validated event's signed effects using retained FIFO starts for conserved source layers. */
   applyStockEffects(
     input: ApplyInventorySegmentedStockEffectsInput
   ): InventorySegmentedResult<ApplyInventorySegmentedPositionDeltaResult>;
@@ -306,7 +306,7 @@ export interface InventorySegmentedPositionStore
 export interface CreateInMemoryInventorySegmentedPositionStoreInput {
   /** Initial current positions; duplicates by exact identity are rejected. */
   readonly positions?: readonly InventoryStockPosition[];
-  /** FIFO starts retained by the initial committed projection. */
+  /** Retained FIFO starts from the initial projection, required for seeded layers used as conserved sources. */
   readonly positiveLayerStarts?: Readonly<Record<string, number>>;
   /** Initial segment revision, normally inherited from the published inventory revision. */
   readonly revision?: number;
