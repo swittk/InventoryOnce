@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   InventoryAllocationMethod,
+  InventoryCatalog,
   InventoryDeficitPolicy,
   InventoryFungibilityReservationEffectKind,
   InventoryMeasurementAxisRole,
@@ -21,7 +22,6 @@ import {
   parseQuantity,
   stockAmount,
   unitCode,
-  type InventoryCatalog,
   type InventoryItemDefinitionRevision,
 } from "../src/index.js";
 import {
@@ -846,6 +846,111 @@ describe("derived pool summaries and exact member movements", () => {
       poolQuantity: parseQuantity(poolQuantity, "equivalent"),
     }]);
     expect(loose.shortfall).toEqual(parseQuantity(poolQuantity === "1" ? "0" : "0.0", "equivalent"));
+  });
+
+  it("keeps the increment reason when an eligible box cannot supply one member pick", async () => {
+    const older = oldBrand();
+    const newer = newBrand();
+    const pack = defineScalarInventoryPackaging({
+      revisionId: "three-piece-pack", item: older, packageUnit: "pack", contains: "3",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "whole-reference", revisionId: "whole-reference-v1", basisUnit: "equivalent",
+      members: [{ item: older, memberQuantity: "2" }, { item: newer, poolQuantity: "0.5" }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [older, newer],
+      activeItemRevisionIds: { [older.itemId]: older.revisionId, [newer.itemId]: newer.revisionId },
+      packagingRevisions: [pack], fungibilityRevisions: [pool],
+      activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
+    });
+    const plan = {
+      fungibilityRevisionId: pool.revisionId, method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] }, atEpochMs: time2,
+    };
+    const wantOne = parseQuantity("1", "equivalent");
+    expect(await inventory.fungibility.plan({ ...plan, requested: wantOne })).toMatchObject({
+      lines: [], shortfall: wantOne, incrementBlockedStock: false,
+    });
+    await inventory.stock.receive({
+      operationId: "receive-first-three-piece-box", occurredAtEpochMs: time0,
+      to: { itemId: older.itemId, placementNodeId: "store" }, amount: packageAmount(1, pack.revisionId),
+    });
+    expect(await inventory.fungibility.plan({ ...plan, requested: wantOne })).toMatchObject({
+      lines: [], shortfall: wantOne, incrementBlockedStock: true,
+    });
+    await inventory.stock.receive({
+      operationId: "receive-loose-alternative", occurredAtEpochMs: time1,
+      to: { itemId: newer.itemId, placementNodeId: "store" }, amount: stockAmount("3", "piece"),
+    });
+    expect(await inventory.fungibility.plan({ ...plan, requested: wantOne })).toMatchObject({
+      lines: [{ itemRevisionId: newer.revisionId, memberQuantity: parseQuantity("2", "piece") }],
+      shortfall: parseQuantity("0", "equivalent"), incrementBlockedStock: false,
+    });
+    await inventory.stock.receive({
+      operationId: "receive-second-three-piece-box", occurredAtEpochMs: time1,
+      to: { itemId: older.itemId, placementNodeId: "store" }, amount: packageAmount(1, pack.revisionId),
+    });
+    expect(await inventory.fungibility.plan({ ...plan, requested: parseQuantity("3", "equivalent") })).toMatchObject({
+      lines: [{ amount: packageAmount(2, pack.revisionId), memberQuantity: parseQuantity("6", "piece") }],
+      shortfall: parseQuantity("0", "equivalent"), incrementBlockedStock: false,
+    });
+    // One older box now fits physically at 1.5 equivalents but is smaller than its legal pool increment.
+    expect(await inventory.fungibility.plan({ ...plan, requested: parseQuantity("1.5", "equivalent") })).toMatchObject({
+      lines: [{ itemRevisionId: newer.revisionId, memberQuantity: parseQuantity("3", "piece") }],
+      shortfall: parseQuantity("0.0", "equivalent"), incrementBlockedStock: true,
+    });
+  });
+
+  it("returns a complete whole-package plan without rechecking fractional package picks", async () => {
+    const older = oldBrand();
+    const newer = newBrand();
+    const pack2 = defineScalarInventoryPackaging({
+      revisionId: "two-piece-pack", item: older, packageUnit: "pack", contains: "2",
+    });
+    const pack1 = defineScalarInventoryPackaging({
+      revisionId: "one-piece-pack", item: newer, packageUnit: "pack", contains: "1",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "intact-mixed-size", revisionId: "intact-mixed-size-v1", basisUnit: "equivalent",
+      members: [{ item: older }, { item: newer }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [older, newer],
+      activeItemRevisionIds: { [older.itemId]: older.revisionId, [newer.itemId]: newer.revisionId },
+      packagingRevisions: [pack2, pack1], fungibilityRevisions: [pool],
+      activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-two-piece-boxes", occurredAtEpochMs: time0,
+      to: { itemId: older.itemId, placementNodeId: "store" }, amount: packageAmount(2, pack2.revisionId),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-one-piece-box", occurredAtEpochMs: time1,
+      to: { itemId: newer.itemId, placementNodeId: "store" }, amount: packageAmount(1, pack1.revisionId),
+    });
+    const packagingLookups = vi.spyOn(InventoryCatalog.prototype, "packagingRevision");
+    try {
+      const plan = await inventory.fungibility.plan({
+        fungibilityRevisionId: pool.revisionId, requested: parseQuantity("3.000000", "equivalent"),
+        method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] }, atEpochMs: time2,
+      });
+      expect(plan.lines).toMatchObject([
+        { amount: packageAmount(1, pack2.revisionId), memberQuantity: parseQuantity("2", "piece") },
+        { amount: packageAmount(1, pack1.revisionId), memberQuantity: parseQuantity("1", "piece") },
+      ]);
+      expect(plan.shortfall).toEqual(parseQuantity("0.000000", "equivalent"));
+      expect(plan.incrementBlockedStock).toBe(false);
+      expect(packagingLookups.mock.calls.length).toBeLessThan(100);
+    } finally {
+      packagingLookups.mockRestore();
+    }
   });
 
   it("splits package-fixed independent measurements consistently with ordinary allocation", async () => {

@@ -1966,3 +1966,7 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-26 — allocation bounds and supported stock reports
 
 - The allocator retains its existing bounded search and checks whether quantities fit storage when evaluating picks. A synthetic working balance alone does not justify narrowing every row before searching.
+
+## 2026-11-26 — fungibility increment diagnostics
+
+- Reservation-aware diagnostic trials keep physical increments when they equal the pool allocation increment. A reservation trial needs physically realizable stock amounts to check the claim book. A positive eligible member row below one legal pool pick still supplies increment evidence for a physical shortfall.

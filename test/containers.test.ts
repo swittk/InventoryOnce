@@ -215,7 +215,8 @@ it("reconciles a subtree count after an edge-only contents move on both storage 
     });
     expect(reconciled.event).toBeUndefined();
     expect(await inventory.read.placementAncestry("child")).toEqual(["child", "destination"]);
-    expect(await quantityAtNode(inventory, "child")).toBe(2);
+    const childPositions = await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["child"] });
+    expect(childPositions.map((position) => position.measurements.primary.quantity)).toEqual([parseQuantity("2", "piece")]);
   }
   expect(await native.read.world()).toEqual(await canonical.read.world());
 });

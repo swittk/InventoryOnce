@@ -71,6 +71,8 @@ export interface InventoryWorkingAllocationCandidate
   readonly available: InventoryWorkingQuantity;
   /** Exact indivisible increment, including a whole unpublished row. */
   readonly allocationIncrement?: InventoryWorkingQuantity;
+  /** Retain the increment when a diagnostic trial must satisfy a predicate that requires it. */
+  readonly keepIncrementForAcceptance?: true;
 }
 
 /** Shared allocation input whose candidate capacities need not fit the storage limit. */
@@ -254,8 +256,8 @@ function exactAllocationHasBlockedIncrement(
   allocations: readonly InventoryAllocation[]
 ): boolean {
   if (!input.candidates.some(
-    /** Only an indivisible row gives the relaxed trial a different choice. */
-    (candidate) => candidate.allocationIncrement !== undefined
+    /** Check whether relaxing a row can change a plan the predicate accepts. */
+    (candidate) => canRelaxAllocationIncrement(candidate, input.acceptAllocations)
   ) ||
       !exactAllocationsHaveIncrementTrial(input.requested, input.candidates, allocations)) return false;
   const relaxed = searchInventoryAllocations({ ...input, acceptPartial: false, ignoreIncrements: true });
@@ -287,14 +289,23 @@ function partialAllocationHasBlockedIncrement(
   shortfall: Quantity
 ): boolean {
   return shortfall.amountMinor > 0 && input.candidates.some(
-    /** With fully divisible candidates there is no increment to relax. */
-    (candidate) => candidate.allocationIncrement !== undefined
+    /** Check whether the predicate allows any increment to change. */
+    (candidate) => canRelaxAllocationIncrement(candidate, input.acceptAllocations)
   ) && searchInventoryAllocations({
     ...input,
     acceptPartial: true,
     ignoreIncrements: true,
     improveOnShortfall: shortfall,
   }) !== undefined;
+}
+
+/** Tell whether a diagnostic can relax an increment under the current acceptance rule. */
+function canRelaxAllocationIncrement(
+  candidate: InventoryWorkingAllocationCandidate,
+  predicate: AllocateInventoryInput["acceptAllocations"],
+): boolean {
+  return candidate.allocationIncrement !== undefined &&
+    (predicate === undefined || !candidate.keepIncrementForAcceptance);
 }
 
 /** An accepted exact assignment and the primary amount left unwitnessed. */
@@ -350,7 +361,8 @@ function searchInventoryAllocations({
   const incrementMinor = candidates.map(
     /** Divisible rows use the smallest exact digit on the shared scale. */
     (candidate) =>
-      ignoreIncrements || candidate.allocationIncrement === undefined
+      candidate.allocationIncrement === undefined ||
+        (ignoreIncrements && canRelaxAllocationIncrement(candidate, predicate))
         ? 1n
         : workingQuantityAtDecimals(candidate.allocationIncrement, decimals)
   );

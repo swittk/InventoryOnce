@@ -61,7 +61,7 @@ import {
   quantity,
   type Quantity,
 } from "./quantity.js";
-import { addExactQuantityDigits, storableQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
+import { addExactQuantityDigits, compareWorkingQuantities, storableQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
 import {
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
@@ -385,6 +385,8 @@ function planInventoryFungibilityAllocationWithHolds({
   let expiredStockWasExcluded = false;
   // Remember whether any member was blocked by intact package or serial increments.
   let incrementBlockedStock = false;
+  /** Positive indivisible stock too small to supply one legal common-basis pick. */
+  let belowMemberIncrement = false;
   // Remember whether any active member reservation remained broad rather than position-bound.
   let unallocatedReservationsPresent = false;
 
@@ -418,7 +420,7 @@ function planInventoryFungibilityAllocationWithHolds({
       const capacity = inventoryAllocationCandidateCapacity(source);
       incrementBlockedStock ||= capacity.incrementBlockedStock;
       if (capacity.quantity.amountMinor === 0) continue;
-      addFungibilityCandidate({
+      const belowIncrement = addFungibilityCandidate({
         catalog,
         world,
         member,
@@ -428,6 +430,7 @@ function planInventoryFungibilityAllocationWithHolds({
         candidates,
         evidenceByPosition,
       });
+      belowMemberIncrement ||= belowIncrement;
     }
   }
 
@@ -509,7 +512,8 @@ function planInventoryFungibilityAllocationWithHolds({
     shortfall: allocated.shortfall,
     expiredStockWasExcluded,
     incrementBlockedStock:
-      incrementBlockedStock || allocated.incrementBlockedStock,
+      incrementBlockedStock || allocated.incrementBlockedStock ||
+      (belowMemberIncrement && allocated.shortfall.amountMinor > 0 && !allocated.allocationConstraintBlockedStock),
     allocationConstraintBlockedStock:
       allocated.allocationConstraintBlockedStock,
     unallocatedReservationsPresent,
@@ -820,7 +824,7 @@ interface AddFungibilityCandidateInput {
   >;
 }
 
-/** Convert one exact member source line into one common-basis allocation candidate. */
+/** Register one common-basis candidate or report indivisible stock below one legal pick. */
 function addFungibilityCandidate({
   catalog,
   world,
@@ -830,7 +834,7 @@ function addFungibilityCandidate({
   memberAvailable,
   candidates,
   evidenceByPosition,
-}: AddFungibilityCandidateInput): void {
+}: AddFungibilityCandidateInput): boolean {
   const identity = inventoryStockPositionIdentity(source.position);
   const position = world.projection.positions[identity];
   if (position === undefined) {
@@ -848,8 +852,11 @@ function addFungibilityCandidate({
   // Only whole legal member increments belong to this candidate. The physical remainder stays in stock.
   const decimals = Math.max(memberAvailable.decimals, memberIncrement.decimals);
   const increments = integerAtDecimals(memberAvailable, decimals) / integerAtDecimals(memberIncrement, decimals);
-  if (increments === 0n) return;
+  if (increments === 0n) return source.allocationIncrement !== undefined;
   const allocationIncrement = convertQuantityByReferenceExact(memberIncrement, member.memberQuantity, member.poolQuantity);
+  // The reservation trial needs a real physical pick. Preserve this bound when it equals the member increment.
+  const keepIncrementForAcceptance = source.allocationIncrement !== undefined &&
+    compareWorkingQuantities(source.allocationIncrement, memberIncrement) === 0;
   const candidate: InventoryWorkingAllocationCandidate = {
     position: source.position,
     available: {
@@ -861,6 +868,7 @@ function addFungibilityCandidate({
       ? {}
       : { expiresAtEpochMs: source.expiresAtEpochMs }),
     allocationIncrement,
+    ...(keepIncrementForAcceptance ? { keepIncrementForAcceptance: true } : {}),
   };
   candidates.push(candidate);
   evidenceByPosition.set(identity, {
@@ -869,6 +877,7 @@ function addFungibilityCandidate({
     position,
     source,
   });
+  return false;
 }
 
 /** Find the smallest member pick that preserves physical increments and converts to whole pool references. */
