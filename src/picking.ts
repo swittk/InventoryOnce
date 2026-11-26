@@ -47,6 +47,7 @@ import {
   compareWorkingQuantities,
   materializeInventoryWorkingQuantity,
   subtractWorkingQuantity,
+  workingQuantityAtDecimals,
   type ExactQuantityDigits,
   type InventoryWorkingQuantity,
 } from "./quantity-storage.js";
@@ -401,7 +402,7 @@ export function planWorkingInventoryAllocation({
   };
 }
 
-/** Inputs for excluding rows that cannot witness any increment of a measured report. */
+/** Inputs for bounding each row by the measurements it can witness. */
 interface SelectableMeasuredWitnessesInput {
   /** Retained fixed contents for candidates that can be picked by package. */
   readonly catalog: InventoryCatalog;
@@ -413,36 +414,53 @@ interface SelectableMeasuredWitnessesInput {
   readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
 }
 
-/** Keep a candidate only if at least one legal increment can fit the reported axes. */
+/** Limit each candidate to legal increments that can fit every reported axis. */
 function selectableMeasuredWitnesses({
   catalog, report, candidates, rows,
 }: SelectableMeasuredWitnessesInput): readonly InventoryWorkingAllocationCandidate[] {
   const primary = report.primary;
-  return candidates.filter(
-    /** Exclude rows when even their smallest legal pick exceeds a reported quantity. */
-    ({ position, available, allocationIncrement }) => {
-      if (allocationIncrement === undefined) return true;
-      if (compareWorkingQuantities(allocationIncrement, primary.quantity) > 0 ||
-          compareWorkingQuantities(allocationIncrement, available) > 0) return false;
-      const row = rows.get(inventoryStockPositionIdentity(position));
-      if (row === undefined) return true;
-      const fullPrimary = inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit);
-      if (compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
-        return report.independent.every(
-          /** A whole-only row must fit every reported independent axis as it stands. */
-          ({ axisId, quantity }) => compareWorkingQuantities(
-            inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit), quantity,
-          ) <= 0,
-        );
-      }
-      if (position.packagingRevisionId === undefined) return true;
-      const fixed = catalog.packagingRevision(position.packagingRevisionId).fixedContents;
-      return report.independent.every(
-        /** Compare the contents of one package for rows that allow a partial pick. */
-        ({ axisId, quantity }) => compareQuantity(inventoryMeasurementAt(fixed, axisId, quantity.unit), quantity) <= 0,
-      );
+  const selectable: InventoryWorkingAllocationCandidate[] = [];
+  for (const candidate of candidates) {
+    const { position, available, allocationIncrement } = candidate;
+    if (allocationIncrement === undefined) {
+      selectable.push(candidate);
+      continue;
     }
-  );
+    if (compareWorkingQuantities(allocationIncrement, primary.quantity) > 0 ||
+        compareWorkingQuantities(allocationIncrement, available) > 0) continue;
+    const row = rows.get(inventoryStockPositionIdentity(position));
+    if (row === undefined) {
+      selectable.push(candidate);
+      continue;
+    }
+    const fullPrimary = inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit);
+    if (compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
+      if (report.independent.every(
+        /** A whole-only row must fit every reported independent axis as it stands. */
+        ({ axisId, quantity }) => compareWorkingQuantities(
+          inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit), quantity,
+        ) <= 0,
+      )) selectable.push(candidate);
+      continue;
+    }
+    if (position.packagingRevisionId === undefined) {
+      selectable.push(candidate);
+      continue;
+    }
+    const fixed = catalog.packagingRevision(position.packagingRevisionId).fixedContents;
+    /** Eligible primary capacity after allowing only whole packages that fit the report. */
+    let capped = available;
+    for (const { axisId, quantity } of report.independent) {
+      const perPackage = inventoryMeasurementAt(fixed, axisId, quantity.unit);
+      if (perPackage.amountMinor === 0) continue;
+      const decimals = Math.max(quantity.decimals, perPackage.decimals);
+      const packages = workingQuantityAtDecimals(quantity, decimals) / workingQuantityAtDecimals(perPackage, decimals);
+      const limit = { ...allocationIncrement, amountMinor: BigInt(allocationIncrement.amountMinor) * packages };
+      if (compareWorkingQuantities(limit, capped) < 0) capped = limit;
+    }
+    if (capped.amountMinor > 0) selectable.push(capped === available ? candidate : { ...candidate, available: capped });
+  }
+  return selectable;
 }
 
 /** Prove a positive primary remainder is needed when even the eligible measurement total falls short. */

@@ -5792,6 +5792,11 @@ async function policyRecordedDeficit({
     item,
     unwitnessed
   );
+  const transferOwner = kind === InventoryPolicyMovementKind.Transfer ? allocation.selector.owner : undefined;
+  // A single selected owner can identify the default shortage bucket without inventing ownership.
+  const defaultOwnerId = input.deficitPosition === undefined &&
+    transferOwner?.kind === InventoryOptionalIdentityConstraintKind.Allowed && transferOwner.valueIds?.length === 1
+    ? transferOwner.valueIds[0] : undefined;
   const resolved = resolveInventoryAmount(catalog, item, amount);
   const packagingRevisionId = resolved.packaging?.revisionId;
   if (from.packagingRevisionId !== undefined && from.packagingRevisionId !== packagingRevisionId) {
@@ -5800,6 +5805,7 @@ async function policyRecordedDeficit({
   const position = normalizeInventoryStockPositionKey({
     ...from,
     itemRevisionId: item.revisionId,
+    ...(defaultOwnerId === undefined ? {} : { ownerId: defaultOwnerId }),
     ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
   });
   assertPositionMatchesItem(item, position);
@@ -5828,6 +5834,9 @@ async function policyRecordedDeficit({
         row.effectiveUseByEpochMs <= input.occurredAtEpochMs) {
       assertPolicyAllocationComplete({ ...allocation, expiredStockWasExcluded: true });
     }
+  }
+  if (transferOwner !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, owner: transferOwner })) {
+    throw new Error("Inventory policy transfer deficit position is outside the selected owner scope.");
   }
   const { itemRevisionId, ...exactFrom } = position;
   return {

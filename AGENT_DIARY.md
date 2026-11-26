@@ -2022,3 +2022,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Measured retries leave out rows whose smallest legal increment exceeds a reported axis. Split detection also checks the final remainder when the first primary-only pick filled the requested quantity.
 - A signed availability read counts the full liability only in physical pools with a selected negative row. Other pools contribute the deficit burden on selected positive rows.
+
+## 2026-11-26 — package witness limits and transfer publication
+
+- Each reported independent axis caps how many fixed packages a row can witness. The resulting primary bound lets the picker retain a complete feasible prefix without exploring smaller divisible picks.
+- A policy transfer settles an unwitnessed remainder within its selected owner scope. A single selected owner can identify the default shortage bucket.
+- Plain transfer replay evidence must match the accepted operation intent and next world revision before either publication path can retain it.

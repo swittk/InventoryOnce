@@ -21,6 +21,7 @@ import {
   unitCode,
 } from "../src/index.js";
 import {
+  commitInventoryOperation,
   createInMemoryInventoryDurableStorage,
   readInventoryScopedStockAvailability,
   type InventorySegmentedStockPlanningCapability,
@@ -200,6 +201,63 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.read.positions({ itemId: "item-a", ownerIds: ["owner-b"] })).toMatchObject([
       { key: outside, measurements: { primary: { quantity: parseQuantity("5", "piece") } } },
     ]);
+  });
+
+  it("applies the transfer owner scope before posting an empty explicit shortage", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const before = storage.readSegmentedStockHead();
+    const transfer = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"], ownerIds: ["owner-a"] }),
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("2", "piece"),
+      occurredAtEpochMs: time1, toPlacementNodeId: "destination",
+    };
+    await expect(inventory.stock.transferByPolicy({
+      ...transfer, operationId: "reject-empty-owner-b", deficitPosition: loosePosition("store", { ownerId: "owner-b" }),
+    })).rejects.toThrow("outside the selected owner scope");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+    const owned = await inventory.stock.transferByPolicy({
+      ...transfer, operationId: "record-empty-owner-a", deficitPosition: loosePosition("store", { ownerId: "owner-a" }),
+    });
+    expect(owned.event.unwitnessedStockMovements).toMatchObject([{
+      from: { ownerId: "owner-a" }, to: { ownerId: "owner-a", placementNodeId: "destination" },
+    }]);
+    const inferred = await inventory.stock.transferByPolicy({ ...transfer, operationId: "record-inferred-owner-a" });
+    expect(inferred.event.unwitnessedStockMovements).toMatchObject([{
+      from: { ownerId: "owner-a" }, to: { ownerId: "owner-a", placementNodeId: "destination" },
+    }]);
+  });
+
+  it.each([
+    { native: false, revisionOffset: 0, journalIntent: "transfer-intent" },
+    { native: true, revisionOffset: 1, journalIntent: "different-intent" },
+  ])("rejects inconsistent transfer replay evidence before publication (native: $native)", async ({ native, revisionOffset, journalIntent }) => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog);
+    const from = loosePosition("store");
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "receive-replay-check", occurredAtEpochMs: time0, to: from, amount });
+    const operationId = "transfer-replay-check";
+    const before = (await storage.readWorld()).revision;
+    const draft = createInventoryTransferManyEvent({
+      catalog, operationId, occurredAtEpochMs: time1, lines: [{ from, amount, toPlacementNodeId: "destination" }],
+    });
+    const event = defineInventoryEvent({ catalog, event: {
+      ...draft, metadata: { inventoryOnceReportedTransferReplay: { intentFingerprint: journalIntent, worldRevision: before + revisionOffset } },
+    } });
+    const publication = native
+      ? storage.commitSegmentedStockEvent({
+          catalog: inventoryCatalogSnapshot(catalog), operationId, intentFingerprint: "transfer-intent",
+          recordedAtEpochMs: time2, deficitPolicy: InventoryDeficitPolicy.Reject, event,
+        })
+      : commitInventoryOperation({
+          catalog, storage, operationId, intentFingerprint: "transfer-intent", clock: clockAt(time2),
+          deficitPolicy: InventoryDeficitPolicy.Reject, plan: () => ({ event }),
+        });
+    await expect(publication).rejects.toThrow("transfer replay evidence must match");
+    expect((await storage.readWorld()).revision).toBe(before);
+    expect(await storage.readOperation(operationId)).toBeUndefined();
   });
 
   it.each([
@@ -1089,6 +1147,48 @@ describe("indexed stock planning and availability", () => {
       measurements: {
         primary: { quantity: parseQuantity("5.000000", "kg") },
         independent: [{ axisId: "volume", quantity: parseQuantity("1", "L") }],
+      },
+    }]);
+  });
+
+  it("caps the measured search by the number of packages that can fit a reported axis", async () => {
+    const item = defineInventoryItem({
+      itemId: "material", revisionId: "material-v1",
+      primaryAxis: { axisId: "weight", role: InventoryMeasurementAxisRole.Primary, unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required },
+      independentAxes: [{ axisId: "volume", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional }],
+      reservationAxisId: "weight",
+      tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional }, qualifiedDimensions: [],
+    });
+    const packageId = "measured-pack";
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [{
+        revisionId: packageId, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+        fixedContents: {
+          primary: { axisId: "weight", quantity: parseQuantity("1", "kg") },
+          independent: [{ axisId: "volume", quantity: parseQuantity("0.4", "L") }],
+        },
+      }],
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "receive-loose", occurredAtEpochMs: time0, to: { itemId: item.itemId, placementNodeId: "store", lotId: "loose" },
+      amount: stockAmount("5.000000", "kg"),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-packages", occurredAtEpochMs: time1, to: { itemId: item.itemId, placementNodeId: "store", lotId: "packed" },
+      amount: packageAmount(5, packageId),
+    });
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "move-with-package-cap", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("10", "kg", [{ axisId: "volume", value: "0.4", unit: "L" }]),
+    });
+    expect(moved.event.positiveLayerProvenanceTransfers?.map(({ from }) => from.lotId)).toEqual(["loose", "packed"]);
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("4.000000", "kg") },
+        independent: [{ axisId: "volume", quantity: parseQuantity("0.0", "L") }],
       },
     }]);
   });
