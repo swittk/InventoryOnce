@@ -1339,6 +1339,7 @@ describe("derived pool summaries and exact member movements", () => {
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("8", "kg") }),
     ]));
     const reservation = await inventory.read.reservation("weighed-hold");
+    expect((await inventory.read.reservation("outside-pool"))?.status).toBe(InventoryReservationStatus.Active);
     expect(reservation?.status).toBe(InventoryReservationStatus.Active);
     expect(reservation?.allocations).toEqual([{ position: position.key, quantity: requested }]);
   });

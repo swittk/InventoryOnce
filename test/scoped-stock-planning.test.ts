@@ -9,6 +9,7 @@ import {
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
   InventoryOptionalIdentityConstraintKind,
+  InventoryReservationStatus,
   InventoryStockWhereaboutsState,
   InventoryTrackingRequirement,
   inventoryCatalogSnapshot,
@@ -712,6 +713,7 @@ describe("indexed stock planning and availability", () => {
         const credits = result.event.stockEffects.filter((effect) => effect.measurementsDelta.primary.quantity.amountMinor > 0);
         expect(credits.map((credit) => credit.position.lotId).sort()).toEqual(verb === "transfer" ? movement.lots : []);
         for (const credit of credits) {
+          expect(credit.position.placementNodeId).toBe("destination");
           expect(credit.measurementsDelta).toEqual({
             primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") },
             independent: [{ axisId: "weight", quantity: parseQuantity("4", "kg") }],
@@ -720,6 +722,7 @@ describe("indexed stock planning and availability", () => {
       }
       const claim = (await inventory.read.reservationFeasibility(time2)).groups[0];
       expect(claim).toMatchObject({ reservationIds: ["weight"], shortage: parseQuantity("4", "kg") });
+      expect((await inventory.read.reservation("weight"))?.status).toBe(InventoryReservationStatus.Active);
     }
   );
 
@@ -998,7 +1001,7 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
-  it.each([false, true])("records the oldest 5 kg witness when no selectable lot has the reported volume (oversize lot: %s)", async (withOversizeLot) => {
+  it.each(["none", "primary", "volume", "fixed-package-volume"] as const)("records the oldest 5 kg witness when no selectable lot has the reported volume (oversize axis: %s)", async (oversizeAxis) => {
     const item = defineInventoryItem({
       itemId: "material", revisionId: "material-v1",
       primaryAxis: {
@@ -1013,7 +1016,16 @@ describe("indexed stock planning and availability", () => {
       tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional },
       qualifiedDimensions: [],
     });
-    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { material: item.revisionId } });
+    const packaging = {
+      revisionId: "measured-package", itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+      fixedContents: {
+        primary: { axisId: "weight", quantity: parseQuantity("1", "kg") },
+        independent: [{ axisId: "volume", quantity: parseQuantity("1", "L") }],
+      },
+    };
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { material: item.revisionId }, packagingRevisions: [packaging],
+    });
     const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
     for (const [lotId, occurredAtEpochMs] of [["older", time0], ["newer", time1]] as const) {
       await inventory.stock.receive({
@@ -1021,11 +1033,16 @@ describe("indexed stock planning and availability", () => {
         to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: stockAmount("5", "kg"),
       });
     }
-    if (withOversizeLot) {
+    if (oversizeAxis !== "none") {
+      const amount = oversizeAxis === "fixed-package-volume"
+        ? packageAmount(2, packaging.revisionId)
+        : measuredStockAmount(oversizeAxis === "primary" ? "6" : "1", "kg", [
+            { axisId: "volume", value: oversizeAxis === "primary" ? "0.001" : "1", unit: "L" },
+          ]);
       await inventory.stock.receive({
         operationId: "receive-oversize-measured-lot", occurredAtEpochMs: time2,
         to: { itemId: item.itemId, placementNodeId: "store", lotId: "oversize" },
-        amount: measuredStockAmount("6", "kg", [{ axisId: "volume", value: "0.001", unit: "L" }]),
+        amount,
       });
     }
     const result = await inventory.stock.transferByPolicy({
@@ -1507,10 +1524,16 @@ describe("indexed stock planning and availability", () => {
     const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
     const result = await inventory.stock.transferManyByPolicy(command);
     expect(result.allocations).toMatchObject([
-      { requestId: "report-old", deficit: { primary: { amountMinor: 2 } } },
-      { requestId: "pick-unlabelled", lines: [{ allocatedPrimary: { amountMinor: 3 }, layerStartedAtEpochMs: time1 }], deficit: { primary: { amountMinor: 1 } } },
+      { requestId: "report-old", deficit: { primary: parseQuantity("2", "piece") } },
+      {
+        requestId: "pick-unlabelled",
+        lines: [{ allocatedPrimary: parseQuantity("3", "piece"), layerStartedAtEpochMs: time1 }],
+        deficit: { primary: parseQuantity("1", "piece") },
+      },
     ]);
-    expect((await inventory.stock.transferManyByPolicy(command)).event).toEqual(result.event);
+    const replay = await inventory.stock.transferManyByPolicy(command);
+    expect(replay.event).toEqual(result.event);
+    expect(replay.allocations).toEqual(result.allocations);
     expect(readWorld).not.toHaveBeenCalled();
   });
 
@@ -2272,7 +2295,7 @@ describe("indexed stock planning and availability", () => {
       expect(report?.usableDeficit.primary.quantity.amountMinor).toBe(0);
       expect(report?.positions).toMatchObject([{
         isDeficit: true,
-        exactlyAllocated: { amountMinor: 2 },
+        exactlyAllocated: parseQuantity("2", "piece"),
         exactAllocationReservationIds: ["held-deficit"],
       }]);
     }

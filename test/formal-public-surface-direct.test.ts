@@ -72,6 +72,9 @@ describe("direct execution of otherwise family-only public helpers", () => {
     ).toEqual(parseQuantity("1.0", "dose"));
     expect(leastCommonQuantityMultiple(parseQuantity("0.30", "kg"), parseQuantity("0.5", "kg")))
       .toEqual(parseQuantity("1.50", "kg"));
+    expect(leastCommonQuantityMultiple(
+      parseQuantity("3.000000000000000", "kg"), parseQuantity("5.000000000000000", "kg"),
+    )).toEqual(parseQuantity("15.00000000000000", "kg"));
   });
 
   it("defines and combines exact amount-line groups", () => {

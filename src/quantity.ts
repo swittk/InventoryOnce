@@ -223,7 +223,7 @@ export function quantityWholeMultipleCount(
   return safeNumber(valueInteger / wholeUnitInteger, "Whole-unit quantity count");
 }
 
-/** Return the least positive quantity divisible by both exact same-unit quantities. */
+/** Return the least positive exact common multiple at the closest storable scale. */
 export function leastCommonQuantityMultiple(
   left: Quantity,
   right: Quantity,
@@ -232,11 +232,9 @@ export function leastCommonQuantityMultiple(
   positiveQuantity(left, "Left quantity multiple");
   positiveQuantity(right, "Right quantity multiple");
   const multiple = leastCommonWorkingQuantityMultiple(left, right);
-  return quantity({
-    amountMinor: safeNumber(BigInt(multiple.amountMinor), "Least common quantity multiple"),
-    decimals: multiple.decimals,
-    unit: left.unit,
-  });
+  return quantityAtStorableScale(
+    BigInt(multiple.amountMinor), multiple.decimals, multiple.unit, "Least common quantity multiple",
+  );
 }
 
 /** Validate and reduce one positive safe-integer conversion ratio. */

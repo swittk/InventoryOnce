@@ -292,7 +292,7 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       /** Model an independent constraint on the selected quantity. */
       acceptAllocations: (choices) => acceptsThree || (choices[0]?.quantity.amountMinor ?? 0) <= 2,
     });
-    expect(result.allocations.map((line) => line.quantity)).toEqual([parseQuantity("2", "piece")]);
+    expect(result.allocations).toMatchObject([{ position: { lotId: "counted" }, quantity: parseQuantity("2", "piece") }]);
     expect(result.shortfall).toEqual(parseQuantity("1", "piece"));
     expect(result.incrementBlockedStock).toBe(acceptsThree);
   });
@@ -313,7 +313,7 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     const result = allocateInventory({
       requested, candidates, method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
     });
-    expect(result.allocations.map((line) => line.quantity)).toEqual(candidates.map((row) => row.available));
+    expect(result.allocations).toEqual(candidates.map(({ position, available }) => ({ position, quantity: available })));
     expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
     expect(result.incrementBlockedStock).toBe(false);
   });
@@ -501,8 +501,10 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       method: InventoryAllocationMethod.Fifo,
       nowEpochMs: time2,
     });
-    expect(result.allocations.map((line) => line.quantity)).toEqual([
-      fractional, parseQuantity("9007199254740990", "kg"), parseQuantity("0.899999", "kg"),
+    expect(result.allocations).toMatchObject([
+      { position: { lotId: "early" }, quantity: fractional },
+      { position: { lotId: "large" }, quantity: parseQuantity("9007199254740990", "kg") },
+      { position: { lotId: "last" }, quantity: parseQuantity("0.899999", "kg") },
     ]);
     expect(result.shortfall).toEqual(parseQuantity("0", "kg"));
   });

@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4215,
-    "edges": 11820,
+    "callables": 4212,
+    "edges": 11822,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -5478,20 +5478,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:97241:<anonymous@1669>",
+                "id": "test/scoped-stock-planning.test.ts:98248:<anonymous@1692>",
                 "kind": "ArrowFunction",
-                "line": 1669,
-                "name": "<anonymous@1669>",
+                "line": 1692,
+                "name": "<anonymous@1692>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -5772,20 +5772,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:97241:<anonymous@1669>",
+                "id": "test/scoped-stock-planning.test.ts:98248:<anonymous@1692>",
                 "kind": "ArrowFunction",
-                "line": 1669,
-                "name": "<anonymous@1669>",
+                "line": 1692,
+                "name": "<anonymous@1692>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6674,20 +6674,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 98,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:122777:<anonymous@2097>",
+                "id": "test/scoped-stock-planning.test.ts:123784:<anonymous@2120>",
                 "kind": "ArrowFunction",
-                "line": 2097,
-                "name": "<anonymous@2097>",
+                "line": 2120,
+                "name": "<anonymous@2120>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6897,20 +6897,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:102062:<anonymous@1741>",
+                "id": "test/scoped-stock-planning.test.ts:103069:<anonymous@1764>",
                 "kind": "ArrowFunction",
-                "line": 1741,
-                "name": "<anonymous@1741>",
+                "line": 1764,
+                "name": "<anonymous@1764>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -7150,20 +7150,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:102062:<anonymous@1741>",
+                "id": "test/scoped-stock-planning.test.ts:103069:<anonymous@1764>",
                 "kind": "ArrowFunction",
-                "line": 1741,
-                "name": "<anonymous@1741>",
+                "line": 1764,
+                "name": "<anonymous@1764>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -11649,7 +11649,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+                "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
                 "line": 227,
                 "name": "leastCommonQuantityMultiple",
@@ -12163,9 +12163,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
+          "id": "src/quantity.ts:11009:convertQuantityByReferenceExact",
           "kind": "FunctionDeclaration",
-          "line": 275,
+          "line": 273,
           "name": "convertQuantityByReferenceExact"
         }
       ],
@@ -12176,9 +12176,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
+            "id": "src/quantity.ts:11009:convertQuantityByReferenceExact",
             "kind": "FunctionDeclaration",
-            "line": 275,
+            "line": 273,
             "name": "convertQuantityByReferenceExact"
           },
           "witness": {
@@ -12246,9 +12246,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
+                "id": "src/quantity.ts:11009:convertQuantityByReferenceExact",
                 "kind": "FunctionDeclaration",
-                "line": 275,
+                "line": 273,
                 "name": "convertQuantityByReferenceExact",
                 "reason": "resolved-call"
               }
@@ -12264,9 +12264,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:10444:convertQuantityExact",
+          "id": "src/quantity.ts:10410:convertQuantityExact",
           "kind": "FunctionDeclaration",
-          "line": 257,
+          "line": 255,
           "name": "convertQuantityExact"
         }
       ],
@@ -12277,9 +12277,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:10444:convertQuantityExact",
+            "id": "src/quantity.ts:10410:convertQuantityExact",
             "kind": "FunctionDeclaration",
-            "line": 257,
+            "line": 255,
             "name": "convertQuantityExact"
           },
           "witness": {
@@ -12317,9 +12317,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:10444:convertQuantityExact",
+                "id": "src/quantity.ts:10410:convertQuantityExact",
                 "kind": "FunctionDeclaration",
-                "line": 257,
+                "line": 255,
                 "name": "convertQuantityExact",
                 "reason": "resolved-call"
               }
@@ -14838,20 +14838,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:93700:<anonymous@1611>",
+                "id": "test/scoped-stock-planning.test.ts:94707:<anonymous@1634>",
                 "kind": "ArrowFunction",
-                "line": 1611,
-                "name": "<anonymous@1611>",
+                "line": 1634,
+                "name": "<anonymous@1634>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -15385,10 +15385,10 @@
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
+                "id": "test/formal-public-surface-direct.test.ts:3258:<anonymous@101>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 101,
+                "name": "<anonymous@101>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -16470,10 +16470,10 @@
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
+                "id": "test/formal-public-surface-direct.test.ts:3258:<anonymous@101>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 101,
+                "name": "<anonymous@101>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -16944,9 +16944,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:12954:integerAtDecimals",
+          "id": "src/quantity.ts:12920:integerAtDecimals",
           "kind": "FunctionDeclaration",
-          "line": 342,
+          "line": 340,
           "name": "integerAtDecimals"
         }
       ],
@@ -16957,9 +16957,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:12954:integerAtDecimals",
+            "id": "src/quantity.ts:12920:integerAtDecimals",
             "kind": "FunctionDeclaration",
-            "line": 342,
+            "line": 340,
             "name": "integerAtDecimals"
           },
           "witness": {
@@ -17007,9 +17007,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:12954:integerAtDecimals",
+                "id": "src/quantity.ts:12920:integerAtDecimals",
                 "kind": "FunctionDeclaration",
-                "line": 342,
+                "line": 340,
                 "name": "integerAtDecimals",
                 "reason": "resolved-call"
               }
@@ -17025,9 +17025,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:50581:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:51455:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1127,
+          "line": 1140,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -17038,9 +17038,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:50581:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:51455:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1127,
+            "line": 1140,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -17118,9 +17118,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:50581:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:51455:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1127,
+                "line": 1140,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -21582,10 +21582,10 @@
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
+                "id": "test/formal-public-surface-direct.test.ts:3258:<anonymous@101>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 101,
+                "name": "<anonymous@101>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -21701,7 +21701,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+          "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
           "kind": "FunctionDeclaration",
           "line": 227,
           "name": "leastCommonQuantityMultiple"
@@ -21714,7 +21714,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+            "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
             "kind": "FunctionDeclaration",
             "line": 227,
             "name": "leastCommonQuantityMultiple"
@@ -21754,7 +21754,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+                "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
                 "line": 227,
                 "name": "leastCommonQuantityMultiple",
@@ -23747,9 +23747,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9747:quantityRatio",
+          "id": "src/quantity.ts:9713:quantityRatio",
           "kind": "FunctionDeclaration",
-          "line": 243,
+          "line": 241,
           "name": "quantityRatio"
         }
       ],
@@ -23760,9 +23760,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9747:quantityRatio",
+            "id": "src/quantity.ts:9713:quantityRatio",
             "kind": "FunctionDeclaration",
-            "line": 243,
+            "line": 241,
             "name": "quantityRatio"
           },
           "witness": {
@@ -23800,9 +23800,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9747:quantityRatio",
+                "id": "src/quantity.ts:9713:quantityRatio",
                 "kind": "FunctionDeclaration",
-                "line": 243,
+                "line": 241,
                 "name": "quantityRatio",
                 "reason": "resolved-call"
               }
@@ -24355,9 +24355,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:13696:safeNumber",
+          "id": "src/quantity.ts:13662:safeNumber",
           "kind": "FunctionDeclaration",
-          "line": 365,
+          "line": 363,
           "name": "safeNumber"
         }
       ],
@@ -24368,9 +24368,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:13696:safeNumber",
+            "id": "src/quantity.ts:13662:safeNumber",
             "kind": "FunctionDeclaration",
-            "line": 365,
+            "line": 363,
             "name": "safeNumber"
           },
           "witness": {
@@ -24408,9 +24408,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:13696:safeNumber",
+                "id": "src/quantity.ts:13662:safeNumber",
                 "kind": "FunctionDeclaration",
-                "line": 365,
+                "line": 363,
                 "name": "safeNumber",
                 "reason": "resolved-call"
               }
@@ -27256,7 +27256,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+                "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
                 "line": 227,
                 "name": "leastCommonQuantityMultiple",
@@ -27659,9 +27659,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
+          "id": "src/quantity.ts:11009:convertQuantityByReferenceExact",
           "kind": "FunctionDeclaration",
-          "line": 275,
+          "line": 273,
           "name": "convertQuantityByReferenceExact"
         }
       ],
@@ -27672,9 +27672,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
+            "id": "src/quantity.ts:11009:convertQuantityByReferenceExact",
             "kind": "FunctionDeclaration",
-            "line": 275,
+            "line": 273,
             "name": "convertQuantityByReferenceExact"
           },
           "witness": {
@@ -27742,9 +27742,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:11043:convertQuantityByReferenceExact",
+                "id": "src/quantity.ts:11009:convertQuantityByReferenceExact",
                 "kind": "FunctionDeclaration",
-                "line": 275,
+                "line": 273,
                 "name": "convertQuantityByReferenceExact",
                 "reason": "resolved-call"
               }
@@ -27760,9 +27760,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:10444:convertQuantityExact",
+          "id": "src/quantity.ts:10410:convertQuantityExact",
           "kind": "FunctionDeclaration",
-          "line": 257,
+          "line": 255,
           "name": "convertQuantityExact"
         }
       ],
@@ -27773,9 +27773,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:10444:convertQuantityExact",
+            "id": "src/quantity.ts:10410:convertQuantityExact",
             "kind": "FunctionDeclaration",
-            "line": 257,
+            "line": 255,
             "name": "convertQuantityExact"
           },
           "witness": {
@@ -27813,9 +27813,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:10444:convertQuantityExact",
+                "id": "src/quantity.ts:10410:convertQuantityExact",
                 "kind": "FunctionDeclaration",
-                "line": 257,
+                "line": 255,
                 "name": "convertQuantityExact",
                 "reason": "resolved-call"
               }
@@ -28229,10 +28229,10 @@
                 "column": 73,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3070:<anonymous@98>",
+                "id": "test/formal-public-surface-direct.test.ts:3258:<anonymous@101>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 101,
+                "name": "<anonymous@101>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -29342,9 +29342,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:12954:integerAtDecimals",
+          "id": "src/quantity.ts:12920:integerAtDecimals",
           "kind": "FunctionDeclaration",
-          "line": 342,
+          "line": 340,
           "name": "integerAtDecimals"
         }
       ],
@@ -29355,9 +29355,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:12954:integerAtDecimals",
+            "id": "src/quantity.ts:12920:integerAtDecimals",
             "kind": "FunctionDeclaration",
-            "line": 342,
+            "line": 340,
             "name": "integerAtDecimals"
           },
           "witness": {
@@ -29405,9 +29405,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:12954:integerAtDecimals",
+                "id": "src/quantity.ts:12920:integerAtDecimals",
                 "kind": "FunctionDeclaration",
-                "line": 342,
+                "line": 340,
                 "name": "integerAtDecimals",
                 "reason": "resolved-call"
               }
@@ -29423,9 +29423,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:50581:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:51455:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1127,
+          "line": 1140,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -29436,9 +29436,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:50581:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:51455:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1127,
+            "line": 1140,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -29516,9 +29516,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:50581:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:51455:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1127,
+                "line": 1140,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -31336,7 +31336,7 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+          "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
           "kind": "FunctionDeclaration",
           "line": 227,
           "name": "leastCommonQuantityMultiple"
@@ -31349,7 +31349,7 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+            "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
             "kind": "FunctionDeclaration",
             "line": 227,
             "name": "leastCommonQuantityMultiple"
@@ -31389,7 +31389,7 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9199:leastCommonQuantityMultiple",
+                "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
                 "kind": "FunctionDeclaration",
                 "line": 227,
                 "name": "leastCommonQuantityMultiple",
@@ -32997,9 +32997,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:9747:quantityRatio",
+          "id": "src/quantity.ts:9713:quantityRatio",
           "kind": "FunctionDeclaration",
-          "line": 243,
+          "line": 241,
           "name": "quantityRatio"
         }
       ],
@@ -33010,9 +33010,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:9747:quantityRatio",
+            "id": "src/quantity.ts:9713:quantityRatio",
             "kind": "FunctionDeclaration",
-            "line": 243,
+            "line": 241,
             "name": "quantityRatio"
           },
           "witness": {
@@ -33050,9 +33050,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:9747:quantityRatio",
+                "id": "src/quantity.ts:9713:quantityRatio",
                 "kind": "FunctionDeclaration",
-                "line": 243,
+                "line": 241,
                 "name": "quantityRatio",
                 "reason": "resolved-call"
               }
@@ -33514,9 +33514,9 @@
           "column": 1,
           "file": "src/quantity.ts",
           "hasBody": true,
-          "id": "src/quantity.ts:13696:safeNumber",
+          "id": "src/quantity.ts:13662:safeNumber",
           "kind": "FunctionDeclaration",
-          "line": 365,
+          "line": 363,
           "name": "safeNumber"
         }
       ],
@@ -33527,9 +33527,9 @@
             "column": 1,
             "file": "src/quantity.ts",
             "hasBody": true,
-            "id": "src/quantity.ts:13696:safeNumber",
+            "id": "src/quantity.ts:13662:safeNumber",
             "kind": "FunctionDeclaration",
-            "line": 365,
+            "line": 363,
             "name": "safeNumber"
           },
           "witness": {
@@ -33567,9 +33567,9 @@
                 "column": 1,
                 "file": "src/quantity.ts",
                 "hasBody": true,
-                "id": "src/quantity.ts:13696:safeNumber",
+                "id": "src/quantity.ts:13662:safeNumber",
                 "kind": "FunctionDeclaration",
-                "line": 365,
+                "line": 363,
                 "name": "safeNumber",
                 "reason": "resolved-call"
               }
@@ -35917,20 +35917,20 @@
                 "column": 62,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59505:<anonymous@1528>",
+                "id": "test/review-hardening.test.ts:59649:<anonymous@1530>",
                 "kind": "ArrowFunction",
-                "line": 1528,
-                "name": "<anonymous@1528>",
+                "line": 1530,
+                "name": "<anonymous@1530>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59625:<anonymous@1529>",
+                "id": "test/review-hardening.test.ts:59769:<anonymous@1531>",
                 "kind": "ArrowFunction",
-                "line": 1529,
-                "name": "<anonymous@1529>",
+                "line": 1531,
+                "name": "<anonymous@1531>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36181,20 +36181,20 @@
                 "column": 62,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59505:<anonymous@1528>",
+                "id": "test/review-hardening.test.ts:59649:<anonymous@1530>",
                 "kind": "ArrowFunction",
-                "line": 1528,
-                "name": "<anonymous@1528>",
+                "line": 1530,
+                "name": "<anonymous@1530>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 113,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:59625:<anonymous@1529>",
+                "id": "test/review-hardening.test.ts:59769:<anonymous@1531>",
                 "kind": "ArrowFunction",
-                "line": 1529,
-                "name": "<anonymous@1529>",
+                "line": 1531,
+                "name": "<anonymous@1531>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36778,10 +36778,10 @@
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
+                "id": "test/formal-public-surface-direct.test.ts:4122:<anonymous@131>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 131,
+                "name": "<anonymous@131>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36798,10 +36798,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:5017:<anonymous@164>",
+                "id": "test/formal-public-surface-direct.test.ts:5205:<anonymous@167>",
                 "kind": "ArrowFunction",
-                "line": 164,
-                "name": "<anonymous@164>",
+                "line": 167,
+                "name": "<anonymous@167>",
                 "reason": "callback-dispatch"
               },
               {
@@ -36869,10 +36869,10 @@
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
+                "id": "test/formal-public-surface-direct.test.ts:4122:<anonymous@131>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 131,
+                "name": "<anonymous@131>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36889,10 +36889,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4447:<anonymous@143>",
+                "id": "test/formal-public-surface-direct.test.ts:4635:<anonymous@146>",
                 "kind": "ArrowFunction",
-                "line": 143,
-                "name": "<anonymous@143>",
+                "line": 146,
+                "name": "<anonymous@146>",
                 "reason": "callback-dispatch"
               },
               {
@@ -36950,20 +36950,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 86,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:18391:<anonymous@331>",
+                "id": "test/scoped-stock-planning.test.ts:18421:<anonymous@332>",
                 "kind": "ArrowFunction",
-                "line": 331,
-                "name": "<anonymous@331>",
+                "line": 332,
+                "name": "<anonymous@332>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37254,10 +37254,10 @@
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
+                "id": "test/formal-public-surface-direct.test.ts:4122:<anonymous@131>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 131,
+                "name": "<anonymous@131>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37274,10 +37274,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4125:<anonymous@132>",
+                "id": "test/formal-public-surface-direct.test.ts:4313:<anonymous@135>",
                 "kind": "ArrowFunction",
-                "line": 132,
-                "name": "<anonymous@132>",
+                "line": 135,
+                "name": "<anonymous@135>",
                 "reason": "callback-dispatch"
               },
               {
@@ -37345,10 +37345,10 @@
                 "column": 76,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:3934:<anonymous@128>",
+                "id": "test/formal-public-surface-direct.test.ts:4122:<anonymous@131>",
                 "kind": "ArrowFunction",
-                "line": 128,
-                "name": "<anonymous@128>",
+                "line": 131,
+                "name": "<anonymous@131>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37365,10 +37365,10 @@
                 "column": 7,
                 "file": "test/formal-public-surface-direct.test.ts",
                 "hasBody": true,
-                "id": "test/formal-public-surface-direct.test.ts:4644:<anonymous@151>",
+                "id": "test/formal-public-surface-direct.test.ts:4832:<anonymous@154>",
                 "kind": "ArrowFunction",
-                "line": 151,
-                "name": "<anonymous@151>",
+                "line": 154,
+                "name": "<anonymous@154>",
                 "reason": "callback-dispatch"
               },
               {
@@ -47065,20 +47065,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 101,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:26098:<anonymous@451>",
+                "id": "test/scoped-stock-planning.test.ts:26128:<anonymous@452>",
                 "kind": "ArrowFunction",
-                "line": 451,
-                "name": "<anonymous@451>",
+                "line": 452,
+                "name": "<anonymous@452>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47541,20 +47541,20 @@
                 "column": 68,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:61120:<anonymous@1562>",
+                "id": "test/review-hardening.test.ts:61264:<anonymous@1564>",
                 "kind": "ArrowFunction",
-                "line": 1562,
-                "name": "<anonymous@1562>",
+                "line": 1564,
+                "name": "<anonymous@1564>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:62774:<anonymous@1587>",
+                "id": "test/review-hardening.test.ts:62918:<anonymous@1589>",
                 "kind": "ArrowFunction",
-                "line": 1587,
-                "name": "<anonymous@1587>",
+                "line": 1589,
+                "name": "<anonymous@1589>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47784,20 +47784,20 @@
                 "column": 68,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:61120:<anonymous@1562>",
+                "id": "test/review-hardening.test.ts:61264:<anonymous@1564>",
                 "kind": "ArrowFunction",
-                "line": 1562,
-                "name": "<anonymous@1562>",
+                "line": 1564,
+                "name": "<anonymous@1564>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:62774:<anonymous@1587>",
+                "id": "test/review-hardening.test.ts:62918:<anonymous@1589>",
                 "kind": "ArrowFunction",
-                "line": 1587,
-                "name": "<anonymous@1587>",
+                "line": 1589,
+                "name": "<anonymous@1589>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47865,20 +47865,20 @@
                 "column": 68,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:61120:<anonymous@1562>",
+                "id": "test/review-hardening.test.ts:61264:<anonymous@1564>",
                 "kind": "ArrowFunction",
-                "line": 1562,
-                "name": "<anonymous@1562>",
+                "line": 1564,
+                "name": "<anonymous@1564>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 74,
                 "file": "test/review-hardening.test.ts",
                 "hasBody": true,
-                "id": "test/review-hardening.test.ts:62774:<anonymous@1587>",
+                "id": "test/review-hardening.test.ts:62918:<anonymous@1589>",
                 "kind": "ArrowFunction",
-                "line": 1587,
-                "name": "<anonymous@1587>",
+                "line": 1589,
+                "name": "<anonymous@1589>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48695,20 +48695,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:97241:<anonymous@1669>",
+                "id": "test/scoped-stock-planning.test.ts:98248:<anonymous@1692>",
                 "kind": "ArrowFunction",
-                "line": 1669,
-                "name": "<anonymous@1669>",
+                "line": 1692,
+                "name": "<anonymous@1692>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48857,20 +48857,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:97241:<anonymous@1669>",
+                "id": "test/scoped-stock-planning.test.ts:98248:<anonymous@1692>",
                 "kind": "ArrowFunction",
-                "line": 1669,
-                "name": "<anonymous@1669>",
+                "line": 1692,
+                "name": "<anonymous@1692>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49455,20 +49455,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:102062:<anonymous@1741>",
+                "id": "test/scoped-stock-planning.test.ts:103069:<anonymous@1764>",
                 "kind": "ArrowFunction",
-                "line": 1741,
-                "name": "<anonymous@1741>",
+                "line": 1764,
+                "name": "<anonymous@1764>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49708,20 +49708,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:3413:<anonymous@94>",
+                "id": "test/scoped-stock-planning.test.ts:3443:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 94,
-                "name": "<anonymous@94>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:102062:<anonymous@1741>",
+                "id": "test/scoped-stock-planning.test.ts:103069:<anonymous@1764>",
                 "kind": "ArrowFunction",
-                "line": 1741,
-                "name": "<anonymous@1741>",
+                "line": 1764,
+                "name": "<anonymous@1764>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49833,5 +49833,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "03669d02dd800aa2166b15855d47cd1e777fdf146fc6aa309b6b7ae0a253cd80"
+  "surfaceSha256": "aba38f3ba2f5e6c2b079555f0411a010248f13adba974ec196cb65bcd2737519"
 }

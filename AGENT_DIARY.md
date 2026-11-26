@@ -1985,3 +1985,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A measured row cannot explain a report axis when its smallest pick exceeds the request or its remaining capacity. The planner can prove a positive remainder without exploring smaller divisible picks in that case.
 - Loose stock can have enough raw capacity while falling short of the pool's exact reference increments. The increment diagnostic includes that discarded capacity and still checks whether divisible stock could cover the request.
+
+## 2026-11-26 — measured pick limits and exact common multiples
+
+- An independent axis can rule out a measured row even when its primary increment fits. The planner compares the reported axis with the whole-row measurement or one package's fixed measurement when testing the smallest legal pick.
+- The common-multiple operation reduces scale only as needed to store the exact result, using the same conversion as addition and multiplication.

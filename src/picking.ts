@@ -345,7 +345,7 @@ export function planWorkingInventoryAllocation({
         ? allocateInventoryUpTo({
             ...measuredInput, assessIncrementBlockage: false,
             requiresPositiveShortfall: reportHasUnwitnessedAxis({
-              report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
+              catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
             }),
           })
         : allocateWorkingInventory(measuredInput);
@@ -397,6 +397,8 @@ export function planWorkingInventoryAllocation({
 
 /** Inputs for proving that a measured report needs a nonempty unwitnessed remainder. */
 interface ReportHasUnwitnessedAxisInput {
+  /** Retained fixed contents for candidates that can be picked by package. */
+  readonly catalog: InventoryCatalog;
   /** Measurements that the movement needs to explain. */
   readonly report: InventoryMeasurementVector;
   /** Exact source rows still eligible after scope, holds, expiry, and deficit selection. */
@@ -406,18 +408,29 @@ interface ReportHasUnwitnessedAxisInput {
 }
 
 /** A positive primary remainder is required when no selectable row supplies a reported axis. */
-function reportHasUnwitnessedAxis({ report, candidates, rows }: ReportHasUnwitnessedAxisInput): boolean {
+function reportHasUnwitnessedAxis({ catalog, report, candidates, rows }: ReportHasUnwitnessedAxisInput): boolean {
+  const primary = report.primary;
   return report.independent.some(
     /** A reported zero needs no positive witness. */
     ({ axisId, quantity }) => quantity.amountMinor > 0 && candidates.every(
-      /** A measured row can explain this axis only if its smallest legal pick fits. */
+      /** The smallest legal pick must fit both the primary and independent quantities. */
       ({ position, available, allocationIncrement }) => {
         const row = rows.get(inventoryStockPositionIdentity(position));
         if (row === undefined) return false;
-        if (inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit).amountMinor <= 0n) return true;
-        return allocationIncrement !== undefined &&
-          (compareWorkingQuantities(allocationIncrement, report.primary.quantity) > 0 ||
-            compareWorkingQuantities(allocationIncrement, available) > 0);
+        const measured = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
+        if (measured.amountMinor <= 0n) return true;
+        if (allocationIncrement === undefined) return false;
+        if (compareWorkingQuantities(allocationIncrement, primary.quantity) > 0 ||
+            compareWorkingQuantities(allocationIncrement, available) > 0) return true;
+        const fullPrimary = inventoryPolicyPositionMeasurement(row.position, primary.axisId, primary.quantity.unit);
+        if (compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
+          return compareWorkingQuantities(measured, quantity) > 0;
+        }
+        // A smaller increment from a measured package contributes its fixed amount per package.
+        const packageId = position.packagingRevisionId;
+        if (packageId === undefined) return false;
+        const fixed = inventoryMeasurementAt(catalog.packagingRevision(packageId).fixedContents, axisId, quantity.unit);
+        return compareQuantity(fixed, quantity) > 0;
       }
     )
   );
