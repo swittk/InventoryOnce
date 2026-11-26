@@ -3812,11 +3812,7 @@ async function commitInventoryFungibilityMovement(
           ? {}
           : { allowAllocatedStock: input.allowAllocatedStock }),
       };
-      const preferred = planInventoryFungibilityRecordingAllocation(planning);
-      // A physical report may use held stock when a claim-preserving pick cannot fill it.
-      const allocation = preferred.shortfall.amountMinor === 0 || planning.allowAllocatedStock
-        ? preferred
-        : planInventoryFungibilityRecordingAllocation({ ...planning, allowAllocatedStock: true });
+      const allocation = planInventoryFungibilityRecordingAllocation(planning);
       assertFungibilityAllocationComplete(allocation);
       return {
         event: createFungibilityMovementEvent(

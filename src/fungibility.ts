@@ -49,6 +49,7 @@ import {
   findInventoryPositions,
   type InventoryProjectionState,
 } from "./projection.js";
+import { InventoryReservationFeasibilityLimitError } from "./reservation-feasibility-limit.js";
 import {
   InventoryReservationFeasibilityStatus,
   inspectInventoryReservationFeasibility,
@@ -351,11 +352,19 @@ export function planInventoryFungibilityAllocation(
   return planInventoryFungibilityAllocationWithHolds(input, false);
 }
 
-/** Prefer rows without independent-axis holds before falling back to all physical stock. */
+/** Prefer a pick that preserves claim capacity before falling back to physical stock. */
 export function planInventoryFungibilityRecordingAllocation(
   input: PlanInventoryFungibilityAllocationInput
 ): InventoryFungibilityAllocationPlan {
-  return planInventoryFungibilityAllocationWithHolds(input, true);
+  if (input.allowAllocatedStock) return planInventoryFungibilityAllocationWithHolds(input, true);
+  try {
+    const preferred = planInventoryFungibilityAllocationWithHolds(input, true);
+    if (preferred.shortfall.amountMinor === 0) return preferred;
+  } catch (error) {
+    // An exhausted claim search cannot decide whether the pick preserves claims.
+    if (!(error instanceof InventoryReservationFeasibilityLimitError)) throw error;
+  }
+  return planInventoryFungibilityAllocationWithHolds({ ...input, allowAllocatedStock: true }, true);
 }
 
 /** Plan against the same exact members while applying the recording-specific hold preference. */

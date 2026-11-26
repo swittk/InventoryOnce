@@ -1393,12 +1393,13 @@ describe("derived pool summaries and exact member movements", () => {
     expect(reservation?.allocations).toEqual([{ position: position.key, quantity: requested }]);
   });
 
-  it("records a fungible transfer with an unrelated broad package claim beyond the feasibility search bound", async () => {
+  it.each(["unrelated", "transferred"] as const)("records a fungible transfer with a short broad claim on the %s item beyond the feasibility search bound", async (claimTarget) => {
     const member = oldBrand();
     const alternative = newBrand();
     const unrelated = doubleStrength();
+    const heldItem = claimTarget === "transferred" ? member : unrelated;
     const packaging = defineScalarInventoryPackaging({
-      revisionId: "unrelated-claim-pack", item: unrelated, packageUnit: "pack", contains: "2",
+      revisionId: "held-claim-pack", item: heldItem, packageUnit: "pack", contains: "2",
     });
     const pool = defineScalarInventoryFungibilityPool({
       poolId: "brand-claim-pool", revisionId: "brand-claim-pool-v1", basisUnit: "equivalent",
@@ -1415,23 +1416,30 @@ describe("derived pool summaries and exact member movements", () => {
     const inventory = createInventoryOnce({
       catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
     });
-    const outside = { itemId: unrelated.itemId, placementNodeId: "elsewhere", packagingRevisionId: packaging.revisionId };
+    const heldPosition = {
+      itemId: heldItem.itemId,
+      placementNodeId: claimTarget === "transferred" ? "store" : "elsewhere",
+      packagingRevisionId: packaging.revisionId,
+    };
+    const heldSelector = inventoryStockSelector(heldItem.itemId, { placementNodeIds: [heldPosition.placementNodeId] });
     await inventory.stock.receive({
       operationId: "receive-package-claim-stock", occurredAtEpochMs: time0,
-      to: outside, amount: packageAmount(100_002, packaging.revisionId),
+      to: heldPosition, amount: packageAmount(100_002, packaging.revisionId),
     });
     await inventory.reservations.reserve({
-      operationId: "reserve-package-claim", reservationId: "package-claim", itemRevisionId: unrelated.revisionId,
-      selector: inventoryStockSelector(unrelated.itemId, { placementNodeIds: [outside.placementNodeId] }),
+      operationId: "reserve-package-claim", reservationId: "package-claim", itemRevisionId: heldItem.revisionId,
+      selector: heldSelector,
       requested: parseQuantity("200004", "piece"), createdAtEpochMs: time1,
     });
     await inventory.stock.issue({
       operationId: "shorten-package-claim", occurredAtEpochMs: time1,
-      from: outside, amount: packageAmount(1, packaging.revisionId),
+      from: heldPosition, amount: packageAmount(1, packaging.revisionId),
     });
-    await receiveMember({ inventory, itemId: member.itemId, itemRevisionId: member.revisionId,
-      lotId: "pool-member", quantity: "4", operationId: "receive-pool-member", occurredAtEpochMs: time1 });
-    const before = await inventory.read.positions(inventoryStockSelector(unrelated.itemId));
+    if (claimTarget === "unrelated") {
+      await receiveMember({ inventory, itemId: member.itemId, itemRevisionId: member.revisionId,
+        lotId: "pool-member", quantity: "4", operationId: "receive-pool-member", occurredAtEpochMs: time1 });
+    }
+    const before = await inventory.read.positions(heldSelector);
     const claim = await inventory.read.reservation("package-claim");
     const moved = await inventory.fungibility.transfer({
       operationId: "transfer-pool-member", occurredAtEpochMs: time2, fungibilityRevisionId: pool.revisionId,
@@ -1442,7 +1450,16 @@ describe("derived pool summaries and exact member movements", () => {
       { position: { itemId: member.itemId, placementNodeId: "room" }, measurementsDelta: { primary: { quantity: parseQuantity("4", "piece") } } },
       { position: { itemId: member.itemId, placementNodeId: "store" }, measurementsDelta: { primary: { quantity: parseQuantity("-4", "piece") } } },
     ]);
-    expect(await inventory.read.positions(inventoryStockSelector(unrelated.itemId))).toEqual(before);
+    const remaining = await inventory.read.positions(heldSelector);
+    if (claimTarget === "unrelated") {
+      expect(remaining).toEqual(before);
+    } else {
+      expect(moved.event.stockEffects.map((effect) => effect.position.packagingRevisionId)).toEqual([
+        packaging.revisionId, packaging.revisionId,
+      ]);
+      expect(remaining).toMatchObject([{ measurements: { primary: { quantity: parseQuantity("199998", "piece") } } }]);
+      await expect(inventory.read.reservationFeasibility(time3)).rejects.toThrow("exceeded its safe search bound");
+    }
     expect(await inventory.read.reservation("package-claim")).toEqual(claim);
   });
 

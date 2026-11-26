@@ -25,6 +25,7 @@ import {
   type PartyId,
 } from "./model.js";
 import type { InventoryProjectionState } from "./projection.js";
+import { InventoryReservationFeasibilityLimitError } from "./reservation-feasibility-limit.js";
 import {
   materializeInventoryWorkingQuantity,
   workingQuantityAtDecimals,
@@ -1066,7 +1067,7 @@ function reservationGroupFeasibility(
   const item = catalog.itemRevision(first.itemRevisionId);
   const axis = catalog.measurementAxis(item, item.reservationAxisId);
   if (reservations.length > MAXIMUM_RESERVATION_FEASIBILITY_RESERVATIONS) {
-    throw new Error(
+    throw new InventoryReservationFeasibilityLimitError(
       "Reservation feasibility group has too many claims; narrow or partition the scope."
     );
   }
@@ -1239,7 +1240,7 @@ function reservationGroupFeasibility(
   }
   positions.sort(compareFeasibilityPosition);
   if (positions.length > MAXIMUM_RESERVATION_FEASIBILITY_POSITIONS) {
-    throw new Error(
+    throw new InventoryReservationFeasibilityLimitError(
       "Reservation feasibility group has too many stock rows; narrow or partition the scope."
     );
   }
@@ -1331,7 +1332,7 @@ function reservationGroupFeasibility(
     edgeCapacityByReservation.push(edgeCapacities);
   }
   if (edgeCount > MAXIMUM_RESERVATION_FEASIBILITY_EDGES) {
-    throw new Error(
+    throw new InventoryReservationFeasibilityLimitError(
       "Reservation feasibility graph has too many eligible claim/stock pairs; narrow the selectors."
     );
   }
@@ -1369,7 +1370,7 @@ function reservationGroupFeasibility(
       eligibleReservationCount,
     });
     if (indivisibleGroups.length > MAXIMUM_RESERVATION_FEASIBILITY_POSITIONS) {
-      throw new Error(
+      throw new InventoryReservationFeasibilityLimitError(
         "Reservation feasibility has too many indivisible stock groups; narrow the selectors."
       );
     }
@@ -1627,7 +1628,7 @@ function maximumReservationAssignmentWithIndivisibleGroups(
     if (best === totalRequested) return;
     exploredStates += 1;
     if (exploredStates > MAXIMUM_RESERVATION_FEASIBILITY_STATES) {
-      throw new Error(
+      throw new InventoryReservationFeasibilityLimitError(
         "Reservation indivisible assignment exceeded its safe search bound; narrow the selectors."
       );
     }
