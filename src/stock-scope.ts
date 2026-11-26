@@ -22,11 +22,12 @@ export interface InventoryScopedStockPosition {
   readonly effectiveUseByEpochMs?: number;
 }
 
-/** Complete signed stock and claim evidence for one selected revision's physical pools. */
+/** Signed stock and claim evidence for one selected revision's physical pools. */
 export interface InventoryScopedStockPool {
   /** Exact rows in deterministic position-identity order. */
   readonly positions: readonly InventoryScopedStockPosition[];
-  /** Claim states at the requested time, including exact holds on returned positions. */
+  /** Exact holds and broad claim evidence. Current indexed reads keep up to two broad representatives
+   * per revision to detect another claim. Check each claim's activity at the requested time. */
   readonly reservations: readonly InventoryReservation[];
 }
 

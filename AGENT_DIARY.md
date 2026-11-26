@@ -1990,3 +1990,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - An independent axis can rule out a measured row even when its primary increment fits. The planner compares the reported axis with the whole-row measurement or one package's fixed measurement when testing the smallest legal pick.
 - The common-multiple operation reduces scale only as needed to store the exact result, using the same conversion as addition and multiplication.
+
+## 2026-11-26 — policy batch pool lifetime
+
+- A batch keeps published pool rows for reuse only through the last request that can use them. Ordered balance changes and new deficit rows remain available through the entire atomic plan.

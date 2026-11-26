@@ -1659,7 +1659,7 @@ export interface InventoryOnceStockApi {
   issueMany(
     input: InventoryOnceIssueManyInput
   ): Promise<InventoryOnceEventResult>;
-  /** Select FIFO/FEFO positions and issue them atomically, failing on shortfall. */
+  /** Issue FIFO/FEFO picks atomically. Reject mode fails on shortfall, and Record mode can commit and return a recordable deficit. */
   issueByPolicy(
     input: InventoryOnceIssueByPolicyInput
   ): Promise<InventoryOnceEventResult>;
@@ -4563,7 +4563,22 @@ async function commitInventoryPolicyBatch(
         recordedAtEpochMs,
         `${kind} policy batch`
       );
-      /** Keep each original pool once even when several requests share a bin and revision. */
+      /** The last request that can reuse each original signed stock pool. */
+      const lastRequestIndexByPool = new Map<string, number>();
+      /** Resolve each selection once and keep its widened pool identity for planning. */
+      const preparedRequests = input.requests.map(
+        /** Register the last use while retaining the caller's request order. */
+        (request, index) => {
+          const selection = resolveAllocationItemAndSelector(
+            internals.catalog, request.selector, request.amount, request.itemRevisionId
+          );
+          const poolSelector = inventoryAllocationPoolSelector(selection);
+          const poolId = inventoryStockSelectorIdentity(poolSelector);
+          lastRequestIndexByPool.set(poolId, index);
+          return { request, selection, poolSelector, poolId };
+        }
+      );
+      /** Keep original pool rows only until their final request. */
       const pools = new Map<string, PolicyBatchPoolView>();
       /** Exact rows changed by earlier requests in this same logical event. */
       const changed = new Map<string, InventoryPolicyWorkingPosition>();
@@ -4572,19 +4587,17 @@ async function commitInventoryPolicyBatch(
       const allocations: InventoryOncePolicyBatchAllocation[] = [];
       const selectedLines: InventoryPolicyAllocationLine[] = [];
       const deficitLines: CreateInventoryIssueManyInput["lines"][number][] = [];
-      for (const request of input.requests) {
-        const selection = resolveAllocationItemAndSelector(
-          internals.catalog, request.selector, request.amount, request.itemRevisionId
-        );
-        const poolSelector = inventoryAllocationPoolSelector(selection);
-        const poolId = inventoryStockSelectorIdentity(poolSelector);
+      for (const [index, { request, selection, poolSelector, poolId }] of preparedRequests.entries()) {
+        const lastUse = lastRequestIndexByPool.get(poolId) === index;
         let initialPool = pools.get(poolId);
         if (initialPool === undefined) {
           const pool = await source.pool(selection);
           const rowsById = new Map<string, InventoryPolicyWorkingRow>();
           for (const row of pool.positions) rowsById.set(inventoryStockPositionIdentity(row.position.key), row);
           initialPool = { pool, rowsById };
-          pools.set(poolId, initialPool);
+          if (!lastUse) pools.set(poolId, initialPool);
+        } else if (lastUse) {
+          pools.delete(poolId);
         }
         const revisionId = selection.item.revisionId;
         const { pool, rowsById: currentRows } = policyPoolAfterPriorRequests({

@@ -193,7 +193,9 @@ describe("indexed stock planning and availability", () => {
       ...request, deficitPosition: inside, operationId: "transfer-owner-shortage", occurredAtEpochMs: time1,
       toPlacementNodeId: "destination",
     });
-    expect(moved.event.unwitnessedStockMovements).toMatchObject([{ from: inside, to: { ownerId: "owner-a" } }]);
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{
+      from: inside, to: { ownerId: "owner-a", placementNodeId: "destination" },
+    }]);
     expect(await inventory.read.positions({ itemId: "item-a", ownerIds: ["owner-b"] })).toMatchObject([
       { key: outside, measurements: { primary: { quantity: parseQuantity("5", "piece") } } },
     ]);
@@ -722,7 +724,9 @@ describe("indexed stock planning and availability", () => {
       }
       const claim = (await inventory.read.reservationFeasibility(time2)).groups[0];
       expect(claim).toMatchObject({ reservationIds: ["weight"], shortage: parseQuantity("4", "kg") });
-      expect((await inventory.read.reservation("weight"))?.status).toBe(InventoryReservationStatus.Active);
+      const reservation = await inventory.read.reservation("weight");
+      expect(reservation?.status).toBe(InventoryReservationStatus.Active);
+      expect(reservation?.allocations).toEqual([{ position: heldRow.key, quantity }]);
     }
   );
 
@@ -1467,7 +1471,7 @@ describe("indexed stock planning and availability", () => {
     });
     expect(result.event.unwitnessedStockMovements).toMatchObject([{
       from: { packagingRevisionId: packageId }, to: { packagingRevisionId: packageId },
-      measurements: { primary: { quantity: { amountMinor: 24 } } },
+      measurements: { primary: { quantity: parseQuantity("24", "piece") } },
     }]);
     expect(result.event.stockEffects).toMatchObject([
       { position: { placementNodeId: "destination" }, evidence: { packageCount: "2" } },
@@ -1475,7 +1479,7 @@ describe("indexed stock planning and availability", () => {
     ]);
     expect(await inventory.read.positions(selector)).toMatchObject([{
       key: { packagingRevisionId: packageId },
-      measurements: { primary: { quantity: { amountMinor: -24 } } },
+      measurements: { primary: { quantity: parseQuantity("-24", "piece") } },
     }]);
   });
 
@@ -1918,6 +1922,10 @@ describe("indexed stock planning and availability", () => {
     const canonical = createTestInventory(canonicalStorage);
     for (const inventory of [native, canonical]) {
       await receiveKnownLots(inventory);
+      await inventory.stock.receive({
+        operationId: "receive-dedicated-bin", occurredAtEpochMs: time0,
+        to: loosePosition("dedicated-bin"), amount: stockAmount("1", "piece"),
+      });
       await inventory.stock.transfer({
         operationId: "remove-old", occurredAtEpochMs: time1,
         from: loosePosition("store", { lotId: "old" }),
@@ -1930,16 +1938,23 @@ describe("indexed stock planning and availability", () => {
       });
     }
     const readWorld = vi.spyOn(nativeStorage, "readWorld").mockRejectedValue(new Error("whole world"));
-    const issue = issueCommand();
-    const first = issue.requests[0];
-    if (first === undefined) throw new Error("Expected initial FIFO request.");
+    const originalIssue = issueCommand();
+    const [first, second] = originalIssue.requests;
+    if (first === undefined || second === undefined) throw new Error("Expected both FIFO requests.");
+    const middle = {
+      ...second, requestId: "dedicated", selector: inventoryStockSelector("item-a", { placementNodeIds: ["dedicated-bin"] }),
+    };
+    const issue = { ...originalIssue, requests: [first, middle, second] };
     const preview = await native.read.planAllocation({ ...first, atEpochMs: time2 });
     expect(preview.lines[0]).toMatchObject({ position: { lotId: "old" }, layerStartedAtEpochMs: time0 });
+    const readPool = vi.spyOn(nativeStorage, "readSegmentedStockPool");
     const nativeResult = await native.stock.issueManyByPolicy(issue);
     expect(nativeResult.allocations).toMatchObject([
       { requestId: "first", lines: [{ position: { lotId: "old" } }] },
+      { requestId: "dedicated", lines: [{ position: { placementNodeId: "dedicated-bin" } }] },
       { requestId: "second", lines: [{ position: { lotId: "young" } }] },
     ]);
+    expect(readPool).toHaveBeenCalledTimes(2);
     expect(nativeResult).toEqual(await canonical.stock.issueManyByPolicy(issue));
     expect(await native.stock.issueManyByPolicy(issue)).toEqual({ ...nativeResult, replayed: true });
     expect(await native.read.summary(selector)).toEqual(await canonical.read.summary(selector));

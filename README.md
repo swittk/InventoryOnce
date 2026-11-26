@@ -418,6 +418,8 @@ In Record mode, a reported transfer may contain both a witnessed part and an unw
 
 An unlabelled debit settles against the balance at the same exact position. If five unlabelled pieces are on hand and the report has two unwitnessed pieces, three remain at the source and the event still records both unwitnessed pieces. A witnessed arrival can also pay down a negative destination balance. Its FIFO age applies to any positive stock that remains at the destination.
 
+Structured transfer lifecycle stages require physical source stock during historical replay. A proposed correction that removes that backing stock returns an `invalid-history` conflict that identifies the lifecycle failure.
+
 Migration may therefore preserve coherent clinic truth such as positive tracked lots plus a negative `__untracked__` row when their signed sum equals the parent balance. A negative opening is not synthesized as a receipt: it compiles to an explicit Issue deficit event. Unit identity, algebra, and unresolved workflow rows still fail closed.
 
 ## Reservations after physical loss
