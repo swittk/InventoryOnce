@@ -1440,6 +1440,47 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("jumps to a reachable measured pick among three whole lots", async () => {
+    const base = measuredItemCatalog("weight").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base,
+      primaryAxis: { ...base.primaryAxis, axisId: "weight", unit: unitCode("kg") },
+      independentAxes: [{
+        axisId: "volume", role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional,
+      }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    for (const [lotId, weight, volume, time] of [
+      ["dry", "1.000000", undefined, time0], ["half-litre", "1.000001", "0.5", time0 + 1],
+      ["whole-one", "1", "1", time1], ["whole-two", "2", "1", time2],
+    ] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-${lotId}`, occurredAtEpochMs: time,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId },
+        amount: volume === undefined ? stockAmount(weight, "kg") :
+          measuredStockAmount(weight, "kg", [{ axisId: "volume", value: volume, unit: "L" }]),
+      });
+    }
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "transfer-exact-three-whole-suffix", occurredAtEpochMs: time3,
+      selector: inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] }),
+      method: InventoryAllocationMethod.Fifo, toPlacementNodeId: "destination",
+      amount: measuredStockAmount("2.000001", "kg", [{ axisId: "volume", value: "1", unit: "L" }]),
+    });
+    expect(moved.event.unwitnessedStockMovements).toBeUndefined();
+    const arrivals = moved.event.stockEffects.filter(({ position }) => position.placementNodeId === "destination");
+    expect(arrivals.map(({ position }) => position.lotId)).toEqual(["dry", "whole-two"]);
+    expect(arrivals[0]?.measurementsDelta.primary.quantity).toEqual(parseQuantity("0.000001", "kg"));
+    const whole = arrivals[1];
+    if (whole === undefined) throw new Error("Expected the whole measured lot.");
+    expect(compareQuantity(whole.measurementsDelta.primary.quantity, parseQuantity("2", "kg"))).toBe(0);
+    expect(whole.measurementsDelta.independent).toEqual([{ axisId: "volume", quantity: parseQuantity("1", "L") }]);
+  });
+
   it("records a proven measured remainder when the stock pool exceeds the search depth", async () => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({
@@ -2798,6 +2839,12 @@ describe("indexed stock planning and availability", () => {
       allocations: [{ position: loosePosition("store"), quantity: parseQuantity("1", "piece") }],
     }]);
     expect(Object.isFrozen(earlier.reservations[0]?.allocations[0]?.quantity)).toBe(true);
+    const emptyRequest = { ...request, selector: inventoryStockSelector("item-a", {
+      placementNodeIds: ["empty"], itemRevisionIds: ["item-a-v2"],
+    }) };
+    expect(storage.readSegmentedStockPool(emptyRequest)).toEqual({ positions: [], reservations: [] });
+    expect(storage.readSegmentedStockPool({ ...emptyRequest, exactHoldsOnly: false }).reservations)
+      .toMatchObject([{ reservationId: "broad" }]);
   });
 
   it("uses current broad leaders for a pre-epoch claim query after the last change", async () => {

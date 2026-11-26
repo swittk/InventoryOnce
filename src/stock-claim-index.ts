@@ -54,6 +54,8 @@ export class InventoryStockClaimIndex {
   forPool({
     revisionId, positions, atEpochMs, exactHoldsOnly,
   }: InventoryStockClaimsForPoolInput): readonly InventoryReservation[] {
+    // Without positions, no exact hold can match. Broad claims can still matter in an empty pool.
+    if (exactHoldsOnly && positions.length === 0) return [];
     if (atEpochMs < (this.latestByRevision.get(revisionId) ?? -Infinity)) {
       // Historical replay is confined to the requested revision and uses the retained lifecycle order.
       const latest = new Map<string, InventoryReservationOperation>();

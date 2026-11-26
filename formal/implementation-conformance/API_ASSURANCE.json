@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4238,
-    "compilerCallGraphEdges": 12004,
+    "compilerCallGraphCallables": 4241,
+    "compilerCallGraphEdges": 12021,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -11057,10 +11057,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
+              "id": "test/scoped-stock-planning.test.ts:125597:<anonymous@2149>",
               "kind": "ArrowFunction",
-              "line": 2108,
-              "name": "<anonymous@2108>",
+              "line": 2149,
+              "name": "<anonymous@2149>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -11703,10 +11703,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
+              "id": "test/scoped-stock-planning.test.ts:125597:<anonymous@2149>",
               "kind": "ArrowFunction",
-              "line": 2108,
-              "name": "<anonymous@2108>",
+              "line": 2149,
+              "name": "<anonymous@2149>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -13723,10 +13723,10 @@
               "column": 98,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:149371:<anonymous@2547>",
+              "id": "test/scoped-stock-planning.test.ts:151820:<anonymous@2588>",
               "kind": "ArrowFunction",
-              "line": 2547,
-              "name": "<anonymous@2547>",
+              "line": 2588,
+              "name": "<anonymous@2588>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14208,10 +14208,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
+              "id": "test/scoped-stock-planning.test.ts:130418:<anonymous@2221>",
               "kind": "ArrowFunction",
-              "line": 2180,
-              "name": "<anonymous@2180>",
+              "line": 2221,
+              "name": "<anonymous@2221>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14711,10 +14711,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
+              "id": "test/scoped-stock-planning.test.ts:130418:<anonymous@2221>",
               "kind": "ArrowFunction",
-              "line": 2180,
-              "name": "<anonymous@2180>",
+              "line": 2221,
+              "name": "<anonymous@2221>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -22429,9 +22429,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:6014:allocateInventory",
+              "id": "src/allocation.ts:6148:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 133,
+              "line": 136,
               "name": "allocateInventory",
               "reason": "resolved-call"
             }
@@ -22440,9 +22440,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:6014:allocateInventory",
+            "id": "src/allocation.ts:6148:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 133,
+            "line": 136,
             "name": "allocateInventory"
           },
           "test": "test/allocation.test.ts"
@@ -22469,9 +22469,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:6014:allocateInventory",
+          "id": "src/allocation.ts:6148:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 133,
+          "line": 136,
           "name": "allocateInventory"
         }
       ],
@@ -25375,9 +25375,9 @@
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:42764:compareInventoryAllocationCandidates",
+              "id": "src/allocation.ts:42962:compareInventoryAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 902,
+              "line": 905,
               "name": "compareInventoryAllocationCandidates",
               "reason": "resolved-call"
             }
@@ -25386,9 +25386,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:42764:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:42962:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 902,
+            "line": 905,
             "name": "compareInventoryAllocationCandidates"
           },
           "test": "test/allocation.test.ts"
@@ -25415,9 +25415,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:42764:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:42962:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 902,
+          "line": 905,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -30604,10 +30604,10 @@
               "column": 73,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:119607:<anonymous@2050>",
+              "id": "test/scoped-stock-planning.test.ts:122056:<anonymous@2091>",
               "kind": "ArrowFunction",
-              "line": 2050,
-              "name": "<anonymous@2050>",
+              "line": 2091,
+              "name": "<anonymous@2091>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -82403,7 +82403,7 @@
           "path": "src/stock-age.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/stock-claim-index.ts"
         },
         {
@@ -88276,7 +88276,7 @@
           "path": "src/stock-age.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/stock-claim-index.ts"
         },
         {
@@ -97952,10 +97952,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
+              "id": "test/scoped-stock-planning.test.ts:125597:<anonymous@2149>",
               "kind": "ArrowFunction",
-              "line": 2108,
-              "name": "<anonymous@2108>",
+              "line": 2149,
+              "name": "<anonymous@2149>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -98292,10 +98292,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:123148:<anonymous@2108>",
+              "id": "test/scoped-stock-planning.test.ts:125597:<anonymous@2149>",
               "kind": "ArrowFunction",
-              "line": 2108,
-              "name": "<anonymous@2108>",
+              "line": 2149,
+              "name": "<anonymous@2149>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99696,10 +99696,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
+              "id": "test/scoped-stock-planning.test.ts:130418:<anonymous@2221>",
               "kind": "ArrowFunction",
-              "line": 2180,
-              "name": "<anonymous@2180>",
+              "line": 2221,
+              "name": "<anonymous@2221>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -100196,10 +100196,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:127969:<anonymous@2180>",
+              "id": "test/scoped-stock-planning.test.ts:130418:<anonymous@2221>",
               "kind": "ArrowFunction",
-              "line": 2180,
-              "name": "<anonymous@2180>",
+              "line": 2221,
+              "name": "<anonymous@2221>",
               "reason": "external-callback-dispatch"
             },
             {

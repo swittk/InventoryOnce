@@ -2053,3 +2053,8 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A reported axis must be divisible by the common increment of its selectable measurements to admit a complete witness. The allocator can stop once a partial witness reaches the resulting primary remainder bound.
 - When only a complete witness can improve the best result, the search reserves enough primary stock to carry the reported measurements before trying smaller axis-free picks.
+
+## 2026-11-27 — whole-lot suffixes and empty hold pools
+
+- Exact suffix sums cover up to three whole-only lots, so the picker jumps directly across unreachable primary quantities.
+- An empty exact-hold scope has no matching positions and can skip historical claim replay. A broad-claim query still reads the applicable claim state.

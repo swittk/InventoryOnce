@@ -129,6 +129,9 @@ export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 /** Maximum recursive exact-search depth before callers must narrow the candidate set. */
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
 
+/** Enumerate subsets of up to three whole-only rows at the end of the candidate list. */
+const MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS = 8;
+
 /** Pick FIFO/FEFO stock, requiring a full assignment when a whole-plan predicate is supplied. */
 export function allocateInventory(input: AllocateInventoryInput): InventoryAllocationResult {
   return allocateWorkingInventory(input);
@@ -397,7 +400,7 @@ function searchInventoryAllocations({
   /** Capacity and common divisibility of all selectable rows at or after each index. */
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
   const suffixDivisor: bigint[] = new Array(candidates.length + 1).fill(0n);
-  /** Exact capacity sums for suffixes with two selectable whole-only rows. */
+  /** Exact capacity sums for suffixes with two or three selectable whole-only rows. */
   const suffixWholeSums: (readonly bigint[] | undefined)[] = [];
   /** Build the few reachable sums until the suffix needs the general capacity and divisor bounds. */
   let wholeSums: readonly bigint[] | undefined = [0n];
@@ -406,9 +409,9 @@ function searchInventoryAllocations({
     const increment = incrementMinor[index] ?? 1n;
     // Stock below the next whole increment cannot improve a suffix assignment.
     const selectable = capacity - capacity % increment;
-    if (wholeSums?.length === 4) suffixWholeSums[index + 1] = wholeSums;
+    if (wholeSums !== undefined && wholeSums.length >= 4) suffixWholeSums[index + 1] = wholeSums;
     if (wholeSums !== undefined && selectable !== 0n) {
-      wholeSums = selectable === increment && wholeSums.length < 4
+      wholeSums = selectable === increment && wholeSums.length < MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS
         ? [...wholeSums, ...wholeSums.map(
             /** Include each sum that takes this whole row. */
             (sum) => sum + selectable
