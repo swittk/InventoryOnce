@@ -3912,7 +3912,7 @@ function assertFungibilityAllocationComplete(
   }
   if (plan.incrementBlockedStock) {
     throw new Error(
-      `Inventory fungibility pool has ${shortfall} shortfall because intact package/serial increments cannot be split.`
+      `Inventory fungibility pool has ${shortfall} shortfall because the request does not fit the eligible members' exact allocation increments.`
     );
   }
   throw new Error(

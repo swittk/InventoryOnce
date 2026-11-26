@@ -2012,3 +2012,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-26 — shared fungibility claim snapshot
 
 - A fungibility plan reads its reservation snapshot once at the selected reservation time. Preview members without matching positive stock skip claim preparation, and contributing members still use their full signed position pools for deficit attribution.
+
+## 2026-11-26 — remaining package capacity and fungibility increments
+
+- The measured split check subtracts accepted witnesses from each row's eligible capacity. A package left in the same row can still show that the report requires a split.
+- Fungibility errors name the exact member allocation increments. Loose stock also follows its configured reference increment.

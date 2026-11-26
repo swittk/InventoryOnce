@@ -297,7 +297,7 @@ export interface InventoryFungibilityAllocationPlan {
   readonly shortfall: Quantity;
   /** True when otherwise-positive expired member stock was excluded. */
   readonly expiredStockWasExcluded: boolean;
-  /** True when intact package/serial increments blocked the requested split. */
+  /** True when exact pool reference or physical stock increments limited the allocation. */
   readonly incrementBlockedStock: boolean;
   /** True when an exact member assignment existed but current claims rejected it. */
   readonly allocationConstraintBlockedStock: boolean;

@@ -963,6 +963,42 @@ describe("derived pool summaries and exact member movements", () => {
     });
   });
 
+  it("reports exact allocation increments for a loose reference with a repeating conversion", async () => {
+    const material = defineScalarInventoryItem({
+      itemId: "loose-material", revisionId: "loose-material-v1", axisId: "weight", unit: "kg",
+    });
+    const alternative = defineScalarInventoryItem({
+      itemId: "other-material", revisionId: "other-material-v1", axisId: "weight", unit: "kg",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "reference-ratio", revisionId: "reference-ratio-v1", basisUnit: "equivalent",
+      members: [{ item: material, memberQuantity: "3", poolQuantity: "7" }, { item: alternative }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [material, alternative], fungibilityRevisions: [pool],
+      activeItemRevisionIds: { [material.itemId]: material.revisionId, [alternative.itemId]: alternative.revisionId },
+      activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    const to = { itemId: material.itemId, placementNodeId: "store" };
+    await inventory.stock.receive({ operationId: "receive-two-kg", occurredAtEpochMs: time0, to, amount: stockAmount("2", "kg") });
+    const plan = { fungibilityRevisionId: pool.revisionId, method: InventoryAllocationMethod.Fifo };
+    const one = parseQuantity("1", "equivalent");
+    expect(await inventory.fungibility.plan({ ...plan, requested: one, atEpochMs: time2 })).toMatchObject({
+      lines: [], shortfall: one, incrementBlockedStock: true,
+    });
+    await expect(inventory.fungibility.issue({
+      ...plan, operationId: "issue-one-equivalent", occurredAtEpochMs: time2, requested: one,
+    })).rejects.toThrow("eligible members' exact allocation increments");
+    await inventory.stock.receive({ operationId: "complete-reference", occurredAtEpochMs: time1, to, amount: stockAmount("1", "kg") });
+    const issued = await inventory.fungibility.issue({
+      ...plan, operationId: "issue-seven-equivalents", occurredAtEpochMs: time2, requested: parseQuantity("7", "equivalent"),
+    });
+    expect(issued.event.stockEffects).toMatchObject([{
+      position: { itemId: material.itemId }, measurementsDelta: { primary: { quantity: parseQuantity("-3", "kg") } },
+    }]);
+  });
+
   it("compares repeating raw member equivalents exactly at the increment boundary", async () => {
     const older = oldBrand();
     const newer = newBrand();

@@ -477,30 +477,34 @@ interface MeasuredRemainderNeedsSplitInput {
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
   /** Current stored or batch-local measured rows. */
   readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
-  /** Already witnessed stock, excluded from the split check. */
+  /** Accepted quantities to subtract from their exact rows before checking for a split. */
   readonly lines: readonly InventoryPolicyAllocationLine[];
   /** Exact measurements still to be explained by the physical report. */
   readonly remainder: InventoryMeasurementVector;
 }
 
-/** Detect when an unused whole row could cover the exact remainder only through a measured split. */
+/** Detect when remaining eligible stock could cover the exact report only by splitting an increment. */
 function measuredRemainderNeedsSplit({
   candidates, rows, lines, remainder,
 }: MeasuredRemainderNeedsSplitInput): boolean {
-  const picked = new Set(lines.map(
-    /** Exclude rows already represented by an exact witness. */
-    (line) => inventoryStockPositionIdentity(line.position)
-  ));
+  /** Each exact position contributes at most one accepted witness. */
+  const picked = new Map<string, Quantity>();
+  for (const { position, allocatedPrimary } of lines) {
+    picked.set(inventoryStockPositionIdentity(position), allocatedPrimary);
+  }
   const primary = remainder.primary.quantity;
   for (const candidate of candidates) {
     const increment = candidate.allocationIncrement;
-    if (increment === undefined || compareWorkingQuantities(increment, primary) <= 0 ||
-      compareWorkingQuantities(candidate.available, primary) < 0) continue;
+    if (increment === undefined || compareWorkingQuantities(increment, primary) <= 0) continue;
     const identity = inventoryStockPositionIdentity(candidate.position);
+    const witnessed = picked.get(identity);
+    const remaining = witnessed === undefined ? candidate.available : subtractWorkingQuantity(candidate.available, witnessed);
+    if (compareWorkingQuantities(remaining, primary) < 0) continue;
     const row = rows.get(identity);
-    if (row === undefined || picked.has(identity)) continue;
+    if (row === undefined) continue;
     const onHand = inventoryPolicyPositionMeasurement(row.position, remainder.primary.axisId, primary.unit);
-    // A proportional match shows why exact lines are needed. It supplies no posting evidence.
+    // Only fixed-content packages can contribute a partial witness from an increment-bound row.
+    // Their remaining packages have the same proportions as the row before the pick.
     const compatible = remainder.independent.every(
       /** Cross-multiply exact digits without assigning weights to individual pieces. */
       ({ axisId, quantity }) => {

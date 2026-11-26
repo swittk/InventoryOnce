@@ -958,6 +958,48 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
+  it.each([false, true])("rejects a measured split of the package left in a picked row (canonical: %s)", async (canonical) => {
+    const item = measuredItemCatalog("pieces").activeItem("measured");
+    const packageId = "two-piece-fixed-weight-pack";
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [{
+        revisionId: packageId, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+        fixedContents: {
+          primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") },
+          independent: [{ axisId: "weight", quantity: parseQuantity("2", "kg") }],
+        },
+      }],
+    });
+    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : undefined);
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "receive-two-fixed-weight-packs", occurredAtEpochMs: time0,
+      to: { itemId: item.itemId, placementNodeId: "store", lotId: "same-row" }, amount: packageAmount(2, packageId),
+    });
+    const before = await inventory.read.world();
+    const transfer = {
+      occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+    };
+    await expect(inventory.stock.transferByPolicy({
+      ...transfer, operationId: "reject-split-of-second-pack",
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "3", unit: "kg" }]),
+    })).rejects.toThrow("intact package/serial increments");
+    expect(await inventory.read.world()).toEqual(before);
+    expect(await storage.readOperation("reject-split-of-second-pack")).toBeUndefined();
+    const shortage = await inventory.stock.transferByPolicy({
+      ...transfer, operationId: "record-shortage-after-two-packs",
+      amount: measuredStockAmount("5", "piece", [{ axisId: "weight", value: "5", unit: "kg" }]),
+    });
+    expect(shortage.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("1", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("1", "kg") }],
+      },
+    }]);
+  });
+
   it("records a measured remainder whose exact primary digits fit at a smaller scale", async () => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
     for (const [lotId, primary, weight] of [["heavy", "1.0", "40"], ["light", "1.0", "10"]] as const) {
