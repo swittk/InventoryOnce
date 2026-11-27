@@ -1,5 +1,5 @@
 import { InventoryStockClaimIndex } from "./stock-claim-index.js";
-import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
+import { inventoryReportedTransferReplayMetadataKey, stampInventoryReportedTransferReplay } from "./reported-transfer-replay.js";
 import { inventoryStockPoolRowReader, type InventoryScopedStockPool, type InventoryScopedStockPosition } from "./stock-scope.js";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { compareInventoryIdentityText } from "./ordering.js";
@@ -1897,12 +1897,18 @@ export class InMemoryInventoryDurableStorage
       }
       return undefined;
     }
-    // A restored canonical snapshot includes event idempotency, but does not
-    // include durable receipts. Let the canonical coordinator validate/replay
-    // that retained fact before any hot-row update; its receipt revision cannot
-    // be inferred from an event sequence because claim-only revisions also exist.
-    if (this.eventJournal.eventByOperation(input.operationId) !== undefined) {
-      return undefined;
+    const retainedEvent = this.eventJournal.eventByOperation(input.operationId);
+    if (retainedEvent !== undefined) {
+      // Only retained replay evidence can restore a receipt after a journal-only reopen.
+      const completed = retainedInventoryReportedTransferOperation(retainedEvent);
+      if (completed === undefined) return undefined;
+      assertSameInventoryOperationIntent(completed, input.intentFingerprint);
+      return {
+        worldRevision: completed.receipt.worldRevision,
+        recordedAtEpochMs: completed.recordedAtEpochMs,
+        event: retainedEvent,
+        replayed: true,
+      };
     }
     for (const stored of this.applyingOperations.values()) {
       if (stored.value.state === InventoryDurableOperationState.Applying) {
@@ -1942,9 +1948,15 @@ export class InMemoryInventoryDurableStorage
       );
     }
     const catalogForEvent = mayEstablishCatalog ? input.catalog : effectiveCatalog;
+    // An unfenced exact transfer gets its receipt revision here, while publication is serialized.
+    const draft = input.expectedWorldRevision === undefined &&
+      input.deficitPolicy === InventoryDeficitPolicy.Reject &&
+      input.event.kind === InventoryEventKind.Transfer && input.event.transferLifecycle === undefined
+      ? stampInventoryReportedTransferReplay(input.event, input.intentFingerprint, currentRevision + 1)
+      : input.event;
     const normalizedEvent = defineInventoryEvent({
       catalog: inventoryCatalogFromSnapshot(catalogForEvent),
-      event: input.event,
+      event: draft,
     });
 
     const baseRevision = currentRevision;

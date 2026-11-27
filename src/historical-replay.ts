@@ -125,7 +125,7 @@ function projectEffectiveInventoryEvents(
     catalog,
     events,
     deficitPolicy: InventoryDeficitPolicy.Record,
-    [replayEffectiveStockAge]: true,
+    [replayEffectiveStockAge]: "effective-history",
   };
   return projectInventoryEvents(effectiveHistory);
 }

@@ -2064,3 +2064,10 @@ The R105 portable-current-input authority and final publication both continue to
 - A positive row with an independent-axis hold stays unavailable to the signed pool. The hold requires explicit fulfillment only when the request selects that row.
 - A receipt starts a FIFO layer when the balance becomes positive. A top-up preserves the previous layer, even when the seeded row has no recorded start.
 - Disjoint revision and direct-placement postings provide exact candidate counts. A narrower subtree can win before those postings are enumerated.
+
+## 2026-11-27 — eligible witnesses and replay
+
+- The picker applies stock expiry before deciding whether a selected independent-axis hold requires explicit fulfillment. A package multiple that exceeds measurement storage can lose to another exact witness.
+- A Reject-mode exact transfer can use a commit-only adapter. The native publisher records its actual world revision for journal replay.
+- A count's occurrence cut can keep a loose direct-contents movement while excluding its source receipt. The retained route contributes its signed quantities without a source age.
+- Disjoint compact postings are counted before they are enumerated, including status constraints and values of one qualified dimension.

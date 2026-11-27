@@ -532,12 +532,12 @@ function projectInventoryEventsAtOrBefore(
     occurrenceCut.push({ ...event, recordSequence: cutSequence });
     cutSequence += 1;
   }
-  // The cut can retain a transfer while excluding the receipt that gave its source a FIFO age.
+  // The cut can retain a movement while excluding the receipt that gave its source a FIFO age.
   const replay = {
     catalog,
     events: occurrenceCut,
     deficitPolicy,
-    [replayEffectiveStockAge]: true,
+    [replayEffectiveStockAge]: "occurrence-cut",
   };
   return projectInventoryEvents(replay);
 }

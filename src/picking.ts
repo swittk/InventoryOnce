@@ -48,6 +48,7 @@ import {
   compareWorkingQuantities,
   materializeInventoryWorkingQuantity,
   quantityGreatestCommonDivisor,
+  storableQuantityScale,
   subtractWorkingQuantity,
   workingQuantityAtDecimals,
   type ExactQuantityDigits,
@@ -582,6 +583,7 @@ export function prepareInventoryPolicyAllocationPool({
   const { withinPlacementNodeIds: _withinPlacementNodeIds, ...stockSelector } = selection.selector;
   const candidateResult = createPolicyAllocationCandidates({
     catalog, pool, item: selection.item, stockSelector, reservationAtEpochMs, allowAllocatedStock,
+    stockAtEpochMs: atEpochMs, allowExpiredLots,
     ...(reservationId === undefined ? {} : { reservationId }),
     keepIndependentHoldsWhole: recordingAttempt === "prefer-unheld",
   });
@@ -916,6 +918,10 @@ interface CreatePolicyAllocationCandidatesInput {
   readonly stockSelector: InventoryStockSelector;
   /** Claim-book authority time used to reconstruct active reservations. */
   readonly reservationAtEpochMs: number;
+  /** Physical authority time used to exclude expired stock. */
+  readonly stockAtEpochMs: number;
+  /** Whether the policy includes expired stock in its candidates. */
+  readonly allowExpiredLots: boolean;
   /** Optional claim whose own binding stays available to its allocator/consumer. */
   readonly reservationId?: string;
   /** Whether exact allocations should remain physically selectable. */
@@ -1015,6 +1021,8 @@ function createPolicyAllocationCandidates({
   item,
   stockSelector,
   reservationAtEpochMs,
+  stockAtEpochMs,
+  allowExpiredLots,
   reservationId,
   allowAllocatedStock,
   keepIndependentHoldsWhole,
@@ -1030,6 +1038,8 @@ function createPolicyAllocationCandidates({
     item,
     stockSelector,
     atEpochMs: reservationAtEpochMs,
+    stockAtEpochMs,
+    allowExpiredLots,
     ...(reservationId === undefined ? {} : { excludedReservationId: reservationId }),
     allowAllocatedStock,
     keepIndependentHoldsWhole,
@@ -1112,6 +1122,10 @@ interface CreateExactPrimaryReservationSummaryInput {
   readonly stockSelector: InventoryStockSelector;
   /** Claim-book authority time used to decide whether each row still protects stock. */
   readonly atEpochMs: number;
+  /** Physical authority time used to exclude expired stock. */
+  readonly stockAtEpochMs: number;
+  /** Whether this pick includes expired stock. */
+  readonly allowExpiredLots: boolean;
   /** Optional reservation whose own binding stays available to its allocator/consumer. */
   readonly excludedReservationId?: string;
   /** Whether exact bindings are deliberately ignored as physical-truth candidates. */
@@ -1127,6 +1141,8 @@ function createExactPrimaryReservationSummary({
   item,
   stockSelector,
   atEpochMs,
+  stockAtEpochMs,
+  allowExpiredLots,
   excludedReservationId,
   allowAllocatedStock,
   keepIndependentHoldsWhole,
@@ -1150,6 +1166,9 @@ function createExactPrimaryReservationSummary({
       const row = positions.get(positionIdentity);
       if (row === undefined) continue;
       if (item.reservationAxisId !== item.primaryAxis.axisId) {
+        // The picker will remove expired capacity before applying deficit burden.
+        if (!allowExpiredLots && row.effectiveUseByEpochMs !== undefined &&
+            row.effectiveUseByEpochMs <= stockAtEpochMs) continue;
         const onHand = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
         // A stranded hold remains a claim, but its depleted row cannot supply a pick.
         if (onHand.amountMinor <= 0n) continue;
@@ -1351,6 +1370,15 @@ function inventoryAmountForWorkingPrimaryAllocation({
       allocatedPrimary,
       onePackagePrimary
     );
+    // An exact package multiple can be a valid search trial without fitting a durable measurement.
+    if (packageCount > 1) {
+      const count = BigInt(packageCount);
+      for (const { quantity } of packaging.fixedContents.independent) {
+        if (storableQuantityScale(BigInt(quantity.amountMinor) * count, quantity.decimals) === undefined) {
+          return undefined;
+        }
+      }
+    }
     // Retain package-fixed axis IDs so only unfixed independent axes repeat their amount.
     const fixedAxes = new Set<string>();
     for (const measured of packaging.fixedContents.independent) {

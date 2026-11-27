@@ -308,15 +308,18 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
-  it("plans a selected lot beside an independent-axis hold", async () => {
+  it.each([false, true])("plans beside an independent-axis hold (held lot expired: %s)", async (expired) => {
     const catalog = measuredItemCatalog("weight");
     const storage = createInMemoryInventoryDurableStorage();
-    const inventory = createTestInventory(storage, catalog, clockAt(time3));
+    const inventory = createTestInventory(storage, catalog, clockAt(time1));
     const held = { itemId: "measured", placementNodeId: "store", lotId: "held" };
     const free = { ...held, lotId: "free" };
     const heldScope = { itemId: held.itemId, placementNodeIds: ["store"], lotIds: ["held"] };
     const amount = measuredStockAmount("2", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]);
-    await inventory.stock.receive({ operationId: "seed-held", occurredAtEpochMs: time0, to: held, amount });
+    await inventory.stock.receive({
+      operationId: "seed-held", occurredAtEpochMs: time0, to: held, amount,
+      ...(expired ? { lot: { expiresAtEpochMs: time2 } } : {}),
+    });
     await inventory.stock.receive({ operationId: "seed-free", occurredAtEpochMs: time0, to: free, amount });
     const [position] = await inventory.read.positions(heldScope);
     if (position === undefined) throw new Error("Missing held stock.");
@@ -336,7 +339,14 @@ describe("indexed stock planning and availability", () => {
     expect(plan.lines).toMatchObject([{ position: free, allocatedPrimary: parseQuantity("2", "piece") }]);
     expect(planInventoryAllocation({ ...request, selector: { ...heldScope, lotIds: ["free"] }, catalog, world }))
       .toEqual(plan);
-    await expect(inventory.read.planAllocation({ ...request, selector: heldScope }))
+    if (expired) {
+      const scope = { itemId: held.itemId, placementNodeIds: ["store"] };
+      const broad = await inventory.read.planAllocation({ ...request, selector: scope });
+      expect(broad.lines).toEqual(plan.lines);
+      expect(broad.expiredStockWasExcluded).toBe(true);
+      expect(planInventoryAllocation({ ...request, selector: scope, catalog, world })).toEqual(broad);
+    }
+    await expect(inventory.read.planAllocation({ ...request, selector: heldScope, allowExpiredLots: expired }))
       .rejects.toThrow("cannot subtract an exact reservation on an independent axis");
     expect(readWorld).not.toHaveBeenCalled();
   });
@@ -1192,6 +1202,38 @@ describe("indexed stock planning and availability", () => {
         independent: [{ axisId: "weight", quantity: parseQuantity("20", "kg") }],
       },
     }]);
+  });
+
+  it("uses a later witness when a counted package trial exceeds exact measurement storage", async () => {
+    const item = measuredItemCatalog("pieces").activeItem("measured");
+    const packageId = "precision-package";
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [{
+        revisionId: packageId, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+        fixedContents: {
+          primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+          independent: [{ axisId: "weight", quantity: parseQuantity("0.9007199254740991", "kg") }],
+        },
+      }],
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const source = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receive({
+      operationId: "receive-precision-packages", occurredAtEpochMs: time0,
+      to: { ...source, lotId: "older-packages" }, amount: packageAmount(10, packageId),
+    });
+    const amount = measuredStockAmount("2", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]);
+    await inventory.stock.receive({
+      operationId: "receive-exact-witness", occurredAtEpochMs: time1,
+      to: { ...source, lotId: "exact-witness" }, amount,
+    });
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "move-exact-witness", occurredAtEpochMs: time2, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo, amount,
+    });
+    expect(moved.event.stockEffects.map((effect) => effect.position.lotId)).toEqual(["exact-witness", "exact-witness"]);
+    expect(moved.event.unwitnessedStockMovements).toBeUndefined();
   });
 
   it("checks for a measured split after the primary-only plan fills the request", async () => {
@@ -2330,6 +2372,50 @@ describe("indexed stock planning and availability", () => {
       await expect(reopened.stock.transfer({ ...command, reason: "changed" })).rejects.toThrow("changed intent");
       expect(coldStorage.readSegmentedStockHead().worldRevision).toBe(world.revision);
     }
+  });
+
+  it.each(["single", "many"])("publishes a Reject-mode %s exact transfer through a commit-only adapter", async (form) => {
+    /** Expose the native event commit through an adapter without the optional planning reads. */
+    const commitOnly = (storage: ReturnType<typeof createInMemoryInventoryDurableStorage>) => new Proxy(storage, {
+      /** Keep bound adapter methods while omitting the planning capability. */
+      get(target, property) {
+        if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool") return undefined;
+        const member = Reflect.get(target, property);
+        return typeof member === "function" ? member.bind(target) : member;
+      },
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(commitOnly(storage));
+    const from = loosePosition("store");
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "commit-only-receipt", occurredAtEpochMs: time0, to: from, amount });
+    await inventory.counts.start({
+      countId: "commit-only-count", operationId: "commit-only-count-start", startedAtEpochMs: time0, selector,
+    });
+    await inventory.counts.abandon({
+      countId: "commit-only-count", operationId: "commit-only-count-abandon", occurredAtEpochMs: time0,
+      reason: "Close the count before moving stock.",
+    });
+    const header = { operationId: "commit-only-transfer", occurredAtEpochMs: time1 };
+    const line = { from, toPlacementNodeId: "destination", amount };
+    /** Publish the same exact movement through the selected public transfer operation. */
+    const move = (target: ReturnType<typeof createTestInventory>, reason?: string) => {
+      const intent = reason === undefined ? header : { ...header, reason };
+      return form === "single"
+        ? target.stock.transfer({ ...intent, ...line })
+        : target.stock.transferMany({ ...intent, lines: [line] });
+    };
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const result = await move(inventory);
+    expect(readWorld).not.toHaveBeenCalled();
+    readWorld.mockRestore();
+    expect(result.receipt.worldRevision).toBeGreaterThan(result.event.recordSequence);
+    const restoredStorage = createInMemoryInventoryDurableStorage({ initialWorld: await inventory.read.world() });
+    const readRestoredWorld = vi.spyOn(restoredStorage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const reopened = createTestInventory(commitOnly(restoredStorage));
+    expect(await move(reopened)).toEqual({ ...result, replayed: true });
+    await expect(move(reopened, "Changed report.")).rejects.toThrow("changed intent");
+    expect(readRestoredWorld).not.toHaveBeenCalled();
   });
 
   it("replays a serialized reported transfer after reopening the exact journal", async () => {

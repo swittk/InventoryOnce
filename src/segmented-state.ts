@@ -1197,22 +1197,7 @@ function inventorySegmentedSetIndexCandidate(
   keys: readonly string[] | undefined
 ): InventorySegmentedCandidate | undefined {
   if (keys === undefined) return undefined;
-  if (keys.length === 1) {
-    return inventorySegmentedSetCandidate(index.get(keys[0] ?? ""));
-  }
-  // Each position belongs to one revision and one direct placement, so these counts do not overlap.
-  let size = 0;
-  for (const key of keys) size += index.get(key)?.size ?? 0;
-  return {
-    size,
-    /** Enumerate the winning postings before the caller sorts their identities. */
-    *identities() {
-      for (const key of keys) {
-        const posting = index.get(key);
-        if (posting !== undefined) yield* posting;
-      }
-    },
-  };
+  return inventorySegmentedCompactIndexCandidate(index, keys);
 }
 
 /** Build one candidate for an Allowed optional-identity constraint over a set-valued index. */
@@ -1229,9 +1214,9 @@ function inventorySegmentedConstraintCandidate(
   return inventorySegmentedSetIndexCandidate(index, constraint.valueIds);
 }
 
-/** Build one candidate from a compact scalar-or-set index across allowed keys. */
+/** Count disjoint normalized postings and enumerate identities only for the winning candidate. */
 function inventorySegmentedCompactIndexCandidate(
-  index: ReadonlyMap<string, InventorySegmentedCompactMembership>,
+  index: ReadonlyMap<string, string | ReadonlySet<string>>,
   keys: readonly string[]
 ): InventorySegmentedCandidate {
   if (keys.length === 1) {
@@ -1247,14 +1232,23 @@ function inventorySegmentedCompactIndexCandidate(
     }
     return inventorySegmentedSetCandidate(membership);
   }
-  const union = new Set<string>();
+  // Each position belongs to one value in each scalar index or selected qualified dimension.
+  let size = 0;
   for (const key of keys) {
     const membership = index.get(key);
-    if (membership === undefined) continue;
-    if (typeof membership === "string") union.add(membership);
-    else for (const identity of membership) union.add(identity);
+    size += typeof membership === "string" ? 1 : membership?.size ?? 0;
   }
-  return inventorySegmentedSetCandidate(union);
+  return {
+    size,
+    /** Enumerate winning postings before the caller sorts their identities. */
+    *identities() {
+      for (const key of keys) {
+        const membership = index.get(key);
+        if (typeof membership === "string") yield membership;
+        else if (membership !== undefined) yield* membership;
+      }
+    },
+  };
 }
 
 /** Build one candidate for an Allowed optional-identity constraint over a compact index. */

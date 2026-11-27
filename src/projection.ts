@@ -1,5 +1,5 @@
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge } from "./stock-age.js";
+import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge, type InventoryStockAgeReplay } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -381,7 +381,7 @@ function applyInventoryCommittedEventInternal(
   mutateProjection: boolean,
   projectTraceability: boolean,
   ownsPlacement = mutateProjection,
-  replayEffectiveHistory = false
+  replayStockAge?: InventoryStockAgeReplay
 ): ApplyInventoryCommittedEventResult {
   const normalizedDraft = defineInventoryEvent({ catalog, event });
   const normalizedEvent = commitInventoryEvent(
@@ -930,7 +930,7 @@ function applyInventoryCommittedEventInternal(
       normalizedEvent,
       /** Read a FIFO start from the published state before applying any effect. */
       (positionId) => state.positiveLayerStartedAtEpochMsByPositionId[positionId],
-      replayEffectiveHistory
+      replayStockAge
     );
   for (const effect of normalizedEvent.stockEffects) {
     /** Embodied serial stock must still have a positive instance after a move. */
@@ -1678,7 +1678,8 @@ function inventoryLotDefinitionFingerprint(
 /** Replay committed history through the same reducer used for live commits. */
 export function projectInventoryEvents(input: ProjectInventoryEventsInput): InventoryProjectionState {
   const { catalog, events, deficitPolicy, throughRecordSequence } = input;
-  const replayEffectiveHistory = replayEffectiveStockAge in input;
+  const stockAge = replayEffectiveStockAge in input ? input[replayEffectiveStockAge] : undefined;
+  const replayStockAge = stockAge === "effective-history" || stockAge === "occurrence-cut" ? stockAge : undefined;
   if (
     throughRecordSequence !== undefined &&
     (!Number.isSafeInteger(throughRecordSequence) || throughRecordSequence < 0)
@@ -1700,7 +1701,7 @@ export function projectInventoryEvents(input: ProjectInventoryEventsInput): Inve
       true,
       false,
       true,
-      replayEffectiveHistory
+      replayStockAge
     ).state;
     appliedEventCount += 1;
   }

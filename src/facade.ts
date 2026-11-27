@@ -1,5 +1,5 @@
 import { createInventoryRecordedMovement, type InventoryUnwitnessedMovementLine } from "./recorded-movement.js";
-import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
+import { stampInventoryReportedTransferReplay } from "./reported-transfer-replay.js";
 import {
   inventoryScopedStockMatches,
   type InventoryScopedStockPool,
@@ -4097,6 +4097,12 @@ async function commitInventoryReportedExactTransfer(
   event: InventoryEventDraft
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
+  // Exact Reject-mode transfers need no planning read. The native publisher owns the receipt revision.
+  if (internals.deficitPolicy === InventoryDeficitPolicy.Reject &&
+      !inventoryStorageSupportsSegmentedStockPlanning(internals.storage)) {
+    const committed = await commitInventorySegmentedStockEventIfEligible(owner, event);
+    if (committed !== undefined) return committed;
+  }
   const intentFingerprint = inventoryEventIntentFingerprint(event);
   return commitInventoryScopedMovement({
     internals,
@@ -4107,13 +4113,7 @@ async function commitInventoryReportedExactTransfer(
       const planned = internals.deficitPolicy === InventoryDeficitPolicy.Record
         ? await planRecordedExactTransfer({ catalog: internals.catalog, event, readPosition: source.position })
         : event;
-      return {
-        ...planned,
-        metadata: {
-          ...planned.metadata,
-          [inventoryReportedTransferReplayMetadataKey]: { intentFingerprint, worldRevision: nextWorldRevision },
-        },
-      };
+      return stampInventoryReportedTransferReplay(planned, intentFingerprint, nextWorldRevision);
     },
   });
 }

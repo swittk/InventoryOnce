@@ -624,6 +624,37 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ]);
   });
 
+  it("reconciles when a backdated contents move precedes its source receipt in the occurrence cut", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const selector = { itemId: "item-a", placementNodeIds: ["destination"] };
+    const countId = "contents-count";
+    await inventory.counts.start({ countId, operationId: "start-contents-count", selector, startedAtEpochMs: time0 });
+    await inventory.stock.receive({
+      operationId: "receive-contents", occurredAtEpochMs: time2,
+      to: loosePosition("source"), amount: stockAmount("2", "piece"),
+    });
+    const move = await inventory.placement.moveContents({
+      operationId: "move-contents-before-receipt", occurredAtEpochMs: time1, nodeId: "source", into: "destination",
+    });
+    expect(move.event.positiveLayerProvenanceTransfers).toHaveLength(1);
+    const [arrival] = await inventory.read.positions(selector);
+    if (arrival === undefined) throw new Error("Expected the contents arrival.");
+    await inventory.counts.observe({
+      countId, operationId: "observe-contents-count", observedAtEpochMs: time1,
+      observations: [{
+        position: arrival.key,
+        measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    const result = await inventory.counts.reconcile({
+      countId, operationId: "reconcile-contents-count", completedAtEpochMs: time3, reason: "One piece was missing.",
+    });
+    expect(result.count.status).toBe(InventoryCountStatus.Completed);
+    expect(result.event?.stockEffects).toMatchObject([
+      { position: arrival.key, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+    ]);
+  });
+
   it("reconciles a mixed transfer when the occurrence cut excludes its source receipt", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const selector = { itemId: "item-a", placementNodeIds: ["destination"] };
