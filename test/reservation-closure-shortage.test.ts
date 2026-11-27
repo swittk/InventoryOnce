@@ -87,6 +87,46 @@ it.each([false, true])("reports each broad claim's whole-piece shortfall after l
   }
 });
 
+it.each([false, true])("bounds mixed whole increments after loose stock is issued (canonical: %s)", async (canonical) => {
+  const item = defineScalarInventoryItem({ itemId: "mixed", revisionId: "mixed-v1", axisId: "pieces", unit: "piece" });
+  const four = defineScalarInventoryPackaging({ revisionId: "four", item, packageUnit: "box", contains: "4" });
+  const seven = defineScalarInventoryPackaging({ revisionId: "seven", item, packageUnit: "box", contains: "7" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { mixed: item.revisionId }, packagingRevisions: [four, seven],
+  });
+  const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+  const inventory = createTestInventory(storage, catalog);
+  const store = { itemId: item.itemId, placementNodeId: "store" };
+  const loose = { ...store, lotId: "loose" };
+  await inventory.stock.receiveMany({
+    operationId: "receive-mixed-increments", occurredAtEpochMs: time0,
+    lines: [
+      { to: { ...store, lotId: "four" }, amount: packageAmount(200_000, four.revisionId) },
+      { to: { ...store, lotId: "seven" }, amount: packageAmount(1, seven.revisionId) },
+      { to: loose, amount: stockAmount("3", "piece") },
+    ],
+  });
+  const requested = parseQuantity("800002", "piece");
+  await inventory.reservations.reserve({
+    operationId: "reserve-mixed-increments", reservationId: "hold", itemRevisionId: item.revisionId,
+    selector: { itemId: item.itemId, placementNodeIds: ["store"] }, requested, createdAtEpochMs: time1,
+  });
+  expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+
+  // Taking the seven-piece package leaves a worse remainder than skipping it.
+  for (const shortage of [0, 1, 2]) {
+    await inventory.stock.issue({
+      operationId: `issue-mixed-loose-${shortage}`, occurredAtEpochMs: time2,
+      from: loose, amount: stockAmount("1", "piece"),
+    });
+    expect((await inventory.read.reservationFeasibility()).groups).toMatchObject([{
+      requested, fulfillable: parseQuantity(String(800_002 - shortage), "piece"),
+      shortage: parseQuantity(String(shortage), "piece"),
+    }]);
+  }
+  expect(await inventory.read.reservation("hold")).toMatchObject({ requested, status: InventoryReservationStatus.Active });
+});
+
 /** Runtime and durable adapter after physical loss leaves only claim c1 short. */
 interface ReservationShortageFixture {
   /** Real application-facing InventoryOnce facade. */

@@ -2155,3 +2155,7 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — broad claims after loss of loose stock
 
 - Each broad claim can take whole stock only in multiples of its eligible whole-pick increments. Its eligible loose stock bounds what can fill the remainder. The sum of these ceilings and the shared stock capacity let a proven optimal assignment end the search within its normal work limit.
+
+## 2026-11-28 — remaining increments in reservation search
+
+- Assigning or skipping a whole stock group changes the increments available to later groups. Each branch uses the remaining groups' shared capacity and increment divisor to bound what its unfilled claims can still take. Pruned visits still count toward the search budget.

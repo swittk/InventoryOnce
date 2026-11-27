@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4416,
-    "edges": 12784,
+    "callables": 4418,
+    "edges": 12801,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -6654,7 +6654,7 @@
                 "column": 98,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:237378:<anonymous@3829>",
+                "id": "test/scoped-stock-planning.test.ts:237335:<anonymous@3829>",
                 "kind": "ArrowFunction",
                 "line": 3829,
                 "name": "<anonymous@3829>",
@@ -6715,10 +6715,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6776,10 +6776,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -7029,10 +7029,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -7191,10 +7191,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -14727,10 +14727,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -21958,10 +21958,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -22110,10 +22110,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -22727,10 +22727,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -22919,31 +22919,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/catalog-composition-publication.test.ts",
+                "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/catalog-composition-publication.test.ts",
+                "id": "test-root:test/reservation-closure-shortage.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/catalog-composition-publication.test.ts"
+                "name": "test/reservation-closure-shortage.test.ts"
               },
               {
-                "column": 58,
-                "file": "test/catalog-composition-publication.test.ts",
+                "column": 101,
+                "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-composition-publication.test.ts:1501:<anonymous@43>",
+                "id": "test/reservation-closure-shortage.test.ts:4343:<anonymous@90>",
                 "kind": "ArrowFunction",
-                "line": 43,
-                "name": "<anonymous@43>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 82,
-                "file": "test/catalog-composition-publication.test.ts",
-                "hasBody": true,
-                "id": "test/catalog-composition-publication.test.ts:1590:<anonymous@44>",
-                "kind": "ArrowFunction",
-                "line": 44,
-                "name": "<anonymous@44>",
+                "line": 90,
+                "name": "<anonymous@90>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -22957,7 +22947,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/catalog-composition-publication.test.ts"
+            "test": "test/reservation-closure-shortage.test.ts"
           }
         }
       ]
@@ -24237,10 +24227,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -31472,10 +31462,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -31624,10 +31614,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -32048,31 +32038,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/catalog-composition-publication.test.ts",
+                "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/catalog-composition-publication.test.ts",
+                "id": "test-root:test/reservation-closure-shortage.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/catalog-composition-publication.test.ts"
+                "name": "test/reservation-closure-shortage.test.ts"
               },
               {
-                "column": 58,
-                "file": "test/catalog-composition-publication.test.ts",
+                "column": 101,
+                "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/catalog-composition-publication.test.ts:1501:<anonymous@43>",
+                "id": "test/reservation-closure-shortage.test.ts:4343:<anonymous@90>",
                 "kind": "ArrowFunction",
-                "line": 43,
-                "name": "<anonymous@43>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 82,
-                "file": "test/catalog-composition-publication.test.ts",
-                "hasBody": true,
-                "id": "test/catalog-composition-publication.test.ts:1590:<anonymous@44>",
-                "kind": "ArrowFunction",
-                "line": 44,
-                "name": "<anonymous@44>",
+                "line": 90,
+                "name": "<anonymous@90>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -32086,7 +32066,7 @@
                 "reason": "resolved-call"
               }
             ],
-            "test": "test/catalog-composition-publication.test.ts"
+            "test": "test/reservation-closure-shortage.test.ts"
           }
         }
       ]
@@ -33346,10 +33326,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -35148,10 +35128,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -35483,10 +35463,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -37043,10 +37023,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -41083,31 +41063,21 @@
             "chain": [
               {
                 "column": 1,
-                "file": "test/containers.test.ts",
+                "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test-root:test/containers.test.ts",
+                "id": "test-root:test/reservation-closure-shortage.test.ts",
                 "kind": "TestRoot",
                 "line": 1,
-                "name": "test/containers.test.ts"
+                "name": "test/reservation-closure-shortage.test.ts"
               },
               {
-                "column": 40,
-                "file": "test/containers.test.ts",
+                "column": 101,
+                "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/containers.test.ts:16693:<anonymous@343>",
+                "id": "test/reservation-closure-shortage.test.ts:4343:<anonymous@90>",
                 "kind": "ArrowFunction",
-                "line": 343,
-                "name": "<anonymous@343>",
-                "reason": "external-callback-dispatch"
-              },
-              {
-                "column": 82,
-                "file": "test/containers.test.ts",
-                "hasBody": true,
-                "id": "test/containers.test.ts:35557:<anonymous@868>",
-                "kind": "ArrowFunction",
-                "line": 868,
-                "name": "<anonymous@868>",
+                "line": 90,
+                "name": "<anonymous@90>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -41131,7 +41101,7 @@
                 "reason": "interface-to-implementation"
               }
             ],
-            "test": "test/containers.test.ts"
+            "test": "test/reservation-closure-shortage.test.ts"
           }
         }
       ]
@@ -41965,20 +41935,20 @@
                 "column": 62,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:8707:<anonymous@197>",
+                "id": "test/reservation-closure-shortage.test.ts:11070:<anonymous@237>",
                 "kind": "ArrowFunction",
-                "line": 197,
-                "name": "<anonymous@197>",
+                "line": 237,
+                "name": "<anonymous@237>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 87,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:11007:<anonymous@251>",
+                "id": "test/reservation-closure-shortage.test.ts:13370:<anonymous@291>",
                 "kind": "ArrowFunction",
-                "line": 251,
-                "name": "<anonymous@251>",
+                "line": 291,
+                "name": "<anonymous@291>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -42046,20 +42016,20 @@
                 "column": 62,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:8707:<anonymous@197>",
+                "id": "test/reservation-closure-shortage.test.ts:11070:<anonymous@237>",
                 "kind": "ArrowFunction",
-                "line": 197,
-                "name": "<anonymous@197>",
+                "line": 237,
+                "name": "<anonymous@237>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 95,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:13588:<anonymous@301>",
+                "id": "test/reservation-closure-shortage.test.ts:15951:<anonymous@341>",
                 "kind": "ArrowFunction",
-                "line": 301,
-                "name": "<anonymous@301>",
+                "line": 341,
+                "name": "<anonymous@341>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49143,10 +49113,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49204,10 +49174,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49457,10 +49427,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49619,10 +49589,10 @@
                 "column": 81,
                 "file": "test/reservation-closure-shortage.test.ts",
                 "hasBody": true,
-                "id": "test/reservation-closure-shortage.test.ts:4678:<anonymous@98>",
+                "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 98,
-                "name": "<anonymous@98>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {

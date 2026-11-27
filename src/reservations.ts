@@ -1434,6 +1434,7 @@ function reservationGroupFeasibility(
       requestedByReservation,
       edgeCapacityByReservation,
       decimals,
+      divisibleCapacity,
       fulfillableBound
     ),
   };
@@ -1668,15 +1669,58 @@ function createIndivisibleReservationIncrement(
   };
 }
 
-/** Assign whole packages and serials exactly, stopping once a real assignment reaches the upper bound. */
+/** Bound the whole stock still available after earlier groups have been assigned. */
+interface ReservationWholeStockBound {
+  /** Total shared-scale quantity in the remaining whole groups. */
+  readonly capacityMinor: bigint;
+  /** Greatest common divisor of those groups' shared-scale increments. */
+  readonly incrementMinor: bigint;
+}
+
+/** Bound how much of the remaining claims this branch could still fill. */
+function remainingReservationAssignmentCeiling(
+  remainingDemand: readonly bigint[],
+  wholeStock: ReservationWholeStockBound | undefined,
+  divisibleCapacity: bigint
+): bigint {
+  const increment = wholeStock?.incrementMinor ?? 0n;
+  let totalDemand = 0n;
+  let wholeDemand = 0n;
+  // A claim's whole assignment is a multiple of the remaining increments' GCD.
+  for (const demand of remainingDemand) {
+    totalDemand += demand;
+    if (increment > 1n) wholeDemand += demand - demand % increment;
+  }
+  if (increment === 1n) wholeDemand = totalDemand;
+  const wholeCapacity = wholeStock?.capacityMinor ?? 0n;
+  const boundedWhole = wholeDemand < wholeCapacity ? wholeDemand : wholeCapacity;
+  const remainingCapacity = boundedWhole + divisibleCapacity;
+  return totalDemand < remainingCapacity ? totalDemand : remainingCapacity;
+}
+
+/** Assign whole packages and serials exactly, pruning branches that cannot improve the witness. */
 function maximumReservationAssignmentWithIndivisibleGroups(
   positions: readonly ReservationFeasibilityPosition[],
   groups: readonly ReservationIndivisibleGroup[],
   requestedByReservation: readonly bigint[],
   edgeCapacityByReservation: readonly bigint[][],
   decimals: number,
+  divisibleCapacity: bigint,
   fulfillableUpperBound: bigint
 ): bigint {
+  /** Precompute stock and increments for each suffix of the existing search order. */
+  const wholeStockByGroup: ReservationWholeStockBound[] = [];
+  let suffixCapacity = 0n;
+  let suffixIncrement = 0n;
+  for (let index = groups.length - 1; index >= 0; index -= 1) {
+    const group = groups[index];
+    if (group === undefined) continue;
+    suffixCapacity += group.count * group.capacityMinor;
+    if (suffixIncrement !== 1n) {
+      suffixIncrement = quantityGreatestCommonDivisor(suffixIncrement, group.capacityMinor);
+    }
+    wholeStockByGroup[index] = { capacityMinor: suffixCapacity, incrementMinor: suffixIncrement };
+  }
   let best = 0n;
   let exploredStates = 0;
   const seen = new Set<string>();
@@ -1694,6 +1738,13 @@ function maximumReservationAssignmentWithIndivisibleGroups(
         "Reservation indivisible assignment exceeded its safe search bound; narrow the selectors."
       );
     }
+    // Count even pruned visits so enumerating distributions remains bounded.
+    const branchCeiling = groupIndex === 0
+      ? fulfillableUpperBound
+      : assignedMinor + remainingReservationAssignmentCeiling(
+          remainingDemand, wholeStockByGroup[groupIndex], divisibleCapacity
+        );
+    if (best >= branchCeiling) return;
     const stateIdentity = inventoryIntentFingerprint([
       groupIndex,
       remainingDemand.map(String),
@@ -1760,7 +1811,7 @@ function maximumReservationAssignmentWithIndivisibleGroups(
           nextEdges,
           assignedMinor + groupAssignedMinor
         );
-        return best !== fulfillableUpperBound;
+        return best < branchCeiling && best !== fulfillableUpperBound;
       }
     );
   };

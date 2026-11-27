@@ -3611,7 +3611,7 @@ describe("indexed stock planning and availability", () => {
 
   it("preserves carried FIFO age and plans a whole batch without a world read", async () => {
     const nativeStorage = createInMemoryInventoryDurableStorage();
-    const canonicalStorage = createInMemoryInventoryDurableStorage({ failpoint: () => undefined });
+    const canonicalStorage = policyPickingStorage(true);
     const native = createTestInventory(nativeStorage);
     const canonical = createTestInventory(canonicalStorage);
     for (const inventory of [native, canonical]) {
