@@ -397,7 +397,7 @@ function searchInventoryAllocations(
   minimumDecimals = input.requested.decimals
 ): InventoryAllocationAssignment | undefined {
   const {
-    requested, candidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
+    requested, candidates: orderedCandidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
     maximumWitnessPrimary, fullWitnessPrimaryBudget, wholeMeasuredSubsets, ignoreIncrements = false, improveOnShortfall,
   } = input;
   /** Relaxed trials can present fractional packages that a normal predicate cannot represent. */
@@ -411,25 +411,34 @@ function searchInventoryAllocations(
       }
     };
   let decimals = minimumDecimals;
-  for (const candidate of candidates) {
+  for (const candidate of orderedCandidates) {
     decimals = Math.max(decimals, candidate.available.decimals);
     if (candidate.allocationIncrement !== undefined) {
       decimals = Math.max(decimals, candidate.allocationIncrement.decimals);
     }
   }
   const requestedMinor = integerAtDecimals(requested, decimals);
-  const capacityMinor = candidates.map(
-    /** Put every candidate capacity on one exact integer scale for the bounded search. */
-    (candidate) => workingQuantityAtDecimals(candidate.available, decimals)
-  );
-  const incrementMinor = candidates.map(
-    /** Divisible rows use the smallest exact digit on the shared scale. */
-    (candidate) =>
-      candidate.allocationIncrement === undefined ||
-        (ignoreIncrements && canRelaxAllocationIncrement(candidate, predicate))
-        ? 1n
-        : workingQuantityAtDecimals(candidate.allocationIncrement, decimals)
-  );
+  /** Working capacities and effective increments on the original shared scale. */
+  const capacityMinor: bigint[] = [];
+  const incrementMinor: bigint[] = [];
+  /** Keep the original ordered array unless a row is forced to zero for this trial. */
+  let selectableCandidates: InventoryWorkingAllocationCandidate[] | undefined;
+  for (const candidate of orderedCandidates) {
+    const capacity = workingQuantityAtDecimals(candidate.available, decimals);
+    const increment = candidate.allocationIncrement === undefined ||
+      (ignoreIncrements && canRelaxAllocationIncrement(candidate, predicate))
+      ? 1n
+      : workingQuantityAtDecimals(candidate.allocationIncrement, decimals);
+    // A row whose first legal increment cannot fit has no branch other than zero in this search.
+    if (capacity < increment || requestedMinor < increment) {
+      selectableCandidates ??= orderedCandidates.slice(0, capacityMinor.length);
+      continue;
+    }
+    selectableCandidates?.push(candidate);
+    capacityMinor.push(capacity);
+    incrementMinor.push(increment);
+  }
+  const candidates = selectableCandidates ?? orderedCandidates;
   /** Map the proof to policy order. Fractional diagnostic choices are outside this proof. */
   const wholeRowBits = wholeMeasuredSubsets === undefined || ignoreIncrements ? undefined : candidates.map(
     /** A row without a reported whole contribution has no effect on the subset. */

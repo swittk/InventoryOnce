@@ -660,6 +660,33 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     ).toThrow("Quantity decimals must be an integer");
   });
 
+  it("preserves exact and partial picks and relaxed diagnostics across pruned whole rows", () => {
+    const retained = [4, 3, 3].map((pieces, index) => {
+      const amount = parseQuantity(String(pieces), "piece");
+      return candidate({ lotId: `retained-${index}`, receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+        extra: { available: amount, allocationIncrement: amount } });
+    });
+    const oversized = parseQuantity("7.000", "piece");
+    const padding = Array.from({ length: 4_998 }, (_, index) => candidate({
+      lotId: `oversized-${index}`, receivedAtEpochMs: time1 + index, expiresAtEpochMs: time3,
+      extra: { available: oversized, allocationIncrement: oversized },
+    }));
+    const input = { candidates: [...retained, ...padding], method: InventoryAllocationMethod.Fifo, nowEpochMs: time2 };
+    const exact = allocateInventory({ ...input, requested: parseQuantity("6", "piece") });
+    expect(exact.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual([
+      ["retained-1", parseQuantity("3.000", "piece")], ["retained-2", parseQuantity("3.000", "piece")],
+    ]);
+    expect(exact.shortfall).toEqual(parseQuantity("0", "piece"));
+    expect(exact.incrementBlockedStock).toBe(true);
+    const partial = allocateInventoryUpTo({ ...input, requested: parseQuantity("5", "piece") });
+    expect(partial.allocations.map(({ position, quantity }) => [position.lotId, quantity]))
+      .toEqual([["retained-0", parseQuantity("4.000", "piece")]]);
+    expect(partial.shortfall).toEqual(parseQuantity("1.000", "piece"));
+    expect(partial.incrementBlockedStock).toBe(true);
+    const unavailable = allocateInventory({ ...input, requested: parseQuantity("1", "piece") });
+    expect(unavailable).toMatchObject({ allocations: [], shortfall: parseQuantity("1", "piece"), incrementBlockedStock: true });
+  });
+
   it("fails with the domain search-bound error before recursive candidate depth can overflow", () => {
     const deepCandidates = Array.from({ length: 7_000 }, (_, index) =>
       candidate({

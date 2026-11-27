@@ -1902,6 +1902,51 @@ describe("indexed stock planning and availability", () => {
     expect(whole.measurementsDelta.independent).toEqual([{ axisId: "volume", quantity: parseQuantity("1", "L") }]);
   });
 
+  it.each([false, true])("keeps intact FIFO picks independent of oversized lots (canonical: %s)", async (canonical) => {
+    const item = defineScalarInventoryItem({ itemId: "intact", revisionId: "intact-v1", axisId: "pieces", unit: "piece" });
+    const packaging = [3, 4, 7].map((pieces) => defineScalarInventoryPackaging({
+      revisionId: `pack-${pieces}`, item, packageUnit: "pack", contains: String(pieces),
+    }));
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { intact: item.revisionId }, packagingRevisions: packaging,
+    });
+    for (const padding of [0, 4_998]) {
+      const storage = policyPickingStorage(canonical);
+      const inventory = createTestInventory(storage, catalog, clockAt(time3));
+      const source = { itemId: item.itemId, placementNodeId: "store" };
+      await inventory.stock.receive({ operationId: "receive-four", occurredAtEpochMs: time0,
+        to: { ...source, lotId: "old-four" }, amount: packageAmount(1, "pack-4") });
+      await inventory.stock.receiveMany({ operationId: "receive-threes", occurredAtEpochMs: time1,
+        lines: ["three-a", "three-b"].map((lotId) => ({ to: { ...source, lotId }, amount: packageAmount(1, "pack-3") })),
+      });
+      if (padding > 0) {
+        await inventory.stock.receiveMany({ operationId: "receive-sevens", occurredAtEpochMs: time2,
+          lines: Array.from({ length: padding }, (_, index) => ({
+            to: { ...source, lotId: `oversized-${index}` }, amount: packageAmount(1, "pack-7"),
+          })),
+        });
+      }
+      const request = { selector: inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] }),
+        method: InventoryAllocationMethod.Fifo, amount: stockAmount("6", "piece") };
+      const preview = await inventory.read.planAllocation(request);
+      expect(preview.lines.map(({ position, allocatedPrimary }) => [position.lotId, allocatedPrimary]))
+        .toEqual([["three-a", parseQuantity("3", "piece")], ["three-b", parseQuantity("3", "piece")]]);
+      const moved = await inventory.stock.transferByPolicy({ ...request, operationId: "move-six", occurredAtEpochMs: time3,
+        toPlacementNodeId: "destination" });
+      expect(moved.event.stockEffects.map(({ position, measurementsDelta }) => [
+        position.placementNodeId, position.lotId, measurementsDelta.primary.quantity.amountMinor,
+      ])).toEqual([
+        ["destination", "three-a", 3], ["destination", "three-b", 3],
+        ["store", "three-a", -3], ["store", "three-b", -3],
+      ]);
+      expect(moved.event.unwitnessedStockMovements).toBeUndefined();
+      await expect(inventory.stock.transferByPolicy({ ...request, operationId: "reject-intact-split", occurredAtEpochMs: time3,
+        toPlacementNodeId: "destination", amount: stockAmount("3", "piece") }))
+        .rejects.toThrow("intact package/serial increments");
+      expect(await storage.readOperation("reject-intact-split")).toBeUndefined();
+    }
+  }, 15_000);
+
   it("retries a bounded policy search with held physical stock and rejects an exhausted physical search", async () => {
     const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "pieces", unit: "piece" });
     const box = defineScalarInventoryPackaging({ revisionId: "bulk-box", item, packageUnit: "box", contains: "2" });
