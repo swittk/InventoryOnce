@@ -308,6 +308,39 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
+  it("plans a selected lot beside an independent-axis hold", async () => {
+    const catalog = measuredItemCatalog("weight");
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, clockAt(time3));
+    const held = { itemId: "measured", placementNodeId: "store", lotId: "held" };
+    const free = { ...held, lotId: "free" };
+    const heldScope = { itemId: held.itemId, placementNodeIds: ["store"], lotIds: ["held"] };
+    const amount = measuredStockAmount("2", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]);
+    await inventory.stock.receive({ operationId: "seed-held", occurredAtEpochMs: time0, to: held, amount });
+    await inventory.stock.receive({ operationId: "seed-free", occurredAtEpochMs: time0, to: free, amount });
+    const [position] = await inventory.read.positions(heldScope);
+    if (position === undefined) throw new Error("Missing held stock.");
+    const quantity = parseQuantity("4", "kg");
+    await inventory.reservations.reserve({
+      operationId: "reserve-held-weight", reservationId: "held-weight", itemRevisionId: "measured-v1",
+      selector: heldScope, requested: quantity, createdAtEpochMs: time1,
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate-held-weight", reservationId: "held-weight", occurredAtEpochMs: time1,
+      allocations: [{ position: position.key, quantity }],
+    });
+    const request = { amount, method: InventoryAllocationMethod.Fifo, atEpochMs: time3 };
+    const world = await inventory.read.world();
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const plan = await inventory.read.planAllocation({ ...request, selector: { ...heldScope, lotIds: ["free"] } });
+    expect(plan.lines).toMatchObject([{ position: free, allocatedPrimary: parseQuantity("2", "piece") }]);
+    expect(planInventoryAllocation({ ...request, selector: { ...heldScope, lotIds: ["free"] }, catalog, world }))
+      .toEqual(plan);
+    await expect(inventory.read.planAllocation({ ...request, selector: heldScope }))
+      .rejects.toThrow("cannot subtract an exact reservation on an independent axis");
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
   it("plans from positive stock when an independent-axis hold remains on a deficit", async () => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("weight"), clockAt(time3), InventoryDeficitPolicy.Record);
     const selector = inventoryStockSelector("measured", { placementNodeIds: ["store", "other"] });

@@ -837,7 +837,9 @@ export class InMemoryInventorySegmentedPositionStore
           positiveLayerStarts.delete(positionId);
         }
       } else if (positive && !this.positiveLayerStarts.has(positionId)) {
-        positiveLayerStarts.set(positionId, input.event.occurredAtEpochMs);
+        const previousPrimary = this.positions.get(positionId)?.measurements.primary.quantity.amountMinor ?? 0;
+        // A receipt that tops up a seeded positive row cannot establish its earlier start.
+        if (previousPrimary <= 0) positiveLayerStarts.set(positionId, input.event.occurredAtEpochMs);
       }
     }
     for (const override of input.event.positiveLayerProvenanceOverrides ?? []) {
@@ -1189,7 +1191,7 @@ function inventorySegmentedSetCandidate(
   };
 }
 
-/** Build one candidate from a set-valued index across allowed keys. */
+/** Count disjoint postings for normalized keys and visit their identities only if selected. */
 function inventorySegmentedSetIndexCandidate(
   index: ReadonlyMap<string, ReadonlySet<string>>,
   keys: readonly string[] | undefined
@@ -1198,11 +1200,19 @@ function inventorySegmentedSetIndexCandidate(
   if (keys.length === 1) {
     return inventorySegmentedSetCandidate(index.get(keys[0] ?? ""));
   }
-  const union = new Set<string>();
-  for (const key of keys) {
-    for (const identity of index.get(key) ?? []) union.add(identity);
-  }
-  return inventorySegmentedSetCandidate(union);
+  // Each position belongs to one revision and one direct placement, so these counts do not overlap.
+  let size = 0;
+  for (const key of keys) size += index.get(key)?.size ?? 0;
+  return {
+    size,
+    /** Enumerate the winning postings before the caller sorts their identities. */
+    *identities() {
+      for (const key of keys) {
+        const posting = index.get(key);
+        if (posting !== undefined) yield* posting;
+      }
+    },
+  };
 }
 
 /** Build one candidate for an Allowed optional-identity constraint over a set-valued index. */

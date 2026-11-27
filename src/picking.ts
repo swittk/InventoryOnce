@@ -578,13 +578,15 @@ export function prepareInventoryPolicyAllocationPool({
   catalog, pool, selection, method, atEpochMs, reservationAtEpochMs = atEpochMs,
   allowExpiredLots = false, allowAllocatedStock = false, recordingAttempt, reservationId,
 }: PrepareInventoryPolicyAllocationPoolInput) {
+  // The signed pool has already applied the subtree constraint.
+  const { withinPlacementNodeIds: _withinPlacementNodeIds, ...stockSelector } = selection.selector;
   const candidateResult = createPolicyAllocationCandidates({
-    catalog, pool, item: selection.item, reservationAtEpochMs, allowAllocatedStock,
+    catalog, pool, item: selection.item, stockSelector, reservationAtEpochMs, allowAllocatedStock,
     ...(reservationId === undefined ? {} : { reservationId }),
     keepIndependentHoldsWhole: recordingAttempt === "prefer-unheld",
   });
   const deficitAdjusted = applyPolicyAllocationDeficitBurden({
-    selector: selection.selector, item: selection.item, method, atEpochMs, allowExpiredLots,
+    selector: stockSelector, item: selection.item, method, atEpochMs, allowExpiredLots,
     rowsById: candidateResult.rowsById, poolCandidates: candidateResult.candidates,
   });
   return { candidateResult, deficitAdjusted };
@@ -800,7 +802,7 @@ interface DeficitAdjustedPolicyAllocationCandidates {
 interface ApplyPolicyAllocationDeficitBurdenInput {
   /** All signed rows already admitted to the affected placement pools. */
   readonly rowsById: ReadonlyMap<string, InventoryPolicyWorkingRow>;
-  /** Exact caller selector applied after the direct-placement pool pays its deficit once. */
+  /** Direct stock constraints applied after the signed pool pays its deficit once. */
   readonly selector: InventoryStockSelector;
   /** Exact item revision/primary axis. */
   readonly item: InventoryItemDefinitionRevision;
@@ -829,14 +831,12 @@ function applyPolicyAllocationDeficitBurden({
   poolCandidates,
 }: ApplyPolicyAllocationDeficitBurdenInput): DeficitAdjustedPolicyAllocationCandidates {
   // A selector can narrow by lot or owner only after the entire pool bears its deficit.
-  // The pool query already applied the same subtree predicate to every row.
-  const { withinPlacementNodeIds: _withinPlacementNodeIds, ...stockSelector } = selector;
   const selectedIds = new Set<string>();
   const deficits: InventorySignedDeficitRow[] = [];
   for (const [positionId, row] of rowsById) {
     const signed = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
     if (signed.amountMinor < 0n) deficits.push({ position: row.position.key, signed });
-    if (inventoryStockPositionMatchesNormalizedSelector(row.position.key, stockSelector)) {
+    if (inventoryStockPositionMatchesNormalizedSelector(row.position.key, selector)) {
       selectedIds.add(positionId);
     }
   }
@@ -912,6 +912,8 @@ interface CreatePolicyAllocationCandidatesInput {
   readonly pool: InventoryPolicyWorkingPool;
   /** Exact item revision and reservation axis policy. */
   readonly item: InventoryItemDefinitionRevision;
+  /** Direct stock constraints for the requested candidates within the signed pool. */
+  readonly stockSelector: InventoryStockSelector;
   /** Claim-book authority time used to reconstruct active reservations. */
   readonly reservationAtEpochMs: number;
   /** Optional claim whose own binding stays available to its allocator/consumer. */
@@ -1011,6 +1013,7 @@ function createPolicyAllocationCandidates({
   catalog,
   pool,
   item,
+  stockSelector,
   reservationAtEpochMs,
   reservationId,
   allowAllocatedStock,
@@ -1025,6 +1028,7 @@ function createPolicyAllocationCandidates({
     reservations: pool.reservations,
     positions: rowsById,
     item,
+    stockSelector,
     atEpochMs: reservationAtEpochMs,
     ...(reservationId === undefined ? {} : { excludedReservationId: reservationId }),
     allowAllocatedStock,
@@ -1104,6 +1108,8 @@ interface CreateExactPrimaryReservationSummaryInput {
   readonly positions: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** Exact item revision whose primary candidates are being planned. */
   readonly item: InventoryItemDefinitionRevision;
+  /** Direct stock constraints that determine whether an independent-axis hold can block the pick. */
+  readonly stockSelector: InventoryStockSelector;
   /** Claim-book authority time used to decide whether each row still protects stock. */
   readonly atEpochMs: number;
   /** Optional reservation whose own binding stays available to its allocator/consumer. */
@@ -1119,6 +1125,7 @@ function createExactPrimaryReservationSummary({
   reservations,
   positions,
   item,
+  stockSelector,
   atEpochMs,
   excludedReservationId,
   allowAllocatedStock,
@@ -1146,8 +1153,9 @@ function createExactPrimaryReservationSummary({
         const onHand = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
         // A stranded hold remains a claim, but its depleted row cannot supply a pick.
         if (onHand.amountMinor <= 0n) continue;
-        if (keepIndependentHoldsWhole) {
-          // One primary count cannot be inferred from an independently measured hold.
+        if (keepIndependentHoldsWhole ||
+            !inventoryStockPositionMatchesNormalizedSelector(row.position.key, stockSelector)) {
+          // Without an exact conversion, the held row cannot contribute unheld capacity to the signed pool.
           reservedPrimaryByPositionIdentity.set(positionIdentity, onHand);
           continue;
         }

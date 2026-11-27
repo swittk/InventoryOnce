@@ -2058,3 +2058,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Exact suffix sums cover up to three whole-only lots, so the picker jumps directly across unreachable primary quantities.
 - An empty exact-hold scope has no matching positions and can skip historical claim replay. A broad-claim query still reads the applicable claim state.
+
+## 2026-11-27 — scoped holds and segmented stock
+
+- A positive row with an independent-axis hold stays unavailable to the signed pool. The hold requires explicit fulfillment only when the request selects that row.
+- A receipt starts a FIFO layer when the balance becomes positive. A top-up preserves the previous layer, even when the seeded row has no recorded start.
+- Disjoint revision and direct-placement postings provide exact candidate counts. A narrower subtree can win before those postings are enumerated.

@@ -158,6 +158,27 @@ describe("segmented inventory position store", () => {
     expect(segment.revision()).toBe(2);
   });
 
+  it("keeps the FIFO start unknown when a receipt tops up an already-positive seeded row", async () => {
+    const inventory = createTestInventory();
+    const to = loosePosition("seeded-age");
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "seeded-age-open", occurredAtEpochMs: time0, to, amount });
+    const [position] = await inventory.read.positions({ itemId: "item-a" });
+    if (position === undefined) throw new Error("Missing the seeded row.");
+    const id = inventoryStockPositionIdentity(position.key);
+    const seeded = createInMemoryInventorySegmentedPositionStore({ revision: 1, positions: [position] });
+    const empty = createInMemoryInventorySegmentedPositionStore({ revision: 1 });
+    const { event } = await inventory.stock.receive({ operationId: "seeded-age-topup", occurredAtEpochMs: time1, to, amount });
+    const effect = { expectedRevision: 1, nextRevision: 2, event, deficitPolicy: InventoryDeficitPolicy.Reject };
+
+    seeded.applyStockEffects(effect);
+    empty.applyStockEffects(effect);
+
+    expect(seeded.position(id)?.measurements.primary.quantity).toEqual(parseQuantity("2", "piece"));
+    expect(seeded.positiveLayerStart(id)).toBeUndefined();
+    expect(empty.positiveLayerStart(id)).toBe(time1);
+  });
+
   it("publishes a validated age-only correction with its exact segment revision", async () => {
     const inventory = createTestInventory();
     const to = loosePosition("age-only", { lotId: "age-only-lot" });
