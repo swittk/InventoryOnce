@@ -2115,7 +2115,12 @@ describe("indexed stock planning and availability", () => {
     }]);
   }, 15_000);
 
-  it("finds the best legal partial package after a large pool proves no exact pick", async () => {
+  it.each([
+    { requestedKg: "5", pickedKg: 4, pickedLots: ["dry-four"] },
+    { requestedKg: "7", pickedKg: 3, pickedLots: ["old-0", "old-1"] },
+  ])("finds the best legal partial packages for $requestedKg kg after a large pool proves no exact pick", async ({
+    requestedKg, pickedKg, pickedLots,
+  }) => {
     const base = measuredItemCatalog("weight").activeItem("measured");
     const item = defineInventoryItem({
       ...base, primaryAxis: { ...base.primaryAxis, axisId: "weight", unit: unitCode("kg") },
@@ -2145,10 +2150,14 @@ describe("indexed stock planning and availability", () => {
     const moved = await inventory.stock.transferByPolicy({
       operationId: "move-best-partial-whole-package", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
       selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
-      amount: measuredStockAmount("5", "kg", [{ axisId: "volume", value: "5", unit: "L" }]),
+      amount: measuredStockAmount(requestedKg, "kg", [{ axisId: "volume", value: "5", unit: "L" }]),
     });
-    expect(moved.event.stockEffects.filter(({ position }) => position.lotId !== undefined).map(({ position }) => position.lotId))
-      .toEqual(["dry-four", "dry-four"]);
+    expect(moved.event.stockEffects.filter(({ position }) => position.lotId !== undefined)
+      .map(({ position, measurementsDelta }) => [position.placementNodeId, position.lotId, measurementsDelta.primary.quantity.amountMinor]))
+      .toEqual([
+        ...pickedLots.map((lotId) => ["destination", lotId, pickedKg]),
+        ...pickedLots.map((lotId) => ["store", lotId, -pickedKg]),
+      ]);
     expect(moved.event.unwitnessedStockMovements).toMatchObject([{ measurements: {
       primary: { quantity: parseQuantity("1", "kg") },
       independent: [{ axisId: "volume", quantity: parseQuantity("5", "L") }],

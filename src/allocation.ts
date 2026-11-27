@@ -590,12 +590,11 @@ function searchInventoryAllocations(
   let minimumPartialTake: bigint | undefined;
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
     if (ignoreIncrements) return undefined;
-    if (minimumShortfallMinor === 0n && fullWitnessPrimaryBudget !== undefined &&
-        (axisFreeLimitMinor === 0n || completeExclusions !== undefined)) {
+    if (minimumShortfallMinor === 0n && fullWitnessPrimaryBudget !== undefined && axisFreeLimitMinor !== undefined) {
       const completeCandidates = candidates.filter(
-        /** Keep policy order and omit only rows that cannot appear in a full witness. */
-        ({ position }) => !completeExclusions?.has(position) &&
-          (axisFreeLimitMinor !== 0n || fullWitnessPrimaryBudget.measuredPositions.has(position))
+        /** Omit an axis-free row when even its smallest legal pick exceeds the complete witness budget. */
+        ({ position }, index) => !completeExclusions?.has(position) &&
+          (fullWitnessPrimaryBudget.measuredPositions.has(position) || (incrementMinor[index] ?? 1n) <= axisFreeLimitMinor)
       );
       if (completeCandidates.length <= MAXIMUM_EXACT_ALLOCATION_DEPTH) {
         const complete = searchInventoryAllocations({

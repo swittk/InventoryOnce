@@ -2129,3 +2129,4 @@ The R105 portable-current-input authority and final publication both continue to
 - Once a full measured pick is ruled out, the ordered partial search can advance past unpicked rows without adding call depth. The smallest legal pick bounds how many selected rows can nest within the existing search limit.
 - If the primary trial exhausts its search, eligible capacity and the exact measured remainder still determine whether realizing the remainder would split an intact row.
 - An occurrence cut can retain a debit while excluding only some of its backing measurements. It keeps the exact signed axes for ordinary rows. Published positions, serial rows, and transfer lifecycle effects retain their sign checks.
+- A positive allowance for unmeasured stock can still be smaller than a row's first legal increment. Such rows stay available for partial picks after the complete search rules them out.
