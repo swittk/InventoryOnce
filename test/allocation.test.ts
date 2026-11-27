@@ -489,6 +489,22 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     expect(result.shortfall).toEqual(parseQuantity("1.999999", "kg"));
   });
 
+  it("skips a fine primary gap between whole suffix sums with divisible stock", () => {
+    const rows = [["2.963254", false], ["1.447908", false], ["0.9", true], ["0.3", true], ["0.1", false]] as const;
+    const candidates = rows.map(([amount, whole], index) => {
+      const available = parseQuantity(amount, "piece");
+      return candidate({ lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+        extra: { available, ...(whole ? { allocationIncrement: available } : {}) } });
+    });
+    const pick = allocateInventory({ requested: parseQuantity("5.412524", "piece"), candidates,
+      method: InventoryAllocationMethod.Fifo, nowEpochMs: time2 });
+    expect(pick.shortfall).toEqual(parseQuantity("0.000000", "piece"));
+    expect(pick.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual([
+      ["0", parseQuantity("2.963254", "piece")], ["1", parseQuantity("1.249270", "piece")],
+      ["2", parseQuantity("0.900000", "piece")], ["3", parseQuantity("0.300000", "piece")],
+    ]);
+  });
+
   it.each(["exact", "best", "partial"])("skips gaps between reachable whole suffix sums for an %s search", (mode) => {
     const candidates = ["200000", "250000", "250001"].map((value, index) => {
       const available = parseQuantity(value, "piece");

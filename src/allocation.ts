@@ -85,6 +85,16 @@ export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInp
   readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
   /** Primary capacity that must remain available for a complete measured witness. */
   readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
+  /** Optional proof of which wholly selected measured rows can fit together. */
+  readonly wholeMeasuredSubsets?: InventoryWholeMeasuredSubsets;
+}
+
+/** A bounded measurement proof used to prune the existing ordered search. */
+export interface InventoryWholeMeasuredSubsets {
+  /** One distinct bit for each participating whole row. */
+  readonly bitsByPosition: ReadonlyMap<InventoryStockPositionKey, number>;
+  /** Subsets whose measured totals stay within the report. */
+  readonly fitting: ReadonlySet<number>;
 }
 
 /** Limit on stock without a reported measurement in a fully witnessed assignment. */
@@ -164,6 +174,7 @@ function allocateInventoryCandidates({
   requiresPositiveShortfall = false,
   maximumWitnessPrimary,
   fullWitnessPrimaryBudget,
+  wholeMeasuredSubsets,
 }: AllocateInventoryUpToInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
@@ -191,6 +202,7 @@ function allocateInventoryCandidates({
     requested,
     candidates: eligible,
     ...(acceptAllocations === undefined ? {} : { acceptAllocations }),
+    ...(wholeMeasuredSubsets === undefined ? {} : { wholeMeasuredSubsets }),
   };
   /** A relaxed exact trial still needs enough primary stock to carry every reported axis. */
   const witnessBudget = fullWitnessPrimaryBudget === undefined ? {} : { fullWitnessPrimaryBudget };
@@ -363,16 +375,26 @@ interface SearchInventoryAllocationsInput {
   readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
   /** Primary capacity that must remain available for a complete measured witness. */
   readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
+  /** Bounded proof that rejects whole-row combinations exceeding a reported measurement. */
+  readonly wholeMeasuredSubsets?: InventoryWholeMeasuredSubsets;
   /** Test whether relaxing indivisible increments admits a storable split. */
   readonly ignoreIncrements?: boolean;
   /** Stop a diagnostic trial at the first accepted remainder strictly below this one. */
   readonly improveOnShortfall?: Quantity;
 }
 
+/** A whole-measured suffix subtotal on the allocator's shared primary scale. */
+interface WholeMeasuredSuffixSum {
+  /** Participating measured positions from the bounded proof. */
+  readonly mask: number;
+  /** Total primary stock supplied by those positions. */
+  readonly primary: bigint;
+}
+
 /** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
 function searchInventoryAllocations({
   requested, candidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
-  maximumWitnessPrimary, fullWitnessPrimaryBudget, ignoreIncrements = false, improveOnShortfall,
+  maximumWitnessPrimary, fullWitnessPrimaryBudget, wholeMeasuredSubsets, ignoreIncrements = false, improveOnShortfall,
 }: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
   /** Relaxed trials can present fractional packages that a normal predicate cannot represent. */
   const acceptAllocations = predicate === undefined || !ignoreIncrements ? predicate :
@@ -404,26 +426,62 @@ function searchInventoryAllocations({
         ? 1n
         : workingQuantityAtDecimals(candidate.allocationIncrement, decimals)
   );
+  /** Map the proof to policy order. Fractional diagnostic choices are outside this proof. */
+  const wholeRowBits = wholeMeasuredSubsets === undefined || ignoreIncrements ? undefined : candidates.map(
+    /** A row without a reported whole contribution has no effect on the subset. */
+    ({ position }) => wholeMeasuredSubsets.bitsByPosition.get(position) ?? 0
+  );
   /** Capacity and common divisibility of all selectable rows at or after each index. */
   const suffixCapacity: bigint[] = new Array(candidates.length + 1).fill(0n);
   const suffixDivisor: bigint[] = new Array(candidates.length + 1).fill(0n);
-  /** Exact capacity sums for suffixes with two or three selectable whole-only rows. */
+  /** Capacity sums for suffixes with a few whole rows alongside divisible capacity. */
   const suffixWholeSums: (readonly bigint[] | undefined)[] = [];
-  /** Build the few reachable sums until the suffix needs the general capacity and divisor bounds. */
+  /** Divisible capacity around each stored whole sum, before considering storage divisibility. */
+  const suffixWholeDivisibleCapacity: bigint[] = [];
+  /** Build the few whole sums until the suffix needs general capacity and divisor bounds. */
   let wholeSums: readonly bigint[] | undefined = [0n];
+  /** Rows that can adjust the current whole total by any primary digit. */
+  let wholeDivisibleCapacity = 0n;
+  /** Fitting primary sums when a suffix contains only whole rows covered by the proof. */
+  const measuredSuffixSums: (readonly WholeMeasuredSuffixSum[] | undefined)[] = [];
+  /** Build fitting sums until a selectable non-measured row enters the suffix. */
+  let measuredSums: readonly WholeMeasuredSuffixSum[] | undefined = wholeRowBits === undefined ? undefined : [{ mask: 0, primary: 0n }];
   for (let index = candidates.length - 1; index >= 0; index -= 1) {
     const capacity = capacityMinor[index] ?? 0n;
     const increment = incrementMinor[index] ?? 1n;
     // Stock below the next whole increment cannot improve a suffix assignment.
     const selectable = capacity - capacity % increment;
-    if (wholeSums !== undefined && wholeSums.length >= 4) suffixWholeSums[index + 1] = wholeSums;
+    if (wholeSums !== undefined && (wholeSums.length >= 4 || (wholeSums.length > 1 && wholeDivisibleCapacity > 0n))) {
+      suffixWholeSums[index + 1] = wholeSums;
+      suffixWholeDivisibleCapacity[index + 1] = wholeDivisibleCapacity;
+    }
     if (wholeSums !== undefined && selectable !== 0n) {
-      wholeSums = selectable === increment && wholeSums.length < MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS
-        ? [...wholeSums, ...wholeSums.map(
-            /** Include each sum that takes this whole row. */
-            (sum) => sum + selectable
-          )]
-        : undefined;
+      if (increment === 1n) {
+        wholeDivisibleCapacity += selectable;
+      } else {
+        wholeSums = selectable === increment && wholeSums.length < MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS
+          ? [...wholeSums, ...wholeSums.map(
+              /** Include each sum that takes this whole row. */
+              (sum) => sum + selectable
+            )]
+          : undefined;
+      }
+    }
+    if (measuredSums !== undefined) {
+      measuredSuffixSums[index + 1] = measuredSums;
+      if (selectable !== 0n) {
+        const bit = wholeRowBits?.[index] ?? 0;
+        if (bit === 0) {
+          measuredSums = undefined;
+        } else {
+          const withRow: WholeMeasuredSuffixSum[] = [];
+          for (const sum of measuredSums) {
+            const mask = sum.mask | bit;
+            if (wholeMeasuredSubsets?.fitting.has(mask)) withRow.push({ mask, primary: sum.primary + selectable });
+          }
+          measuredSums = [...measuredSums, ...withRow];
+        }
+      }
     }
     suffixCapacity[index] = (suffixCapacity[index + 1] ?? 0n) + selectable;
     const laterDivisor = suffixDivisor[index + 1] ?? 0n;
@@ -489,13 +547,17 @@ function searchInventoryAllocations({
     /** The first policy-ordered plan fills the target without backtracking. */
     const picks: bigint[] = [];
     let remaining = greedyTargetMinor;
+    /** Whole measured positions already included in the greedy prefix. */
+    let wholeRowsPicked = 0;
     /** A partial trial can spend more axis-free stock because it need not fill every axis. */
     let axisFreeRemaining = greedyShortfallMinor === 0n ? axisFreeLimitMinor : undefined;
     for (let index = 0; index < candidates.length && remaining > 0n; index += 1) {
       const capacity = capacityMinor[index] ?? 0n;
       const increment = incrementMinor[index] ?? 1n;
       const candidate = candidates[index];
-      if (greedyShortfallMinor === 0n && candidate !== undefined && completeExclusions?.has(candidate.position)) {
+      const nextWholeRows = wholeRowsPicked | (wholeRowBits?.[index] ?? 0);
+      if ((greedyShortfallMinor === 0n && candidate !== undefined && completeExclusions?.has(candidate.position)) ||
+          (nextWholeRows !== wholeRowsPicked && !wholeMeasuredSubsets?.fitting.has(nextWholeRows))) {
         picks.push(0n);
         continue;
       }
@@ -506,6 +568,7 @@ function searchInventoryAllocations({
       const take = maximum - maximum % increment;
       if (storableQuantityScale(take, decimals) === undefined) break;
       picks.push(take);
+      if (take > 0n) wholeRowsPicked = nextWholeRows;
       remaining -= take;
       if (budget !== undefined) axisFreeRemaining = budget - take;
     }
@@ -547,7 +610,7 @@ function searchInventoryAllocations({
       }) ?? 0n) + 1n;
 
   /** Search in policy order until a smallest possible shortfall or diagnostic improvement is found. */
-  const findExactSuffix = (index: number, remainingMinor: bigint, axisFreePicked: bigint): boolean => {
+  const findExactSuffix = (index: number, remainingMinor: bigint, axisFreePicked: bigint, wholeRowsPicked: number): boolean => {
     const complete = remainingMinor === 0n;
     if (complete || index >= candidates.length) {
       if (!complete && (!acceptPartial || remainingMinor >= bestRemainingMinor)) return false;
@@ -578,14 +641,28 @@ function searchInventoryAllocations({
     const maximum = capacity < remainingMinor ? capacity : remainingMinor;
     const laterCapacity = suffixCapacity[index + 1] ?? 0n;
     const laterDivisor = suffixDivisor[index + 1] ?? 0n;
-    const laterWholeSums = suffixWholeSums[index + 1];
+    /** Prefer exact fitting suffix sums when this row can vary across many primary increments. */
+    let laterWholeSums = suffixWholeSums[index + 1];
+    let laterWholeDivisible = suffixWholeDivisibleCapacity[index + 1] ?? 0n;
+    const laterMeasuredSums = measuredSuffixSums[index + 1];
+    if (capacity / increment > 1n && laterMeasuredSums !== undefined) {
+      const fittingSums: bigint[] = [];
+      for (const { mask, primary } of laterMeasuredSums) {
+        if (wholeMeasuredSubsets?.fitting.has(wholeRowsPicked | mask)) fittingSums.push(primary);
+      }
+      laterWholeSums = fittingSums;
+      laterWholeDivisible = 0n;
+    }
     /** A zero-capacity suffix can only accept a zero pending amount. */
     const exactDivisor = acceptPartial ? undefined : (laterDivisor === 0n ? remainingMinor + 1n : laterDivisor);
     const terminalPartial = acceptPartial && laterCapacity === 0n;
     const axisFree = axisFreeRows?.[index] === true;
     const position = candidates[index]?.position;
     const excludedFromComplete = position !== undefined && completeExclusions?.has(position);
+    const nextWholeRows = wholeRowsPicked | (wholeRowBits?.[index] ?? 0);
     let take = (maximum / increment) * increment;
+    // Once a whole-row prefix exceeds an axis, smaller primary-only picks cannot make it fit.
+    if (nextWholeRows !== wholeRowsPicked && !wholeMeasuredSubsets?.fitting.has(nextWholeRows)) take = 0n;
     while (take >= 0n) {
       exploredChoices += 1;
       if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
@@ -619,12 +696,17 @@ function searchInventoryAllocations({
       const laterLimit = pending < laterCapacity ? pending : laterCapacity;
       /** Greatest reachable or relaxed suffix amount now, and the first amount worth revisiting. */
       let laterUsable = 0n;
-      let nextUsable = laterCapacity;
+      let nextUsable = laterWholeSums === undefined ? laterCapacity : undefined;
       if (laterWholeSums !== undefined) {
-        // These rows have only a few subsets. The common divisor alone can overstate capacity between them.
+        // The next whole subset may be separated by a gap even after using every divisible digit.
         for (const sum of laterWholeSums) {
-          if (sum <= pending && sum > laterUsable) laterUsable = sum;
-          if (sum > pending && sum < nextUsable) nextUsable = sum;
+          if (sum <= pending) {
+            const end = sum + laterWholeDivisible;
+            const usable = end < pending ? end : pending;
+            if (usable > laterUsable) laterUsable = usable;
+          } else if (nextUsable === undefined || sum < nextUsable) {
+            nextUsable = sum;
+          }
         }
       } else if (acceptPartial && laterDivisor !== 0n) {
         laterUsable = laterLimit - laterLimit % laterDivisor;
@@ -650,14 +732,15 @@ function searchInventoryAllocations({
         : laterWholeSums !== undefined && pending !== laterUsable;
       if (cannotImprove) {
         // Decreasing this pick only makes the gap larger until another suffix amount can fit.
-        if (laterUsable === laterCapacity) break;
+        if (nextUsable === undefined || laterUsable === laterCapacity) break;
         const nextLimit = remainingMinor - nextUsable;
         if (nextLimit < 0n) break;
         take = nextLimit - nextLimit % increment;
         continue;
       }
       chosenMinor[index] = take;
-      if (findExactSuffix(index + 1, remainingMinor - take, axisFree ? axisFreePicked + take : axisFreePicked)) return true;
+      if (findExactSuffix(index + 1, remainingMinor - take, axisFree ? axisFreePicked + take : axisFreePicked,
+        take > 0n ? nextWholeRows : wholeRowsPicked)) return true;
       if (acceptPartial && bestRemainingMinor <= minimumRemainder) break;
       if (take === 0n) break;
       take -= increment;
@@ -667,7 +750,7 @@ function searchInventoryAllocations({
     return false;
   };
 
-  findExactSuffix(0, requestedMinor, 0n);
+  findExactSuffix(0, requestedMinor, 0n, 0);
   return bestAssignment;
 }
 

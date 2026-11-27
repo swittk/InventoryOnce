@@ -14,6 +14,7 @@ import {
   InventoryReservationStatus,
   InventoryStockWhereaboutsState,
   InventoryTrackingRequirement,
+  InventoryTransferStatus,
   inventoryCatalogSnapshot,
   inventoryStockSelector,
   measuredStockAmount,
@@ -74,7 +75,9 @@ function issueCommand() {
 }
 
 /** One item with exact piece and weight evidence and a chosen claim axis. */
-function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
+function measuredItemCatalog(
+  reservationAxisId: "pieces" | "weight", weightRequirement = InventoryMeasurementRequirement.Required,
+) {
   const item = defineInventoryItem({
     itemId: "measured", revisionId: "measured-v1",
     primaryAxis: {
@@ -83,7 +86,7 @@ function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
     },
     independentAxes: [{
       axisId: "weight", role: InventoryMeasurementAxisRole.Independent,
-      unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required,
+      unit: unitCode("kg"), requirement: weightRequirement,
     }],
     reservationAxisId,
     tracking: { lot: InventoryTrackingRequirement.Optional, serial: InventoryTrackingRequirement.Optional },
@@ -92,6 +95,20 @@ function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
   return defineInventoryCatalog({
     itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
   });
+}
+
+/** Prepare either segmented storage or a canonical-only adapter. */
+function policyPickingStorage(canonical: boolean) {
+  const backing = createInMemoryInventoryDurableStorage();
+  return canonical ? new Proxy(backing, {
+    /** Force both planning and publication through the canonical coordinator. */
+    get(target, property) {
+      if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool" ||
+          property === "commitSegmentedStockEvent") return undefined;
+      const member = Reflect.get(target, property);
+      return typeof member === "function" ? member.bind(target) : member;
+    },
+  }) : backing;
 }
 
 /** Prepare measured picking on either the segmented or canonical adapter. */
@@ -106,20 +123,118 @@ function threeAxisPickingFixture(canonical: boolean, policy: InventoryDeficitPol
     ],
   });
   const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
-  const backing = createInMemoryInventoryDurableStorage();
-  const storage = canonical ? new Proxy(backing, {
-    /** Force both planning and publication through the canonical coordinator. */
-    get(target, property) {
-      if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool" ||
-          property === "commitSegmentedStockEvent") return undefined;
-      const member = Reflect.get(target, property);
-      return typeof member === "function" ? member.bind(target) : member;
-    },
-  }) : backing;
-  return { item, inventory: createTestInventory(storage, catalog, undefined, policy) };
+  return { item, inventory: createTestInventory(policyPickingStorage(canonical), catalog, undefined, policy) };
 }
 
 describe("indexed stock planning and availability", () => {
+  it.each([false, true])("retains FIFO age only for positive conserved arrivals (canonical: %s)", async (canonical) => {
+    const item = defineScalarInventoryItem({ itemId: "age", revisionId: "age-v1", axisId: "pieces", unit: "piece" });
+    const packaging = defineScalarInventoryPackaging({ revisionId: "age-box", item, packageUnit: "box", contains: "1" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [packaging] });
+    const loose = { itemId: item.itemId, placementNodeId: "store" };
+    const boxed = { ...loose, packagingRevisionId: packaging.revisionId };
+    const room = { ...loose, placementNodeId: "room" };
+    const routes = {
+      transfer: { from: loose, to: room },
+      status: { from: { ...loose, statusId: "available" }, to: { ...loose, statusId: "quarantine" } },
+      owner: { from: { ...loose, ownerId: "source-owner" }, to: { ...loose, ownerId: "destination-owner" } },
+      pack: { from: loose, to: boxed },
+      unpack: { from: boxed, to: loose },
+      contents: { from: loose, to: room },
+    };
+    for (const verb of ["transfer", "status", "owner", "pack", "unpack", "contents"] as const) {
+      for (const [moved, debt] of [[1, 2], [1, 1], [2, 1]] as const) {
+        const storage = policyPickingStorage(canonical);
+        const inventory = createTestInventory(storage, catalog, clockAt(time3), InventoryDeficitPolicy.Record);
+        const { from, to } = routes[verb];
+        const amount = stockAmount(String(moved), "piece");
+        await inventory.stock.receive({ operationId: "receive-age", occurredAtEpochMs: time0, to: from,
+          amount: verb === "unpack" ? packageAmount(moved, packaging.revisionId) : amount });
+        await inventory.stock.issue({ operationId: "record-destination-debt", occurredAtEpochMs: time1, from: to,
+          amount: verb === "pack" ? packageAmount(debt, packaging.revisionId) : stockAmount(String(debt), "piece") });
+        const operation = { operationId: "settle-destination-debt", occurredAtEpochMs: time2 };
+        /** Exercise each public conserved movement against the same signed balance setup. */
+        const move = () => {
+          switch (verb) {
+            case "pack": return inventory.stock.pack({ ...operation, from, packagingRevisionId: packaging.revisionId, packageCount: moved });
+            case "unpack": return inventory.stock.unpack({ ...operation, from, packageCount: moved });
+            case "status": return inventory.stock.changeStatus({ ...operation, from, amount, toStatusId: "quarantine" });
+            case "owner": return inventory.stock.changeOwner({ ...operation, from, amount, toOwnerId: "destination-owner" });
+            case "contents": return inventory.placement.moveContents({ ...operation, nodeId: "store", into: "room" });
+            case "transfer": return inventory.stock.transfer({ ...operation, from, amount, toPlacementNodeId: "room" });
+          }
+        };
+        if (verb === "status" && moved < debt) {
+          const reject = createTestInventory(storage, catalog, clockAt(time3), InventoryDeficitPolicy.Reject);
+          await expect(reject.stock.changeStatus({ ...operation, operationId: "reject-negative-settlement",
+            from, amount, toStatusId: "quarantine" })).rejects.toThrow(/negative/i);
+        }
+        const result = await move();
+        expect(result.event.positiveLayerProvenanceTransfers, verb).toHaveLength(1);
+        const destinationBalance = moved - debt;
+        const rows = await inventory.read.positions({ itemId: item.itemId });
+        if (destinationBalance === 0) expect(rows, verb).toEqual([]);
+        else expect(rows, verb).toMatchObject([{ key: to, measurements: { primary: {
+          quantity: parseQuantity(String(destinationBalance), "piece"),
+        } } }]);
+        const age = (await inventory.read.world()).projection.positiveLayerStartedAtEpochMsByPositionId;
+        expect(Object.values(age), verb).toEqual(destinationBalance > 0 ? [time0] : []);
+      }
+    }
+  });
+
+  it.each([false, true])("settles target revision debt while carrying only positive FIFO age (canonical: %s)", async (canonical) => {
+    const definition = { itemId: "age", axisId: "pieces", unit: "piece" };
+    const before = defineScalarInventoryItem({ ...definition, revisionId: "age-before" });
+    const after = defineScalarInventoryItem({ ...definition, revisionId: "age-after" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [before, after], activeItemRevisionIds: { [after.itemId]: after.revisionId } });
+    const position = { itemId: before.itemId, placementNodeId: "store", lotId: "from-before" };
+    for (const moved of [1, 2]) {
+      const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), InventoryDeficitPolicy.Record);
+      await inventory.stock.receive({ operationId: "old-revision-stock", occurredAtEpochMs: time0, to: position,
+        itemRevisionId: before.revisionId, amount: stockAmount(String(moved), "piece") });
+      await inventory.stock.issue({ operationId: "new-revision-debt", occurredAtEpochMs: time1, from: position,
+        itemRevisionId: after.revisionId, amount: stockAmount("1", "piece") });
+      const plan = await inventory.stock.planRevisionTransition({ itemId: position.itemId, fromRevisionId: before.revisionId,
+        toRevisionId: after.revisionId, conversion: { sourceAmount: "1", targetAmount: "1" } });
+      expect(plan.applicable).toBe(true);
+      await inventory.stock.transitionRevision({ operationId: "convert-revision", occurredAtEpochMs: time2, plan,
+        reason: "Same physical unit" });
+      const world = await inventory.read.world();
+      expect(Object.values(world.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual(moved === 1 ? [] : [time0]);
+      expect(Object.values(world.projection.positions).map(({ key, measurements }) => [key.itemRevisionId, measurements.primary.quantity]))
+        .toEqual(moved === 1 ? [] : [[after.revisionId, parseQuantity("1", "piece")]]);
+    }
+  });
+
+  it.each([false, true])("settles ordinary destination debt on lifecycle receipt or release (canonical: %s)", async (canonical) => {
+    const source = loosePosition("store");
+    const destination = loosePosition("room");
+    for (const action of ["receive", "release"] as const) {
+      for (const [moved, debt] of [[1, 2], [1, 1], [2, 1]] as const) {
+        const inventory = createTestInventory(policyPickingStorage(canonical), undefined, clockAt(time3), InventoryDeficitPolicy.Record);
+        const amount = stockAmount(String(moved), "piece");
+        await inventory.stock.receive({ operationId: "seed-age", occurredAtEpochMs: time0, to: source, amount });
+        await inventory.transfers.prepare({ operationId: "prepare-move", occurredAtEpochMs: time1, transferId: "movement",
+          transitPlacementNodeId: "transit", destinationPlacementNodeId: "room", lines: [{ lineId: "stock", from: source, amount }] });
+        const arrival = action === "release" ? source : destination;
+        await inventory.stock.issue({ operationId: "record-arrival-debt", occurredAtEpochMs: time1 + 1, from: arrival,
+          amount: stockAmount(String(debt), "piece") });
+        if (action === "receive") {
+          await inventory.transfers.dispatch({ operationId: "dispatch-move", occurredAtEpochMs: time1 + 2, transferId: "movement" });
+        }
+        const command = { operationId: "complete-move", occurredAtEpochMs: time2, transferId: "movement" };
+        const result = action === "release" ? await inventory.transfers.release(command) : await inventory.transfers.receive(command);
+        expect(result.transfer.status).toBe(action === "release" ? InventoryTransferStatus.Released : InventoryTransferStatus.Received);
+        const world = await inventory.read.world();
+        expect(Object.values(world.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual(moved > debt ? [time0] : []);
+        expect(Object.values(world.projection.positions).map(({ key, measurements }) => [key.placementNodeId, measurements.primary.quantity]))
+          .toEqual(moved === debt ? [] : [[arrival.placementNodeId, parseQuantity(String(moved - debt), "piece")]]);
+      }
+    }
+  });
+
   it.each([false, true])("validates fixed-package effects and broad claims at exact scale (grouped: %s)", async (grouped) => {
     const item = measuredItemCatalog("pieces").activeItem("measured");
     const packageId = "precise-weight-box";
@@ -374,6 +489,43 @@ describe("indexed stock planning and availability", () => {
     await expect(inventory.read.planAllocation({ ...request, selector: heldScope, allowExpiredLots: expired }))
       .rejects.toThrow("cannot subtract an exact reservation on an independent axis");
     expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [false, InventoryDeficitPolicy.Reject], [false, InventoryDeficitPolicy.Record],
+    [true, InventoryDeficitPolicy.Reject], [true, InventoryDeficitPolicy.Record],
+  ] as const)("plans and transfers broad picks beside an active independent hold (canonical: %s, policy: %s)", async (canonical, policy) => {
+    for (const measured of [true, false]) {
+      const catalog = measuredItemCatalog("weight", measured ? InventoryMeasurementRequirement.Required : InventoryMeasurementRequirement.Optional);
+      const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), policy);
+      const scope = { itemId: "measured", placementNodeIds: ["store"] };
+      const heldScope = { ...scope, lotIds: ["held"] };
+      const received = measuredStockAmount("2", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]);
+      await inventory.stock.receive({ operationId: "receive-held", occurredAtEpochMs: time0,
+        to: { itemId: scope.itemId, placementNodeId: "store", lotId: "held" }, amount: received });
+      await inventory.stock.receive({ operationId: "receive-free", occurredAtEpochMs: time1,
+        to: { itemId: scope.itemId, placementNodeId: "store", lotId: "free" }, amount: received });
+      const [held] = await inventory.read.positions(heldScope);
+      if (held === undefined) throw new Error("Expected active held stock.");
+      const reserved = parseQuantity("4", "kg");
+      await inventory.reservations.reserve({ operationId: "reserve-held", reservationId: "held-weight",
+        itemRevisionId: "measured-v1", selector: heldScope, requested: reserved, createdAtEpochMs: time2 });
+      await inventory.reservations.allocate({ operationId: "allocate-held", reservationId: "held-weight", occurredAtEpochMs: time2,
+        allocations: [{ position: held.key, quantity: reserved }] });
+      const request = { selector: scope, method: InventoryAllocationMethod.Fifo,
+        amount: measured ? received : stockAmount("2", "piece"), atEpochMs: time3 };
+      expect((await inventory.read.planAllocation(request)).lines).toMatchObject([{ position: { lotId: "free" } }]);
+      await expect(inventory.read.planAllocation({ ...request, selector: heldScope })).rejects.toThrow("use explicit fulfillment lines");
+      expect((await inventory.read.planAllocation({ ...request, allowAllocatedStock: true })).lines)
+        .toMatchObject([{ position: { lotId: "held" } }]);
+      const result = await inventory.stock.transferByPolicy({ ...request, operationId: "move-free",
+        occurredAtEpochMs: time3, toPlacementNodeId: "room" });
+      expect(result.event.stockEffects.filter(({ position }) => position.placementNodeId === "store"))
+        .toMatchObject([{ position: { lotId: "free" } }]);
+      expect((await inventory.read.reservationFeasibility(time3)).groups).toMatchObject([
+        { reservationIds: ["held-weight"], shortage: parseQuantity("0", "kg") },
+      ]);
+    }
   });
 
   it("plans from positive stock when an independent-axis hold remains on a deficit", async () => {
@@ -1855,6 +2007,58 @@ describe("indexed stock planning and availability", () => {
   it.each([
     [false, InventoryDeficitPolicy.Reject], [false, InventoryDeficitPolicy.Record],
     [true, InventoryDeficitPolicy.Reject], [true, InventoryDeficitPolicy.Record],
+  ] as const)("matches discrete whole-row measurements before divisible primary stock (canonical: %s, policy: %s)", async (canonical, policy) => {
+    const { item, inventory } = threeAxisPickingFixture(canonical, policy);
+    /** Report or receipt with independently measured volume, length, and width. */
+    const amount = (mass: string, volume: string, length: string, width: string) => measuredStockAmount(mass, "kg", [
+      { axisId: "volume", value: volume, unit: "L" }, { axisId: "length", value: length, unit: "m" },
+      { axisId: "width", value: width, unit: "m" },
+    ]);
+    /** Only m1 and m4 together explain all three measurements despite the earlier plausible rows. */
+    const stock = [
+      ["dry", stockAmount("5.000001", "kg")], ["m0", amount("0.5", "0", "0", "0")],
+      ["m1", amount("0.6", "0", "0.5", "0.25")], ["m2", amount("0.6", "0", "1", "0.25")],
+      ["m3", amount("0.5", "0.25", "0", "0.25")], ["m4", amount("1", "0.5", "1", "1")],
+    ] as const;
+    await inventory.stock.receiveMany({ operationId: "receive-discrete-axes", occurredAtEpochMs: time0,
+      lines: stock.map(([lotId, received]) => ({ to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: received })),
+    });
+    const request = { selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: amount("4.423174", "0.5", "1.5", "1.25"),
+    };
+    const impossible = { ...request, amount: amount("4.423174", "0.5", "1.375", "1.25") };
+    expect(await inventory.read.planAllocation(impossible)).toMatchObject({
+      lines: [], shortfall: parseQuantity("4.423174", "kg"), allocationConstraintBlockedStock: true,
+    });
+    const expected = [["dry", "2.823174"], ["m1", "0.600000"], ["m4", "1.000000"]] as const;
+    const preview = await inventory.read.planAllocation(request);
+    expect(preview.lines.map(({ position, allocatedPrimary }) => [position.lotId, allocatedPrimary]))
+      .toEqual(expected.map(([lot, moved]) => [lot, parseQuantity(moved, "kg")]));
+    const movement = { ...request, operationId: "move-discrete-axes", occurredAtEpochMs: time2, toPlacementNodeId: "room" };
+    const result = await inventory.stock.transferByPolicy(movement);
+    expect(result.event.unwitnessedStockMovements).toBeUndefined();
+    expect(result.event.stockEffects.filter(({ position }) => position.placementNodeId === "store")
+      .map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
+      .toEqual(expected.map(([lot, moved]) => [lot, parseQuantity(`-${moved}`, "kg")]));
+    expect(await inventory.stock.transferByPolicy(movement)).toEqual({ ...result, replayed: true });
+
+    if (policy === InventoryDeficitPolicy.Record) {
+      // An impossible exact report can still record the largest compatible physical witness.
+      const partial = await inventory.stock.transferByPolicy({
+        ...impossible, operationId: "move-partial-axes", occurredAtEpochMs: time3, toPlacementNodeId: "room",
+        amount: amount("3.000001", "0.5", "1.375", "1.25"),
+      });
+      expect(partial.event.stockEffects.filter(({ position }) => position.placementNodeId === "store" && position.lotId !== undefined)
+        .map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
+        .toEqual([["dry", parseQuantity("-2.176827", "kg")], ["m0", parseQuantity("-0.323173", "kg")],
+          ["m3", parseQuantity("-0.500000", "kg")]]);
+      expect(partial.event.unwitnessedStockMovements?.[0]?.measurements.primary.quantity).toEqual(parseQuantity("0.000001", "kg"));
+    }
+  });
+
+  it.each([
+    [false, InventoryDeficitPolicy.Reject], [false, InventoryDeficitPolicy.Record],
+    [true, InventoryDeficitPolicy.Reject], [true, InventoryDeficitPolicy.Record],
   ] as const)("bounds the finite best-ratio capacity (canonical: %s, policy: %s)", async (canonical, policy) => {
     const { item, inventory } = threeAxisPickingFixture(canonical, policy);
     const amount = (mass: string, volume: string, length: string, width: string) => measuredStockAmount(mass, "kg", [
@@ -1883,6 +2087,65 @@ describe("indexed stock planning and availability", () => {
       .map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
       .toEqual(expected.map(([lot, moved]) => [lot, parseQuantity(`-${moved}`, "kg")]));
     expect(await inventory.stock.transferByPolicy(movement)).toEqual({ ...result, replayed: true });
+  });
+
+  it("skips an incompatible measured prefix when recording the largest fine-scale partial pick", async () => {
+    const { item, inventory } = threeAxisPickingFixture(false, InventoryDeficitPolicy.Record);
+    /** Independently measured amount for a picked lot. */
+    const amount = (mass: string, volume: string, length: string, width: string) => measuredStockAmount(mass, "kg", [
+      { axisId: "volume", value: volume, unit: "L" }, { axisId: "length", value: length, unit: "m" },
+      { axisId: "width", value: width, unit: "m" },
+    ]);
+    const stock = [
+      ["dry-first", stockAmount("1.216194", "kg")], ["m1", amount("0.9", "0.75", "0.75", "0.5")],
+      ["m2", amount("0.9", "0.25", "0", "0.25")], ["m3", amount("0.2", "0.25", "0.5", "0.25")],
+      ["m4", amount("0.8", "0.75", "0.5", "0.25")], ["m5", stockAmount("2.362503", "kg")],
+      ["m6", amount("0.6", "0.75", "0.5", "0.25")],
+    ] as const;
+    for (const [index, [lotId, received]] of stock.entries()) {
+      await inventory.stock.receive({ operationId: `receive-prefix-${index}`, occurredAtEpochMs: time0 + index,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: received });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "move-partial-prefix", occurredAtEpochMs: time2, toPlacementNodeId: "room",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: amount("4.002823", "1", "0.5", "0.625"),
+    });
+    expect(result.event.stockEffects.filter(({ position }) => position.placementNodeId === "store" && position.lotId !== undefined)
+      .map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
+      .toEqual([["dry-first", parseQuantity("-1.216194", "kg")], ["m2", parseQuantity("-0.900000", "kg")],
+        ["m3", parseQuantity("-0.200000", "kg")], ["m5", parseQuantity("-1.686628", "kg")]]);
+    expect(result.event.unwitnessedStockMovements?.[0]?.measurements.primary.quantity).toEqual(parseQuantity("0.000001", "kg"));
+  });
+
+  it.each([false, true])("jumps to a fitting whole-measured suffix in a partial FEFO pick (canonical: %s)", async (canonical) => {
+    const { item, inventory } = threeAxisPickingFixture(canonical, InventoryDeficitPolicy.Record);
+    /** Independently measured amount for a picked lot. */
+    const amount = (mass: string, volume: string, length: string, width: string) => measuredStockAmount(mass, "kg", [
+      { axisId: "volume", value: volume, unit: "L" }, { axisId: "length", value: length, unit: "m" },
+      { axisId: "width", value: width, unit: "m" },
+    ]);
+    const stock = [
+      ["dry-0", stockAmount("2.107840", "kg"), 1], ["m1", amount("0.1", "1", "0.75", "0.5"), 2],
+      ["m2", amount("0.8", "1", "0", "0"), 3], ["m3", amount("0.4", "0", "1", "0.5"), 1],
+      ["m4", amount("0.8", "0.25", "0.25", "0.75"), 2], ["m5", amount("0.5", "1", "0.5", "1"), 3],
+      ["dry-6", stockAmount("0.866677", "kg"), 1], ["m7", amount("0.1", "1", "0", "0.5"), 2],
+    ] as const;
+    for (const [index, [lotId, received, expiryOffset]] of stock.entries()) {
+      await inventory.stock.receive({ operationId: `receive-fefo-suffix-${index}`, occurredAtEpochMs: time0 + index,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: received,
+        lot: { expiresAtEpochMs: time3 + expiryOffset } });
+    }
+    const result = await inventory.stock.transferByPolicy({
+      operationId: "move-partial-fefo-suffix", occurredAtEpochMs: time2, toPlacementNodeId: "room",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fefo,
+      amount: amount("3.672867", "2", "0.75", "0.625"),
+    });
+    expect(result.event.stockEffects.filter(({ position }) => position.placementNodeId === "store" && position.lotId !== undefined)
+      .map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
+      .toEqual([["dry-0", parseQuantity("-2.107840", "kg")], ["dry-6", parseQuantity("-0.765026", "kg")],
+        ["m2", parseQuantity("-0.800000", "kg")]]);
+    expect(result.event.unwitnessedStockMovements?.[0]?.measurements.primary.quantity).toEqual(parseQuantity("0.000001", "kg"));
   });
 
   it.each([true, false])("records a measured report with an unstorable trial (later witness: %s)", async (hasLaterWitness) => {

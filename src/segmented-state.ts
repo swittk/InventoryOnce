@@ -830,7 +830,9 @@ export class InMemoryInventorySegmentedPositionStore
       }
       if (positiveLayerStarts.has(positionId)) {
         if (!positive) {
-          if (!inventoryConservedArrivalCanSettleDeficit(input.event)) {
+          // A zeroed position still has its exact key in the pre-event snapshot.
+          const arrivalSerial = serialId ?? this.positions.get(positionId)?.key.serialId;
+          if (!inventoryConservedArrivalCanSettleDeficit(input.event, arrivalSerial)) {
             throw new Error(`Conserved FIFO provenance destination ${positionId} is not positive after its event.`);
           }
           // No live stock remains to carry an age after the exact debit settles.

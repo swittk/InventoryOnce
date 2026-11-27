@@ -10,6 +10,7 @@ import {
   type InventoryAllocation,
   type InventoryAllocationResult,
   type InventoryFullWitnessPrimaryBudget,
+  type InventoryWholeMeasuredSubsets,
   type InventoryWorkingAllocationCandidate,
 } from "./allocation.js";
 import {
@@ -304,7 +305,6 @@ export function planWorkingInventoryAllocation({
   const { candidateResult, deficitAdjusted } = prepareInventoryPolicyAllocationPool({
     catalog, pool, selection: selected, method, atEpochMs, reservationAtEpochMs, allowExpiredLots, allowAllocatedStock,
     ...(reservationId === undefined ? {} : { reservationId }),
-    ...(recordingAttempt === undefined ? {} : { recordingAttempt }),
   });
   /** Use the same eligible candidates and order for primary and measured selection. */
   const allocationInput: AllocateWorkingInventoryInput = {
@@ -393,6 +393,9 @@ export function planWorkingInventoryAllocation({
     }
   }
   if (lines === undefined || allocated === undefined) throw new Error("Accepted allocation cannot store its measured lines.");
+  if (recordingAttempt === undefined) {
+    assertInventoryPolicyCanPickAroundIndependentHold(candidateResult.selectedIndependentHold, allocated.shortfall);
+  }
   return {
     selector: selected.selector,
     itemRevisionId: selected.item.revisionId,
@@ -491,6 +494,8 @@ interface MeasuredWitnessBounds {
   readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
   /** Primary budget for axis-free rows of a complete witness. */
   readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
+  /** Complete and partial searches can skip whole-row combinations that exceed a reported axis. */
+  readonly wholeMeasuredSubsets?: InventoryWholeMeasuredSubsets;
 }
 
 /** Reported axes supported by one selectable row. */
@@ -527,6 +532,60 @@ interface FiniteAxisCapacity {
   readonly primary: bigint;
   /** Largest contribution at that stock amount, rounded up when necessary. */
   readonly measured: bigint;
+}
+
+/** Check at most 4,096 subsets when every measured contributor can only be picked whole. */
+const MAXIMUM_WHOLE_MEASURED_PROOF_ROWS = 12;
+
+/** Exact primary and reported-axis contributions from one indivisible position. */
+interface WholeMeasuredProofRow {
+  /** Primary stock used when the entire position is picked. */
+  readonly primary: bigint;
+  /** Positive contributions indexed by the report's independent axes. */
+  readonly measured: bigint[];
+}
+
+/** What the whole rows alone prove about complete measurement coverage. */
+interface WholeMeasuredProof {
+  /** Minimum primary required, or undefined if no subset can fill the reported axes. */
+  minimumPrimary: bigint | undefined;
+  /** Bit for each position appearing in at least one complete subset. */
+  participatingRows: number;
+  /** Subsets that fit inside the report, including those that leave independent stock unwitnessed. */
+  readonly fitting: Set<number>;
+}
+
+/** Prove a primary lower bound and which whole rows can appear in any complete witness. */
+function proveWholeMeasuredSubsets(
+  rows: readonly WholeMeasuredProofRow[], targets: readonly bigint[], requestedPrimary: bigint,
+): WholeMeasuredProof {
+  const proof: WholeMeasuredProof = { minimumPrimary: undefined, participatingRows: 0, fitting: new Set() };
+  /** Remaining measurement on each axis for the current subset. */
+  const remaining = [...targets];
+  /** Visit only subsets whose positive contributions still fit the report and primary request. */
+  const visit = (index: number, primary: bigint, included: number): void => {
+    const row = rows[index];
+    if (row === undefined) {
+      proof.fitting.add(included);
+      if (remaining.some(
+        /** An exact subset must leave nothing on every reported axis. */
+        (amount) => amount !== 0n
+      )) return;
+      if (proof.minimumPrimary === undefined || primary < proof.minimumPrimary) proof.minimumPrimary = primary;
+      proof.participatingRows |= included;
+      return;
+    }
+    visit(index + 1, primary, included);
+    if (primary + row.primary > requestedPrimary || row.measured.some(
+      /** Further rows can only increase the contribution on an axis. */
+      (amount, axis) => amount > (remaining[axis] ?? 0n)
+    )) return;
+    for (const [axis, amount] of row.measured.entries()) remaining[axis] = (remaining[axis] ?? 0n) - amount;
+    visit(index + 1, primary + row.primary, included | (1 << index));
+    for (const [axis, amount] of row.measured.entries()) remaining[axis] = (remaining[axis] ?? 0n) + amount;
+  };
+  visit(0, 0n, 0);
+  return proof;
 }
 
 /** Lower-bound the primary needed by allowing fractional use of the last stock row. */
@@ -575,8 +634,12 @@ function measuredWitnessBounds({
   };
   /** Shared support and combined contribution matter only for a multi-axis report. */
   const supportByPosition = report.independent.length > 1 ? new Map<InventoryStockPositionKey, MeasuredWitnessRowSupport>() : undefined;
+  /** Whole measured contributors for a small complete-witness proof. Mixed or larger support uses the general bounds. */
+  let wholeProofRows = report.independent.length > 1 ? new Map<InventoryStockPositionKey, WholeMeasuredProofRow>() : undefined;
+  /** Subset feasibility transferred to the existing ordered allocation search. */
+  let wholeMeasuredSubsets: InventoryWholeMeasuredSubsets | undefined;
   /** Rows that leave an axis remainder below every other row's smallest contribution. */
-  const completeExclusions = supportByPosition === undefined ? undefined : new Set<InventoryStockPositionKey>();
+  let completeExclusions = supportByPosition === undefined ? undefined : new Set<InventoryStockPositionKey>();
   /** Decimal scale for rounding each fraction of an axis's reported quantity upward. */
   const normalizedAxisUnit = supportByPosition === undefined ? 0n : 10n ** BigInt(decimals);
   /** Lower bound for the primary stock that must carry each reported axis. */
@@ -631,6 +694,20 @@ function measuredWitnessBounds({
       if (reported === 0n) continue;
       measuredPositions.add(position);
       const wholeRow = allocationIncrement !== undefined && compareWorkingQuantities(allocationIncrement, fullPrimary) === 0;
+      if (wholeProofRows !== undefined) {
+        if (!wholeRow || position.packagingRevisionId !== undefined || rowMeasured < 0n) {
+          // A package increment or signed contribution needs the existing general witness bounds.
+          wholeProofRows = undefined;
+        } else {
+          let proofRow = wholeProofRows.get(position);
+          if (proofRow === undefined && wholeProofRows.size < MAXIMUM_WHOLE_MEASURED_PROOF_ROWS) {
+            proofRow = { primary: rowPrimary, measured: new Array<bigint>(report.independent.length).fill(0n) };
+            wholeProofRows.set(position, proofRow);
+          }
+          if (proofRow === undefined) wholeProofRows = undefined;
+          else proofRow.measured[axisIndex] = rowMeasured;
+        }
+      }
       if (completeExclusions !== undefined) {
         // Round down so an exact contribution from a different position is never ruled out.
         const quantum = allocationIncrement === undefined ? 1n : (rowMeasured * increment / rowPrimary || 1n);
@@ -734,9 +811,31 @@ function measuredWitnessBounds({
       (normalizedRequired * densest.primary + densest.normalized - 1n) / densest.normalized;
     requiredMeasuredPrimary += combined > minimumPrimary ? combined : minimumPrimary;
   }
+  if (wholeProofRows !== undefined && wholeProofRows.size > 0) {
+    const proof = proveWholeMeasuredSubsets([...wholeProofRows.values()], report.independent.map(
+      /** Ignore zero axes in this proof. The existing witness rule still validates them. */
+      ({ quantity }) => workingQuantityAtDecimals(quantity, decimals)
+    ), requested);
+    const bitsByPosition = new Map<InventoryStockPositionKey, number>();
+    for (const position of wholeProofRows.keys()) {
+      const bit = 1 << bitsByPosition.size;
+      bitsByPosition.set(position, bit);
+      if (proof.minimumPrimary !== undefined && (proof.participatingRows & bit) === 0) {
+        completeExclusions ??= new Set();
+        completeExclusions.add(position);
+      }
+    }
+    wholeMeasuredSubsets = { bitsByPosition, fitting: proof.fitting };
+    if (proof.minimumPrimary === undefined) {
+      requiresPositiveShortfall = true;
+    } else {
+      if (proof.minimumPrimary > requiredMeasuredPrimary) requiredMeasuredPrimary = proof.minimumPrimary;
+    }
+  }
   requiresPositiveShortfall ||= requiredMeasuredPrimary > requested;
   return {
     requiresPositiveShortfall,
+    ...(wholeMeasuredSubsets === undefined ? {} : { wholeMeasuredSubsets }),
     maximumWitnessPrimary: { amountMinor: maximum, decimals, unit: primary.quantity.unit },
     ...(requiresPositiveShortfall || requiredMeasuredPrimary === 0n ? {} : {
       fullWitnessPrimaryBudget: {
@@ -752,13 +851,13 @@ function measuredWitnessBounds({
 type PrepareInventoryPolicyAllocationPoolInput = Pick<
   PlanWorkingInventoryAllocationInput,
   "catalog" | "pool" | "selection" | "method" | "atEpochMs" | "reservationAtEpochMs" |
-  "allowExpiredLots" | "allowAllocatedStock" | "recordingAttempt" | "reservationId"
+  "allowExpiredLots" | "allowAllocatedStock" | "reservationId"
 >;
 
 /** Prepare eligible working rows without constructing a request for their combined capacity. */
 export function prepareInventoryPolicyAllocationPool({
   catalog, pool, selection, method, atEpochMs, reservationAtEpochMs = atEpochMs,
-  allowExpiredLots = false, allowAllocatedStock = false, recordingAttempt, reservationId,
+  allowExpiredLots = false, allowAllocatedStock = false, reservationId,
 }: PrepareInventoryPolicyAllocationPoolInput) {
   // The signed pool has already applied the subtree constraint.
   const { withinPlacementNodeIds: _withinPlacementNodeIds, ...stockSelector } = selection.selector;
@@ -766,7 +865,6 @@ export function prepareInventoryPolicyAllocationPool({
     catalog, pool, item: selection.item, stockSelector, reservationAtEpochMs, allowAllocatedStock,
     stockAtEpochMs: atEpochMs, allowExpiredLots,
     ...(reservationId === undefined ? {} : { reservationId }),
-    keepIndependentHoldsWhole: recordingAttempt === "prefer-unheld",
   });
   const deficitAdjusted = applyPolicyAllocationDeficitBurden({
     selector: stockSelector, item: selection.item, method, atEpochMs, allowExpiredLots,
@@ -962,6 +1060,8 @@ interface PolicyAllocationCandidates {
   readonly rowsById: ReadonlyMap<string, InventoryPolicyWorkingRow>;
   /** True when at least one active same-revision claim is still broad/unallocated. */
   readonly unallocatedReservationsPresent: boolean;
+  /** A selected positive row has an exact hold whose primary share cannot be inferred. */
+  readonly selectedIndependentHold: boolean;
 }
 
 /** Positive policy candidates after durable deficit has first claim on each direct-placement pool. */
@@ -1107,8 +1207,6 @@ interface CreatePolicyAllocationCandidatesInput {
   readonly reservationId?: string;
   /** Whether exact allocations should remain physically selectable. */
   readonly allowAllocatedStock: boolean;
-  /** Prefer unheld rows in physical recording without converting an independent hold. */
-  readonly keepIndependentHoldsWhole: boolean;
 }
 
 /** Resolve one request to exactly one immutable item revision and optional package revision. */
@@ -1206,7 +1304,6 @@ function createPolicyAllocationCandidates({
   allowExpiredLots,
   reservationId,
   allowAllocatedStock,
-  keepIndependentHoldsWhole,
 }: CreatePolicyAllocationCandidatesInput): PolicyAllocationCandidates {
   const rowsById = new Map<string, InventoryPolicyWorkingRow>();
   for (const row of pool.positions) {
@@ -1223,7 +1320,6 @@ function createPolicyAllocationCandidates({
     allowExpiredLots,
     ...(reservationId === undefined ? {} : { excludedReservationId: reservationId }),
     allowAllocatedStock,
-    keepIndependentHoldsWhole,
   });
 
   for (const [positionIdentity, row] of rowsById) {
@@ -1257,6 +1353,7 @@ function createPolicyAllocationCandidates({
     rowsById,
     unallocatedReservationsPresent:
       reservationSummary.unallocatedReservationsPresent,
+    selectedIndependentHold: reservationSummary.selectedIndependentHold,
   };
 }
 
@@ -1289,6 +1386,8 @@ interface ExactPrimaryReservationSummary {
   readonly reservedPrimaryByPositionIdentity: ReadonlyMap<string, InventoryWorkingQuantity>;
   /** True when an active same-revision claim remains broad rather than position-bound. */
   readonly unallocatedReservationsPresent: boolean;
+  /** A selected eligible row is wholly withheld because its reservation uses an independent axis. */
+  readonly selectedIndependentHold: boolean;
 }
 
 /** Inputs for one linear pass over reservation evidence before candidate iteration. */
@@ -1311,8 +1410,15 @@ interface CreateExactPrimaryReservationSummaryInput {
   readonly excludedReservationId?: string;
   /** Whether exact bindings are deliberately ignored as physical-truth candidates. */
   readonly allowAllocatedStock: boolean;
-  /** Treat a held independent-axis row as wholly held during the preferred pick. */
-  readonly keepIndependentHoldsWhole: boolean;
+}
+
+/** Require explicit lines when a selected independent hold may be needed to fill a preview. */
+export function assertInventoryPolicyCanPickAroundIndependentHold(selectedIndependentHold: boolean, shortfall: Quantity): void {
+  if (selectedIndependentHold && shortfall.amountMinor > 0) {
+    throw new Error(
+      "Automatic primary-quantity picking cannot subtract an exact reservation on an independent axis; use explicit fulfillment lines."
+    );
+  }
 }
 
 /** Sum every active exact binding once so candidate planning stays O(reservations + allocations + candidates). */
@@ -1326,12 +1432,13 @@ function createExactPrimaryReservationSummary({
   allowExpiredLots,
   excludedReservationId,
   allowAllocatedStock,
-  keepIndependentHoldsWhole,
 }: CreateExactPrimaryReservationSummaryInput): ExactPrimaryReservationSummary {
   // Exact primary-axis pressure accumulated once per bound stock position.
   const reservedPrimaryByPositionIdentity = new Map<string, InventoryWorkingQuantity>();
   // Remember whether any active broad claim still needs global feasibility protection.
   let unallocatedReservationsPresent = false;
+  /** Defer the explicit-lines error until unheld stock fails to fill a preview. */
+  let selectedIndependentHold = false;
   for (const reservation of reservations) {
     if (reservation.reservationId === excludedReservationId) continue;
     if (!inventoryReservationIsActiveAt(reservation, atEpochMs)) continue;
@@ -1353,15 +1460,10 @@ function createExactPrimaryReservationSummary({
         const onHand = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
         // A stranded hold remains a claim, but its depleted row cannot supply a pick.
         if (onHand.amountMinor <= 0n) continue;
-        if (keepIndependentHoldsWhole ||
-            !inventoryStockPositionMatchesNormalizedSelector(row.position.key, stockSelector)) {
-          // Without an exact conversion, the held row cannot contribute unheld capacity to the signed pool.
-          reservedPrimaryByPositionIdentity.set(positionIdentity, onHand);
-          continue;
-        }
-        throw new Error(
-          "Automatic primary-quantity picking cannot subtract an exact reservation on an independent axis; use explicit fulfillment lines."
-        );
+        // A binding on a different axis gives no exact primary quantity. Withhold the entire row.
+        reservedPrimaryByPositionIdentity.set(positionIdentity, onHand);
+        selectedIndependentHold ||= inventoryStockPositionMatchesNormalizedSelector(row.position.key, stockSelector);
+        continue;
       }
       const existing = reservedPrimaryByPositionIdentity.get(positionIdentity);
       if (existing === undefined) {
@@ -1379,6 +1481,7 @@ function createExactPrimaryReservationSummary({
   return {
     reservedPrimaryByPositionIdentity,
     unallocatedReservationsPresent,
+    selectedIndependentHold,
   };
 }
 
@@ -1389,21 +1492,27 @@ function allocationIncrementForPosition(
   item: InventoryItemDefinitionRevision,
   capacity: InventoryWorkingQuantity,
 ): Pick<InventoryWorkingAllocationCandidate, "allocationIncrement" | "keepIncrementForAcceptance"> {
-  if (position.key.serialId !== undefined)
-    return { allocationIncrement: capacity };
   const packagingRevisionId = position.key.packagingRevisionId;
-  if (packagingRevisionId === undefined) {
+  const packaging = packagingRevisionId === undefined ? undefined : catalog.packagingRevision(packagingRevisionId);
+  if (position.key.serialId !== undefined) {
+    // Package counts and unfixed independent contents both require an intact measured serial.
+    return packaging !== undefined || policyPositionHasUnfixedContents(position, item)
+      ? { allocationIncrement: capacity, keepIncrementForAcceptance: true }
+      : { allocationIncrement: capacity };
+  }
+  if (packaging === undefined) {
     // A measured line cannot assign a fraction of this row's independent quantities.
     return policyPositionHasUnfixedContents(position, item)
       ? { allocationIncrement: capacity, keepIncrementForAcceptance: true }
       : {};
   }
-  const packaging = catalog.packagingRevision(packagingRevisionId);
   if (policyPositionHasUnfixedContents(position, item, packaging)) {
     // Package increments alone do not determine its unfixed measured quantities.
     return { allocationIncrement: capacity, keepIncrementForAcceptance: true };
   }
   return {
+    /** The amount materializer needs whole package counts even during measured diagnostics. */
+    keepIncrementForAcceptance: true,
     allocationIncrement: inventoryMeasurementAt(
       packaging.fixedContents,
       item.primaryAxis.axisId,

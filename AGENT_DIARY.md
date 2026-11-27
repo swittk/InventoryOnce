@@ -2093,3 +2093,12 @@ The R105 portable-current-input authority and final publication both continue to
 - An indivisible measured row can be skipped for a complete pick when its positive remainder on an axis is below every other row's smallest legal contribution. Partial picks still consider that row.
 - If the best measurement ratio cannot supply the report, the primary reserve accounts for each row's finite contribution. Allowing a fractional final row in this calculation keeps the reserve a lower bound for whole picks.
 - Fungibility compares claim shortages before and after a proposed allocation on the changed item revisions at the same authority time. Existing shortages can stay the same while a proposal that increases them is rejected.
+
+## 2026-11-27 — discrete whole-row measurements
+
+- A bounded check of whole measured rows can prove the minimum primary stock needed to explain the independent axes together. It also identifies rows that can never appear in a complete witness. The allocation search still selects the FIFO or FEFO witness and can consider those rows for partial recording.
+- A measured fixed-package witness still needs whole package counts during increment diagnosis. The primary-only increment diagnosis can still test how package increments limit a pick.
+- An incompatible whole-row prefix can be skipped before the allocator tries another divisible primary amount. A partial record may still use any subset that fits the report, including one that leaves independent measurements unwitnessed.
+- Preview withholds a position when its exact reservation is on an independent axis. A complete unheld pick remains usable. If the preview still falls short, the planner asks for explicit fulfillment lines.
+- A whole-measured suffix supplies exact fitting primary totals. The existing ordered search can jump across fine primary digits that cannot improve the remainder.
+- Conserved arrivals can settle signed destination debt. If the destination is still nonpositive, the event carries its route but there is no positive FIFO layer. A filtered history still needs its own separate reason to omit a source age.

@@ -1,5 +1,5 @@
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, inventoryOccurrenceCutCanOmitContentsAge, replayEffectiveStockAge, type InventoryStockAgeReplay } from "./stock-age.js";
+import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge, type InventoryStockAgeReplay } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -986,16 +986,11 @@ function applyInventoryCommittedEventInternal(
     }
     const wasPositive = quantityIsPositive(current.primary.quantity);
     const isPositive = quantityIsPositive(next.primary.quantity);
-    if (embodiedNodeId !== undefined && !isPositive &&
-      conservedPositiveLayerStartByDestinationId.has(identity)) {
+    if (!isPositive && conservedPositiveLayerStartByDestinationId.has(identity) &&
+      (embodiedNodeId !== undefined || !inventoryConservedArrivalCanSettleDeficit(normalizedEvent, effect.position.serialId))) {
       throw new Error(
         `Conserved FIFO provenance destination ${identity} is not positive after its event.`
       );
-    }
-    if (!isPositive && replayStockAge === "occurrence-cut" &&
-        inventoryOccurrenceCutCanOmitContentsAge(normalizedEvent, replayStockAge, effect.position.serialId)) {
-      // A loose arrival spent on signed debt leaves no positive FIFO layer in this cut.
-      conservedPositiveLayerStartByDestinationId.delete(identity);
     }
     if (inventoryMeasurementsAreZero(next)) {
       deleteInventorySparseRecordValue(positions, identity);
@@ -1104,12 +1099,9 @@ function applyInventoryCommittedEventInternal(
       position === undefined ||
       !quantityIsPositive(position.measurements.primary.quantity)
     ) {
-      // The exact transfer still witnessed this route. All incoming stock
+      // The event still witnessed this conserved route. All incoming stock
       // paid down the signed balance, leaving no current layer to age.
-      if (inventoryConservedArrivalCanSettleDeficit(normalizedEvent)) continue;
-      throw new Error(
-        `Conserved FIFO provenance destination ${identity} is not positive after its event.`
-      );
+      continue;
     }
     setInventorySparseRecordValue(
       positiveLayerStartedAtEpochMsByPositionId,

@@ -41,6 +41,7 @@ import {
   setInventorySparseRecordValue,
 } from "./sparse-record.js";
 import {
+  assertInventoryPolicyCanPickAroundIndependentHold,
   inventoryAllocationPoolSelector,
   inventoryAmountForPrimaryAllocation,
   inventoryStockPoolRowsFromProjection,
@@ -416,6 +417,8 @@ function planInventoryFungibilityAllocationWithHolds({
   const memberStock: FungibilityMemberStock[] = [];
   // Remember whether any active member reservation remained broad rather than position-bound.
   let unallocatedReservationsPresent = false;
+  /** A selected member may require explicit lines if unheld stock cannot fill the request. */
+  let selectedIndependentHold = false;
   /** All contributing members use the same published claim snapshot and reservation time. */
   let reservations: readonly InventoryReservation[] | undefined;
 
@@ -451,13 +454,13 @@ function planInventoryFungibilityAllocationWithHolds({
       reservationAtEpochMs,
       allowExpiredLots,
       allowAllocatedStock,
-      ...(recording && !allowAllocatedStock ? { recordingAttempt: "prefer-unheld" } : {}),
     });
     expiredStockWasExcluded =
       expiredStockWasExcluded || deficitAdjusted.expiredStockWasExcluded;
     unallocatedReservationsPresent =
       unallocatedReservationsPresent ||
       candidateResult.unallocatedReservationsPresent;
+    selectedIndependentHold ||= candidateResult.selectedIndependentHold;
     memberStock.push({ member, candidates: deficitAdjusted.candidates });
     // Convert each eligible row separately. The sum is needed only by the common-basis allocator.
     for (const source of deficitAdjusted.candidates) {
@@ -534,6 +537,7 @@ function planInventoryFungibilityAllocationWithHolds({
       : /** Keep the complete-plan requirement even without a claim trial. */
         (): boolean => true,
   });
+  if (!recording) assertInventoryPolicyCanPickAroundIndependentHold(selectedIndependentHold, allocated.shortfall);
   const lines: InventoryFungibilityAllocationLine[] = [];
   for (const allocation of allocated.allocations) {
     const identity = inventoryStockPositionIdentity(allocation.position);

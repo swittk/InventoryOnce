@@ -1427,6 +1427,12 @@ describe("derived pool summaries and exact member movements", () => {
       memberQuantity: parseQuantity("4", "piece"),
     }]);
     expect(preview.shortfall).toEqual(parseQuantity("0", "equivalent"));
+    const broadPreview = await inventory.fungibility.plan({
+      fungibilityRevisionId: command.fungibilityRevisionId, requested: command.requested, method: command.method,
+      scope: command.scope, atEpochMs: time2,
+    });
+    expect(broadPreview.lines).toEqual(preview.lines);
+    expect(broadPreview.shortfall).toEqual(preview.shortfall);
 
     const outside = { itemId: unrelated.itemId, placementNodeId: "elsewhere" };
     const one = stockAmount("1", "piece");
@@ -1447,6 +1453,10 @@ describe("derived pool summaries and exact member movements", () => {
     expect((await inventory.read.reservationFeasibility(time2)).groups).toEqual(expect.arrayContaining([
       expect.objectContaining({ reservationIds: ["weighed-hold"], shortage: parseQuantity("0", "kg") }),
     ]));
+    await expect(inventory.fungibility.plan({
+      fungibilityRevisionId: command.fungibilityRevisionId, requested: command.requested, method: command.method,
+      scope: command.scope, atEpochMs: time2,
+    })).rejects.toThrow("use explicit fulfillment lines");
     const physical = await inventory.fungibility.transfer({ ...command, operationId: "move-held-member" });
     expect(physical.event.stockEffects.map((effect) => [
       effect.position.placementNodeId, effect.measurementsDelta.primary.quantity, effect.measurementsDelta.independent[0]?.quantity,

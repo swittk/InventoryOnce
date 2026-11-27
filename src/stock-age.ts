@@ -1,4 +1,4 @@
-import { InventoryEventKind, type InventoryCommittedEvent } from "./events.js";
+import { InventoryEventKind, InventoryTransferLifecycleAction, type InventoryCommittedEvent } from "./events.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 
 /** Internal replay marker for histories that can omit a retained movement's source age. */
@@ -29,7 +29,7 @@ export function captureConservedPositiveLayerStarts(
     if (sourceStartedAtEpochMs === undefined) {
       // The retained route still records the movement when filtered history has no earlier age to carry.
       if ((replay !== undefined && transfer.from.serialId === undefined &&
-          inventoryConservedArrivalCanSettleDeficit(event)) ||
+          event.kind === InventoryEventKind.Transfer && event.transferLifecycle === undefined) ||
           inventoryOccurrenceCutCanOmitContentsAge(event, replay, transfer.from.serialId)) continue;
       throw new Error(
         `Conserved FIFO provenance source ${sourceId} is not currently positive.`
@@ -47,13 +47,29 @@ export function captureConservedPositiveLayerStarts(
   return result;
 }
 
-/** A direct transfer that pays down a signed balance only leaves an age when positive stock remains. */
-export function inventoryConservedArrivalCanSettleDeficit(event: InventoryCommittedEvent): boolean {
-  return event.kind === InventoryEventKind.Transfer && event.transferLifecycle === undefined;
+/** A conserved arrival can settle signed debt without leaving a positive FIFO layer. */
+export function inventoryConservedArrivalCanSettleDeficit(event: InventoryCommittedEvent, serialId: string | undefined): boolean {
+  switch (event.kind) {
+    case InventoryEventKind.Transfer:
+      return event.transferLifecycle === undefined ||
+        event.transferLifecycle.action === InventoryTransferLifecycleAction.Receive;
+    case InventoryEventKind.Reclassification:
+      return event.transferLifecycle === undefined ||
+        event.transferLifecycle.action === InventoryTransferLifecycleAction.Release;
+    case InventoryEventKind.RevisionTransition:
+    case InventoryEventKind.Pack:
+    case InventoryEventKind.Unpack:
+      return true;
+    case InventoryEventKind.Placement:
+      // Placement of a serialized resource needs a live destination for its stock and edge.
+      return serialId === undefined;
+    default:
+      return false;
+  }
 }
 
-/** A count cut may omit the source or destination age of retained loose contents. */
-export function inventoryOccurrenceCutCanOmitContentsAge(
+/** A count cut may omit the source age of retained loose contents. */
+function inventoryOccurrenceCutCanOmitContentsAge(
   event: InventoryCommittedEvent,
   replay: InventoryStockAgeReplay | undefined,
   serialId: string | undefined,
