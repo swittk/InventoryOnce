@@ -306,6 +306,47 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
+  it.each([false, true])("reconciles a Reject count cut with a backdated transfer (canonical: %s)", async (canonical) => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(policyPickingStorage(canonical), catalog);
+    const from = loosePosition("store");
+    const to = loosePosition("room");
+    const selector = { itemId: from.itemId, placementNodeIds: [to.placementNodeId] };
+    const one = stockAmount("1", "piece");
+    const two = stockAmount("2", "piece");
+    const three = stockAmount("3", "piece");
+
+    await inventory.counts.start({ countId: "reject-cut", operationId: "start-reject-cut", selector, startedAtEpochMs: time0 });
+    await inventory.stock.receive({ operationId: "source-after-cut", occurredAtEpochMs: time2, to: from, amount: three });
+    const { event } = await inventory.stock.transfer({
+      operationId: "backdated-transfer", occurredAtEpochMs: time1, from, toPlacementNodeId: to.placementNodeId, amount: two,
+    });
+    const [arrival] = await inventory.read.positions(selector);
+    if (arrival === undefined) throw new Error("Expected the transfer arrival.");
+    const [route] = event.positiveLayerProvenanceTransfers ?? [];
+    if (route === undefined) throw new Error("Expected the transfer route.");
+
+    await inventory.counts.observe({
+      countId: "reject-cut", operationId: "observe-reject-cut", observedAtEpochMs: time1,
+      observations: [{ position: arrival.key, measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }],
+    });
+    await inventory.stock.receive({ operationId: "arrival-after-cut", occurredAtEpochMs: time2, to, amount: three });
+    const reconciled = await inventory.counts.reconcile({ countId: "reject-cut", operationId: "reconcile-reject-cut", completedAtEpochMs: time3 });
+    expect(reconciled.count.status).toBe(InventoryCountStatus.Completed);
+    expect(reconciled.event?.stockEffects).toMatchObject([
+      { position: arrival.key, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+    ]);
+    const cut = { catalog, events: [{ ...event, recordSequence: 1 }], deficitPolicy: InventoryDeficitPolicy.Reject,
+      [replayEffectiveStockAge]: "occurrence-cut" };
+    const cutBalances = Object.values(projectInventoryEvents(cut).positions).map(({ key, measurements }) => [key, measurements.primary.quantity]);
+    expect(cutBalances).toHaveLength(2);
+    expect(cutBalances).toEqual(expect.arrayContaining([[route.from, parseQuantity("-2", "piece")], [route.to, parseQuantity("2", "piece")]]));
+    await expect(inventory.stock.issue({ operationId: "reject-live-deficit", occurredAtEpochMs: time3, from, amount: two })).rejects.toThrow();
+    const currentBalances = (await inventory.read.positions({ itemId: from.itemId })).map(({ key, measurements }) => [key, measurements.primary.quantity]);
+    expect(currentBalances).toHaveLength(2);
+    expect(currentBalances).toEqual(expect.arrayContaining([[route.from, parseQuantity("1", "piece")], [route.to, parseQuantity("4", "piece")]]));
+  });
+
   it.each([false, true])("requires the original layer for a serialized source in filtered replay (canonical: %s)", async (canonical) => {
     const catalog = createTabletCatalog();
     const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), InventoryDeficitPolicy.Record);
@@ -2011,7 +2052,7 @@ describe("indexed stock planning and availability", () => {
       ...base, independentAxes: base.independentAxes.map((axis) => ({ ...axis, requirement: InventoryMeasurementRequirement.Optional })),
     });
     const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
-    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : undefined);
+    const storage = policyPickingStorage(canonical);
     const inventory = createTestInventory(storage, catalog);
     const selector = { itemId: "measured", placementNodeIds: ["store"] };
     const request = { selector, method: InventoryAllocationMethod.Fifo };
@@ -2026,8 +2067,10 @@ describe("indexed stock planning and availability", () => {
     expect((await inventory.read.planAllocation({ ...request, amount: stockAmount("1", "piece") })).lines[0]?.position.lotId)
       .toBe("old");
     const world = await inventory.read.world();
-    const readWorld = canonical ? undefined : vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const readWorld = vi.spyOn(storage, "readWorld");
+    if (!canonical) readWorld.mockRejectedValue(new Error("whole world"));
     const preview = await inventory.read.planAllocation({ ...request, amount: exact });
+    if (canonical) expect(readWorld).toHaveBeenCalled();
     expect(preview.lines).toMatchObject([{ position: { lotId: "exact" }, amount: exact, allocatedPrimary: parseQuantity("1", "piece") }]);
     expect(planInventoryAllocation({ ...request, amount: exact, atEpochMs: time3, catalog, world })).toEqual(preview);
     const tooHeavy = measuredStockAmount("1", "piece", [{ axisId: "weight", value: "3", unit: "kg" }]);
@@ -2049,7 +2092,7 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.stock.transferByPolicy({
       ...request, amount: exact, operationId: "move-preview-witness", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
     })).toEqual({ ...moved, replayed: true });
-    if (readWorld !== undefined) expect(readWorld).not.toHaveBeenCalled();
+    if (!canonical) expect(readWorld).not.toHaveBeenCalled();
   });
 
   it.each([false, true].flatMap((canonical) =>

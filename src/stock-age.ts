@@ -1,7 +1,7 @@
 import { InventoryEventKind, InventoryTransferLifecycleAction, type InventoryCommittedEvent } from "./events.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 
-/** Internal replay marker for histories that can omit a retained movement's source age. */
+/** Internal replay marker for histories that can omit source age or the stock behind a count debit. */
 export const replayEffectiveStockAge = Symbol("replayEffectiveStockAge");
 
 /** The filtered view that owns the age reconstruction. */

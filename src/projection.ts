@@ -977,10 +977,15 @@ function applyInventoryCommittedEventInternal(
     );
     // Historical planners reject newly exposed shortages; a verified correction
     // may leave a previously recorded deficit open while improving it.
+    // A count cut can omit backing stock that exists in the published ledger.
+    // Keep ordinary signed balances in that cut so the count computes the exact discrepancy.
     if (
       deficitPolicy === InventoryDeficitPolicy.Reject &&
       normalizedEvent.kind !== InventoryEventKind.Correction &&
-      normalizedEvent.kind !== InventoryEventKind.HistoricalRepair
+      normalizedEvent.kind !== InventoryEventKind.HistoricalRepair &&
+      (replayStockAge !== "occurrence-cut" ||
+        effect.position.serialId !== undefined ||
+        normalizedEvent.transferLifecycle !== undefined)
     ) {
       nonNegativeInventoryMeasurements(next, `Stock position ${identity}`);
     }

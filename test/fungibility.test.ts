@@ -180,9 +180,13 @@ describe("revision-frozen mutual-fungibility catalogue", () => {
     const transferred = await inventory.fungibility.transfer({
       ...request, operationId: "move-free-stock", occurredAtEpochMs: time3, toPlacementNodeId: "room",
     });
-    expect(transferred.event.stockEffects).toEqual(expect.arrayContaining([
-      expect.objectContaining({ position: protectedPlan.lines[0]?.position }),
-    ]));
+    const [selected] = protectedPlan.lines;
+    if (selected === undefined) throw new Error("Expected the protected source pick.");
+    expect(transferred.event.stockEffects).toMatchObject([
+      { position: { ...selected.position, placementNodeId: "room" },
+        measurementsDelta: { primary: { quantity: parseQuantity("1", "piece") } } },
+      { position: selected.position, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+    ]);
     expect(await inventory.read.reservationFeasibility(time3)).toEqual(before);
   });
 

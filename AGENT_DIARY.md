@@ -2110,3 +2110,7 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — conserved movement sources in filtered history
 
 - A correction that omits a receipt can leave an ordinary nonserialized conserved movement in effective history, just as an occurrence cut can omit a later source receipt. Replay retains the signed effects and derives the destination age from a retained fact when the source age is absent. Serialized sources and structured transfer lifecycle backing stay strict.
+
+## 2026-11-27 — signed stock in Reject count cuts
+
+- A count observation cut can keep an ordinary stock debit while excluding the later-occurring receipt that backed the published operation. The cut keeps that signed balance so reconciliation measures the observed discrepancy. Reject still checks the adjustment against current stock, and serialized stock and transfer lifecycle replay keep their backing rules.
