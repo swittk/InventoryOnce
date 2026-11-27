@@ -28,9 +28,7 @@ export function captureConservedPositiveLayerStarts(
     const sourceStartedAtEpochMs = positiveLayerStart(sourceId);
     if (sourceStartedAtEpochMs === undefined) {
       // The retained route still records the movement when filtered history has no earlier age to carry.
-      if ((replay !== undefined && transfer.from.serialId === undefined &&
-          event.kind === InventoryEventKind.Transfer && event.transferLifecycle === undefined) ||
-          inventoryOccurrenceCutCanOmitContentsAge(event, replay, transfer.from.serialId)) continue;
+      if (inventoryReplayCanOmitConservedSourceAge(event, replay, transfer.from.serialId)) continue;
       throw new Error(
         `Conserved FIFO provenance source ${sourceId} is not currently positive.`
       );
@@ -68,11 +66,19 @@ export function inventoryConservedArrivalCanSettleDeficit(event: InventoryCommit
   }
 }
 
-/** A count cut may omit the source age of retained loose contents. */
-function inventoryOccurrenceCutCanOmitContentsAge(
+/** Decide when a filtered history can retain the conserved route without its source FIFO age. */
+function inventoryReplayCanOmitConservedSourceAge(
   event: InventoryCommittedEvent,
   replay: InventoryStockAgeReplay | undefined,
   serialId: string | undefined,
 ): boolean {
-  return replay === "occurrence-cut" && event.kind === InventoryEventKind.Placement && serialId === undefined;
+  if (replay === undefined || serialId !== undefined || event.transferLifecycle !== undefined) return false;
+  if (event.kind === InventoryEventKind.Transfer) return true;
+  return replay === "occurrence-cut" && (
+    event.kind === InventoryEventKind.Placement ||
+    event.kind === InventoryEventKind.Reclassification ||
+    event.kind === InventoryEventKind.Pack ||
+    event.kind === InventoryEventKind.Unpack ||
+    event.kind === InventoryEventKind.RevisionTransition
+  );
 }

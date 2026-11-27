@@ -7,6 +7,7 @@ import {
   defineScalarInventoryPackaging,
   extendInventoryCatalog,
   InventoryAllocationMethod,
+  InventoryCountStatus,
   InventoryDeficitPolicy,
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
@@ -29,7 +30,9 @@ import {
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
 import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
+import { projectInventoryEvents } from "../src/projection.js";
 import { InMemoryInventorySegmentedPlacementStore } from "../src/segmented-placement.js";
+import { replayEffectiveStockAge } from "../src/stock-age.js";
 import {
   clockAt,
   createTabletCatalog,
@@ -206,6 +209,90 @@ describe("indexed stock planning and availability", () => {
       expect(Object.values(world.projection.positions).map(({ key, measurements }) => [key.itemRevisionId, measurements.primary.quantity]))
         .toEqual(moved === 1 ? [] : [[after.revisionId, parseQuantity("1", "piece")]]);
     }
+  });
+
+  it.each(["status", "pack", "unpack", "revision"] as const)("reconciles a %s movement when the count omits its source receipt", async (kind) => {
+    const definition = { itemId: "count-item", axisId: "pieces", unit: "piece" };
+    const earlier = defineScalarInventoryItem({ ...definition, revisionId: "count-item-earlier" });
+    const item = defineScalarInventoryItem({ ...definition, revisionId: "count-item-current" });
+    const packaging = defineScalarInventoryPackaging({ revisionId: "count-box", item, packageUnit: "box", contains: "1" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [earlier, item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [packaging] });
+    const loose = { itemId: item.itemId, placementNodeId: "store" };
+    const scope = { itemId: item.itemId, placementNodeIds: ["store"] };
+    const boxed = { ...loose, packagingRevisionId: packaging.revisionId };
+    const available = { ...loose, statusId: "available" };
+    const selector = kind === "status" ? { ...scope, statusIds: ["quarantine"] }
+      : kind === "pack" ? { ...scope, packagingRevisionIds: [packaging.revisionId] }
+      : kind === "unpack" ? { ...scope, packagingRevision: { kind: InventoryOptionalIdentityConstraintKind.Absent } } : scope;
+    const amount = stockAmount("2", "piece");
+
+    for (const canonical of [false, true]) {
+      const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), InventoryDeficitPolicy.Record);
+      const source = kind === "status" ? available : kind === "unpack" ? boxed : loose;
+      await inventory.stock.receive({ operationId: "source-receipt-after-cut", occurredAtEpochMs: time2, to: source,
+        itemRevisionId: kind === "revision" ? earlier.revisionId : item.revisionId,
+        amount: kind === "unpack" ? packageAmount(2, packaging.revisionId) : amount });
+      await inventory.counts.start({ operationId: "start-count", countId: "count", selector, itemRevisionId: item.revisionId, startedAtEpochMs: time0 });
+      const movement = { operationId: "movement-at-cut", occurredAtEpochMs: time1 };
+      /** Dispatch the supported one-to-one movements through their public commands. */
+      const moveAtCut = async () => {
+        switch (kind) {
+          case "status": return inventory.stock.changeStatus({ ...movement, from: available, amount, toStatusId: "quarantine" });
+          case "pack": return inventory.stock.pack({ ...movement, from: loose, packagingRevisionId: packaging.revisionId, packageCount: 2 });
+          case "unpack": return inventory.stock.unpack({ ...movement, from: boxed, packageCount: 2 });
+          case "revision": {
+            const plan = await inventory.stock.planRevisionTransition({ itemId: item.itemId, fromRevisionId: earlier.revisionId,
+              toRevisionId: item.revisionId, conversion: { sourceAmount: "1", targetAmount: "1" } });
+            return inventory.stock.transitionRevision({ ...movement, plan, reason: "Same physical unit" });
+          }
+        }
+      };
+      const { event } = await moveAtCut();
+      expect(event.positiveLayerProvenanceTransfers).toHaveLength(1);
+      const [arrival] = await inventory.read.positions(selector);
+      if (arrival === undefined) throw new Error("Expected the current destination stock.");
+      expect(Object.values((await inventory.read.world()).projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time2]);
+      const replay = { catalog, events: [{ ...event, recordSequence: 1 }], deficitPolicy: InventoryDeficitPolicy.Record };
+      const effectiveHistory = { ...replay, [replayEffectiveStockAge]: "effective-history" };
+      const occurrenceCut = { ...replay, [replayEffectiveStockAge]: "occurrence-cut" };
+      expect(() => projectInventoryEvents(replay)).toThrow("is not currently positive");
+      expect(() => projectInventoryEvents(effectiveHistory)).toThrow("is not currently positive");
+      const cut = projectInventoryEvents(occurrenceCut);
+      const signedBalances = Object.values(cut.positions).map(({ key, measurements }) => [key, measurements.primary.quantity]);
+      expect(signedBalances).toHaveLength(2);
+      expect(signedBalances).toEqual(expect.arrayContaining(event.stockEffects.map(
+        ({ position, measurementsDelta }) => [position, measurementsDelta.primary.quantity]
+      )));
+
+      await inventory.counts.observe({ countId: "count", operationId: "observe-count", observedAtEpochMs: time1,
+        observations: [{ position: arrival.key,
+          measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }] });
+      await inventory.stock.receive({ operationId: "receive-after-observation", occurredAtEpochMs: time2,
+        to: { ...arrival.key, placementNodeId: loose.placementNodeId },
+        amount: kind === "pack" ? packageAmount(3, packaging.revisionId) : stockAmount("3", "piece") });
+      const reconciled = await inventory.counts.reconcile({ countId: "count", operationId: "reconcile-count", completedAtEpochMs: time3 });
+      expect(reconciled.count.status).toBe(InventoryCountStatus.Completed);
+      expect(reconciled.event?.stockEffects).toMatchObject([{ position: arrival.key,
+        measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } }]);
+      expect((await inventory.read.positions(scope)).map(({ key, measurements }) => [key, measurements.primary.quantity]))
+        .toEqual([[arrival.key, parseQuantity("4", "piece")]]);
+    }
+  });
+
+  it.each([false, true])("keeps a serialized source strict in occurrence replay (canonical: %s)", async (canonical) => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), InventoryDeficitPolicy.Record);
+    const source = loosePosition("store", { serialId: "serial-at-cut", statusId: "available" });
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "serial-source-after-cut", occurredAtEpochMs: time2, to: source, amount });
+    const { event } = await inventory.stock.changeStatus({ operationId: "serial-movement-at-cut", occurredAtEpochMs: time1,
+      from: source, amount, toStatusId: "quarantine" });
+    expect(event.positiveLayerProvenanceTransfers).toHaveLength(1);
+    const occurrenceCut = { catalog, events: [{ ...event, recordSequence: 1 }], deficitPolicy: InventoryDeficitPolicy.Record,
+      [replayEffectiveStockAge]: "occurrence-cut" };
+    expect(() => projectInventoryEvents(occurrenceCut)).toThrow("is not currently positive");
+    expect(Object.values((await inventory.read.world()).projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time2]);
   });
 
   it.each([false, true])("settles ordinary destination debt on lifecycle receipt or release (canonical: %s)", async (canonical) => {

@@ -2102,3 +2102,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Preview withholds a position when its exact reservation is on an independent axis. A complete unheld pick remains usable. If the preview still falls short, the planner asks for explicit fulfillment lines.
 - A whole-measured suffix supplies exact fitting primary totals. The existing ordered search can jump across fine primary digits that cannot improve the remainder.
 - Conserved arrivals can settle signed destination debt. If the destination is still nonpositive, the event carries its route but there is no positive FIFO layer. A filtered history still needs its own separate reason to omit a source age.
+
+## 2026-11-27 — occurrence-cut movement sources
+
+- A count cut can retain a nonserialized reclassification, pack, unpack, or revision transition while omitting the later-occurring receipt that started its source layer. Replay keeps both signed stock effects in the cut and carries the source FIFO age only when it is present.
