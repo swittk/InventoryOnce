@@ -994,7 +994,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       .toEqual([parseQuantity(later === "receipt" ? "4" : "1", "piece")]);
   });
 
-  it("places a late historical move before a later physical move despite an unrelated correction", async () => {
+  it.each(["correction", "receipt"] as const)("places a late historical move before a later physical move despite an unrelated %s", async (intervening) => {
     const item = defineScalarInventoryItem({ itemId: "counted", revisionId: "counted-v1", axisId: "pieces", unit: "piece" });
     const other = defineScalarInventoryItem({ itemId: "other", revisionId: "other-v1", axisId: "pieces", unit: "piece" });
     const catalog = defineInventoryCatalog({
@@ -1010,17 +1010,32 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     await inventory.placement.move({ operationId: "first-parent", occurredAtEpochMs: time0, nodeId: "child", into: "A" });
     await inventory.placement.move({ operationId: "last-parent", occurredAtEpochMs: time2, nodeId: "child", into: "B" });
-    await inventory.stock.correct({
-      operationId: "other-correction", occurredAtEpochMs: time1, correctsEventId: receipt.event.eventId,
-      reason: "Correct the unrelated receipt.",
-      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: from, amount: one }),
-    });
+    if (intervening === "correction") {
+      await inventory.stock.correct({
+        operationId: "other-correction", occurredAtEpochMs: time1, correctsEventId: receipt.event.eventId,
+        reason: "Correct the unrelated receipt.",
+        replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: from, amount: one }),
+      });
+    } else {
+      await inventory.stock.receive({ operationId: "other-receipt", occurredAtEpochMs: time1, to: from, amount: one });
+    }
     await inventory.stock.recordHistorical({
       operationId: "historical-move", occurredAtEpochMs: time3, reason: "Record earlier movement.",
       assertions: [{ assertionId: "move-C", assert: (plans) => plans.placement({
         occurredAtEpochMs: time1, nodeId: "child", fromParentNodeId: "A", toParentNodeId: "C",
       }) }],
     });
+    await inventory.counts.start({
+      operationId: "start-earlier", countId: "earlier",
+      selector: { itemId: item.itemId, withinPlacementNodeIds: ["A", "B"] }, startedAtEpochMs: time0,
+    });
+    await inventory.counts.observe({
+      operationId: "observe-earlier", countId: "earlier", observedAtEpochMs: time1, observations: [],
+    });
+    const earlier = await inventory.counts.reconcile({
+      operationId: "reconcile-earlier", countId: "earlier", completedAtEpochMs: time3,
+    });
+    expect(earlier.event).toBeUndefined();
     const selector = { itemId: item.itemId, withinPlacementNodeIds: ["B"] };
     await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: time0 });
     await inventory.counts.observe({
@@ -1032,6 +1047,26 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const result = await inventory.counts.reconcile({ operationId: "reconcile", countId: "count", completedAtEpochMs: time3 });
     expect(result.event).toBeUndefined();
     expect(await inventory.read.placementAncestry("child")).toEqual(["child", "B"]);
+  });
+
+  it.each([false, true])("keeps unrelated loose quantities outside a count cut (same bin: %s)", async (sameBin) => {
+    const inventory = createTestInventory();
+    const position = loosePosition("counted", { lotId: "counted" });
+    const unrelated = loosePosition(sameBin ? "counted" : "elsewhere", { lotId: "unrelated" });
+    const one = stockAmount("1", "piece");
+    const full = stockAmount(String(Number.MAX_SAFE_INTEGER), "piece");
+    await inventory.stock.receive({ operationId: "counted", occurredAtEpochMs: time0, to: position, amount: one });
+    await inventory.stock.receive({ operationId: "unrelated-first", occurredAtEpochMs: time0, to: unrelated, amount: full });
+    await inventory.stock.issue({ operationId: "unrelated-issue", occurredAtEpochMs: time3, from: unrelated, amount: full });
+    await inventory.stock.receive({ operationId: "unrelated-late", occurredAtEpochMs: time1, to: unrelated, amount: full });
+    const command = {
+      countId: "scope-count", operationId: "scope-count", itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["counted"], ...(sameBin ? { lotIds: ["counted"] } : {}) },
+      observedMeasurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      occurredAtEpochMs: time2,
+    };
+    expect((await inventory.counts.replaceAbsolute(command)).event).toBeUndefined();
+    expect((await inventory.counts.replaceAbsolute(command)).replayed).toBe(true);
   });
 
   it("retains correction supersession predecessors in occurrence-time count replay", async () => {

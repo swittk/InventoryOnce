@@ -2183,3 +2183,8 @@ The R105 portable-current-input authority and final publication both continue to
 - Corrections retain their count-replay order without anchoring unanchored repair assertions. A count retains every line and funding position of a relevant structured transfer.
 - A package's declared fixed axis measures one whole pick. The reservation search suspends each stock group on a private stack while retaining its exact branch order and work bound.
 - A complete fungibility preview can report a discarded reference remainder when a bounded trial proves an earlier storable physical plan under the same claims.
+
+## 2026-11-28 — count cut stock dependencies and assertion order
+
+- Count replay retains loose stock matching the selector and follows conserved routes from arrivals to their sources. A connected structured transfer retains its full lifecycle and every funding line.
+- Unanchored historical assertions replay before the first later physical event that shares their resources. Explicit anchors continue to set the insertion point.

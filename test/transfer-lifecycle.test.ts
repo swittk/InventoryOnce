@@ -94,6 +94,39 @@ describe("first-class physical transfer lifecycle", () => {
     expect((await inventory.read.world()).projection.transfers.transfer?.status).toBe(InventoryTransferStatus.Received);
   });
 
+  it.each(["incoming", "outgoing"] as const)("follows only the supplying direction of a count's ordinary route (%s)", async (direction) => {
+    const inventory = createTestInventory();
+    const counted = loosePosition("counted");
+    const other = loosePosition("other");
+    const one = stockAmount("1", "piece");
+    const two = stockAmount("2", "piece");
+    await inventory.stock.receive({ operationId: "counted", occurredAtEpochMs: time0, to: counted, amount: two });
+    const incoming = direction === "incoming";
+    if (incoming) await inventory.stock.receive({ operationId: "other-stock", occurredAtEpochMs: time0, to: other, amount: one });
+    await inventory.stock.transfer({
+      operationId: "ordinary-move", occurredAtEpochMs: time1,
+      from: incoming ? other : counted, toPlacementNodeId: incoming ? "counted" : "other", amount: one,
+    });
+    await inventory.stock.receive({ operationId: "late-stock", occurredAtEpochMs: time3, to: other, amount: two });
+    await inventory.transfers.prepare({
+      operationId: "backdated-prepare", occurredAtEpochMs: time2, transferId: "transfer",
+      transitPlacementNodeId: "transit", destinationPlacementNodeId: "destination",
+      lines: [{ lineId: "stock", from: other, amount: two }],
+    });
+    const command = {
+      countId: "count", operationId: "count", itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["counted"] },
+      observedMeasurements: scalarInventoryMeasurements("pieces", parseQuantity(incoming ? "3" : "1", "piece")),
+      occurredAtEpochMs: time2,
+    };
+    if (incoming) {
+      await expect(inventory.counts.replaceAbsolute(command)).rejects.toThrow("not currently physical");
+    } else {
+      expect((await inventory.counts.replaceAbsolute(command)).event).toBeUndefined();
+      expect((await inventory.counts.replaceAbsolute(command)).replayed).toBe(true);
+    }
+  });
+
   it("publishes release and transit completion while retaining an unrelated shortage", async () => {
     const inventory = createTestInventory();
     const selector = inventoryStockSelector("item-a", { placementNodeIds: ["A"] });

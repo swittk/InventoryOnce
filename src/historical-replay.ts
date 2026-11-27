@@ -481,7 +481,7 @@ function comparePendingHistoricalAssertion(
   );
 }
 
-/** Insert after an explicit anchor, otherwise after the latest no-later physical assertion. */
+/** Insert after an explicit anchor or before the first later event that uses the same resources. */
 function insertHistoricalAssertion(
   target: Array<{
     /** Effective assertion already placed in temporary replay order. */
@@ -506,15 +506,20 @@ function insertHistoricalAssertion(
       });
     }
   } else {
+    /** Only events using these resources can constrain this assertion's replay order. */
+    const dependencies = new Set(inventoryEventDependencyKeys(assertion.event));
     for (let index = 0; index < target.length; index += 1) {
       const event = target[index]!.event;
       // A retained count correction is an adjustment, not a physical ordering anchor.
       if (event.kind === InventoryEventKind.Correction) continue;
-      if (
-        event.occurredAtEpochMs <=
-        assertion.event.occurredAtEpochMs
-      ) {
+      if (event.occurredAtEpochMs <= assertion.event.occurredAtEpochMs) {
         insertionIndex = index;
+      } else if (inventoryEventDependencyKeys(event).some(
+        /** A later event sharing a resource must see the assertion first. */
+        (key) => dependencies.has(key)
+      )) {
+        // A backdated event recorded after this dependency cannot move the assertion past it.
+        break;
       }
     }
   }
