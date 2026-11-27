@@ -1688,6 +1688,117 @@ describe("indexed stock planning and availability", () => {
     }]);
   });
 
+  it("uses the measured witness budget before the search depth limit", async () => {
+    const base = measuredItemCatalog("pieces").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base, independentAxes: base.independentAxes.map((axis) => ({ ...axis, requirement: InventoryMeasurementRequirement.Optional })),
+    });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const exact = measuredStockAmount("1", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]);
+    await inventory.stock.receiveMany({
+      operationId: "receive-deep-exact-pool", occurredAtEpochMs: time0,
+      lines: Array.from({ length: 5_001 }, (_, index) => ({
+        to: { itemId: item.itemId, placementNodeId: "store", lotId: `lot-${String(index).padStart(4, "0")}` },
+        amount: index === 1 ? exact : stockAmount("1", "piece"),
+      })),
+    });
+    const request = { selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo, amount: exact };
+    const moved = await inventory.stock.transferByPolicy({
+      ...request, operationId: "record-deep-exact-pool", occurredAtEpochMs: time1, toPlacementNodeId: "destination",
+    });
+    expect(moved.event.unwitnessedStockMovements).toBeUndefined();
+    expect(moved.event.stockEffects.map(({ position }) => position.lotId)).toEqual(["lot-0001", "lot-0001"]);
+  }, 15_000);
+
+  it.each([false, true])("previews the exact independently measured witness used in execution (canonical: %s)", async (canonical) => {
+    const base = measuredItemCatalog("pieces").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base, independentAxes: base.independentAxes.map((axis) => ({ ...axis, requirement: InventoryMeasurementRequirement.Optional })),
+    });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
+    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : undefined);
+    const inventory = createTestInventory(storage, catalog);
+    const selector = { itemId: "measured", placementNodeIds: ["store"] };
+    const request = { selector, method: InventoryAllocationMethod.Fifo };
+    const older = measuredStockAmount("1", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]);
+    const exact = measuredStockAmount("1", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]);
+    for (const [lotId, amount, occurredAtEpochMs] of [["old", older, time0], ["exact", exact, time1]] as const) {
+      await inventory.stock.receive({
+        operationId: `receive-preview-${lotId}`, occurredAtEpochMs,
+        to: { itemId: "measured", placementNodeId: "store", lotId }, amount,
+      });
+    }
+    expect((await inventory.read.planAllocation({ ...request, amount: stockAmount("1", "piece") })).lines[0]?.position.lotId)
+      .toBe("old");
+    const world = await inventory.read.world();
+    const readWorld = canonical ? undefined : vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const preview = await inventory.read.planAllocation({ ...request, amount: exact });
+    expect(preview.lines).toMatchObject([{ position: { lotId: "exact" }, amount: exact, allocatedPrimary: parseQuantity("1", "piece") }]);
+    expect(planInventoryAllocation({ ...request, amount: exact, atEpochMs: time3, catalog, world })).toEqual(preview);
+    const tooHeavy = measuredStockAmount("1", "piece", [{ axisId: "weight", value: "3", unit: "kg" }]);
+    expect(await inventory.read.planAllocation({ ...request, amount: tooHeavy })).toMatchObject({
+      lines: [], shortfall: parseQuantity("1", "piece"), shortfallAmount: tooHeavy,
+      allocationConstraintBlockedStock: true, incrementBlockedStock: false,
+    });
+    const moved = await inventory.stock.transferByPolicy({
+      ...request, amount: exact, operationId: "move-preview-witness", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
+    });
+    expect(moved.event.stockEffects.filter(({ position }) => position.placementNodeId === "store").map(({ position }) => position))
+      .toEqual(preview.lines.map(({ position }) => position));
+    expect(await inventory.stock.transferByPolicy({
+      ...request, amount: exact, operationId: "move-preview-witness", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
+    })).toEqual({ ...moved, replayed: true });
+    if (readWorld !== undefined) expect(readWorld).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])("reserves primary capacity without double-counting shared axes (%s)", async (shared) => {
+    const base = measuredItemCatalog("weight").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base, primaryAxis: { ...base.primaryAxis, axisId: "weight", unit: unitCode("kg") },
+      independentAxes: [
+        { axisId: "volume", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional },
+        { axisId: "length", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("m"), requirement: InventoryMeasurementRequirement.Optional },
+      ],
+    });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
+    const inventory = createTestInventory(undefined, catalog);
+    const volume = { axisId: "volume", value: "1", unit: "L" };
+    const length = { axisId: "length", value: "1", unit: "m" };
+    const rows = [
+      ["dry-a", "5", [], time0], ["dry-b", "5", [], time0 + 1],
+      ["volume", "1", shared ? [volume, length] : [volume], time1],
+    ] as const;
+    const later = ["length", "1", [length], time2] as const;
+    for (const [lotId, weight, measures, occurredAtEpochMs] of shared ? rows : [...rows, later]) {
+      await inventory.stock.receive({
+        operationId: `receive-disjoint-${lotId}`, occurredAtEpochMs,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId },
+        amount: measures.length === 0 ? stockAmount(weight, "kg") : measuredStockAmount(weight, "kg", measures),
+      });
+    }
+    const request = {
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("5.000001", "kg", [volume, length]),
+    };
+    const preview = await inventory.read.planAllocation(request);
+    const dry = shared ? "4.000001" : "3.000001";
+    expect(preview.lines.map(({ position, allocatedPrimary }) => [position.lotId, allocatedPrimary])).toEqual([
+      ["dry-a", parseQuantity(dry, "kg")], ["volume", parseQuantity("1.000000", "kg")],
+      ...(shared ? [] : [["length", parseQuantity("1.000000", "kg")]]),
+    ]);
+    const moved = await inventory.stock.transferByPolicy({
+      ...request, operationId: "move-disjoint-witness", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
+    });
+    const source = moved.event.stockEffects.filter(({ position }) => position.placementNodeId === "store");
+    expect(source.map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
+      .toEqual([
+        ["dry-a", parseQuantity(`-${dry}`, "kg")],
+        ...(shared ? [] : [["length", parseQuantity("-1.000000", "kg")]]),
+        ["volume", parseQuantity("-1.000000", "kg")],
+      ]);
+  });
+
   it.each([true, false])("records a measured report with an unstorable trial (later witness: %s)", async (hasLaterWitness) => {
     const inventory = createTestInventory(undefined, measuredItemCatalog("pieces"), undefined, InventoryDeficitPolicy.Record);
     const fractional = { lotId: "fractional", pieces: "1.9", weight: "1", occurredAtEpochMs: time1 };

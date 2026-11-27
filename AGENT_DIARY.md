@@ -2071,3 +2071,9 @@ The R105 portable-current-input authority and final publication both continue to
 - A Reject-mode exact transfer can use a commit-only adapter. The native publisher records its actual world revision for journal replay.
 - A count's occurrence cut can keep a loose direct-contents movement while excluding its source receipt. The retained route contributes its signed quantities without a source age.
 - Disjoint compact postings are counted before they are enumerated, including status constraints and values of one qualified dimension.
+
+## 2026-11-27 — measured witness limits and count cuts
+
+- Preview and movement share the exact witness check for explicitly reported independent axes. Only Record movement can accept a compatible partial witness.
+- The measured search adds primary lower bounds for disjoint groups of axes and counts shared capacity once. Its policy-ordered full attempt applies that budget before bounded backtracking. Increment diagnostics relax increments while retaining the same witness rule.
+- A count cut can retain loose contents whose source receipt was excluded or whose destination arrival settles a signed deficit. Only a positive destination retains a FIFO age.

@@ -28,9 +28,9 @@ export function captureConservedPositiveLayerStarts(
     const sourceStartedAtEpochMs = positiveLayerStart(sourceId);
     if (sourceStartedAtEpochMs === undefined) {
       // The retained route still records the movement when filtered history has no earlier age to carry.
-      if (replay !== undefined && transfer.from.serialId === undefined &&
-          (inventoryConservedArrivalCanSettleDeficit(event) ||
-            (replay === "occurrence-cut" && event.kind === InventoryEventKind.Placement))) continue;
+      if ((replay !== undefined && transfer.from.serialId === undefined &&
+          inventoryConservedArrivalCanSettleDeficit(event)) ||
+          inventoryOccurrenceCutCanOmitContentsAge(event, replay, transfer.from.serialId)) continue;
       throw new Error(
         `Conserved FIFO provenance source ${sourceId} is not currently positive.`
       );
@@ -50,4 +50,13 @@ export function captureConservedPositiveLayerStarts(
 /** A direct transfer that pays down a signed balance only leaves an age when positive stock remains. */
 export function inventoryConservedArrivalCanSettleDeficit(event: InventoryCommittedEvent): boolean {
   return event.kind === InventoryEventKind.Transfer && event.transferLifecycle === undefined;
+}
+
+/** A count cut may omit the source or destination age of retained loose contents. */
+export function inventoryOccurrenceCutCanOmitContentsAge(
+  event: InventoryCommittedEvent,
+  replay: InventoryStockAgeReplay | undefined,
+  serialId: string | undefined,
+): boolean {
+  return replay === "occurrence-cut" && event.kind === InventoryEventKind.Placement && serialId === undefined;
 }

@@ -13,7 +13,10 @@ import {
   InventoryStorageWriteStage,
 } from "../src/storage-api.js";
 import { inventoryReservationsAt } from "../src/reservations.js";
+import { projectInventoryEvents } from "../src/projection.js";
+import { replayEffectiveStockAge } from "../src/stock-age.js";
 import {
+  createTabletCatalog,
   createTestInventory,
   loosePosition,
   time0,
@@ -697,6 +700,60 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ]);
     expect((await inventory.read.positions(selector)).map(({ measurements }) => measurements.primary.quantity))
       .toEqual([parseQuantity("4", "piece")]);
+  });
+
+  it.each([
+    { includeReceipt: false, debt: 1 },
+    { includeReceipt: false, debt: 2 },
+    { includeReceipt: true, debt: 1 },
+  ])("replays a loose arrival across a signed deficit ($includeReceipt, $debt)", async ({ includeReceipt, debt }) => {
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const from = loosePosition("source");
+    const to = loosePosition("destination");
+    const selector = { itemId: "item-a", placementNodeIds: ["destination"] };
+    const amount = stockAmount("1", "piece");
+    const countId = "arrival-count";
+    const receipt = await inventory.stock.receive({ operationId: "receive-source", occurredAtEpochMs: time0, to: from, amount });
+    const debtAmount = stockAmount(String(debt), "piece");
+    const deficit = await inventory.stock.issue({ operationId: "record-destination-deficit", occurredAtEpochMs: time0, from: to, amount: debtAmount });
+    await inventory.counts.start({ countId, operationId: "start-arrival-count", selector, startedAtEpochMs: time0 });
+    const settled = await inventory.stock.receive({ operationId: "settle-destination", occurredAtEpochMs: time2, to, amount: debtAmount });
+    const move = await inventory.placement.moveContents({
+      operationId: "backdated-arrival", occurredAtEpochMs: time1, nodeId: "source", into: "destination",
+    });
+    expect(move.event.positiveLayerProvenanceTransfers).toMatchObject([{ from, to }]);
+    const [arrival] = await inventory.read.positions(selector);
+    if (arrival === undefined) throw new Error("Expected the contents arrival.");
+    const world = await inventory.read.world();
+    expect(Object.values(world.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time0]);
+    /** Replay the same committed contents route with or without the later receipt. */
+    const retained = includeReceipt
+      ? [receipt.event, deficit.event, settled.event, move.event]
+      : [receipt.event, deficit.event, { ...move.event, recordSequence: 3 }];
+    const cut = { catalog, events: retained, deficitPolicy: InventoryDeficitPolicy.Record, [replayEffectiveStockAge]: "occurrence-cut" };
+    const projected = projectInventoryEvents(cut);
+    const cutPieces = includeReceipt ? 1 : 1 - debt;
+    expect(Object.values(projected.positions).map(({ key, measurements }) => [key, measurements.primary.quantity]))
+      .toEqual(cutPieces === 0 ? [] : [[arrival.key, parseQuantity(String(cutPieces), "piece")]]);
+    expect(Object.values(projected.positiveLayerStartedAtEpochMsByPositionId)).toEqual(includeReceipt ? [time0] : []);
+    await inventory.counts.observe({
+      countId, operationId: "observe-arrival-count", observedAtEpochMs: includeReceipt ? time2 : time1,
+      observations: [{ position: arrival.key, measurements: arrival.measurements }],
+    });
+    const result = await inventory.counts.reconcile({
+      countId, operationId: "reconcile-arrival-count", completedAtEpochMs: time3, reason: "Observed one piece.",
+    });
+    expect(result.count.status).toBe(InventoryCountStatus.Completed);
+    if (includeReceipt) {
+      expect(result.event).toBeUndefined();
+    } else {
+      expect(result.event?.stockEffects).toMatchObject([
+        { position: arrival.key, measurementsDelta: { primary: { quantity: parseQuantity(String(debt), "piece") } } },
+      ]);
+    }
+    expect((await inventory.read.positions(selector))[0]?.measurements.primary.quantity)
+      .toEqual(parseQuantity(String(includeReceipt ? 1 : 1 + debt), "piece"));
   });
 
   it("retains correction supersession predecessors in occurrence-time count replay", async () => {

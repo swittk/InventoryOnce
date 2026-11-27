@@ -216,14 +216,14 @@ function allocateInventoryCandidates({
       candidates: eligible,
       acceptPartial: false,
     });
-    // Raw capacity can cover the request even when no storable split exists.
-    const incrementBlockedStock = assessIncrementBlockage && unconstrainedExact === undefined &&
+    // An increment is causal only when relaxing it admits the same whole-plan rule.
+    const incrementBlockedStock = assessIncrementBlockage &&
       eligible.some(
         /** A divisible pool cannot have an increment-caused failure. */
-        (candidate) => candidate.allocationIncrement !== undefined
+        (candidate) => canRelaxAllocationIncrement(candidate, acceptAllocations)
       ) &&
       searchInventoryAllocations({
-        requested, candidates: eligible, acceptPartial: false, ignoreIncrements: true,
+        ...searchInput, ...witnessBudget, acceptPartial: false, ignoreIncrements: true,
       }) !== undefined;
     return {
       allocations: [],
@@ -476,18 +476,30 @@ function searchInventoryAllocations({
   // A measured witness that reaches the proven remainder floor is optimal.
   const greedyShortfallMinor = acceptPartial && acceptAllocations !== undefined ? minimumShortfallMinor : 0n;
   const greedyTargetMinor = requestedMinor - greedyShortfallMinor;
+  /** Shared-scale limit on axis-free primary stock when filling every reported axis. */
+  const axisFreeLimit = fullWitnessPrimaryBudget?.axisFreeLimit;
+  const axisFreeLimitMinor = axisFreeLimit === undefined ? undefined :
+    workingQuantityAtDecimals(axisFreeLimit, Math.max(decimals, axisFreeLimit.decimals)) /
+      10n ** BigInt(Math.max(0, axisFreeLimit.decimals - decimals));
   if (greedyTargetMinor > 0n && totalCapacity > greedyTargetMinor) {
     /** The first policy-ordered plan fills the target without backtracking. */
     const picks: bigint[] = [];
     let remaining = greedyTargetMinor;
+    /** A partial trial can spend more axis-free stock because it need not fill every axis. */
+    let axisFreeRemaining = greedyShortfallMinor === 0n ? axisFreeLimitMinor : undefined;
     for (let index = 0; index < candidates.length && remaining > 0n; index += 1) {
       const capacity = capacityMinor[index] ?? 0n;
       const increment = incrementMinor[index] ?? 1n;
-      const maximum = capacity < remaining ? capacity : remaining;
+      const candidate = candidates[index];
+      const budget = axisFreeRemaining !== undefined && candidate !== undefined &&
+        !fullWitnessPrimaryBudget?.measuredPositions.has(candidate.position) ? axisFreeRemaining : undefined;
+      let maximum = capacity < remaining ? capacity : remaining;
+      if (budget !== undefined && budget < maximum) maximum = budget;
       const take = maximum - maximum % increment;
       if (storableQuantityScale(take, decimals) === undefined) break;
       picks.push(take);
       remaining -= take;
+      if (budget !== undefined) axisFreeRemaining = budget - take;
     }
     if (remaining === 0n) {
       const shortfall = greedyShortfallMinor === 0n
@@ -510,11 +522,6 @@ function searchInventoryAllocations({
   const chosenMinor = new Array<bigint>(candidates.length).fill(0n);
   /** Failed index/remainder pairs already exhausted by the bounded search. */
   const failedStates = new Set<string>();
-  /** Shared-scale limit on axis-free primary stock when the only improvement is a complete witness. */
-  const axisFreeLimit = fullWitnessPrimaryBudget?.axisFreeLimit;
-  const axisFreeLimitMinor = axisFreeLimit === undefined ? undefined :
-    workingQuantityAtDecimals(axisFreeLimit, Math.max(decimals, axisFreeLimit.decimals)) /
-      10n ** BigInt(Math.max(0, axisFreeLimit.decimals - decimals));
   /** Rows that use the axis-free budget when picked. */
   const axisFreeRows = fullWitnessPrimaryBudget === undefined ? undefined : candidates.map(
     /** Membership is based on the exact candidate key retained during sorting. */

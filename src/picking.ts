@@ -5,8 +5,10 @@ import {
   compareWorkingAllocationCandidates,
   inventoryAllocationQuantityIfStorable,
   InventoryAllocationMethod,
+  InventoryExactAllocationLimitError,
   type AllocateWorkingInventoryInput,
   type InventoryAllocation,
+  type InventoryAllocationResult,
   type InventoryFullWitnessPrimaryBudget,
   type InventoryWorkingAllocationCandidate,
 } from "./allocation.js";
@@ -313,7 +315,15 @@ export function planWorkingInventoryAllocation({
     // Expired rows were removed before assigning the direct-placement-pool deficit burden.
     allowExpired: true,
   };
-  let allocated = allocateWorkingInventory(allocationInput);
+  const validateReportedAxes = amount.independent.length > 0;
+  const recordingMeasuredMovement = validateReportedAxes && recordingAttempt !== undefined;
+  let allocated: InventoryAllocationResult | undefined;
+  try {
+    allocated = allocateWorkingInventory(allocationInput);
+  } catch (error) {
+    // A primary-only trial cannot rule out a witness that the measured budget can find.
+    if (!validateReportedAxes || !(error instanceof InventoryExactAllocationLimitError)) throw error;
+  }
   /** The exact current witnesses at each selected quantity. */
   const buildLines = (allocations: readonly InventoryAllocation[]): InventoryPolicyAllocationLine[] | undefined =>
     inventoryPolicyAllocationLines({
@@ -323,25 +333,26 @@ export function planWorkingInventoryAllocation({
       candidates: deficitAdjusted.byPositionIdentity,
       rows: candidateResult.rowsById,
     });
-  let lines = buildLines(allocated.allocations);
-  const deferMeasuredShortfall = recordingAttempt !== undefined && amount.independent.length > 0;
-  if (lines === undefined || deferMeasuredShortfall) {
+  let lines = allocated === undefined ? undefined : buildLines(allocated.allocations);
+  if (lines === undefined || validateReportedAxes) {
     /** Check all selected axes before accepting a trial as immutable movement evidence. */
     const acceptsLines = (choices: readonly InventoryPolicyAllocationLine[] | undefined): boolean =>
-      choices !== undefined && (!deferMeasuredShortfall || inventoryPolicyMovementRemainder({
+      choices !== undefined && (!validateReportedAxes || inventoryPolicyMovementRemainder({
         catalog, item: selected.item, report: resolved.measurements, lines: choices,
       }) !== undefined);
-    const canRecordPartial = deferMeasuredShortfall && allowMeasuredShortfall;
+    const canRecordPartial = recordingMeasuredMovement && allowMeasuredShortfall;
+    const needsCompleteMeasuredWitness = validateReportedAxes && !canRecordPartial;
     // A genuine physical shortage may leave no usable witness, including when a whole pick cannot leave a storable remainder.
-    const primaryWasFilled = allocated.shortfall.amountMinor === 0;
-    const incrementBlocked = !primaryWasFilled && allocated.incrementBlockedStock;
+    const primaryWasFilled = allocated?.shortfall.amountMinor === 0;
+    const incrementBlocked = !primaryWasFilled && allocated?.incrementBlockedStock === true;
     const rawCapacityCoversBlockedRequest = canRecordPartial && incrementBlocked &&
       policyPrimaryCapacityCoversRequest(allocationInput);
-    const canRecordWithoutWitness = canRecordPartial && allocated.shortfall.amountMinor > 0 && !rawCapacityCoversBlockedRequest;
+    const canRecordWithoutWitness = canRecordPartial && allocated !== undefined &&
+      allocated.shortfall.amountMinor > 0 && !rawCapacityCoversBlockedRequest;
     // A compatible greedy prefix can still leave a larger gap than a different whole assignment.
     const couldImprovePartial = canRecordPartial && incrementBlocked;
-    if (couldImprovePartial || (!acceptsLines(lines) &&
-      (lines === undefined || allocated.shortfall.amountMinor === 0 || canRecordPartial))) {
+    if (couldImprovePartial || (needsCompleteMeasuredWitness && !primaryWasFilled) || (!acceptsLines(lines) &&
+      (lines === undefined || primaryWasFilled || canRecordPartial))) {
       const measuredInput: AllocateWorkingInventoryInput = {
         ...allocationInput,
         /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
@@ -352,20 +363,20 @@ export function planWorkingInventoryAllocation({
       };
       const measuredCandidates = canRecordPartial ? selectableMeasuredWitnesses(selectable) : measuredInput.candidates;
       /** Complete movements need primary capacity to carry every reported axis. */
-      const bounds = deferMeasuredShortfall ? measuredWitnessBounds({ ...selectable, candidates: measuredCandidates }) : {};
+      const bounds = validateReportedAxes ? measuredWitnessBounds({ ...selectable, candidates: measuredCandidates }) : {};
       const measured = canRecordPartial
         ? allocateInventoryUpTo({
             ...measuredInput, candidates: measuredCandidates, assessIncrementBlockage: false,
             ...bounds,
           })
         : allocateWorkingInventory({ ...measuredInput, ...bounds });
-      if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
+      if (lines === undefined || needsCompleteMeasuredWitness || measured.allocations.length > 0 || canRecordWithoutWitness) {
         allocated = measured;
         lines = buildLines(measured.allocations);
       }
       // An initially full primary pick also proves that raw capacity covered the request.
       if ((rawCapacityCoversBlockedRequest || (canRecordPartial && primaryWasFilled)) &&
-          lines !== undefined && allocated.shortfall.amountMinor > 0) {
+          lines !== undefined && allocated !== undefined && allocated.shortfall.amountMinor > 0) {
         const remainder = inventoryPolicyMovementRemainder({
           catalog, item: selected.item, report: resolved.measurements, lines,
         });
@@ -377,7 +388,7 @@ export function planWorkingInventoryAllocation({
       }
     }
   }
-  if (lines === undefined) throw new Error("Accepted allocation cannot store its measured lines.");
+  if (lines === undefined || allocated === undefined) throw new Error("Accepted allocation cannot store its measured lines.");
   return {
     selector: selected.selector,
     itemRevisionId: selected.item.revisionId,
@@ -385,7 +396,7 @@ export function planWorkingInventoryAllocation({
     requestedMeasurements: resolved.measurements,
     lines,
     shortfall: allocated.shortfall,
-    ...(allocated.shortfall.amountMinor === 0 || deferMeasuredShortfall
+    ...(allocated.shortfall.amountMinor === 0 || recordingMeasuredMovement
       ? {}
       : {
           shortfallAmount: inventoryAmountForPolicyShortfall({
@@ -487,13 +498,31 @@ function measuredWitnessBounds({
   const requested = workingQuantityAtDecimals(primary.quantity, decimals);
   /** The tightest limit from all independently reported axes. */
   let maximum = requested;
-  /** Largest per-axis lower bound on primary stock that must carry measurements. */
-  let requiredMeasuredPrimary = 0n;
+  /** Each reported axis starts in its own group until a stock row can witness both. */
+  const axisGroups = report.independent.map(
+    /** Assign each axis its own initial representative. */
+    (_, index) => index
+  );
+  /** Find a group representative without revisiting the full measurement pool. */
+  const groupOf = (axis: number): number => {
+    let root = axis;
+    while (true) {
+      const next = axisGroups[root] ?? root;
+      if (next === root) break;
+      root = next;
+    }
+    axisGroups[axis] = root;
+    return root;
+  };
+  /** First reported axis on each row, used to identify overlapping witness capacity. */
+  const firstAxisByPosition = report.independent.length > 1 ? new Map<InventoryStockPositionKey, number>() : undefined;
+  /** Lower bound for the primary stock that must carry each reported axis. */
+  const requiredByAxis: bigint[] = [];
   /** Known absence of a complete witness on at least one reported axis. */
   let requiresPositiveShortfall = false;
   /** Rows supplying at least one positively reported independent axis. */
   const measuredPositions = new Set<InventoryStockPositionKey>();
-  for (const { axisId, quantity } of report.independent) {
+  for (const [axisIndex, { axisId, quantity }] of report.independent.entries()) {
     const reported = workingQuantityAtDecimals(quantity, decimals);
     /** Capacity that does not consume this axis. */
     let axisFreePrimary = 0n;
@@ -507,11 +536,15 @@ function measuredWitnessBounds({
     let selectableMeasured = 0n;
     let measuredDivisor = 0n;
     for (const { position, available, allocationIncrement } of candidates) {
+      const availablePrimary = workingQuantityAtDecimals(available, decimals);
+      const increment = allocationIncrement === undefined ? 1n : workingQuantityAtDecimals(allocationIncrement, decimals);
+      const selectablePrimary = availablePrimary - availablePrimary % increment;
+      if (selectablePrimary === 0n) continue;
       const row = rows.get(inventoryStockPositionIdentity(position));
       if (row === undefined) return {};
       const axis = inventoryPolicyPositionMeasurement(row.position, axisId, quantity.unit);
       if (BigInt(axis.amountMinor) === 0n) {
-        axisFreePrimary += workingQuantityAtDecimals(available, decimals);
+        axisFreePrimary += selectablePrimary;
         continue;
       }
       // Measured loose rows are picked whole, and selectable package rows keep their fixed ratio.
@@ -524,12 +557,17 @@ function measuredWitnessBounds({
       }
       if (reported === 0n) continue;
       measuredPositions.add(position);
+      if (firstAxisByPosition !== undefined) {
+        const firstAxis = firstAxisByPosition.get(position);
+        if (firstAxis === undefined) firstAxisByPosition.set(position, axisIndex);
+        else axisGroups[groupOf(axisIndex)] = groupOf(firstAxis);
+      }
       if (smallestMeasured === 0n || rowPrimary * smallestMeasured < smallestPrimary * rowMeasured) {
         smallestPrimary = rowPrimary;
         smallestMeasured = rowMeasured;
       }
-      // The whole-row sum can only overestimate what the candidates can contribute together.
-      selectableMeasured += rowMeasured;
+      // A legal selectable multiple carries the same measurement ratio as the full row.
+      selectableMeasured += selectablePrimary * rowMeasured / rowPrimary;
       if (measuredDivisor !== 1n) {
         if (allocationIncrement !== undefined && compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
           measuredDivisor = quantityGreatestCommonDivisor(measuredDivisor, rowMeasured);
@@ -550,10 +588,19 @@ function measuredWitnessBounds({
       requiresPositiveShortfall = true;
     }
     if (smallestMeasured !== 0n) {
-      const required = (reported * smallestPrimary + smallestMeasured - 1n) / smallestMeasured;
-      if (required > requiredMeasuredPrimary) requiredMeasuredPrimary = required;
+      requiredByAxis[axisIndex] = (reported * smallestPrimary + smallestMeasured - 1n) / smallestMeasured;
     }
   }
+  /** Axes in a group may share stock, so use their largest bound only once. */
+  const requiredByGroup = new Map<number, bigint>();
+  for (const [axis, required] of requiredByAxis.entries()) {
+    if (required === undefined) continue;
+    const group = groupOf(axis);
+    if (required > (requiredByGroup.get(group) ?? 0n)) requiredByGroup.set(group, required);
+  }
+  /** Distinct groups have disjoint supporting rows, so their primary bounds add. */
+  let requiredMeasuredPrimary = 0n;
+  for (const required of requiredByGroup.values()) requiredMeasuredPrimary += required;
   requiresPositiveShortfall ||= requiredMeasuredPrimary > requested;
   return {
     requiresPositiveShortfall,

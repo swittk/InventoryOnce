@@ -1,5 +1,5 @@
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge, type InventoryStockAgeReplay } from "./stock-age.js";
+import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, inventoryOccurrenceCutCanOmitContentsAge, replayEffectiveStockAge, type InventoryStockAgeReplay } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -991,6 +991,11 @@ function applyInventoryCommittedEventInternal(
       throw new Error(
         `Conserved FIFO provenance destination ${identity} is not positive after its event.`
       );
+    }
+    if (!isPositive && replayStockAge === "occurrence-cut" &&
+        inventoryOccurrenceCutCanOmitContentsAge(normalizedEvent, replayStockAge, effect.position.serialId)) {
+      // A loose arrival spent on signed debt leaves no positive FIFO layer in this cut.
+      conservedPositiveLayerStartByDestinationId.delete(identity);
     }
     if (inventoryMeasurementsAreZero(next)) {
       deleteInventorySparseRecordValue(positions, identity);

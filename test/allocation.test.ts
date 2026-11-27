@@ -8,7 +8,7 @@ import {
   type InventoryAllocationCandidate,
   type InventoryStockPositionKey,
 } from "../src/kernel.js";
-import { allocateInventoryUpTo, allocateWorkingInventory } from "../src/allocation.js";
+import { allocateInventoryUpTo, allocateWorkingInventory, type InventoryAllocation } from "../src/allocation.js";
 import { quantityWholeMultipleCount } from "../src/quantity.js";
 import { time0, time1, time2, time3 } from "./test-fixtures.js";
 
@@ -47,6 +47,84 @@ function candidate({
 }
 
 describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
+  it("agrees with independent exact enumeration for measured and relaxed picks", () => {
+    /** Each tuple gives primary capacity, legal increment, and per-piece measures on two axes. */
+    const scenarios = [
+      { rows: [[4, 1, 0, 0], [1, 1, 1, 0], [1, 1, 0, 1]], request: [3, 1, 1] },
+      { rows: [[3, 1, 0, 0], [1, 1, 1, 1], [1, 1, 0, 1]], request: [3, 1, 1] },
+      { rows: [[2, 2, 0, 0], [1, 1, 1, 1]], request: [2, 1, 1] },
+      { rows: [[2, 2, 0, 0], [1, 1, 2, 1]], request: [2, 1, 1] },
+      { rows: [[1, 1, 1, 0], [1, 1, 0, 1]], request: [4, 2, 2] },
+      { rows: [[2, 2, 0, 0], [1, 1, 1, 1], [2, 1, 0, 0]], request: [3, 1, 1] },
+      { rows: [[2, 2, 1, 1], [2, 1, 0, 0]], request: [3, 1, 1] },
+    ] as const;
+    for (const { rows, request: [primary, firstAxis, secondAxis] } of scenarios) {
+      /** Exhaust every small integer assignment independently of the production pruning rules. */
+      const enumerate = (partial: boolean, relaxed: boolean, constrained = true) => {
+        let best: { picks: number[]; total: number } | undefined;
+        const visit = (index: number, picks: number[], total: number, first: number, second: number): void => {
+          const row = rows[index];
+          if (row === undefined) {
+            const full = total === primary;
+            if ((!full && !partial) || total > primary) return;
+            if (constrained && (first > firstAxis || second > secondAxis ||
+                (full && (first !== firstAxis || second !== secondAxis)))) return;
+            if (best === undefined || total > best.total) best = { picks, total };
+            return;
+          }
+          const [capacity, increment, firstPerPiece, secondPerPiece] = row;
+          const step = relaxed && firstPerPiece === 0 && secondPerPiece === 0 ? 1 : increment;
+          // Visiting amounts in descending order makes the first equal total the FIFO winner.
+          for (let take = capacity - capacity % step; take >= 0; take -= step) {
+            visit(index + 1, [...picks, take], total + take, first + take * firstPerPiece, second + take * secondPerPiece);
+          }
+        };
+        visit(0, [], 0, 0, 0);
+        return best;
+      };
+      const candidates = rows.map(([capacity, increment, first, second], index) => candidate({
+        lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+        extra: {
+          available: parseQuantity(String(capacity), "piece"),
+          ...(increment === 1 ? {} : { allocationIncrement: parseQuantity(String(increment), "piece") }),
+        },
+      }));
+      const input = {
+        requested: parseQuantity(String(primary), "piece"), candidates,
+        method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
+        /** Match all requested axes for full picks and avoid overshoot for partial picks. */
+        acceptAllocations: (allocations: readonly InventoryAllocation[]) => {
+          let total = 0, first = 0, second = 0;
+          for (const { position, quantity } of allocations) {
+            const measured = rows[Number(position.lotId)];
+            if (measured === undefined) throw new Error("Unknown oracle lot.");
+            const take = quantity.amountMinor;
+            if (measured[1] > 1 && (measured[2] !== 0 || measured[3] !== 0) && take % measured[1] !== 0) return false;
+            total += take;
+            first += take * measured[2];
+            second += take * measured[3];
+          }
+          return first <= firstAxis && second <= secondAxis &&
+            (total < primary || (first === firstAxis && second === secondAxis));
+        },
+      };
+      for (const partial of [false, true]) {
+        const expected = enumerate(partial, false);
+        const relaxed = enumerate(partial, true);
+        const result = partial ? allocateInventoryUpTo(input) : allocateWorkingInventory(input);
+        expect(result.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual(
+          (expected?.picks ?? []).flatMap((take, index) => take === 0 ? [] : [[String(index), parseQuantity(String(take), "piece")]]),
+        );
+        expect(result.shortfall).toEqual(parseQuantity(String(primary - (expected?.total ?? 0)), "piece"));
+        const incrementBlocked = relaxed !== undefined && (partial && expected?.total !== primary
+          ? relaxed.total > (expected?.total ?? 0)
+          : JSON.stringify(relaxed.picks) !== JSON.stringify(expected?.picks));
+        expect(result.incrementBlockedStock).toBe(incrementBlocked);
+        expect(result.allocationConstraintBlockedStock).toBe(expected === undefined && enumerate(false, false, false) !== undefined);
+      }
+    }
+  });
+
   it.each([false, true])("accepts a small greedy pick from a large pool (predicate %s)", (predicate) => {
     const available = parseQuantity("1", "piece");
     const candidates = Array.from({ length: 5_001 }, (_, index) =>
@@ -457,7 +535,7 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
   it.each([
     { fraction: "0.1", whole: false, blocked: false },
     { fraction: "0.1", whole: true, blocked: false },
-    { fraction: "1", whole: true, blocked: true },
+    { fraction: "1", whole: true, blocked: false },
   ])("attributes an exact-plan failure to increments only when relaxing them helps: %o", ({ fraction, whole, blocked }) => {
     const requested = parseQuantity(String(Number.MAX_SAFE_INTEGER), "kg");
     const base = candidate({ lotId: "early", receivedAtEpochMs: time0, expiresAtEpochMs: time3 });
