@@ -1731,12 +1731,21 @@ function countScopedStockEvent(
   const { positiveLayerProvenanceTransfers, positiveLayerProvenanceOverrides } = event;
   return {
     ...event,
-    stockEffects: event.stockEffects.filter(({ position }) => includesPosition(position)),
+    stockEffects: event.stockEffects.filter(
+      /** Limit stock effects to the item's balances and any needed embodiment stock. */
+      ({ position }) => includesPosition(position)
+    ),
     ...(positiveLayerProvenanceTransfers === undefined ? {} : {
-      positiveLayerProvenanceTransfers: positiveLayerProvenanceTransfers.filter(({ from }) => includesPosition(from)),
+      positiveLayerProvenanceTransfers: positiveLayerProvenanceTransfers.filter(
+        /** Keep conserved routes whose source stock participates in the count cut. */
+        ({ from }) => includesPosition(from)
+      ),
     }),
     ...(positiveLayerProvenanceOverrides === undefined ? {} : {
-      positiveLayerProvenanceOverrides: positiveLayerProvenanceOverrides.filter(({ position }) => includesPosition(position)),
+      positiveLayerProvenanceOverrides: positiveLayerProvenanceOverrides.filter(
+        /** Apply FIFO overrides only to positions retained in the cut. */
+        ({ position }) => includesPosition(position)
+      ),
     }),
   };
 }
@@ -1762,6 +1771,7 @@ function prepareCountProjectionScope(
   }
   return {
     includePlacement: scope.includePlacement,
+    /** Retain the counted item and serials that provide ancestry for subtree selectors. */
     includesPosition: ({ itemId, serialId }) => itemId === scope.itemId ||
       (serialId !== undefined && embodiedSerials.has(inventorySerialIdentity(itemId, serialId))),
   };

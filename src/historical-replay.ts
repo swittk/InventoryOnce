@@ -273,7 +273,10 @@ export function replayInventoryHistoricalScenario({
 export function expandInventoryCountRepairAssertions(
   ordered: readonly InventoryCommittedEvent[]
 ): readonly InventoryCommittedEvent[] {
-  if (!ordered.some((event) => event.kind === InventoryEventKind.HistoricalRepair)) return ordered;
+  if (!ordered.some(
+    /** Skip assertion expansion for histories without a repair envelope. */
+    (event) => event.kind === InventoryEventKind.HistoricalRepair
+  )) return ordered;
   // Corrections retain their own observation rule and predecessor evidence.
   return effectiveInventoryHistoryEvents({ ordered, retainCorrections: true });
 }
