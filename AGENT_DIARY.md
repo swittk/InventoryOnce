@@ -2177,3 +2177,9 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-28 — serial routes and placement dependencies in count cuts
 
 - A serialized count retains the full route of each serial that can match the observation. A subtree count also retains the nodes connected to its roots by recorded edges or embodied stock. The placement reducer still validates the retained topology.
+
+## 2026-11-28 — count transfer dependencies and exact whole-stock assignment
+
+- Corrections retain their count-replay order without anchoring unanchored repair assertions. A count retains every line and funding position of a relevant structured transfer.
+- A package's declared fixed axis measures one whole pick. The reservation search suspends each stock group on a private stack while retaining its exact branch order and work bound.
+- A complete fungibility preview can report a discarded reference remainder when a bounded trial proves an earlier storable physical plan under the same claims.

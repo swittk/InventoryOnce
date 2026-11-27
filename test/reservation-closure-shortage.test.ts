@@ -33,6 +33,35 @@ import {
   time3,
 } from "./test-fixtures.js";
 
+it("keeps a large supported whole-stock assignment within the runtime stack", async () => {
+  const item = defineScalarInventoryItem({ itemId: "packed", revisionId: "packed-v1", axisId: "pieces", unit: "piece" });
+  const pack = defineScalarInventoryPackaging({ revisionId: "single", item, packageUnit: "box", contains: "1" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { packed: item.revisionId }, packagingRevisions: [pack],
+  });
+  const inventory = createTestInventory(undefined, catalog);
+  const position = { itemId: item.itemId, placementNodeId: "store" };
+  const selector = { itemId: item.itemId, placementNodeIds: ["store"] };
+  await inventory.stock.receive({ operationId: "loose", occurredAtEpochMs: time0, to: position, amount: stockAmount("64", "piece") });
+  for (let index = 0; index < 64; index += 1) {
+    const reservationId = `claim-${index}`;
+    await inventory.reservations.reserve({
+      operationId: reservationId, reservationId, itemRevisionId: item.revisionId, selector,
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+  }
+  await inventory.stock.receiveMany({
+    operationId: "whole-stock", occurredAtEpochMs: time1,
+    lines: Array.from({ length: 120 }, (_, index) => ({
+      to: { ...position, lotId: `pack-${index}` }, amount: packageAmount(1, pack.revisionId),
+    })),
+  });
+  await inventory.stock.issue({ operationId: "issue-loose", occurredAtEpochMs: time2, from: position, amount: stockAmount("64", "piece") });
+  const report = await inventory.read.reservationFeasibility();
+  expect(report.groups[0]?.fulfillable).toEqual(parseQuantity("64", "piece"));
+  expect(report.groups[0]?.shortage).toEqual(parseQuantity("0", "piece"));
+});
+
 it.each([false, true])("reports each broad claim's whole-piece shortfall after loose stock is issued (canonical: %s)", async (canonical) => {
   const item = defineScalarInventoryItem({ itemId: "paired", revisionId: "paired-v1", axisId: "pieces", unit: "piece" });
   const pair = defineScalarInventoryPackaging({ revisionId: "pair", item, packageUnit: "box", contains: "2" });

@@ -1,6 +1,7 @@
 import { positionHasUnfixedIndependentMeasuredContents as hasUnfixedIndependentMeasuredContents } from "./stock-amount-rules.js";
 import {
   allocateWorkingInventory,
+  compareWorkingAllocationCandidates,
   inventoryAllocationCandidateCapacity,
   InventoryAllocationMethod,
   InventoryExactAllocationLimitError,
@@ -514,6 +515,16 @@ function planInventoryFungibilityAllocationWithHolds({
     earlierShortagesByRevisionSet.set(revisionSetKey, earlierShortages);
     return earlierShortages;
   };
+  /** Preserve the same claim constraints when testing an earlier physical witness. */
+  const acceptAllocations = !allowAllocatedStock && claimsByRevision.size > 0
+    ? /** Reject a trial that deepens a current claim shortage. */
+      (allocations: readonly InventoryAllocation[]): boolean =>
+        fungibilityAllocationsPreserveReservations({
+          catalog, world, reservationAtEpochMs, reservationEffect, allocations,
+          evidenceByPosition, claimsByRevision, readEarlierShortages,
+        })
+    : /** Keep the complete-plan requirement even without a claim trial. */
+      (): boolean => true;
   const allocated = allocateWorkingInventory({
     requested,
     candidates,
@@ -521,21 +532,7 @@ function planInventoryFungibilityAllocationWithHolds({
     nowEpochMs: atEpochMs,
     allowExpired: true,
     diagnosePhysicalShortfall: true,
-    acceptAllocations: !allowAllocatedStock && claimsByRevision.size > 0
-      ? /** Check whether a complete trial preserves claim capacity. */
-        (allocations: readonly InventoryAllocation[]): boolean =>
-          fungibilityAllocationsPreserveReservations({
-            catalog,
-            world,
-            reservationAtEpochMs,
-            reservationEffect,
-            allocations,
-            evidenceByPosition,
-            claimsByRevision,
-            readEarlierShortages,
-          })
-      : /** Keep the complete-plan requirement even without a claim trial. */
-        (): boolean => true,
+    acceptAllocations,
   });
   if (!recording) assertInventoryPolicyCanPickAroundIndependentHold(selectedIndependentHold, allocated.shortfall);
   const lines: InventoryFungibilityAllocationLine[] = [];
@@ -571,7 +568,10 @@ function planInventoryFungibilityAllocationWithHolds({
   }
   const incrementEvidence = incrementBlockedStock || allocated.incrementBlockedStock;
   const incrementBlockage = allocated.shortfall.amountMinor === 0
-    ? incrementEvidence
+    ? incrementEvidence || (discardedIncrementCapacity && discardedCapacityImprovesFungibilityPlan({
+        catalog, requested, method, atEpochMs, memberStock, candidates,
+        allocations: allocated.allocations, evidenceByPosition, acceptAllocations,
+      }))
     : (incrementEvidence || discardedIncrementCapacity) && !allocated.allocationConstraintBlockedStock &&
       fungibilityRawCapacityCoversRequest(requested, memberStock);
   return {
@@ -594,6 +594,116 @@ interface FungibilityMemberStock {
   readonly member: InventoryFungibilityMemberDefinition;
   /** Scoped capacities after applying holds, expiry and signed deficits. */
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+}
+
+/** Inputs for testing discarded reference capacity without changing an accepted plan. */
+interface FungibilityIncrementDiagnosticInput {
+  /** Catalogue used to check that alternate physical amounts can be stored. */
+  readonly catalog: InventoryCatalog;
+  /** Exact pool quantity needed by the completed plan. */
+  readonly requested: Quantity;
+  /** Original stock selection policy. */
+  readonly method: InventoryAllocationMethod;
+  /** Original lot eligibility time. */
+  readonly atEpochMs: number;
+  /** Eligible native quantities before dropping below-reference capacity. */
+  readonly memberStock: readonly FungibilityMemberStock[];
+  /** The original legal pool candidates. */
+  readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+  /** The accepted complete allocation. */
+  readonly allocations: readonly InventoryAllocation[];
+  /** Source rows and conversion references used to validate alternate quantities. */
+  readonly evidenceByPosition: ReadonlyMap<string, InventoryFungibilityCandidateEvidence>;
+  /** The original claim-preservation condition. */
+  readonly acceptAllocations: (allocations: readonly InventoryAllocation[]) => boolean;
+}
+
+/** Prove that a discarded fraction admits an earlier complete plan with physical increments intact. */
+function discardedCapacityImprovesFungibilityPlan({
+  catalog, requested, method, atEpochMs, memberStock, candidates, allocations, evidenceByPosition, acceptAllocations,
+}: FungibilityIncrementDiagnosticInput): boolean {
+  const last = allocations.at(-1);
+  if (last === undefined) return false;
+  const rawByPosition = new Map<InventoryStockPositionKey, InventoryWorkingAllocationCandidate>();
+  for (const candidate of candidates) rawByPosition.set(candidate.position, candidate);
+  const lastCandidate = rawByPosition.get(last.position);
+  if (lastCandidate === undefined) return false;
+  let earlierCapacityIncreased = false;
+  for (const { member, candidates: sources } of memberStock) {
+    for (const source of sources) {
+      try {
+        const capacity = inventoryAllocationCandidateCapacity(source).quantity;
+        const available = convertQuantityByReferenceExact(capacity, member.memberQuantity, member.poolQuantity);
+        if (available.amountMinor === 0) continue;
+        const physicalIncrement = source.allocationIncrement === undefined
+          ? undefined
+          : convertQuantityByReferenceExact(
+              materializeInventoryWorkingQuantity(source.allocationIncrement, "Fungibility physical increment"),
+              member.memberQuantity,
+              member.poolQuantity
+            );
+        const legal = rawByPosition.get(source.position);
+        const raw = {
+          position: source.position,
+          receivedAtEpochMs: source.receivedAtEpochMs,
+          ...(source.expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs: source.expiresAtEpochMs }),
+          available: { ...available, amountMinor: BigInt(available.amountMinor) },
+          ...(physicalIncrement === undefined ? {} : {
+            allocationIncrement: { ...physicalIncrement, amountMinor: BigInt(physicalIncrement.amountMinor) },
+          }),
+        };
+        rawByPosition.set(source.position, raw);
+        if (compareWorkingAllocationCandidates(raw, lastCandidate, method) <= 0 &&
+            (legal === undefined || compareWorkingQuantities(raw.available, legal.available) > 0)) earlierCapacityIncreased = true;
+      } catch {
+        // A nonstorable raw conversion cannot be used as evidence for this flag.
+      }
+    }
+  }
+  if (!earlierCapacityIncreased) return false;
+  const diagnostic = {
+    requested, candidates: [...rawByPosition.values()], method, nowEpochMs: atEpochMs, allowExpired: true, assessIncrementBlockage: false,
+    /** A diagnostic witness still needs storable physical movements and must preserve the same claims. */
+    acceptAllocations: (trial: readonly InventoryAllocation[]): boolean => {
+      try {
+        for (const { position, quantity: picked } of trial) {
+          const evidence = evidenceByPosition.get(inventoryStockPositionIdentity(position));
+          if (evidence === undefined) return false;
+          inventoryAmountForPrimaryAllocation({
+            catalog, itemRevisionId: evidence.item.revisionId, position: evidence.position,
+            allocatedPrimary: convertQuantityByReferenceExact(picked, evidence.member.poolQuantity, evidence.member.memberQuantity),
+          });
+        }
+        return acceptAllocations(trial);
+      } catch (error) {
+        if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
+        return false;
+      }
+    },
+  };
+  try {
+    const alternate = allocateWorkingInventory(diagnostic);
+    if (alternate.shortfall.amountMinor !== 0) return false;
+    // Both complete plans are in policy order. The first differing pick determines their order.
+    for (let index = 0; index < allocations.length; index += 1) {
+      const actual = allocations[index];
+      const proposed = alternate.allocations[index];
+      if (actual === undefined || proposed === undefined) return false;
+      if (actual.position !== proposed.position) {
+        const actualCandidate = rawByPosition.get(actual.position);
+        const proposedCandidate = rawByPosition.get(proposed.position);
+        return actualCandidate !== undefined && proposedCandidate !== undefined &&
+          compareWorkingAllocationCandidates(proposedCandidate, actualCandidate, method) < 0;
+      }
+      const comparison = compareQuantity(proposed.quantity, actual.quantity);
+      if (comparison !== 0) return comparison > 0;
+    }
+    return false;
+  } catch (error) {
+    // An unproven advisory flag cannot invalidate the accepted physical plan.
+    if (error instanceof InventoryExactAllocationLimitError || error instanceof InventoryReservationFeasibilityLimitError) return false;
+    throw error;
+  }
 }
 
 /** Check whether actual eligible capacity would cover the request if every row were divisible. */
@@ -976,6 +1086,7 @@ function addFungibilityCandidate({
   const increments = availableDigits / incrementDigits;
   // Even loose stock can leave a remainder below one pool reference.
   const discardedCapacity = availableDigits % incrementDigits !== 0n;
+  evidenceByPosition.set(identity, { member, item, position, source });
   if (increments === 0n) return discardedCapacity;
   const allocationIncrement = convertQuantityByReferenceExact(
     materializeInventoryWorkingQuantity(memberIncrement, "Fungibility member increment"), member.memberQuantity, member.poolQuantity,
@@ -997,12 +1108,6 @@ function addFungibilityCandidate({
     ...(keepIncrementForAcceptance ? { keepIncrementForAcceptance: true } : {}),
   };
   candidates.push(candidate);
-  evidenceByPosition.set(identity, {
-    member,
-    item,
-    position,
-    source,
-  });
   return discardedCapacity;
 }
 

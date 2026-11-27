@@ -994,6 +994,46 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       .toEqual([parseQuantity(later === "receipt" ? "4" : "1", "piece")]);
   });
 
+  it("places a late historical move before a later physical move despite an unrelated correction", async () => {
+    const item = defineScalarInventoryItem({ itemId: "counted", revisionId: "counted-v1", axisId: "pieces", unit: "piece" });
+    const other = defineScalarInventoryItem({ itemId: "other", revisionId: "other-v1", axisId: "pieces", unit: "piece" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item, other], activeItemRevisionIds: { counted: item.revisionId, other: other.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const position = { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "child" };
+    const from = { itemId: other.itemId, placementNodeId: "store" };
+    const one = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "receive-counted", occurredAtEpochMs: time0, to: position, amount: one });
+    const receipt = await inventory.stock.receive({
+      operationId: "receive-other", occurredAtEpochMs: time0, to: from, amount: stockAmount("2", "piece"),
+    });
+    await inventory.placement.move({ operationId: "first-parent", occurredAtEpochMs: time0, nodeId: "child", into: "A" });
+    await inventory.placement.move({ operationId: "last-parent", occurredAtEpochMs: time2, nodeId: "child", into: "B" });
+    await inventory.stock.correct({
+      operationId: "other-correction", occurredAtEpochMs: time1, correctsEventId: receipt.event.eventId,
+      reason: "Correct the unrelated receipt.",
+      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: from, amount: one }),
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "historical-move", occurredAtEpochMs: time3, reason: "Record earlier movement.",
+      assertions: [{ assertionId: "move-C", assert: (plans) => plans.placement({
+        occurredAtEpochMs: time1, nodeId: "child", fromParentNodeId: "A", toParentNodeId: "C",
+      }) }],
+    });
+    const selector = { itemId: item.itemId, withinPlacementNodeIds: ["B"] };
+    await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: time0 });
+    await inventory.counts.observe({
+      operationId: "observe", countId: "count", observedAtEpochMs: time3,
+      observations: [{ position, measurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [],
+      } }],
+    });
+    const result = await inventory.counts.reconcile({ operationId: "reconcile", countId: "count", completedAtEpochMs: time3 });
+    expect(result.event).toBeUndefined();
+    expect(await inventory.read.placementAncestry("child")).toEqual(["child", "B"]);
+  });
+
   it("retains correction supersession predecessors in occurrence-time count replay", async () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({

@@ -101,6 +101,37 @@ function measuredShortageAmount(pieces: string, weight: string) {
 }
 
 describe("historical shortages on independently measured stock", () => {
+  it("keeps an exact fixed-weight box claim fulfillable after identical stock merges", async () => {
+    const item = defineInventoryItem({ ...measuredItem(), reservationAxisId: "weight" });
+    const box = defineInventoryPackaging({
+      revisionId: "fixed-weight-box", itemId, itemRevisionId, packageUnit: unitCode("box"),
+      fixedContents: measuredVector("1", "3"),
+    }, item);
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [itemId]: itemRevisionId }, packagingRevisions: [box],
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: { nowEpochMs: () => occurredAtEpochMs + 10 },
+    });
+    const position = { itemId, itemRevisionId, placementNodeId: "store", packagingRevisionId: box.revisionId };
+    const selector = { itemId, placementNodeIds: ["store"] };
+    const three = parseQuantity("3", "kg");
+    await inventory.stock.receive({ operationId: "first-box", occurredAtEpochMs, to: position, amount: packageAmount(1, box.revisionId) });
+    await inventory.reservations.reserve({
+      operationId: "reserve", reservationId: "held", itemRevisionId, selector, requested: three, createdAtEpochMs: occurredAtEpochMs + 1,
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate", reservationId: "held", occurredAtEpochMs: occurredAtEpochMs + 1,
+      allocations: [{ position, quantity: three }],
+    });
+    await inventory.stock.receive({
+      operationId: "second-box", occurredAtEpochMs: occurredAtEpochMs + 2, to: position, amount: packageAmount(1, box.revisionId),
+    });
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
+      fulfillable: three, shortage: parseQuantity("0", "kg"),
+    });
+  });
+
   it.each([
     ["before", 2, 3, "2", "34"],
     ["straddling", 2, 5, "1", "10"],

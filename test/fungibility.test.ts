@@ -1004,6 +1004,35 @@ describe("derived pool summaries and exact member movements", () => {
     });
   });
 
+  it.each([false, true])("diagnoses a discarded reference remainder only when it can improve a complete plan (earlier: %s)", async (earlier) => {
+    const item = oldBrand();
+    const other = newBrand();
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "loose-reference", revisionId: "loose-reference-v1", basisUnit: "equivalent",
+      members: [{ item, memberQuantity: "2" }, { item: other }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item, other], activeItemRevisionIds: { [item.itemId]: item.revisionId, [other.itemId]: other.revisionId },
+      fungibilityRevisions: [pool], activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    await inventory.stock.receive({
+      operationId: "remainder", occurredAtEpochMs: earlier ? time0 : time1,
+      to: { itemId: item.itemId, lotId: "remainder", placementNodeId: "store" }, amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "whole-reference", occurredAtEpochMs: earlier ? time1 : time0,
+      to: { itemId: item.itemId, lotId: "complete", placementNodeId: "store" }, amount: stockAmount("2", "piece"),
+    });
+    const plan = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId, requested: parseQuantity("1.0", "equivalent"),
+      method: InventoryAllocationMethod.Fifo, atEpochMs: time2,
+    });
+    expect(plan.lines.map(({ position }) => position.lotId)).toEqual(["complete"]);
+    expect(plan.shortfall.amountMinor).toBe(0);
+    expect(plan.incrementBlockedStock).toBe(earlier);
+  });
+
   it.each(["none", "elsewhere", "source"])("separates package increments from claim and stock shortfalls (%s claim)", async (claim) => {
     const item = oldBrand();
     const alternative = newBrand();

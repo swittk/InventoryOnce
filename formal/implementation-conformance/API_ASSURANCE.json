@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4445,
-    "compilerCallGraphEdges": 12907,
+    "compilerCallGraphCallables": 4462,
+    "compilerCallGraphEdges": 12999,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -3525,10 +3525,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -3957,7 +3957,7 @@
           "path": "src/read-model.ts"
         },
         {
-          "occurrences": 9,
+          "occurrences": 8,
           "path": "src/reservations.ts"
         },
         {
@@ -8853,10 +8853,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -9285,7 +9285,7 @@
           "path": "src/read-model.ts"
         },
         {
-          "occurrences": 9,
+          "occurrences": 8,
           "path": "src/reservations.ts"
         },
         {
@@ -11795,7 +11795,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 5,
           "path": "src/fungibility.ts"
         },
         {
@@ -12642,10 +12642,10 @@
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:5903:<anonymous@146>",
+              "id": "test/dual-measure-counts.test.ts:7707:<anonymous@177>",
               "kind": "ArrowFunction",
-              "line": 146,
-              "name": "<anonymous@146>",
+              "line": 177,
+              "name": "<anonymous@177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -13854,10 +13854,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14005,10 +14005,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14508,10 +14508,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14838,10 +14838,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -15660,7 +15660,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 119,
+          "occurrences": 122,
           "path": "src/historical-replay.ts"
         },
         {
@@ -15692,7 +15692,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 111,
+          "occurrences": 117,
           "path": "src/projection.ts"
         },
         {
@@ -19757,7 +19757,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 46,
+          "occurrences": 60,
           "path": "src/fungibility.ts"
         },
         {
@@ -19785,7 +19785,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 91,
+          "occurrences": 115,
           "path": "src/projection.ts"
         },
         {
@@ -21327,10 +21327,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -21455,7 +21455,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 8,
           "path": "src/fungibility.ts"
         },
         {
@@ -24743,20 +24743,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -25191,9 +25191,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:74403:projectInventoryEvents",
+              "id": "src/projection.ts:78960:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1859,
+              "line": 1940,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -25201,9 +25201,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:76237:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:80794:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1904,
+              "line": 1985,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             },
@@ -25211,9 +25211,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:85655:compareCommittedEventSequence",
+              "id": "src/projection.ts:90212:compareCommittedEventSequence",
               "kind": "FunctionDeclaration",
-              "line": 2167,
+              "line": 2248,
               "name": "compareCommittedEventSequence",
               "reason": "external-callback-dispatch"
             }
@@ -25222,9 +25222,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:85655:compareCommittedEventSequence",
+            "id": "src/projection.ts:90212:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 2167,
+            "line": 2248,
             "name": "compareCommittedEventSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -25247,9 +25247,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:85655:compareCommittedEventSequence",
+          "id": "src/projection.ts:90212:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 2167,
+          "line": 2248,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -25477,20 +25477,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -25567,7 +25567,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/fungibility.ts"
         },
         {
@@ -25913,7 +25913,7 @@
           "path": "src/collections.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 10,
           "path": "src/fungibility.ts"
         }
       ],
@@ -30274,20 +30274,20 @@
               "column": 53,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:1160:<anonymous@44>",
+              "id": "test/transfer-lifecycle.test.ts:1215:<anonymous@46>",
               "kind": "ArrowFunction",
-              "line": 44,
-              "name": "<anonymous@44>",
+              "line": 46,
+              "name": "<anonymous@46>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 79,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:17538:<anonymous@496>",
+              "id": "test/transfer-lifecycle.test.ts:20880:<anonymous@548>",
               "kind": "ArrowFunction",
-              "line": 496,
-              "name": "<anonymous@496>",
+              "line": 548,
+              "name": "<anonymous@548>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -30426,10 +30426,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -30720,20 +30720,20 @@
               "column": 53,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:1160:<anonymous@44>",
+              "id": "test/transfer-lifecycle.test.ts:1215:<anonymous@46>",
               "kind": "ArrowFunction",
-              "line": 44,
-              "name": "<anonymous@44>",
+              "line": 46,
+              "name": "<anonymous@46>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 78,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:4829:<anonymous@122>",
+              "id": "test/transfer-lifecycle.test.ts:8171:<anonymous@174>",
               "kind": "ArrowFunction",
-              "line": 122,
-              "name": "<anonymous@122>",
+              "line": 174,
+              "name": "<anonymous@174>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -30872,20 +30872,20 @@
               "column": 53,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:1160:<anonymous@44>",
+              "id": "test/transfer-lifecycle.test.ts:1215:<anonymous@46>",
               "kind": "ArrowFunction",
-              "line": 44,
-              "name": "<anonymous@44>",
+              "line": 46,
+              "name": "<anonymous@46>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 79,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:17538:<anonymous@496>",
+              "id": "test/transfer-lifecycle.test.ts:20880:<anonymous@548>",
               "kind": "ArrowFunction",
-              "line": 496,
-              "name": "<anonymous@496>",
+              "line": 548,
+              "name": "<anonymous@548>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -31024,20 +31024,20 @@
               "column": 53,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:1160:<anonymous@44>",
+              "id": "test/transfer-lifecycle.test.ts:1215:<anonymous@46>",
               "kind": "ArrowFunction",
-              "line": 44,
-              "name": "<anonymous@44>",
+              "line": 46,
+              "name": "<anonymous@46>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 86,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:21957:<anonymous@622>",
+              "id": "test/transfer-lifecycle.test.ts:25299:<anonymous@674>",
               "kind": "ArrowFunction",
-              "line": 622,
-              "name": "<anonymous@622>",
+              "line": 674,
+              "name": "<anonymous@674>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -31481,10 +31481,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -32315,23 +32315,23 @@
               "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 55,
+              "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
+              "column": 88,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:3527:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -32723,10 +32723,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -32844,10 +32844,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -34367,9 +34367,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:76715:findInventoryPositions",
+              "id": "src/projection.ts:81272:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1920,
+              "line": 2001,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             }
@@ -34378,9 +34378,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:76715:findInventoryPositions",
+            "id": "src/projection.ts:81272:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 1920,
+            "line": 2001,
             "name": "findInventoryPositions"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -34407,9 +34407,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:76715:findInventoryPositions",
+          "id": "src/projection.ts:81272:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 1920,
+          "line": 2001,
           "name": "findInventoryPositions"
         }
       ],
@@ -34669,20 +34669,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34858,9 +34858,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 351,
+              "line": 352,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             },
@@ -34868,9 +34868,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:16279:planInventoryFungibilityAllocationWithHolds",
+              "id": "src/fungibility.ts:16317:planInventoryFungibilityAllocationWithHolds",
               "kind": "FunctionDeclaration",
-              "line": 374,
+              "line": 375,
               "name": "planInventoryFungibilityAllocationWithHolds",
               "reason": "resolved-call"
             },
@@ -34927,7 +34927,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/fungibility.ts"
         },
         {
@@ -36075,9 +36075,9 @@
               "column": 1,
               "file": "src/historical-replay.ts",
               "hasBody": true,
-              "id": "src/historical-replay.ts:32506:inventoryAffectedHistoricalEventIds",
+              "id": "src/historical-replay.ts:32686:inventoryAffectedHistoricalEventIds",
               "kind": "FunctionDeclaration",
-              "line": 864,
+              "line": 867,
               "name": "inventoryAffectedHistoricalEventIds",
               "reason": "resolved-call"
             },
@@ -37289,9 +37289,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:74403:projectInventoryEvents",
+              "id": "src/projection.ts:78960:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1859,
+              "line": 1940,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -37299,9 +37299,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:76237:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:80794:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 1904,
+              "line": 1985,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             }
@@ -37310,9 +37310,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:76237:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:80794:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 1904,
+            "line": 1985,
             "name": "inventoryEventsInRecordSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -37335,9 +37335,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:76237:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:80794:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 1904,
+          "line": 1985,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -37466,9 +37466,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:4146:inventoryFungibilityScopeIdentity",
+              "id": "src/fungibility.ts:4184:inventoryFungibilityScopeIdentity",
               "kind": "FunctionDeclaration",
-              "line": 125,
+              "line": 126,
               "name": "inventoryFungibilityScopeIdentity",
               "reason": "resolved-call"
             }
@@ -37477,9 +37477,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:4146:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:4184:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 125,
+            "line": 126,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "test": "test/catalog-publication.test.ts"
@@ -37502,9 +37502,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:4146:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:4184:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 125,
+          "line": 126,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -38869,10 +38869,10 @@
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:5903:<anonymous@146>",
+              "id": "test/dual-measure-counts.test.ts:7707:<anonymous@177>",
               "kind": "ArrowFunction",
-              "line": 146,
-              "name": "<anonymous@146>",
+              "line": 177,
+              "name": "<anonymous@177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -40462,9 +40462,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:76715:findInventoryPositions",
+              "id": "src/projection.ts:81272:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1920,
+              "line": 2001,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -41974,7 +41974,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 11,
+          "occurrences": 12,
           "path": "src/projection.ts"
         },
         {
@@ -42163,7 +42163,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 5,
+          "occurrences": 6,
           "path": "src/fungibility.ts"
         },
         {
@@ -42179,7 +42179,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/projection.ts"
         },
         {
@@ -42305,9 +42305,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:76715:findInventoryPositions",
+              "id": "src/projection.ts:81272:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 1920,
+              "line": 2001,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -44233,10 +44233,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -44504,10 +44504,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -45309,9 +45309,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:3707:normalizeInventoryFungibilityScope",
+              "id": "src/fungibility.ts:3745:normalizeInventoryFungibilityScope",
               "kind": "FunctionDeclaration",
-              "line": 111,
+              "line": 112,
               "name": "normalizeInventoryFungibilityScope",
               "reason": "resolved-call"
             }
@@ -45320,9 +45320,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3707:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3745:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 111,
+            "line": 112,
             "name": "normalizeInventoryFungibilityScope"
           },
           "test": "test/catalog-publication.test.ts"
@@ -45345,9 +45345,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3707:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3745:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 111,
+          "line": 112,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -45575,10 +45575,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -46026,10 +46026,10 @@
               "column": 101,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:4343:<anonymous@90>",
+              "id": "test/reservation-closure-shortage.test.ts:6101:<anonymous@119>",
               "kind": "ArrowFunction",
-              "line": 90,
-              "name": "<anonymous@90>",
+              "line": 119,
+              "name": "<anonymous@119>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -46511,9 +46511,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 351,
+              "line": 352,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             }
@@ -46522,9 +46522,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 351,
+            "line": 352,
             "name": "planInventoryFungibilityAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -46547,9 +46547,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 351,
+          "line": 352,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -46972,9 +46972,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:74403:projectInventoryEvents",
+              "id": "src/projection.ts:78960:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 1859,
+              "line": 1940,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             }
@@ -46983,9 +46983,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:74403:projectInventoryEvents",
+            "id": "src/projection.ts:78960:projectInventoryEvents",
             "kind": "FunctionDeclaration",
-            "line": 1859,
+            "line": 1940,
             "name": "projectInventoryEvents"
           },
           "test": "test/catalog-publication.test.ts"
@@ -47012,9 +47012,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:74403:projectInventoryEvents",
+          "id": "src/projection.ts:78960:projectInventoryEvents",
           "kind": "FunctionDeclaration",
-          "line": 1859,
+          "line": 1940,
           "name": "projectInventoryEvents"
         }
       ],
@@ -47203,7 +47203,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 17,
+          "occurrences": 22,
           "path": "src/fungibility.ts"
         },
         {
@@ -47255,7 +47255,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 35,
+          "occurrences": 36,
           "path": "src/reservations.ts"
         },
         {
@@ -48659,10 +48659,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -49938,9 +49938,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:6917:summarizeInventoryFungibility",
+              "id": "src/fungibility.ts:6955:summarizeInventoryFungibility",
               "kind": "FunctionDeclaration",
-              "line": 182,
+              "line": 183,
               "name": "summarizeInventoryFungibility",
               "reason": "resolved-call"
             }
@@ -49949,9 +49949,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6917:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6955:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 182,
+            "line": 183,
             "name": "summarizeInventoryFungibility"
           },
           "test": "test/fungibility.test.ts"
@@ -49974,9 +49974,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6917:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6955:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 182,
+          "line": 183,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -50538,10 +50538,10 @@
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:5903:<anonymous@146>",
+              "id": "test/dual-measure-counts.test.ts:7707:<anonymous@177>",
               "kind": "ArrowFunction",
-              "line": 146,
-              "name": "<anonymous@146>",
+              "line": 177,
+              "name": "<anonymous@177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -52847,10 +52847,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -52975,7 +52975,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 8,
           "path": "src/fungibility.ts"
         },
         {
@@ -54347,20 +54347,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -55008,20 +55008,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -55098,7 +55098,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/fungibility.ts"
         },
         {
@@ -55287,7 +55287,7 @@
           "path": "src/collections.ts"
         },
         {
-          "occurrences": 7,
+          "occurrences": 10,
           "path": "src/fungibility.ts"
         }
       ],
@@ -56010,10 +56010,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -56691,23 +56691,23 @@
               "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 55,
+              "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
+              "column": 88,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:3527:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -57221,10 +57221,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -57342,10 +57342,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -58305,20 +58305,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -58494,9 +58494,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 351,
+              "line": 352,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             },
@@ -58504,9 +58504,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:16279:planInventoryFungibilityAllocationWithHolds",
+              "id": "src/fungibility.ts:16317:planInventoryFungibilityAllocationWithHolds",
               "kind": "FunctionDeclaration",
-              "line": 374,
+              "line": 375,
               "name": "planInventoryFungibilityAllocationWithHolds",
               "reason": "resolved-call"
             },
@@ -58563,7 +58563,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/fungibility.ts"
         },
         {
@@ -59623,9 +59623,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:4146:inventoryFungibilityScopeIdentity",
+              "id": "src/fungibility.ts:4184:inventoryFungibilityScopeIdentity",
               "kind": "FunctionDeclaration",
-              "line": 125,
+              "line": 126,
               "name": "inventoryFungibilityScopeIdentity",
               "reason": "resolved-call"
             }
@@ -59634,9 +59634,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:4146:inventoryFungibilityScopeIdentity",
+            "id": "src/fungibility.ts:4184:inventoryFungibilityScopeIdentity",
             "kind": "FunctionDeclaration",
-            "line": 125,
+            "line": 126,
             "name": "inventoryFungibilityScopeIdentity"
           },
           "test": "test/catalog-publication.test.ts"
@@ -59659,9 +59659,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:4146:inventoryFungibilityScopeIdentity",
+          "id": "src/fungibility.ts:4184:inventoryFungibilityScopeIdentity",
           "kind": "FunctionDeclaration",
-          "line": 125,
+          "line": 126,
           "name": "inventoryFungibilityScopeIdentity"
         }
       ],
@@ -60404,10 +60404,10 @@
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:5903:<anonymous@146>",
+              "id": "test/dual-measure-counts.test.ts:7707:<anonymous@177>",
               "kind": "ArrowFunction",
-              "line": 146,
-              "name": "<anonymous@146>",
+              "line": 177,
+              "name": "<anonymous@177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -62576,10 +62576,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -62847,10 +62847,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -63493,9 +63493,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:3707:normalizeInventoryFungibilityScope",
+              "id": "src/fungibility.ts:3745:normalizeInventoryFungibilityScope",
               "kind": "FunctionDeclaration",
-              "line": 111,
+              "line": 112,
               "name": "normalizeInventoryFungibilityScope",
               "reason": "resolved-call"
             }
@@ -63504,9 +63504,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:3707:normalizeInventoryFungibilityScope",
+            "id": "src/fungibility.ts:3745:normalizeInventoryFungibilityScope",
             "kind": "FunctionDeclaration",
-            "line": 111,
+            "line": 112,
             "name": "normalizeInventoryFungibilityScope"
           },
           "test": "test/catalog-publication.test.ts"
@@ -63529,9 +63529,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:3707:normalizeInventoryFungibilityScope",
+          "id": "src/fungibility.ts:3745:normalizeInventoryFungibilityScope",
           "kind": "FunctionDeclaration",
-          "line": 111,
+          "line": 112,
           "name": "normalizeInventoryFungibilityScope"
         }
       ],
@@ -63607,10 +63607,10 @@
               "column": 101,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:4343:<anonymous@90>",
+              "id": "test/reservation-closure-shortage.test.ts:6101:<anonymous@119>",
               "kind": "ArrowFunction",
-              "line": 90,
-              "name": "<anonymous@90>",
+              "line": 119,
+              "name": "<anonymous@119>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -64092,9 +64092,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+              "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
               "kind": "FunctionDeclaration",
-              "line": 351,
+              "line": 352,
               "name": "planInventoryFungibilityAllocation",
               "reason": "resolved-call"
             }
@@ -64103,9 +64103,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+            "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
             "kind": "FunctionDeclaration",
-            "line": 351,
+            "line": 352,
             "name": "planInventoryFungibilityAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -64128,9 +64128,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:15107:planInventoryFungibilityAllocation",
+          "id": "src/fungibility.ts:15145:planInventoryFungibilityAllocation",
           "kind": "FunctionDeclaration",
-          "line": 351,
+          "line": 352,
           "name": "planInventoryFungibilityAllocation"
         }
       ],
@@ -64909,7 +64909,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 17,
+          "occurrences": 22,
           "path": "src/fungibility.ts"
         },
         {
@@ -64961,7 +64961,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 35,
+          "occurrences": 36,
           "path": "src/reservations.ts"
         },
         {
@@ -66208,10 +66208,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -67223,9 +67223,9 @@
               "column": 1,
               "file": "src/fungibility.ts",
               "hasBody": true,
-              "id": "src/fungibility.ts:6917:summarizeInventoryFungibility",
+              "id": "src/fungibility.ts:6955:summarizeInventoryFungibility",
               "kind": "FunctionDeclaration",
-              "line": 182,
+              "line": 183,
               "name": "summarizeInventoryFungibility",
               "reason": "resolved-call"
             }
@@ -67234,9 +67234,9 @@
             "column": 1,
             "file": "src/fungibility.ts",
             "hasBody": true,
-            "id": "src/fungibility.ts:6917:summarizeInventoryFungibility",
+            "id": "src/fungibility.ts:6955:summarizeInventoryFungibility",
             "kind": "FunctionDeclaration",
-            "line": 182,
+            "line": 183,
             "name": "summarizeInventoryFungibility"
           },
           "test": "test/fungibility.test.ts"
@@ -67259,9 +67259,9 @@
           "column": 1,
           "file": "src/fungibility.ts",
           "hasBody": true,
-          "id": "src/fungibility.ts:6917:summarizeInventoryFungibility",
+          "id": "src/fungibility.ts:6955:summarizeInventoryFungibility",
           "kind": "FunctionDeclaration",
-          "line": 182,
+          "line": 183,
           "name": "summarizeInventoryFungibility"
         }
       ],
@@ -67823,10 +67823,10 @@
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:5903:<anonymous@146>",
+              "id": "test/dual-measure-counts.test.ts:7707:<anonymous@177>",
               "kind": "ArrowFunction",
-              "line": 146,
-              "name": "<anonymous@146>",
+              "line": 177,
+              "name": "<anonymous@177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -69634,10 +69634,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -70337,10 +70337,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -73246,10 +73246,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -74039,7 +74039,7 @@
           "path": "src/read-model.ts"
         },
         {
-          "occurrences": 9,
+          "occurrences": 8,
           "path": "src/reservations.ts"
         },
         {
@@ -76099,20 +76099,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -77100,7 +77100,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 5,
           "path": "src/fungibility.ts"
         },
         {
@@ -77681,7 +77681,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 19,
           "path": "src/projection.ts"
         },
         {
@@ -79685,10 +79685,10 @@
               "column": 82,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:50596:<anonymous@1176>",
+              "id": "test/reservations-counts.test.ts:53305:<anonymous@1216>",
               "kind": "ArrowFunction",
-              "line": 1176,
-              "name": "<anonymous@1176>",
+              "line": 1216,
+              "name": "<anonymous@1216>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -79786,7 +79786,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/historical-replay.ts"
         },
         {
@@ -79814,7 +79814,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 9,
+          "occurrences": 10,
           "path": "src/projection.ts"
         },
         {
@@ -80072,7 +80072,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 119,
+          "occurrences": 122,
           "path": "src/historical-replay.ts"
         },
         {
@@ -80104,7 +80104,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 111,
+          "occurrences": 117,
           "path": "src/projection.ts"
         },
         {
@@ -80397,7 +80397,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 42,
+          "occurrences": 46,
           "path": "src/projection.ts"
         },
         {
@@ -80635,7 +80635,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/fungibility.ts"
         },
         {
@@ -82275,7 +82275,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 30,
+          "occurrences": 33,
           "path": "src/projection.ts"
         },
         {
@@ -82402,10 +82402,10 @@
               "column": 101,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:4343:<anonymous@90>",
+              "id": "test/reservation-closure-shortage.test.ts:6101:<anonymous@119>",
               "kind": "ArrowFunction",
-              "line": 90,
-              "name": "<anonymous@90>",
+              "line": 119,
+              "name": "<anonymous@119>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -82607,10 +82607,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -84035,20 +84035,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9585:<anonymous@239>",
+              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
               "kind": "ArrowFunction",
-              "line": 239,
-              "name": "<anonymous@239>",
+              "line": 270,
+              "name": "<anonymous@270>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:9692:<anonymous@240>",
+              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
               "kind": "ArrowFunction",
-              "line": 240,
-              "name": "<anonymous@240>",
+              "line": 271,
+              "name": "<anonymous@271>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -84359,20 +84359,20 @@
               "column": 62,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:11070:<anonymous@237>",
+              "id": "test/reservation-closure-shortage.test.ts:12828:<anonymous@266>",
               "kind": "ArrowFunction",
-              "line": 237,
-              "name": "<anonymous@237>",
+              "line": 266,
+              "name": "<anonymous@266>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 87,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:13370:<anonymous@291>",
+              "id": "test/reservation-closure-shortage.test.ts:15128:<anonymous@320>",
               "kind": "ArrowFunction",
-              "line": 291,
-              "name": "<anonymous@291>",
+              "line": 320,
+              "name": "<anonymous@320>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -84511,20 +84511,20 @@
               "column": 62,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:11070:<anonymous@237>",
+              "id": "test/reservation-closure-shortage.test.ts:12828:<anonymous@266>",
               "kind": "ArrowFunction",
-              "line": 237,
-              "name": "<anonymous@237>",
+              "line": 266,
+              "name": "<anonymous@266>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:15951:<anonymous@341>",
+              "id": "test/reservation-closure-shortage.test.ts:17709:<anonymous@370>",
               "kind": "ArrowFunction",
-              "line": 341,
-              "name": "<anonymous@341>",
+              "line": 370,
+              "name": "<anonymous@370>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -84844,10 +84844,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -85608,7 +85608,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 2,
           "path": "src/historical-replay.ts"
         },
         {
@@ -85636,7 +85636,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 9,
+          "occurrences": 10,
           "path": "src/projection.ts"
         },
         {
@@ -85882,7 +85882,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 119,
+          "occurrences": 122,
           "path": "src/historical-replay.ts"
         },
         {
@@ -85914,7 +85914,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 111,
+          "occurrences": 117,
           "path": "src/projection.ts"
         },
         {
@@ -86196,7 +86196,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 42,
+          "occurrences": 46,
           "path": "src/projection.ts"
         },
         {
@@ -86604,7 +86604,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 3,
           "path": "src/fungibility.ts"
         },
         {
@@ -88156,7 +88156,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 30,
+          "occurrences": 33,
           "path": "src/projection.ts"
         },
         {
@@ -92469,10 +92469,10 @@
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:5903:<anonymous@146>",
+              "id": "test/dual-measure-counts.test.ts:7707:<anonymous@177>",
               "kind": "ArrowFunction",
-              "line": 146,
-              "name": "<anonymous@146>",
+              "line": 177,
+              "name": "<anonymous@177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -93069,10 +93069,10 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 120,
+              "column": 79,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:900:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
               "kind": "ArrowFunction",
               "line": 36,
               "name": "<anonymous@36>",
@@ -93373,10 +93373,10 @@
               "column": 79,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3666:<anonymous@109>",
+              "id": "test/dual-measure-counts.test.ts:5470:<anonymous@140>",
               "kind": "ArrowFunction",
-              "line": 109,
-              "name": "<anonymous@109>",
+              "line": 140,
+              "name": "<anonymous@140>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -94127,7 +94127,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 19,
           "path": "src/projection.ts"
         },
         {
@@ -95618,20 +95618,20 @@
               "column": 53,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:1160:<anonymous@44>",
+              "id": "test/transfer-lifecycle.test.ts:1215:<anonymous@46>",
               "kind": "ArrowFunction",
-              "line": 44,
-              "name": "<anonymous@44>",
+              "line": 46,
+              "name": "<anonymous@46>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 76,
               "file": "test/transfer-lifecycle.test.ts",
               "hasBody": true,
-              "id": "test/transfer-lifecycle.test.ts:7965:<anonymous@223>",
+              "id": "test/transfer-lifecycle.test.ts:11307:<anonymous@275>",
               "kind": "ArrowFunction",
-              "line": 223,
-              "name": "<anonymous@223>",
+              "line": 275,
+              "name": "<anonymous@275>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -97264,7 +97264,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 1,
+          "occurrences": 5,
           "path": "src/fungibility.ts"
         },
         {
@@ -98314,7 +98314,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 5,
           "path": "src/fungibility.ts"
         },
         {
@@ -99274,10 +99274,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99424,10 +99424,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99924,10 +99924,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -100252,10 +100252,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:7041:<anonymous@138>",
+              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
               "kind": "ArrowFunction",
-              "line": 138,
-              "name": "<anonymous@138>",
+              "line": 167,
+              "name": "<anonymous@167>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -101932,5 +101932,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "ed3cdf2a07c55fea73f8d2e8e0a4d6eec476c022b84299041af9e6ee14ec5bcc"
+  "surfaceSha256": "c9401c83ddfcfe53276eafc6f75eb7761813de4ce47f3d22b516ce12394c54ff"
 }

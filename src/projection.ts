@@ -386,6 +386,8 @@ interface InventoryCountProjectionScope {
   readonly placementNodeIds: ReadonlySet<string>;
   /** Stock that belongs to the counted item or contributes to needed ancestry. */
   readonly includesPosition: (position: InventoryStockPositionKey) => boolean;
+  /** Complete structured transfers whose lines can contribute to the observed stock. */
+  readonly transferIds: ReadonlySet<string>;
 }
 
 /**
@@ -454,9 +456,13 @@ function applyInventoryCommittedEventInternal(
     );
   }
   // Normalize the full fact before limiting private replay to the stock the count can depend on.
+  const transferId = normalizedEvent.transferLifecycle?.transferId;
+  const replayTransfer = transferId !== undefined && (countScope === undefined || countScope.transferIds.has(transferId));
   const stockEvent = countScope === undefined
     ? normalizedEvent
-    : countScopedStockEvent(normalizedEvent, countScope);
+    : transferId === undefined
+      ? countScopedStockEvent(normalizedEvent, countScope)
+      : replayTransfer ? normalizedEvent : { ...normalizedEvent, stockEffects: [], positiveLayerProvenanceTransfers: [] };
   const eventPlacementDefinitions = normalizedEvent.placementNodeDefinitions ?? [];
   const placementNodeDefinitions = countScope === undefined ? eventPlacementDefinitions : eventPlacementDefinitions.filter(
     /** Retain definitions for the placement component the observation uses. */
@@ -874,11 +880,9 @@ function applyInventoryCommittedEventInternal(
   applyIndexedIdentityMutations(lotIdentitiesByItemId, lotIndexMutations);
 
   /** Structured transfer truth is rebuilt from the same immutable event before publication. */
-  const transfers = applyInventoryTransferLifecycleEvent(
-    state.transfers,
-    state.positions,
-    normalizedEvent
-  );
+  const transfers = replayTransfer
+    ? applyInventoryTransferLifecycleEvent(state.transfers, state.positions, normalizedEvent)
+    : state.transfers;
 
   /** Copy used while deriving the next all-or-nothing stock projection. */
   const positions: Record<string, InventoryStockPosition> = mutateProjection
@@ -1767,22 +1771,99 @@ function prepareCountProjectionScope(
   const { withinPlacementNodeIds, ...directSelector } = selector;
   const placement = withinPlacementNodeIds === undefined
     ? undefined : countPlacementDependencies(input.events, withinPlacementNodeIds);
+  /** Match the direct stock filters and any potentially relevant subtree membership. */
+  const matchesObservedPosition = (position: InventoryStockPositionKey): boolean =>
+    inventoryStockPositionMatchesNormalizedSelector(position, directSelector) &&
+    (placement === undefined || (position.placementNodeId !== undefined && placement.nodeIds.has(position.placementNodeId)));
   const serials = new Set(placement?.embodiedSerials);
   for (const event of input.events) {
     for (const { position } of event.stockEffects) {
-      if (position.serialId === undefined || !inventoryStockPositionMatchesNormalizedSelector(position, directSelector)) continue;
-      if (placement !== undefined &&
-          (position.placementNodeId === undefined || !placement.nodeIds.has(position.placementNodeId))) continue;
+      if (position.serialId === undefined || !matchesObservedPosition(position)) continue;
       serials.add(inventorySerialIdentity(position.itemId, position.serialId));
     }
   }
+  /** Preserve all positions of each selected serial so incoming and outgoing stock remain paired. */
+  const includesObservedPosition = ({ itemId, serialId }: InventoryStockPositionKey): boolean =>
+    serialId === undefined ? itemId === selector.itemId : serials.has(inventorySerialIdentity(itemId, serialId));
+  const transfer = countTransferDependencies(input.events,
+    /** Seed paths at relevant exact rows and any serial driving the selected placement. */
+    (position) => position.serialId === undefined ? matchesObservedPosition(position) : includesObservedPosition(position)
+  );
   return {
     placementNodeIds: placement?.nodeIds ?? new Set(),
-    /** Preserve all positions of each selected serial so incoming and outgoing stock remain paired. */
-    includesPosition: ({ itemId, serialId }) => serialId === undefined
-      ? itemId === selector.itemId
-      : serials.has(inventorySerialIdentity(itemId, serialId)),
+    transferIds: transfer.transferIds,
+    /** Replay ordinary receipts and movements that fund any retained transfer line. */
+    includesPosition: (position) => includesObservedPosition(position) ||
+      (transfer.positionIds.size !== 0 && transfer.positionIds.has(countTransferPositionIdentity(position))),
   };
+}
+
+/** Follow exact rows through transfer stages and follow serialized rows along their entire route. */
+function countTransferPositionIdentity(position: InventoryStockPositionKey): string {
+  return position.serialId === undefined
+    ? inventoryStockPositionIdentity(position)
+    : inventorySerialIdentity(position.itemId, position.serialId);
+}
+
+/** Return the related structured transfers and stock that funds all of their lines. */
+function countTransferDependencies(
+  events: readonly InventoryCommittedEvent[],
+  matchesPosition: (position: InventoryStockPositionKey) => boolean
+): {
+  /** Structured transfer identities whose full lifecycle must be replayed. */
+  readonly transferIds: ReadonlySet<string>;
+  /** Stock dependencies by exact row or serial identity. */
+  readonly positionIds: ReadonlySet<string>;
+} {
+  const positionsByTransfer = new Map<string, Set<string>>();
+  const transfersByPosition = new Map<string, Set<string>>();
+  const transferIds = new Set<string>();
+  const positionIds = new Set<string>();
+  if (!events.some(
+    /** Ordinary count replay needs no transfer links when no lifecycle is present. */
+    (event) => event.transferLifecycle !== undefined
+  )) return { transferIds, positionIds };
+  /** Conserved ordinary stock routes can supply a relevant position from an earlier transfer. */
+  const connectedPositions = new Map<string, Set<string>>();
+  /** Link one end of a conserved stock route to its other end. */
+  function linkPosition(position: string, other: string): void {
+    const neighbors = connectedPositions.get(position) ?? new Set<string>();
+    neighbors.add(other);
+    connectedPositions.set(position, neighbors);
+  }
+  for (const event of events) {
+    const transferId = event.transferLifecycle?.transferId;
+    if (transferId === undefined) {
+      for (const { from, to } of event.positiveLayerProvenanceTransfers ?? []) {
+        const source = countTransferPositionIdentity(from);
+        const destination = countTransferPositionIdentity(to);
+        linkPosition(source, destination);
+        linkPosition(destination, source);
+      }
+    }
+    for (const { position } of event.stockEffects) {
+      const identity = countTransferPositionIdentity(position);
+      if (matchesPosition(position)) positionIds.add(identity);
+      if (transferId !== undefined) {
+        const positions = positionsByTransfer.get(transferId) ?? new Set<string>();
+        positions.add(identity);
+        positionsByTransfer.set(transferId, positions);
+        const transfers = transfersByPosition.get(identity) ?? new Set<string>();
+        transfers.add(transferId);
+        transfersByPosition.set(identity, transfers);
+      }
+    }
+  }
+  // Each newly connected stock identity can introduce another whole lifecycle and all its lines.
+  for (const identity of positionIds) {
+    for (const connected of connectedPositions.get(identity) ?? []) positionIds.add(connected);
+    for (const transferId of transfersByPosition.get(identity) ?? []) {
+      if (transferIds.has(transferId)) continue;
+      transferIds.add(transferId);
+      for (const position of positionsByTransfer.get(transferId) ?? []) positionIds.add(position);
+    }
+  }
+  return { transferIds, positionIds };
 }
 
 /** Nodes and embodied stock needed to evaluate the ancestry of a count. */

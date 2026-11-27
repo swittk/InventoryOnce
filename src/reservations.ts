@@ -1654,18 +1654,11 @@ function createIndivisibleReservationIncrement(
   }
   const packagingRevisionId = position.packagingRevisionId;
   if (packagingRevisionId === undefined) return {};
-  const item = catalog.itemRevision(position.itemRevisionId);
-  if (axisId !== item.primaryAxis.axisId) {
-    // We do not know how a variable independent measure splits between intact packages.
-    return { indivisibleIncrement: capacity };
-  }
   const packaging = catalog.packagingRevision(packagingRevisionId);
+  const fixed = inventoryMeasurementAt(packaging.fixedContents, axisId, capacity.unit);
   return {
-    indivisibleIncrement: inventoryMeasurementAt(
-      packaging.fixedContents,
-      axisId,
-      capacity.unit
-    ),
+    // An unfixed independent measure is only known for the intact row.
+    indivisibleIncrement: fixed.amountMinor > 0 ? fixed : capacity,
   };
 }
 
@@ -1698,6 +1691,18 @@ function remainingReservationAssignmentCeiling(
   return totalDemand < remainingCapacity ? totalDemand : remainingCapacity;
 }
 
+/** Stock and claim capacities after assigning one prefix of the stock groups. */
+interface ReservationAssignmentBranch {
+  /** First unassigned stock group. */
+  readonly groupIndex: number;
+  /** Exact unfilled demand by claim. */
+  readonly remainingDemand: readonly bigint[];
+  /** Remaining legal capacity between each claim and each stock position. */
+  readonly remainingEdgeCapacity: readonly (readonly bigint[])[];
+  /** Exact quantity assigned by the prefix. */
+  readonly assignedMinor: bigint;
+}
+
 /** Assign whole packages and serials exactly, pruning branches that cannot improve the witness. */
 function maximumReservationAssignmentWithIndivisibleGroups(
   positions: readonly ReservationFeasibilityPosition[],
@@ -1724,13 +1729,10 @@ function maximumReservationAssignmentWithIndivisibleGroups(
   let best = 0n;
   let exploredStates = 0;
   const seen = new Set<string>();
-  /** Walk one bounded integer-capacity assignment without expanding ordinary package counts. */
-  const assignGroup = (
-    groupIndex: number,
-    remainingDemand: bigint[],
-    remainingEdgeCapacity: bigint[][],
-    assignedMinor: bigint
-  ): void => {
+  /** Yield one branch at a time in the original large-assignment-first order. */
+  function* assignGroup({
+    groupIndex, remainingDemand, remainingEdgeCapacity, assignedMinor,
+  }: ReservationAssignmentBranch): Generator<ReservationAssignmentBranch> {
     if (best === fulfillableUpperBound) return;
     exploredStates += 1;
     if (exploredStates > MAXIMUM_RESERVATION_FEASIBILITY_STATES) {
@@ -1768,62 +1770,57 @@ function maximumReservationAssignmentWithIndivisibleGroups(
     }
     const group = groups[groupIndex];
     if (group === undefined) return;
-    assignIndivisibleGroupCounts(
-      group,
-      remainingDemand,
-      remainingEdgeCapacity,
-      /** Try each real integer distribution, with large assignments first for quick full-demand exits. */
-      (assignedCounts) => {
-        if (best === fulfillableUpperBound) return false;
-        const nextDemand = [...remainingDemand];
-        const nextEdges = remainingEdgeCapacity.map(
-          /** Copy one claim's edge capacities before changing this group branch. */
-          (row) => [...row]
-        );
-        let groupAssignedMinor = 0n;
-        for (
-          let reservationIndex = 0;
-          reservationIndex < assignedCounts.length;
-          reservationIndex += 1
+    for (const assignedCounts of assignIndivisibleGroupCounts(group, remainingDemand, remainingEdgeCapacity)) {
+      if (best === fulfillableUpperBound) return;
+      const nextDemand = [...remainingDemand];
+      const nextEdges = remainingEdgeCapacity.map(
+        /** Copy one claim's edge capacities before changing this group branch. */
+        (row) => [...row]
+      );
+      let groupAssignedMinor = 0n;
+      for (
+        let reservationIndex = 0;
+        reservationIndex < assignedCounts.length;
+        reservationIndex += 1
+      ) {
+        const assignedCount = assignedCounts[reservationIndex] ?? 0n;
+        if (assignedCount === 0n) continue;
+        const assignedForReservation = assignedCount * group.capacityMinor;
+        const demand = nextDemand[reservationIndex];
+        const edgeRow = nextEdges[reservationIndex];
+        const edgeCapacity = edgeRow?.[group.positionIndex];
+        if (
+          demand === undefined ||
+          edgeRow === undefined ||
+          edgeCapacity === undefined
         ) {
-          const assignedCount = assignedCounts[reservationIndex] ?? 0n;
-          if (assignedCount === 0n) continue;
-          const assignedForReservation = assignedCount * group.capacityMinor;
-          const demand = nextDemand[reservationIndex];
-          const edgeRow = nextEdges[reservationIndex];
-          const edgeCapacity = edgeRow?.[group.positionIndex];
-          if (
-            demand === undefined ||
-            edgeRow === undefined ||
-            edgeCapacity === undefined
-          ) {
-            throw new Error(
-              "Reservation grouped assignment lost one claim/position capacity."
-            );
-          }
-          nextDemand[reservationIndex] = demand - assignedForReservation;
-          edgeRow[group.positionIndex] = edgeCapacity - assignedForReservation;
-          groupAssignedMinor += assignedForReservation;
+          throw new Error(
+            "Reservation grouped assignment lost one claim/position capacity."
+          );
         }
-        assignGroup(
-          groupIndex + 1,
-          nextDemand,
-          nextEdges,
-          assignedMinor + groupAssignedMinor
-        );
-        return best < branchCeiling && best !== fulfillableUpperBound;
+        nextDemand[reservationIndex] = demand - assignedForReservation;
+        edgeRow[group.positionIndex] = edgeCapacity - assignedForReservation;
+        groupAssignedMinor += assignedForReservation;
       }
-    );
-  };
-  assignGroup(
-    0,
-    [...requestedByReservation],
-    edgeCapacityByReservation.map(
-      /** Copy one claim's starting edge capacities for the exact search. */
-      (row) => [...row]
-    ),
-    0n
-  );
+      yield {
+        groupIndex: groupIndex + 1,
+        remainingDemand: nextDemand,
+        remainingEdgeCapacity: nextEdges,
+        assignedMinor: assignedMinor + groupAssignedMinor,
+      };
+      if (best >= branchCeiling || best === fulfillableUpperBound) return;
+    }
+  }
+  /** Suspend each group distribution while its child runs without nesting the runtime stack. */
+  const branches = [assignGroup({
+    groupIndex: 0, remainingDemand: requestedByReservation,
+    remainingEdgeCapacity: edgeCapacityByReservation, assignedMinor: 0n,
+  })];
+  for (let branch = branches.at(-1); branch !== undefined; branch = branches.at(-1)) {
+    const next = branch.next();
+    if (next.done) branches.pop();
+    else branches.push(assignGroup(next.value));
+  }
   return best;
 }
 
@@ -1831,20 +1828,20 @@ function maximumReservationAssignmentWithIndivisibleGroups(
 function assignIndivisibleGroupCounts(
   group: ReservationIndivisibleGroup,
   remainingDemand: readonly bigint[],
-  remainingEdgeCapacity: readonly (readonly bigint[])[],
-  useAssignment: (assignedCounts: readonly bigint[]) => boolean
-): void {
+  remainingEdgeCapacity: readonly (readonly bigint[])[]
+): Generator<readonly bigint[]> {
   const assignedCounts = remainingDemand.map(
     /** Start every claim at zero pieces from this one stock group. */
     () => 0n
   );
-  /** Give this group's integer capacity to eligible claims without splitting one piece. */
-  const assignReservation = (
+  /** Yield distributions over this group's bounded set of claims without recursing into other groups. */
+  function* assignReservation(
     reservationIndex: number,
     remainingPieces: bigint
-  ): boolean => {
+  ): Generator<readonly bigint[]> {
     if (reservationIndex === remainingDemand.length) {
-      return useAssignment(assignedCounts);
+      yield assignedCounts;
+      return;
     }
     const demand = remainingDemand[reservationIndex] ?? 0n;
     const edgeCapacity =
@@ -1856,25 +1853,23 @@ function assignIndivisibleGroupCounts(
     let assignedPieces = maximumPieces;
     while (assignedPieces >= 0n) {
       assignedCounts[reservationIndex] = assignedPieces;
-      const shouldContinue = assignReservation(
+      yield* assignReservation(
         reservationIndex + 1,
         remainingPieces - assignedPieces
       );
-      if (!shouldContinue) return false;
       if (assignedPieces === 0n) break;
       assignedPieces -= 1n;
     }
     assignedCounts[reservationIndex] = 0n;
-    return true;
-  };
-  assignReservation(0, group.count);
+  }
+  return assignReservation(0, group.count);
 }
 
 /** Run ordinary exact max-flow only across stock rows legal to divide on the reservation axis. */
 function maximumContinuousReservationFlow(
   positions: readonly ReservationFeasibilityPosition[],
   remainingDemand: readonly bigint[],
-  remainingEdgeCapacity: readonly bigint[][],
+  remainingEdgeCapacity: readonly (readonly bigint[])[],
   decimals: number
 ): bigint {
   const source = 0;

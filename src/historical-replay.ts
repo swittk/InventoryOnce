@@ -507,8 +507,11 @@ function insertHistoricalAssertion(
     }
   } else {
     for (let index = 0; index < target.length; index += 1) {
+      const event = target[index]!.event;
+      // A retained count correction is an adjustment, not a physical ordering anchor.
+      if (event.kind === InventoryEventKind.Correction) continue;
       if (
-        target[index]!.event.occurredAtEpochMs <=
+        event.occurredAtEpochMs <=
         assertion.event.occurredAtEpochMs
       ) {
         insertionIndex = index;
