@@ -39,6 +39,7 @@ import {
   applyInventoryPlacementChanges,
   emptyInventoryPlacementState,
   inventoryPlacementParentNodeId,
+  type InventoryPlacementChange,
   type InventoryPlacementState,
 } from "./placement.js";
 import {
@@ -1139,7 +1140,8 @@ function applyInventoryCommittedEventInternal(
     touchedPositionIdsBySerialIdentity,
     positivePositionIdBySerialIdentity,
   });
-  for (const change of normalizedEvent.placementChanges ?? []) {
+  const placementChanges = normalizedEvent.placementChanges ?? [];
+  for (const change of placementChanges) {
     const projected = inventorySparseRecordValue(placementNodes, change.nodeId);
     if (
       projected?.retiredByEventId === undefined &&
@@ -1156,7 +1158,9 @@ function applyInventoryCommittedEventInternal(
   let placement = applyInventoryPlacementChanges({
     state: state.placement,
     eventId: normalizedEvent.eventId,
-    changes: normalizedEvent.placementChanges ?? [],
+    changes: replayStockAge === "occurrence-cut"
+      ? placementChangesForOccurrenceCut(state.placement, placementChanges)
+      : placementChanges,
     mutatePrivateBatch: ownsPlacement,
     /** Resolve destination policy from the event-final projected node metadata. */
     acceptsPlacement: (nodeId) => {
@@ -1673,6 +1677,26 @@ function inventoryLotDefinitionFingerprint(
     definition.expiresAtEpochMs ?? null,
     inventoryMetadataFingerprint(definition.metadata),
   ]);
+}
+
+/** Apply a retained destination relative to the topology reconstructed at observation. */
+function placementChangesForOccurrenceCut(
+  state: InventoryPlacementState,
+  changes: readonly InventoryPlacementChange[]
+): readonly InventoryPlacementChange[] {
+  if (changes.length === 0) return changes;
+  const replayChanges: InventoryPlacementChange[] = [];
+  for (const { nodeId, toParentNodeId } of changes) {
+    // The earlier parent recorded at publication can come from an omitted event.
+    const fromParentNodeId = inventoryPlacementParentNodeId(state, nodeId);
+    if (fromParentNodeId === toParentNodeId) continue;
+    replayChanges.push({
+      nodeId,
+      ...(fromParentNodeId === undefined ? {} : { fromParentNodeId }),
+      ...(toParentNodeId === undefined ? {} : { toParentNodeId }),
+    });
+  }
+  return replayChanges;
 }
 
 /** Replay committed history through the same reducer used for live commits. */

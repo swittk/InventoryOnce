@@ -628,8 +628,8 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ]);
   });
 
-  it("reconciles when a backdated contents move precedes its source receipt in the occurrence cut", async () => {
-    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+  it.each([InventoryDeficitPolicy.Record, InventoryDeficitPolicy.Reject])("reconciles when a backdated contents move precedes its source receipt (%s)", async (policy) => {
+    const inventory = createTestInventory(undefined, undefined, undefined, policy);
     const selector = { itemId: "item-a", placementNodeIds: ["destination"] };
     const countId = "contents-count";
     await inventory.counts.start({ countId, operationId: "start-contents-count", selector, startedAtEpochMs: time0 });
@@ -657,6 +657,52 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     expect(result.event?.stockEffects).toMatchObject([
       { position: arrival.key, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
     ]);
+  });
+
+  it.each([
+    { earlierParent: undefined, countLocation: "destination" },
+    { earlierParent: "older-bin", countLocation: "destination" },
+    { earlierParent: "destination", countLocation: "destination" },
+    { earlierParent: undefined, countLocation: "unrelated" },
+  ])("reconciles a retained child move from $earlierParent while counting $countLocation", async ({ earlierParent, countLocation }) => {
+    for (const policy of [InventoryDeficitPolicy.Record, InventoryDeficitPolicy.Reject]) {
+      for (const canonical of [false, true]) {
+        const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+        const inventory = createTestInventory(storage, undefined, undefined, policy);
+        for (const location of ["child", "unrelated"]) await inventory.stock.receive({
+          operationId: `receive-${location}`, occurredAtEpochMs: time0,
+          to: loosePosition(location), amount: stockAmount("2", "piece"),
+        });
+        if (earlierParent !== undefined) await inventory.placement.move({
+          operationId: "place-early", occurredAtEpochMs: time0, nodeId: "child", into: earlierParent,
+        });
+        const selector = { itemId: "item-a", withinPlacementNodeIds: [countLocation] };
+        const countId = "child-count";
+        await inventory.counts.start({ countId, operationId: "start-child-count", selector, startedAtEpochMs: time0 });
+        await inventory.placement.move({ operationId: "place-late", occurredAtEpochMs: time2, nodeId: "child", into: "source" });
+        const moved = await inventory.placement.moveContents({
+          operationId: "move-child-contents", occurredAtEpochMs: time1, nodeId: "source", into: "destination",
+        });
+        expect(moved.event.placementChanges).toEqual([{ nodeId: "child", fromParentNodeId: "source", toParentNodeId: "destination" }]);
+        const [position] = await inventory.read.positions(selector);
+        if (position === undefined) throw new Error("Expected stock in the counted subtree.");
+        await inventory.counts.observe({
+          countId, operationId: "observe-child-count", observedAtEpochMs: time1,
+          observations: [{
+            position: position.key,
+            measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+          }],
+        });
+        const command = { countId, operationId: "reconcile-child-count", completedAtEpochMs: time3, reason: "One piece was missing." };
+        const result = await inventory.counts.reconcile(command);
+        expect(result.count.status).toBe(InventoryCountStatus.Completed);
+        expect(result.event?.stockEffects).toMatchObject([
+          { position: position.key, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+        ]);
+        expect(await inventory.counts.reconcile(command)).toMatchObject({ replayed: true });
+        expect(await inventory.read.placementAncestry("child")).toEqual(["child", "destination"]);
+      }
+    }
   });
 
   it("reconciles a mixed transfer when the occurrence cut excludes its source receipt", async () => {

@@ -2164,3 +2164,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A whole-stock witness keeps a stored independent zero. The separately recorded remainder still takes optional axis presence from the report.
 - A fungibility shortage can be tested for physical increment blockage after proving no lawful physical plan exists. The relaxed diagnostic cannot be applied as a movement or passed into the claim trial.
+
+## 2026-11-28 — placement in count observation cuts
+
+- A retained placement event sets its recorded destination in the observation forest. That forest can omit the event that established its former parent. Live publication still requires the recorded former parent and checks every resulting edge.
