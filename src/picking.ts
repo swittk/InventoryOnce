@@ -1618,6 +1618,31 @@ function measuredAllocationAxis(
   return inventoryAllocationQuantityIfStorable(BigInt(working.amountMinor), working.decimals, unit);
 }
 
+/** Build unfixed movement axes from a stored or private working source. */
+function inventoryAllocationIndependentAmounts(
+  position: InventoryPolicyWorkingRow["position"],
+  item: InventoryItemDefinitionRevision,
+  takesWholePosition: boolean,
+  fixedAxes?: ReadonlySet<string>,
+): InventoryIndependentAmountInput[] | undefined {
+  const independent: InventoryIndependentAmountInput[] = [];
+  for (const axis of item.independentAxes) {
+    if (fixedAxes?.has(axis.axisId)) continue;
+    const measured = measuredAllocationAxis(position, axis.axisId, axis.unit);
+    if (measured === undefined) return undefined;
+    if (axis.requirement !== InventoryMeasurementRequirement.Required && measured.amountMinor === 0) {
+      // Taking a whole row preserves an observed zero without inventing a missing axis.
+      if (!takesWholePosition) continue;
+      const stored = "measurements" in position
+        ? position.measurements.independent.some((entry) => entry.axisId === axis.axisId)
+        : position.totals.has(axis.axisId);
+      if (!stored) continue;
+    }
+    independent.push({ axisId: axis.axisId, value: quantityToDecimalString(measured), unit: measured.unit });
+  }
+  return independent;
+}
+
 /** Construct the same exact public line even if an unused part of the pool exceeds storage scale. */
 function inventoryAmountForWorkingPrimaryAllocation({
   catalog,
@@ -1677,25 +1702,8 @@ function inventoryAmountForWorkingPrimaryAllocation({
     for (const measured of packaging.fixedContents.independent) {
       fixedAxes.add(measured.axisId);
     }
-    const independent: InventoryIndependentAmountInput[] = [];
-    for (const axis of item.independentAxes) {
-      if (fixedAxes.has(axis.axisId)) continue;
-      const measured = measuredAllocationAxis(position, axis.axisId, axis.unit);
-      if (measured === undefined) return undefined;
-      const preservesIndependentMeasurement =
-        axis.requirement === InventoryMeasurementRequirement.Required ||
-        compareQuantity(
-          measured,
-          zeroQuantity(axis.unit, measured.decimals)
-        ) !== 0;
-      if (!preservesIndependentMeasurement) continue;
-      independent.push({
-        axisId: axis.axisId,
-        value: quantityToDecimalString(measured),
-        unit: measured.unit,
-      });
-    }
-    return packageAmount(packageCount, packagingRevisionId, independent);
+    const independent = inventoryAllocationIndependentAmounts(position, item, takesWholePosition, fixedAxes);
+    return independent === undefined ? undefined : packageAmount(packageCount, packagingRevisionId, independent);
   }
 
   if (item.independentAxes.length === 0) {
@@ -1715,22 +1723,8 @@ function inventoryAmountForWorkingPrimaryAllocation({
       allocatedPrimary.unit
     );
   }
-  const independent: InventoryIndependentAmountInput[] = [];
-  for (const axis of item.independentAxes) {
-    const measured = measuredAllocationAxis(position, axis.axisId, axis.unit);
-    if (measured === undefined) return undefined;
-    if (
-      axis.requirement === InventoryMeasurementRequirement.Required ||
-      compareQuantity(measured, zeroQuantity(axis.unit, measured.decimals)) !==
-        0
-    ) {
-      independent.push({
-        axisId: axis.axisId,
-        value: quantityToDecimalString(measured),
-        unit: measured.unit,
-      });
-    }
-  }
+  const independent = inventoryAllocationIndependentAmounts(position, item, takesWholePosition);
+  if (independent === undefined) return undefined;
   return measuredStockAmount(
     quantityToDecimalString(allocatedPrimary),
     allocatedPrimary.unit,

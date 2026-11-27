@@ -520,6 +520,7 @@ function planInventoryFungibilityAllocationWithHolds({
     method,
     nowEpochMs: atEpochMs,
     allowExpired: true,
+    diagnosePhysicalShortfall: true,
     acceptAllocations: !allowAllocatedStock && claimsByRevision.size > 0
       ? /** Check whether a complete trial preserves claim capacity. */
         (allocations: readonly InventoryAllocation[]): boolean =>

@@ -29,6 +29,7 @@ import {
   createInMemoryInventoryDurableStorage,
   type InventoryDurableStorage,
 } from "../src/storage-api.js";
+import { InventoryExactAllocationLimitError } from "../src/allocation.js";
 import { clockAt, time0, time1, time2, time3 } from "./test-fixtures.js";
 
 /** Machine-audited bounded operation-family trace identities. */
@@ -1003,6 +1004,54 @@ describe("derived pool summaries and exact member movements", () => {
     });
   });
 
+  it.each(["none", "elsewhere", "source"])("separates package increments from claim and stock shortfalls (%s claim)", async (claim) => {
+    const item = oldBrand();
+    const alternative = newBrand();
+    const pack = defineScalarInventoryPackaging({ revisionId: "two-pack", item, packageUnit: "box", contains: "2" });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "package-pool", revisionId: "package-pool-v1", basisUnit: "equivalent", members: [{ item }, { item: alternative }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item, alternative], activeItemRevisionIds: { [item.itemId]: item.revisionId, [alternative.itemId]: alternative.revisionId },
+      packagingRevisions: [pack], fungibilityRevisions: [pool], activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    const source = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receive({ operationId: "receive-box", occurredAtEpochMs: time0, to: source, amount: packageAmount(1, pack.revisionId) });
+    if (claim !== "none") {
+      const placementNodeId = claim === "source" ? "store" : "separate";
+      if (claim === "elsewhere") await inventory.stock.receive({
+        operationId: "receive-separate", occurredAtEpochMs: time0,
+        to: { ...source, placementNodeId }, amount: stockAmount("2", "piece"),
+      });
+      await inventory.reservations.reserve({
+        operationId: "reserve-stock", reservationId: "hold", itemRevisionId: item.revisionId, createdAtEpochMs: time1,
+        selector: inventoryStockSelector(item.itemId, { placementNodeIds: [placementNodeId] }), requested: parseQuantity("2", "piece"),
+      });
+    }
+    const plan = { fungibilityRevisionId: pool.revisionId, method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] } };
+    const one = parseQuantity("1", "equivalent");
+    const two = parseQuantity("2", "equivalent");
+    const three = parseQuantity("3", "equivalent");
+    expect(await inventory.fungibility.plan({ ...plan, atEpochMs: time2, requested: one })).toMatchObject({
+      lines: [], shortfall: one, incrementBlockedStock: true, allocationConstraintBlockedStock: false,
+    });
+    expect(await inventory.fungibility.plan({ ...plan, atEpochMs: time2, requested: two })).toMatchObject(claim === "source"
+      ? { lines: [], shortfall: two, incrementBlockedStock: false, allocationConstraintBlockedStock: true }
+      : { lines: [{ amount: packageAmount(1, pack.revisionId) }], shortfall: parseQuantity("0", "equivalent"), incrementBlockedStock: false });
+    expect(await inventory.fungibility.plan({ ...plan, atEpochMs: time2, requested: three })).toMatchObject({
+      lines: [], shortfall: three, incrementBlockedStock: false, allocationConstraintBlockedStock: false,
+    });
+    const movement = { ...plan, occurredAtEpochMs: time2, toPlacementNodeId: "destination" };
+    await expect(inventory.fungibility.transfer({ ...movement, operationId: "transfer-one", requested: one })).rejects.toThrow("exact allocation increments");
+    await expect(inventory.fungibility.transfer({ ...movement, operationId: "transfer-three", requested: three })).rejects.toThrow("insufficient eligible stock");
+    const moved = await inventory.fungibility.transfer({ ...movement, operationId: "transfer-two", requested: two });
+    expect(moved.event.stockEffects).toMatchObject([
+      { position: { placementNodeId: "destination", packagingRevisionId: pack.revisionId }, measurementsDelta: { primary: { quantity: parseQuantity("2", "piece") } } },
+      { position: { placementNodeId: "store", packagingRevisionId: pack.revisionId }, measurementsDelta: { primary: { quantity: parseQuantity("-2", "piece") } } },
+    ]);
+  });
+
   it("reports a pool increment obstruction for loose stock with enough raw capacity", async () => {
     const material = defineScalarInventoryItem({
       itemId: "loose-material", revisionId: "loose-material-v1", axisId: "weight", unit: "kg",
@@ -1620,11 +1669,14 @@ describe("derived pool summaries and exact member movements", () => {
       requested: parseQuantity("120000", "piece"), createdAtEpochMs: time1,
     });
     const claim = await inventory.read.reservation("claim-exact-search");
-    const result = await inventory.fungibility.transfer({
-      operationId: "transfer-after-exact-search-limit", occurredAtEpochMs: time2,
+    const plan = {
       fungibilityRevisionId: "brand-pool-v2", method: InventoryAllocationMethod.Fifo,
       requested: parseQuantity("60001", "dose-equivalent"), scope: { placementNodeIds: ["store"] },
-      toPlacementNodeId: "room",
+    };
+    const reservationEffect = { kind: InventoryFungibilityReservationEffectKind.Transfer, toPlacementNodeId: "room" };
+    await expect(inventory.fungibility.plan({ ...plan, atEpochMs: time2, reservationEffect })).rejects.toBeInstanceOf(InventoryExactAllocationLimitError);
+    const result = await inventory.fungibility.transfer({
+      ...plan, operationId: "transfer-after-exact-search-limit", occurredAtEpochMs: time2, toPlacementNodeId: "room",
     });
     expect(result.event.stockEffects).toMatchObject([
       { position: { lotId: "claimed-new", placementNodeId: "room" }, measurementsDelta: { primary: { quantity: parseQuantity("1", "piece") } } },

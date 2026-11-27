@@ -2945,8 +2945,8 @@ describe("indexed stock planning and availability", () => {
     { packaged: true, reportedZero: false, policy: false },
     { packaged: false, reportedZero: true, policy: true },
     { packaged: true, reportedZero: true, policy: true },
-  ])("keeps only reported optional axes on the remainder ($packaged packaged, $reportedZero zero, $policy policy)", async ({
-    packaged, reportedZero, policy,
+  ].flatMap((fixture) => [false, true].map((canonical) => ({ ...fixture, canonical }))))("keeps witness and remainder axes separate ($packaged packaged, $reportedZero reported zero, $policy policy, $canonical canonical)", async ({
+    packaged, reportedZero, policy, canonical,
   }) => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({
@@ -2961,8 +2961,8 @@ describe("indexed stock planning and availability", () => {
         fixedContents: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
       }],
     });
-    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
-    const from = { itemId: item.itemId, placementNodeId: "store" };
+    const inventory = createTestInventory(policyPickingStorage(canonical), catalog, undefined, InventoryDeficitPolicy.Record);
+    const from = { itemId: item.itemId, placementNodeId: "store", lotId: "witnessed" };
     const weight = [{ axisId: "weight", value: "0", unit: "kg" }];
     const received = reportedZero ? [] : weight;
     const reported = reportedZero ? weight : [];
@@ -2990,10 +2990,12 @@ describe("indexed stock planning and availability", () => {
         independent: reportedZero ? [{ axisId: "weight", quantity: parseQuantity("0", "kg") }] : [],
       },
     }]);
-    const axes = moved.event.stockEffects.map((effect) => effect.evidence?.transactedMeasurements.independent.map(
-      ({ axisId, quantity }) => [axisId, quantity.amountMinor === 0, quantity.unit, quantity.decimals],
-    ));
-    expect(axes).toEqual(reportedZero ? [[["weight", true, "kg", 0]], [["weight", true, "kg", 0]]] : [[], []]);
+    const witness = moved.event.stockEffects.filter(({ position }) => position.lotId === "witnessed");
+    const witnessAxes = reportedZero ? [] : [{ axisId: "weight", quantity: parseQuantity("0", "kg") }];
+    expect(witness).toMatchObject([
+      { position: { placementNodeId: "destination" }, evidence: { transactedMeasurements: { independent: witnessAxes } } },
+      { position: { placementNodeId: "store" }, evidence: { transactedMeasurements: { independent: witnessAxes } } },
+    ]);
     expect(await transfer()).toEqual({ ...moved, replayed: true });
   });
 

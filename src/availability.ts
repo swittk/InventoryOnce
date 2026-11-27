@@ -110,7 +110,7 @@ export interface InventoryAvailabilityRevisionSummary {
   readonly exactlyAllocatedUsable: Quantity;
   /** Exact active allocations now pointing at expired positions. */
   readonly exactlyAllocatedExpired: Quantity;
-  /** Usable reservation-axis physical capacity left after exact allocations only. */
+  /** Usable reservation-axis capacity after exact allocations and attributed deficit, before broad claims. */
   readonly unallocatedUsablePhysical: Quantity;
   /** Exact active allocations whose selected physical position no longer exists. */
   readonly unbackedExactlyAllocated: Quantity;

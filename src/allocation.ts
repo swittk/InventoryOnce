@@ -79,6 +79,8 @@ export interface InventoryWorkingAllocationCandidate
 export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInput, "candidates"> {
   /** Eligible stock with exact private or published capacities. */
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+  /** Diagnose physical increments on a shortfall when no legal pick exists even without the predicate. */
+  readonly diagnosePhysicalShortfall?: true;
   /** The reported movement needs a positive primary remainder for an unwitnessed axis. */
   readonly requiresPositiveShortfall?: boolean;
   /** Proven upper limit on primary stock that can fit the measured report. */
@@ -171,6 +173,7 @@ function allocateInventoryCandidates({
   allowExpired = false,
   acceptAllocations,
   assessIncrementBlockage = true,
+  diagnosePhysicalShortfall,
   requiresPositiveShortfall = false,
   maximumWitnessPrimary,
   fullWitnessPrimaryBudget,
@@ -230,14 +233,18 @@ function allocateInventoryCandidates({
       candidates: eligible,
       acceptPartial: false,
     });
-    // An increment is causal only when relaxing it admits the same whole-plan rule.
+    // A physical diagnosis can split stock in a trial only. A real claim
+    // predicate must never evaluate a fractional package as a movement.
+    const diagnosticInput = diagnosePhysicalShortfall ? { requested, candidates: eligible } : searchInput;
+    const diagnosticPredicate = diagnosePhysicalShortfall ? undefined : acceptAllocations;
     const incrementBlockedStock = assessIncrementBlockage &&
+      (!diagnosePhysicalShortfall || unconstrainedExact === undefined) &&
       eligible.some(
         /** A divisible pool cannot have an increment-caused failure. */
-        (candidate) => canRelaxAllocationIncrement(candidate, acceptAllocations)
+        (candidate) => canRelaxAllocationIncrement(candidate, diagnosticPredicate)
       ) &&
       searchInventoryAllocations({
-        ...searchInput, ...witnessBudget, acceptPartial: false, ignoreIncrements: true,
+        ...diagnosticInput, ...witnessBudget, acceptPartial: false, ignoreIncrements: true,
       }) !== undefined;
     return {
       allocations: [],

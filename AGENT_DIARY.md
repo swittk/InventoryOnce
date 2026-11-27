@@ -2159,3 +2159,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-28 — remaining increments in reservation search
 
 - Assigning or skipping a whole stock group changes the increments available to later groups. Each branch uses the remaining groups' shared capacity and increment divisor to bound what its unfilled claims can still take. Pruned visits still count toward the search budget.
+
+## 2026-11-28 — zero measurements and physical increment diagnosis
+
+- A whole-stock witness keeps a stored independent zero. The separately recorded remainder still takes optional axis presence from the report.
+- A fungibility shortage can be tested for physical increment blockage after proving no lawful physical plan exists. The relaxed diagnostic cannot be applied as a movement or passed into the claim trial.
