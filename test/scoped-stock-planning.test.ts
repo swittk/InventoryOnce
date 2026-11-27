@@ -94,6 +94,31 @@ function measuredItemCatalog(reservationAxisId: "pieces" | "weight") {
   });
 }
 
+/** Prepare measured picking on either the segmented or canonical adapter. */
+function threeAxisPickingFixture(canonical: boolean, policy: InventoryDeficitPolicy) {
+  const base = measuredItemCatalog("weight").activeItem("measured");
+  const item = defineInventoryItem({
+    ...base, primaryAxis: { ...base.primaryAxis, axisId: "weight", unit: unitCode("kg") },
+    independentAxes: [
+      { axisId: "volume", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional },
+      { axisId: "length", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("m"), requirement: InventoryMeasurementRequirement.Optional },
+      { axisId: "width", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("m"), requirement: InventoryMeasurementRequirement.Optional },
+    ],
+  });
+  const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
+  const backing = createInMemoryInventoryDurableStorage();
+  const storage = canonical ? new Proxy(backing, {
+    /** Force both planning and publication through the canonical coordinator. */
+    get(target, property) {
+      if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool" ||
+          property === "commitSegmentedStockEvent") return undefined;
+      const member = Reflect.get(target, property);
+      return typeof member === "function" ? member.bind(target) : member;
+    },
+  }) : backing;
+  return { item, inventory: createTestInventory(storage, catalog, undefined, policy) };
+}
+
 describe("indexed stock planning and availability", () => {
   it.each([false, true])("validates fixed-package effects and broad claims at exact scale (grouped: %s)", async (grouped) => {
     const item = measuredItemCatalog("pieces").activeItem("measured");
@@ -1760,31 +1785,11 @@ describe("indexed stock planning and availability", () => {
 
   it.each([false, true].flatMap((canonical) =>
     [InventoryDeficitPolicy.Reject, InventoryDeficitPolicy.Record].flatMap((policy) =>
-      ["disjoint", "shared", "thin-shared", "thin-with-disjoint", "ineligible-first", "ineligible-last"]
+      ["disjoint", "shared", "thin-first", "thin-shared", "paired-halves", "thin-with-disjoint", "ineligible-first", "ineligible-last"]
         .map((support) => ({ canonical, policy, support })),
     ),
   ))("reserves primary for $support axes (canonical: $canonical, policy: $policy)", async ({ canonical, policy, support }) => {
-    const base = measuredItemCatalog("weight").activeItem("measured");
-    const item = defineInventoryItem({
-      ...base, primaryAxis: { ...base.primaryAxis, axisId: "weight", unit: unitCode("kg") },
-      independentAxes: [
-        { axisId: "volume", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional },
-        { axisId: "length", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("m"), requirement: InventoryMeasurementRequirement.Optional },
-        { axisId: "width", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("m"), requirement: InventoryMeasurementRequirement.Optional },
-      ],
-    });
-    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
-    const backing = createInMemoryInventoryDurableStorage();
-    const storage = canonical ? new Proxy(backing, {
-      /** Force both planning and publication through the canonical coordinator. */
-      get(target, property) {
-        if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool" ||
-            property === "commitSegmentedStockEvent") return undefined;
-        const member = Reflect.get(target, property);
-        return typeof member === "function" ? member.bind(target) : member;
-      },
-    }) : backing;
-    const inventory = createTestInventory(storage, catalog, undefined, policy);
+    const { item, inventory } = threeAxisPickingFixture(canonical, policy);
     const volume = { axisId: "volume", value: "1", unit: "L" };
     const length = { axisId: "length", value: "1", unit: "m" };
     const width = { axisId: "width", value: "1", unit: "m" };
@@ -1795,13 +1800,19 @@ describe("indexed stock planning and availability", () => {
       ["volume", "1", shared ? [volume, length] : [volume], time1],
     ] as const;
     const later = ["length", "1", [length], time2] as const;
-    const thin = ["thin", "1", [{ ...volume, value: "0.5" }, { ...length, value: "0.5" }], time2 + 1] as const;
+    const halfAxes = [{ ...volume, value: "0.5" }, { ...length, value: "0.5" }];
+    const thin = ["thin", "1", halfAxes, time2 + 1] as const;
+    const earlyThin = ["early-thin", "1", halfAxes, time0 - 2] as const;
+    const secondHalf = ["second-half", "1", halfAxes, time0 - 1] as const;
+    const pairedHalves = support === "paired-halves";
     const dense = ["width", "0.25", [width], time2 + 2] as const;
     const ineligible = [{ ...volume, value: "2" }, { ...length, value: "2" }];
     const first = ["ineligible", "1", ineligible, time0 - 1] as const;
     const last = ["ineligible", "1", ineligible, time2 + 1] as const;
     const stock = shared ? rows : [
       ...(support === "ineligible-first" ? [first] : []),
+      ...(support === "thin-first" || pairedHalves ? [earlyThin] : []),
+      ...(pairedHalves ? [secondHalf] : []),
       ...rows, later,
       ...(support === "thin-shared" || separateAxis ? [thin] : []),
       ...(separateAxis ? [dense] : []),
@@ -1820,9 +1831,10 @@ describe("indexed stock planning and availability", () => {
     };
     const preview = await inventory.read.planAllocation(request);
     const dry = shared ? "4.000001" : separateAxis ? "2.750001" : "3.000001";
+    const measuredPicks = pairedHalves ? ["early-thin", "second-half"] : shared ? ["volume"] : ["volume", "length"];
+    const previewLots = pairedHalves ? [...measuredPicks, "dry-a"] : ["dry-a", ...measuredPicks];
     expect(preview.lines.map(({ position, allocatedPrimary }) => [position.lotId, allocatedPrimary])).toEqual([
-      ["dry-a", parseQuantity(dry, "kg")], ["volume", parseQuantity("1.000000", "kg")],
-      ...(shared ? [] : [["length", parseQuantity("1.000000", "kg")]]),
+      ...previewLots.map((lotId) => [lotId, parseQuantity(lotId === "dry-a" ? dry : "1.000000", "kg")]),
       ...(separateAxis ? [["width", parseQuantity("0.250000", "kg")]] : []),
     ]);
     const movement = {
@@ -1834,11 +1846,43 @@ describe("indexed stock planning and availability", () => {
     expect(source.map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
       .toEqual([
         ["dry-a", parseQuantity(`-${dry}`, "kg")],
-        ...(shared ? [] : [["length", parseQuantity("-1.000000", "kg")]]),
-        ["volume", parseQuantity("-1.000000", "kg")],
+        ...[...measuredPicks].sort().map((lotId) => [lotId, parseQuantity("-1.000000", "kg")]),
         ...(separateAxis ? [["width", parseQuantity("-0.250000", "kg")]] : []),
       ]);
     expect(await inventory.stock.transferByPolicy(movement)).toEqual({ ...moved, replayed: true });
+  });
+
+  it.each([
+    [false, InventoryDeficitPolicy.Reject], [false, InventoryDeficitPolicy.Record],
+    [true, InventoryDeficitPolicy.Reject], [true, InventoryDeficitPolicy.Record],
+  ] as const)("bounds the finite best-ratio capacity (canonical: %s, policy: %s)", async (canonical, policy) => {
+    const { item, inventory } = threeAxisPickingFixture(canonical, policy);
+    const amount = (mass: string, volume: string, length: string, width: string) => measuredStockAmount(mass, "kg", [
+      { axisId: "volume", value: volume, unit: "L" }, { axisId: "length", value: length, unit: "m" },
+      { axisId: "width", value: width, unit: "m" },
+    ]);
+    const stock = [
+      ["dry", stockAmount("5.000001", "kg")], ["m0", amount("0.5", "0.25", "0.25", "0.75")],
+      ["m1", amount("1", "0", "0", "0")], ["m2", amount("0.5", "0.75", "1", "0.25")],
+      ["m3", amount("0.4", "0.25", "0.25", "0.75")], ["m4", amount("1", "0.5", "0.25", "0.75")],
+    ] as const;
+    await inventory.stock.receiveMany({ operationId: "receive-finite-pool", occurredAtEpochMs: time0,
+      lines: stock.map(([lotId, received]) => ({ to: { itemId: item.itemId, placementNodeId: "store", lotId }, amount: received })),
+    });
+    const request = { selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: amount("3.566775", "0.75", "0.5", "1.5"),
+    };
+    const expected = [["dry", "2.166775"], ["m3", "0.400000"], ["m4", "1.000000"]] as const;
+    const preview = await inventory.read.planAllocation(request);
+    expect(preview.lines.map(({ position, allocatedPrimary }) => [position.lotId, allocatedPrimary]))
+      .toEqual(expected.map(([lot, moved]) => [lot, parseQuantity(moved, "kg")]));
+    const movement = { ...request, operationId: "move-finite-pool", occurredAtEpochMs: time2, toPlacementNodeId: "room" };
+    const result = await inventory.stock.transferByPolicy(movement);
+    expect(result.event.unwitnessedStockMovements).toBeUndefined();
+    expect(result.event.stockEffects.filter(({ position }) => position.placementNodeId === "store")
+      .map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
+      .toEqual(expected.map(([lot, moved]) => [lot, parseQuantity(`-${moved}`, "kg")]));
+    expect(await inventory.stock.transferByPolicy(movement)).toEqual({ ...result, replayed: true });
   });
 
   it.each([true, false])("records a measured report with an unstorable trial (later witness: %s)", async (hasLaterWitness) => {

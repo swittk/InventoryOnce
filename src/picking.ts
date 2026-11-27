@@ -513,6 +513,41 @@ interface MeasuredWitnessAxisGroup {
   densest?: MeasuredWitnessRowSupport;
 }
 
+/** Positive report remainder after an indivisible row supplies part of one axis. */
+interface WholeRowAxisRemainder {
+  /** Exact candidate that can only contribute its entire measurement. */
+  readonly position: InventoryStockPositionKey;
+  /** Amount still needed from other rows for a complete witness. */
+  readonly remaining: bigint;
+}
+
+/** Upper measurement capacity and corresponding primary cost for an axis lower bound. */
+interface FiniteAxisCapacity {
+  /** Selectable primary stock at legal increments. */
+  readonly primary: bigint;
+  /** Largest contribution at that stock amount, rounded up when necessary. */
+  readonly measured: bigint;
+}
+
+/** Lower-bound the primary needed by allowing fractional use of the last stock row. */
+function finiteAxisPrimaryBound(requested: bigint, capacity: FiniteAxisCapacity[]): bigint {
+  capacity.sort(
+    /** Use the least primary per measurement first. */
+    (left, right) => {
+      const difference = left.primary * right.measured - right.primary * left.measured;
+      return difference < 0n ? -1 : difference > 0n ? 1 : 0;
+    }
+  );
+  let remaining = requested;
+  let primary = 0n;
+  for (const row of capacity) {
+    if (remaining <= row.measured) return primary + (remaining * row.primary + row.measured - 1n) / row.measured;
+    remaining -= row.measured;
+    primary += row.primary;
+  }
+  return primary;
+}
+
 /** Bound any witness and the measured primary capacity needed for a complete witness. */
 function measuredWitnessBounds({
   catalog, report, candidates, rows,
@@ -540,6 +575,8 @@ function measuredWitnessBounds({
   };
   /** Shared support and combined contribution matter only for a multi-axis report. */
   const supportByPosition = report.independent.length > 1 ? new Map<InventoryStockPositionKey, MeasuredWitnessRowSupport>() : undefined;
+  /** Rows that leave an axis remainder below every other row's smallest contribution. */
+  const completeExclusions = supportByPosition === undefined ? undefined : new Set<InventoryStockPositionKey>();
   /** Decimal scale for rounding each fraction of an axis's reported quantity upward. */
   const normalizedAxisUnit = supportByPosition === undefined ? 0n : 10n ** BigInt(decimals);
   /** Lower bound for the primary stock that must carry each reported axis. */
@@ -558,9 +595,19 @@ function measuredWitnessBounds({
     /** A zero measured denominator means the least ratio has no contributing row yet. */
     let smallestPrimary = 0n;
     let smallestMeasured = 0n;
+    /** Selectable contributions tied for the least primary cost on this axis. */
+    let bestRatioCapacity = 0n;
+    /** Contributions for a finite bound if the best ratio is insufficient. */
+    const axisCapacity: FiniteAxisCapacity[] = [];
     /** Gross upper bound and common digit increment for selectable contributions on the axis. */
     let selectableMeasured = 0n;
     let measuredDivisor = 0n;
+    /** Smallest positive legal contributions from two distinct positions on this axis. */
+    let smallestIncrement: bigint | undefined;
+    let secondIncrement: bigint | undefined;
+    let smallestIncrementPosition: InventoryStockPositionKey | undefined;
+    /** Whole rows leaving a positive remainder that another position must supply. */
+    const wholeRowRemainders: WholeRowAxisRemainder[] = [];
     for (const { position, available, allocationIncrement } of candidates) {
       const availablePrimary = workingQuantityAtDecimals(available, decimals);
       const increment = allocationIncrement === undefined ? 1n : workingQuantityAtDecimals(allocationIncrement, decimals);
@@ -583,6 +630,21 @@ function measuredWitnessBounds({
       }
       if (reported === 0n) continue;
       measuredPositions.add(position);
+      const wholeRow = allocationIncrement !== undefined && compareWorkingQuantities(allocationIncrement, fullPrimary) === 0;
+      if (completeExclusions !== undefined) {
+        // Round down so an exact contribution from a different position is never ruled out.
+        const quantum = allocationIncrement === undefined ? 1n : (rowMeasured * increment / rowPrimary || 1n);
+        if (smallestIncrement === undefined || quantum < smallestIncrement) {
+          secondIncrement = smallestIncrement;
+          smallestIncrement = quantum;
+          smallestIncrementPosition = position;
+        } else if (secondIncrement === undefined || quantum < secondIncrement) {
+          secondIncrement = quantum;
+        }
+        if (wholeRow && rowMeasured < reported) {
+          wholeRowRemainders.push({ position, remaining: reported - rowMeasured });
+        }
+      }
       if (supportByPosition !== undefined) {
         const support = supportByPosition.get(position);
         // Round up each contribution so the combined density cannot overstate required primary.
@@ -594,14 +656,22 @@ function measuredWitnessBounds({
           axisGroups[groupOf(axisIndex)] = groupOf(support.firstAxis);
         }
       }
-      if (smallestMeasured === 0n || rowPrimary * smallestMeasured < smallestPrimary * rowMeasured) {
+      const capacityNumerator = selectablePrimary * rowMeasured;
+      const legalMeasured = capacityNumerator / rowPrimary;
+      const upperMeasured = legalMeasured + (capacityNumerator % rowPrimary === 0n ? 0n : 1n);
+      axisCapacity.push({ primary: selectablePrimary, measured: upperMeasured });
+      const ratioDifference = rowPrimary * smallestMeasured - smallestPrimary * rowMeasured;
+      if (smallestMeasured === 0n || ratioDifference < 0n) {
         smallestPrimary = rowPrimary;
         smallestMeasured = rowMeasured;
+        bestRatioCapacity = upperMeasured;
+      } else if (ratioDifference === 0n) {
+        bestRatioCapacity += upperMeasured;
       }
       // A legal selectable multiple carries the same measurement ratio as the full row.
-      selectableMeasured += selectablePrimary * rowMeasured / rowPrimary;
+      selectableMeasured += legalMeasured;
       if (measuredDivisor !== 1n) {
-        if (allocationIncrement !== undefined && compareWorkingQuantities(allocationIncrement, fullPrimary) === 0) {
+        if (wholeRow) {
           measuredDivisor = quantityGreatestCommonDivisor(measuredDivisor, rowMeasured);
         } else if (allocationIncrement !== undefined && position.packagingRevisionId !== undefined) {
           const fixed = catalog.packagingRevision(position.packagingRevisionId).fixedContents;
@@ -614,6 +684,11 @@ function measuredWitnessBounds({
         }
       }
     }
+    for (const { position, remaining } of wholeRowRemainders) {
+      const smallestOther = position === smallestIncrementPosition ? secondIncrement : smallestIncrement;
+      // A partial witness can still use the row. Only a complete witness must cover this remainder.
+      if (smallestOther === undefined || remaining < smallestOther) completeExclusions?.add(position);
+    }
     const limit = axisFreePrimary + reported * largestPrimary / largestMeasured;
     if (limit < maximum) maximum = limit;
     if (reported > selectableMeasured || (measuredDivisor > 1n && reported % measuredDivisor !== 0n)) {
@@ -621,6 +696,11 @@ function measuredWitnessBounds({
     }
     if (smallestMeasured !== 0n) {
       requiredByAxis[axisIndex] = (reported * smallestPrimary + smallestMeasured - 1n) / smallestMeasured;
+      if (reported > bestRatioCapacity && reported <= selectableMeasured) {
+        // The best ratio can cover only part of the report. Fill the rest from finite rows.
+        const finite = finiteAxisPrimaryBound(reported, axisCapacity);
+        if (finite > requiredByAxis[axisIndex]) requiredByAxis[axisIndex] = finite;
+      }
     }
   }
   /** Axes in one group can use the same measured rows. */
@@ -662,6 +742,7 @@ function measuredWitnessBounds({
       fullWitnessPrimaryBudget: {
         measuredPositions,
         axisFreeLimit: { amountMinor: requested - requiredMeasuredPrimary, decimals, unit: primary.quantity.unit },
+        ...(completeExclusions?.size ? { completeExclusions } : {}),
       },
     }),
   };

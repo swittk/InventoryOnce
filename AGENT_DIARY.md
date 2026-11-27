@@ -2087,3 +2087,9 @@ The R105 portable-current-input authority and final publication both continue to
 - A complete witness must supply every reported axis. The combined contribution per unit of primary stock gives another lower bound within each connected group of axes. Round row contributions up so the bound stays conservative, then add the bounds of groups that use disjoint stock.
 - Fungibility needs a complete common-basis assignment even when allocated stock is permitted or there are no claims to simulate.
 - When a witness must explain unfixed measurements, the increment diagnostic keeps those rows whole. A fractional trial cannot construct their measured lines.
+
+## 2026-11-27 — measured remainders and claim shortages
+
+- An indivisible measured row can be skipped for a complete pick when its positive remainder on an axis is below every other row's smallest legal contribution. Partial picks still consider that row.
+- If the best measurement ratio cannot supply the report, the primary reserve accounts for each row's finite contribution. Allowing a fractional final row in this calculation keeps the reserve a lower bound for whole picks.
+- Fungibility compares claim shortages before and after a proposed allocation on the changed item revisions at the same authority time. Existing shortages can stay the same while a proposal that increases them is rejected.

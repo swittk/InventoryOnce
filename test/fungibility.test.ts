@@ -139,6 +139,53 @@ async function receiveMember(input: {
 }
 
 describe("revision-frozen mutual-fungibility catalogue", () => {
+  it.each(["unrelated", "member-elsewhere", "selected-member"])("compares existing claim shortage for %s stock", async (claimScope) => {
+    const inventory = createInventoryOnce({
+      catalog: fungibilityCatalog(), storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
+    });
+    const claimItem = claimScope === "unrelated" ? doubleStrength() : oldBrand();
+    const worsensShortage = claimScope === "selected-member";
+    const claimPosition = { itemId: claimItem.itemId, placementNodeId: worsensShortage ? "store" : "elsewhere", lotId: "CLAIM" };
+    if (!worsensShortage) {
+      await receiveMember({
+        inventory, operationId: "receive-free-stock", itemId: "old-brand", itemRevisionId: "old-brand-v1",
+        lotId: "FREE", quantity: "2", occurredAtEpochMs: time0,
+      });
+    }
+    await inventory.stock.receive({
+      operationId: "receive-claim-stock", occurredAtEpochMs: time0, to: claimPosition, amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      operationId: "reserve-stock", reservationId: "claim", itemRevisionId: claimItem.revisionId,
+      selector: { itemId: claimItem.itemId, placementNodeIds: [claimPosition.placementNodeId] },
+      requested: parseQuantity("2", "piece"), createdAtEpochMs: time1,
+    });
+    await inventory.stock.issue({
+      operationId: "physical-loss", occurredAtEpochMs: time2, from: claimPosition, amount: stockAmount("1", "piece"),
+    });
+    const before = await inventory.read.reservationFeasibility(time3);
+    expect(before.groups).toMatchObject([{ reservationIds: ["claim"], shortage: parseQuantity("1", "piece") }]);
+    const request = {
+      fungibilityRevisionId: "brand-pool-v1", method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] }, requested: parseQuantity("1", "dose-equivalent"),
+    };
+    const protectedPlan = await inventory.fungibility.plan({ ...request, atEpochMs: time3 });
+    const physicalPlan = await inventory.fungibility.plan({ ...request, atEpochMs: time3, allowAllocatedStock: true });
+    expect(physicalPlan.lines).toMatchObject([{ poolQuantity: request.requested }]);
+    if (worsensShortage) {
+      expect(protectedPlan).toMatchObject({ lines: [], shortfall: request.requested, allocationConstraintBlockedStock: true });
+      return;
+    }
+    expect(protectedPlan).toEqual(physicalPlan);
+    const transferred = await inventory.fungibility.transfer({
+      ...request, operationId: "move-free-stock", occurredAtEpochMs: time3, toPlacementNodeId: "room",
+    });
+    expect(transferred.event.stockEffects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ position: protectedPlan.lines[0]?.position }),
+    ]));
+    expect(await inventory.read.reservationFeasibility(time3)).toEqual(before);
+  });
+
   it("keeps the exact-plan contract when allocated stock is allowed without any claims", async () => {
     const inventory = createInventoryOnce({
       catalog: fungibilityCatalog(), storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),

@@ -478,24 +478,20 @@ function planInventoryFungibilityAllocationWithHolds({
     }
   }
 
-  /** Simulate claim capacity only when the existing claim protection can apply. */
-  const preserveReservations = !allowAllocatedStock && (reservations?.length ?? 0) > 0;
-  /** Keep only pool-member claims in the index used by recording trials. */
-  const recordingClaimsByRevision = recording && preserveReservations
-    ? new Map<string, InventoryReservation[]>()
-    : undefined;
-  if (recordingClaimsByRevision !== undefined) {
+  /** Index only pool-member claims for the before and after trial at the same authority time. */
+  const claimsByRevision = new Map<string, InventoryReservation[]>();
+  if (!allowAllocatedStock && (reservations?.length ?? 0) > 0) {
     const memberRevisionIds = new Set<string>();
     for (const member of definition.members) memberRevisionIds.add(member.itemRevisionId);
     for (const reservation of reservations ?? []) {
       if (!memberRevisionIds.has(reservation.itemRevisionId)) continue;
-      const claims = recordingClaimsByRevision.get(reservation.itemRevisionId);
-      if (claims === undefined) recordingClaimsByRevision.set(reservation.itemRevisionId, [reservation]);
+      const claims = claimsByRevision.get(reservation.itemRevisionId);
+      if (claims === undefined) claimsByRevision.set(reservation.itemRevisionId, [reservation]);
       else claims.push(reservation);
     }
   }
 
-  /** Cache claim shortage baselines by the revision sets tried during physical recording. */
+  /** Cache claim shortage baselines by the revision sets tried during allocation. */
   const earlierShortagesByRevisionSet = new Map<string, ReadonlyMap<string, Quantity>>();
   /** Find shortages in the same revision scope, claim book, and authority time as the trial. */
   const readEarlierShortages = (
@@ -522,7 +518,7 @@ function planInventoryFungibilityAllocationWithHolds({
     method,
     nowEpochMs: atEpochMs,
     allowExpired: true,
-    acceptAllocations: preserveReservations
+    acceptAllocations: claimsByRevision.size > 0
       ? /** Check whether a complete trial preserves claim capacity. */
         (allocations: readonly InventoryAllocation[]): boolean =>
           fungibilityAllocationsPreserveReservations({
@@ -532,9 +528,8 @@ function planInventoryFungibilityAllocationWithHolds({
             reservationEffect,
             allocations,
             evidenceByPosition,
-            ...(recordingClaimsByRevision === undefined ? {} : {
-              recordingClaims: { reservationsByRevision: recordingClaimsByRevision, readEarlierShortages },
-            }),
+            claimsByRevision,
+            readEarlierShortages,
           })
       : /** Keep the complete-plan requirement even without a claim trial. */
         (): boolean => true,
@@ -660,19 +655,16 @@ interface FungibilityReservationPreservationInput {
     string,
     InventoryFungibilityCandidateEvidence
   >;
-  /** Claim evidence for physical recording, which can preserve an existing shortage. */
-  readonly recordingClaims?: {
-    /** Claim rows indexed by exact member revision at the trial's reservation authority time. */
-    readonly reservationsByRevision: ReadonlyMap<string, readonly InventoryReservation[]>;
-    /** Baseline at the same authority time and within the same changed revisions. */
-    readonly readEarlierShortages: (
-      itemRevisionIds: ReadonlySet<string>,
-      book: InventoryReservationBook
-    ) => ReadonlyMap<string, Quantity>;
-  };
+  /** Claim rows indexed by exact member revision at the trial's reservation authority time. */
+  readonly claimsByRevision: ReadonlyMap<string, readonly InventoryReservation[]>;
+  /** Baseline at the same authority time and within the same changed revisions. */
+  readonly readEarlierShortages: (
+    itemRevisionIds: ReadonlySet<string>,
+    book: InventoryReservationBook
+  ) => ReadonlyMap<string, Quantity>;
 }
 
-/** Check feasibility, allowing physical reports that preserve existing claim capacity. */
+/** Accept an allocation when it does not deepen a shortage on changed stock revisions. */
 function fungibilityAllocationsPreserveReservations({
   catalog,
   world,
@@ -680,7 +672,8 @@ function fungibilityAllocationsPreserveReservations({
   reservationEffect,
   allocations,
   evidenceByPosition,
-  recordingClaims,
+  claimsByRevision,
+  readEarlierShortages,
 }: FungibilityReservationPreservationInput): boolean {
   const positions = createFungibilitySparseRecordOverlay(
     world.projection.positions
@@ -694,7 +687,7 @@ function fungibilityAllocationsPreserveReservations({
   const positionIdsByPlacementNodeId = createFungibilitySparseRecordOverlay(
     world.projection.positionIdsByPlacementNodeId
   );
-  /** Only these revisions can gain or lose capacity in a physical recording trial. */
+  /** Only these revisions can gain or lose capacity in this allocation trial. */
   const changedItemRevisionIds = new Set<string>();
   for (const allocation of allocations) {
     const identity = inventoryStockPositionIdentity(allocation.position);
@@ -810,27 +803,22 @@ function fungibilityAllocationsPreserveReservations({
     positionIdsByPlacementNodeId,
   };
   /** Use the same resolved claim rows before and after, restricted to the stock revisions that moved. */
-  let book = world.reservations;
-  if (recordingClaims !== undefined) {
-    /** Claims compete only within the exact item revision frozen by reservation creation. */
-    const reservations = createInventorySparseRecord<InventoryReservation>();
-    for (const revisionId of changedItemRevisionIds) {
-      for (const reservation of recordingClaims.reservationsByRevision.get(revisionId) ?? []) {
-        setInventorySparseRecordValue(reservations, reservation.reservationId, reservation);
-      }
+  const reservations = createInventorySparseRecord<InventoryReservation>();
+  for (const revisionId of changedItemRevisionIds) {
+    for (const reservation of claimsByRevision.get(revisionId) ?? []) {
+      setInventorySparseRecordValue(reservations, reservation.reservationId, reservation);
     }
-    book = {
-      reservations,
-      /** The rows already reflect their lifecycle history at the comparison time. */
-      operations: createInventorySparseRecord(),
-    };
   }
+  const book: InventoryReservationBook = {
+    reservations,
+    /** The rows already reflect their lifecycle history at the comparison time. */
+    operations: createInventorySparseRecord(),
+  };
   const after = inspectInventoryReservationFeasibility({
     catalog, projection, book, atEpochMs: reservationAtEpochMs,
   });
   if (after.status === InventoryReservationFeasibilityStatus.Feasible) return true;
-  if (recordingClaims === undefined) return false;
-  const before = recordingClaims.readEarlierShortages(changedItemRevisionIds, book);
+  const before = readEarlierShortages(changedItemRevisionIds, book);
   // Group membership is unchanged because the claim book and time stay fixed.
   for (const group of after.groups) {
     if (group.shortage.amountMinor === 0) continue;

@@ -93,6 +93,8 @@ export interface InventoryFullWitnessPrimaryBudget {
   readonly measuredPositions: ReadonlySet<InventoryStockPositionKey>;
   /** Most primary stock the full witness can pick without contributing to those axes. */
   readonly axisFreeLimit: InventoryWorkingQuantity;
+  /** Whole rows proved unable to participate in a complete measured witness at legal increments. */
+  readonly completeExclusions?: ReadonlySet<InventoryStockPositionKey>;
 }
 
 /** Inputs for selecting a partial witness with an optional primary-increment diagnosis. */
@@ -481,6 +483,8 @@ function searchInventoryAllocations({
   const axisFreeLimitMinor = axisFreeLimit === undefined ? undefined :
     workingQuantityAtDecimals(axisFreeLimit, Math.max(decimals, axisFreeLimit.decimals)) /
       10n ** BigInt(Math.max(0, axisFreeLimit.decimals - decimals));
+  /** Exclusions apply to legal complete picks. A relaxed diagnostic can change the increments. */
+  const completeExclusions = ignoreIncrements ? undefined : fullWitnessPrimaryBudget?.completeExclusions;
   if (greedyTargetMinor > 0n && totalCapacity > greedyTargetMinor) {
     /** The first policy-ordered plan fills the target without backtracking. */
     const picks: bigint[] = [];
@@ -491,6 +495,10 @@ function searchInventoryAllocations({
       const capacity = capacityMinor[index] ?? 0n;
       const increment = incrementMinor[index] ?? 1n;
       const candidate = candidates[index];
+      if (greedyShortfallMinor === 0n && candidate !== undefined && completeExclusions?.has(candidate.position)) {
+        picks.push(0n);
+        continue;
+      }
       const budget = axisFreeRemaining !== undefined && candidate !== undefined &&
         !fullWitnessPrimaryBudget?.measuredPositions.has(candidate.position) ? axisFreeRemaining : undefined;
       let maximum = capacity < remaining ? capacity : remaining;
@@ -575,6 +583,8 @@ function searchInventoryAllocations({
     const exactDivisor = acceptPartial ? undefined : (laterDivisor === 0n ? remainingMinor + 1n : laterDivisor);
     const terminalPartial = acceptPartial && laterCapacity === 0n;
     const axisFree = axisFreeRows?.[index] === true;
+    const position = candidates[index]?.position;
+    const excludedFromComplete = position !== undefined && completeExclusions?.has(position);
     let take = (maximum / increment) * increment;
     while (take >= 0n) {
       exploredChoices += 1;
@@ -587,6 +597,7 @@ function searchInventoryAllocations({
       }
       if (axisFreeLimitMinor !== undefined && (!acceptPartial || bestRemainingMinor <= minimumPositiveShortfallMinor)) {
         // A better result now needs every reported measure. Reserve enough primary capacity for it.
+        if (excludedFromComplete) take = 0n;
         const axisFreeRemaining = axisFreeLimitMinor - axisFreePicked;
         if (axisFreeRemaining < 0n) break;
         if (axisFree && take > axisFreeRemaining) take = axisFreeRemaining - axisFreeRemaining % increment;
