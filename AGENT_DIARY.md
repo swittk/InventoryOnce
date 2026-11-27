@@ -2077,3 +2077,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Preview and movement share the exact witness check for explicitly reported independent axes. Only Record movement can accept a compatible partial witness.
 - The measured search adds primary lower bounds for disjoint groups of axes and counts shared capacity once. Its policy-ordered full attempt applies that budget before bounded backtracking. Increment diagnostics relax increments while retaining the same witness rule.
 - A count cut can retain loose contents whose source receipt was excluded or whose destination arrival settles a signed deficit. Only a positive destination retains a FIFO age.
+
+## 2026-11-27 — eligible measured support
+
+- Preview and movement bound measured search using only increments that fit the report. The original primary trial still distinguishes a measurement constraint from a stock shortage when every measured candidate is excluded.

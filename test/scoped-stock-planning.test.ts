@@ -1741,6 +1741,12 @@ describe("indexed stock planning and availability", () => {
       lines: [], shortfall: parseQuantity("1", "piece"), shortfallAmount: tooHeavy,
       allocationConstraintBlockedStock: true, incrementBlockedStock: false,
     });
+    const tooLight = measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0.5", unit: "kg" }]);
+    // Primary stock can fill the request even when neither whole measured lot fits.
+    expect(await inventory.read.planAllocation({ ...request, amount: tooLight })).toMatchObject({
+      lines: [], shortfall: parseQuantity("1", "piece"), shortfallAmount: tooLight,
+      allocationConstraintBlockedStock: true, incrementBlockedStock: false,
+    });
     const moved = await inventory.stock.transferByPolicy({
       ...request, amount: exact, operationId: "move-preview-witness", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
     });
@@ -1752,7 +1758,11 @@ describe("indexed stock planning and availability", () => {
     if (readWorld !== undefined) expect(readWorld).not.toHaveBeenCalled();
   });
 
-  it.each([false, true])("reserves primary capacity without double-counting shared axes (%s)", async (shared) => {
+  it.each([false, true].flatMap((canonical) =>
+    [InventoryDeficitPolicy.Reject, InventoryDeficitPolicy.Record].flatMap((policy) =>
+      ["disjoint", "shared", "ineligible-first", "ineligible-last"].map((support) => ({ canonical, policy, support })),
+    ),
+  ))("reserves primary for $support axes (canonical: $canonical, policy: $policy)", async ({ canonical, policy, support }) => {
     const base = measuredItemCatalog("weight").activeItem("measured");
     const item = defineInventoryItem({
       ...base, primaryAxis: { ...base.primaryAxis, axisId: "weight", unit: unitCode("kg") },
@@ -1762,15 +1772,34 @@ describe("indexed stock planning and availability", () => {
       ],
     });
     const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
-    const inventory = createTestInventory(undefined, catalog);
+    const backing = createInMemoryInventoryDurableStorage();
+    const storage = canonical ? new Proxy(backing, {
+      /** Force both planning and publication through the canonical coordinator. */
+      get(target, property) {
+        if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool" ||
+            property === "commitSegmentedStockEvent") return undefined;
+        const member = Reflect.get(target, property);
+        return typeof member === "function" ? member.bind(target) : member;
+      },
+    }) : backing;
+    const inventory = createTestInventory(storage, catalog, undefined, policy);
     const volume = { axisId: "volume", value: "1", unit: "L" };
     const length = { axisId: "length", value: "1", unit: "m" };
+    const shared = support === "shared";
     const rows = [
       ["dry-a", "5", [], time0], ["dry-b", "5", [], time0 + 1],
       ["volume", "1", shared ? [volume, length] : [volume], time1],
     ] as const;
     const later = ["length", "1", [length], time2] as const;
-    for (const [lotId, weight, measures, occurredAtEpochMs] of shared ? rows : [...rows, later]) {
+    const ineligible = [{ ...volume, value: "2" }, { ...length, value: "2" }];
+    const first = ["ineligible", "1", ineligible, time0 - 1] as const;
+    const last = ["ineligible", "1", ineligible, time2 + 1] as const;
+    const stock = shared ? rows : [
+      ...(support === "ineligible-first" ? [first] : []),
+      ...rows, later,
+      ...(support === "ineligible-last" ? [last] : []),
+    ];
+    for (const [lotId, weight, measures, occurredAtEpochMs] of stock) {
       await inventory.stock.receive({
         operationId: `receive-disjoint-${lotId}`, occurredAtEpochMs,
         to: { itemId: item.itemId, placementNodeId: "store", lotId },
@@ -1787,9 +1816,11 @@ describe("indexed stock planning and availability", () => {
       ["dry-a", parseQuantity(dry, "kg")], ["volume", parseQuantity("1.000000", "kg")],
       ...(shared ? [] : [["length", parseQuantity("1.000000", "kg")]]),
     ]);
-    const moved = await inventory.stock.transferByPolicy({
+    const movement = {
       ...request, operationId: "move-disjoint-witness", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
-    });
+    };
+    const moved = await inventory.stock.transferByPolicy(movement);
+    expect(moved.event.unwitnessedStockMovements).toBeUndefined();
     const source = moved.event.stockEffects.filter(({ position }) => position.placementNodeId === "store");
     expect(source.map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity]))
       .toEqual([
@@ -1797,6 +1828,7 @@ describe("indexed stock planning and availability", () => {
         ...(shared ? [] : [["length", parseQuantity("-1.000000", "kg")]]),
         ["volume", parseQuantity("-1.000000", "kg")],
       ]);
+    expect(await inventory.stock.transferByPolicy(movement)).toEqual({ ...moved, replayed: true });
   });
 
   it.each([true, false])("records a measured report with an unstorable trial (later witness: %s)", async (hasLaterWitness) => {

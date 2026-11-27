@@ -353,25 +353,29 @@ export function planWorkingInventoryAllocation({
     const couldImprovePartial = canRecordPartial && incrementBlocked;
     if (couldImprovePartial || (needsCompleteMeasuredWitness && !primaryWasFilled) || (!acceptsLines(lines) &&
       (lines === undefined || primaryWasFilled || canRecordPartial))) {
-      const measuredInput: AllocateWorkingInventoryInput = {
-        ...allocationInput,
-        /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
-        acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && acceptsLines(buildLines(choices)),
-      };
       const selectable = {
         catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
       };
-      const measuredCandidates = canRecordPartial ? selectableMeasuredWitnesses(selectable) : measuredInput.candidates;
+      // A row that cannot contribute a legal measured pick cannot join otherwise disjoint axes.
+      const measuredCandidates = validateReportedAxes ? selectableMeasuredWitnesses(selectable) : allocationInput.candidates;
       /** Complete movements need primary capacity to carry every reported axis. */
       const bounds = validateReportedAxes ? measuredWitnessBounds({ ...selectable, candidates: measuredCandidates }) : {};
+      /** Share the legal measured candidates and bounds across both search modes. */
+      const measuredInput: AllocateWorkingInventoryInput = {
+        ...allocationInput,
+        ...bounds,
+        candidates: measuredCandidates,
+        /** Keep a witness only when its reported-axis remainder can be recorded exactly. */
+        acceptAllocations: (choices) => (choices.length > 0 || canRecordWithoutWitness) && acceptsLines(buildLines(choices)),
+      };
       const measured = canRecordPartial
-        ? allocateInventoryUpTo({
-            ...measuredInput, candidates: measuredCandidates, assessIncrementBlockage: false,
-            ...bounds,
-          })
-        : allocateWorkingInventory({ ...measuredInput, ...bounds });
+        ? allocateInventoryUpTo({ ...measuredInput, assessIncrementBlockage: false })
+        : allocateWorkingInventory(measuredInput);
       if (lines === undefined || needsCompleteMeasuredWitness || measured.allocations.length > 0 || canRecordWithoutWitness) {
-        allocated = measured;
+        // The original primary assignment distinguishes a measurement constraint from a stock shortage.
+        allocated = needsCompleteMeasuredWitness && primaryWasFilled && measured.shortfall.amountMinor > 0
+          ? { ...measured, allocationConstraintBlockedStock: true }
+          : measured;
         lines = buildLines(measured.allocations);
       }
       // An initially full primary pick also proves that raw capacity covered the request.
