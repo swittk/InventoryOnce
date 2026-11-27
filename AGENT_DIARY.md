@@ -2106,3 +2106,7 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — occurrence-cut movement sources
 
 - A count cut can retain a nonserialized reclassification, pack, unpack, or revision transition while omitting the later-occurring receipt that started its source layer. Replay keeps both signed stock effects in the cut and carries the source FIFO age only when it is present.
+
+## 2026-11-27 — conserved movement sources in filtered history
+
+- A correction that omits a receipt can leave an ordinary nonserialized conserved movement in effective history, just as an occurrence cut can omit a later source receipt. Replay retains the signed effects and derives the destination age from a retained fact when the source age is absent. Serialized sources and structured transfer lifecycle backing stay strict.

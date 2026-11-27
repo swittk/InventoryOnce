@@ -211,7 +211,11 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
-  it.each(["status", "pack", "unpack", "revision"] as const)("reconciles a %s movement when the count omits its source receipt", async (kind) => {
+  it.each(
+    (["status", "pack", "unpack", "revision", "contents"] as const).flatMap(
+      (kind) => (["count", "correction"] as const).map((replay) => ({ kind, replay }))
+    )
+  )("retains $kind movement when $replay replay omits its source receipt", async ({ kind, replay }) => {
     const definition = { itemId: "count-item", axisId: "pieces", unit: "piece" };
     const earlier = defineScalarInventoryItem({ ...definition, revisionId: "count-item-earlier" });
     const item = defineScalarInventoryItem({ ...definition, revisionId: "count-item-current" });
@@ -219,7 +223,9 @@ describe("indexed stock planning and availability", () => {
     const catalog = defineInventoryCatalog({ itemRevisions: [earlier, item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
       packagingRevisions: [packaging] });
     const loose = { itemId: item.itemId, placementNodeId: "store" };
-    const scope = { itemId: item.itemId, placementNodeIds: ["store"] };
+    const itemScope = { itemId: item.itemId };
+    const destinationPlacementNodeId = kind === "contents" ? "room" : loose.placementNodeId;
+    const scope = { ...itemScope, placementNodeIds: [destinationPlacementNodeId] };
     const boxed = { ...loose, packagingRevisionId: packaging.revisionId };
     const available = { ...loose, statusId: "available" };
     const selector = kind === "status" ? { ...scope, statusIds: ["quarantine"] }
@@ -230,17 +236,21 @@ describe("indexed stock planning and availability", () => {
     for (const canonical of [false, true]) {
       const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), InventoryDeficitPolicy.Record);
       const source = kind === "status" ? available : kind === "unpack" ? boxed : loose;
-      await inventory.stock.receive({ operationId: "source-receipt-after-cut", occurredAtEpochMs: time2, to: source,
+      const receiptOccurredAtEpochMs = replay === "correction" ? time0 : time2;
+      const { event: receipt } = await inventory.stock.receive({ operationId: "source-receipt", occurredAtEpochMs: receiptOccurredAtEpochMs, to: source,
         itemRevisionId: kind === "revision" ? earlier.revisionId : item.revisionId,
         amount: kind === "unpack" ? packageAmount(2, packaging.revisionId) : amount });
-      await inventory.counts.start({ operationId: "start-count", countId: "count", selector, itemRevisionId: item.revisionId, startedAtEpochMs: time0 });
-      const movement = { operationId: "movement-at-cut", occurredAtEpochMs: time1 };
+      if (replay === "count") {
+        await inventory.counts.start({ operationId: "start-count", countId: "count", selector, itemRevisionId: item.revisionId, startedAtEpochMs: time0 });
+      }
+      const movement = { operationId: "conserved-movement", occurredAtEpochMs: time1 };
       /** Dispatch the supported one-to-one movements through their public commands. */
-      const moveAtCut = async () => {
+      const move = async () => {
         switch (kind) {
           case "status": return inventory.stock.changeStatus({ ...movement, from: available, amount, toStatusId: "quarantine" });
           case "pack": return inventory.stock.pack({ ...movement, from: loose, packagingRevisionId: packaging.revisionId, packageCount: 2 });
           case "unpack": return inventory.stock.unpack({ ...movement, from: boxed, packageCount: 2 });
+          case "contents": return inventory.placement.moveContents({ ...movement, nodeId: loose.placementNodeId, into: destinationPlacementNodeId });
           case "revision": {
             const plan = await inventory.stock.planRevisionTransition({ itemId: item.itemId, fromRevisionId: earlier.revisionId,
               toRevisionId: item.revisionId, conversion: { sourceAmount: "1", targetAmount: "1" } });
@@ -248,51 +258,71 @@ describe("indexed stock planning and availability", () => {
           }
         }
       };
-      const { event } = await moveAtCut();
+      const { event } = await move();
       expect(event.positiveLayerProvenanceTransfers).toHaveLength(1);
+      const [route] = event.positiveLayerProvenanceTransfers ?? [];
+      if (route === undefined) throw new Error("Expected a conserved stock route.");
       const [arrival] = await inventory.read.positions(selector);
       if (arrival === undefined) throw new Error("Expected the current destination stock.");
-      expect(Object.values((await inventory.read.world()).projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time2]);
-      const replay = { catalog, events: [{ ...event, recordSequence: 1 }], deficitPolicy: InventoryDeficitPolicy.Record };
-      const effectiveHistory = { ...replay, [replayEffectiveStockAge]: "effective-history" };
-      const occurrenceCut = { ...replay, [replayEffectiveStockAge]: "occurrence-cut" };
-      expect(() => projectInventoryEvents(replay)).toThrow("is not currently positive");
-      expect(() => projectInventoryEvents(effectiveHistory)).toThrow("is not currently positive");
-      const cut = projectInventoryEvents(occurrenceCut);
-      const signedBalances = Object.values(cut.positions).map(({ key, measurements }) => [key, measurements.primary.quantity]);
-      expect(signedBalances).toHaveLength(2);
-      expect(signedBalances).toEqual(expect.arrayContaining(event.stockEffects.map(
-        ({ position, measurementsDelta }) => [position, measurementsDelta.primary.quantity]
-      )));
+      expect(Object.values((await inventory.read.world()).projection.positiveLayerStartedAtEpochMsByPositionId))
+        .toEqual([receiptOccurredAtEpochMs]);
+      const signedBalances = [[route.from, parseQuantity("-2", "piece")], [route.to, parseQuantity("2", "piece")]];
+
+      if (replay === "correction") {
+        const correction = await inventory.stock.correct({ operationId: "omit-source-receipt", occurredAtEpochMs: time2,
+          correctsEventId: receipt.eventId, reason: "The source receipt did not occur.", replaceWith: (plans) => plans.omit() });
+        expect(correction.event.historicalImpact?.deficits).toMatchObject([{
+          position: route.from, maximumDeficit: { primary: { quantity: parseQuantity("2", "piece") } },
+        }]);
+        const world = await inventory.read.world();
+        expect(world.projection.events[event.eventId]).toEqual(event);
+        const balances = (await inventory.read.positions(itemScope)).map(({ key, measurements }) => [key, measurements.primary.quantity]);
+        expect(balances).toHaveLength(2);
+        expect(balances).toEqual(expect.arrayContaining(signedBalances));
+        expect(Object.values(world.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time1]);
+        continue;
+      }
+
+      const unfiltered = { catalog, events: [{ ...event, recordSequence: 1 }], deficitPolicy: InventoryDeficitPolicy.Record };
+      const occurrenceCut = { ...unfiltered, [replayEffectiveStockAge]: "occurrence-cut" };
+      expect(() => projectInventoryEvents(unfiltered)).toThrow("is not currently positive");
+      const balances = Object.values(projectInventoryEvents(occurrenceCut).positions)
+        .map(({ key, measurements }) => [key, measurements.primary.quantity]);
+      expect(balances).toHaveLength(2);
+      expect(balances).toEqual(expect.arrayContaining(signedBalances));
 
       await inventory.counts.observe({ countId: "count", operationId: "observe-count", observedAtEpochMs: time1,
         observations: [{ position: arrival.key,
           measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }] });
       await inventory.stock.receive({ operationId: "receive-after-observation", occurredAtEpochMs: time2,
-        to: { ...arrival.key, placementNodeId: loose.placementNodeId },
+        to: { ...arrival.key, placementNodeId: destinationPlacementNodeId },
         amount: kind === "pack" ? packageAmount(3, packaging.revisionId) : stockAmount("3", "piece") });
       const reconciled = await inventory.counts.reconcile({ countId: "count", operationId: "reconcile-count", completedAtEpochMs: time3 });
       expect(reconciled.count.status).toBe(InventoryCountStatus.Completed);
       expect(reconciled.event?.stockEffects).toMatchObject([{ position: arrival.key,
         measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } }]);
-      expect((await inventory.read.positions(scope)).map(({ key, measurements }) => [key, measurements.primary.quantity]))
+      expect((await inventory.read.positions(itemScope)).map(({ key, measurements }) => [key, measurements.primary.quantity]))
         .toEqual([[arrival.key, parseQuantity("4", "piece")]]);
     }
   });
 
-  it.each([false, true])("keeps a serialized source strict in occurrence replay (canonical: %s)", async (canonical) => {
+  it.each([false, true])("requires the original layer for a serialized source in filtered replay (canonical: %s)", async (canonical) => {
     const catalog = createTabletCatalog();
     const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), InventoryDeficitPolicy.Record);
     const source = loosePosition("store", { serialId: "serial-at-cut", statusId: "available" });
     const amount = stockAmount("1", "piece");
-    await inventory.stock.receive({ operationId: "serial-source-after-cut", occurredAtEpochMs: time2, to: source, amount });
+    const { event: receipt } = await inventory.stock.receive({ operationId: "serial-source-after-cut", occurredAtEpochMs: time2, to: source, amount });
     const { event } = await inventory.stock.changeStatus({ operationId: "serial-movement-at-cut", occurredAtEpochMs: time1,
       from: source, amount, toStatusId: "quarantine" });
     expect(event.positiveLayerProvenanceTransfers).toHaveLength(1);
     const occurrenceCut = { catalog, events: [{ ...event, recordSequence: 1 }], deficitPolicy: InventoryDeficitPolicy.Record,
       [replayEffectiveStockAge]: "occurrence-cut" };
     expect(() => projectInventoryEvents(occurrenceCut)).toThrow("is not currently positive");
-    expect(Object.values((await inventory.read.world()).projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time2]);
+    const before = await inventory.read.world();
+    await expect(inventory.stock.correct({ operationId: "omit-serial-source", occurredAtEpochMs: time3, correctsEventId: receipt.eventId,
+      reason: "The source receipt did not occur.", replaceWith: (plans) => plans.omit() })).rejects.toThrow("cannot represent a negative serialized resource");
+    expect(await inventory.read.world()).toEqual(before);
+    expect(Object.values(before.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time2]);
   });
 
   it.each([false, true])("settles ordinary destination debt on lifecycle receipt or release (canonical: %s)", async (canonical) => {

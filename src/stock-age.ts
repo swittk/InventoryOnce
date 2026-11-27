@@ -73,12 +73,10 @@ function inventoryReplayCanOmitConservedSourceAge(
   serialId: string | undefined,
 ): boolean {
   if (replay === undefined || serialId !== undefined || event.transferLifecycle !== undefined) return false;
-  if (event.kind === InventoryEventKind.Transfer) return true;
-  return replay === "occurrence-cut" && (
-    event.kind === InventoryEventKind.Placement ||
+  return event.kind === InventoryEventKind.Transfer ||
     event.kind === InventoryEventKind.Reclassification ||
     event.kind === InventoryEventKind.Pack ||
     event.kind === InventoryEventKind.Unpack ||
-    event.kind === InventoryEventKind.RevisionTransition
-  );
+    event.kind === InventoryEventKind.RevisionTransition ||
+    event.kind === InventoryEventKind.Placement;
 }
