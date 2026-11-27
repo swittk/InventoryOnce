@@ -2173,3 +2173,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A direct count replays the counted item's stock without rebuilding unrelated placement. A subtree count also retains the stock of serialized resources that determine ancestry.
 - Count reconciliation uses active repair assertions at their individual occurrence times. The aggregate repair envelope remains the durable effect on published stock.
+
+## 2026-11-28 — serial routes and placement dependencies in count cuts
+
+- A serialized count retains the full route of each serial that can match the observation. A subtree count also retains the nodes connected to its roots by recorded edges or embodied stock. The placement reducer still validates the retained topology.

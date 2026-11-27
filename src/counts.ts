@@ -541,7 +541,7 @@ function projectInventoryEventsAtOrBefore(
     events: occurrenceCut,
     deficitPolicy,
     [replayEffectiveStockAge]: "occurrence-cut",
-    [replayCountScope]: { itemId: selector.itemId, includePlacement: selector.withinPlacementNodeIds !== undefined },
+    [replayCountScope]: selector,
   };
   return projectInventoryEvents(replay);
 }

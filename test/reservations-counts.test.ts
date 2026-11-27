@@ -808,9 +808,9 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       .toEqual(parseQuantity(String(includeReceipt ? 1 : 1 + debt), "piece"));
   });
 
-  it.each([false, true])("keeps a direct count independent of a backdated topology cycle (subtree: %s)", async (subtree) => {
+  it.each(["direct", "disjoint-subtree", "related-subtree"] as const)("checks topology only for the required placement history (%s)", async (scope) => {
     const inventory = createTestInventory();
-    const position = { ...loosePosition(subtree ? "node-a" : "store"), itemRevisionId: "item-a-v2" };
+    const position = { ...loosePosition(scope === "related-subtree" ? "node-a" : "store"), itemRevisionId: "item-a-v2" };
     await inventory.stock.receive({
       operationId: "receive-count-stock", occurredAtEpochMs: time0, to: position, amount: stockAmount("2", "piece"),
     });
@@ -822,9 +822,9 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     await inventory.placement.moveContents({
       operationId: "backdated-contents", occurredAtEpochMs: time1, nodeId: "source", into: "node-b",
     });
-    const selector = subtree
-      ? { itemId: position.itemId, withinPlacementNodeIds: ["node-b"] }
-      : { itemId: position.itemId, placementNodeIds: ["store"] };
+    const selector = scope === "direct"
+      ? { itemId: position.itemId, placementNodeIds: ["store"] }
+      : { itemId: position.itemId, withinPlacementNodeIds: [scope === "related-subtree" ? "node-b" : "store"] };
     await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: time0 });
     await inventory.counts.observe({
       operationId: "observe", countId: "count", observedAtEpochMs: time1,
@@ -833,7 +833,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       } }],
     });
     const reconcile = { operationId: "reconcile", countId: "count", completedAtEpochMs: time3 };
-    if (subtree) {
+    if (scope === "related-subtree") {
       await expect(inventory.counts.reconcile(reconcile)).rejects.toThrow("Placement graph contains a cycle");
     } else {
       const result = await inventory.counts.reconcile(reconcile);
@@ -845,7 +845,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     expect(await inventory.read.placementAncestry("node-a")).toEqual(["node-a", "node-b"]);
   });
 
-  it.each([false, true])("checks backdated serial source age only for stock a count depends on (serial: %s)", async (countSerial) => {
+  it.each(["other-item", "same-item", "missing-source", "valid-source"] as const)("checks backdated serial source age only for stock a count depends on (%s)", async (scope) => {
     const item = defineScalarInventoryItem({ itemId: "ordinary", revisionId: "ordinary-v1", axisId: "pieces", unit: "piece" });
     const serial = defineScalarInventoryItem({
       itemId: "serialized", revisionId: "serialized-v1", axisId: "pieces", unit: "piece",
@@ -858,16 +858,21 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       catalog, storage: createInMemoryInventoryDurableStorage(), clock: { nowEpochMs: () => time3 },
     });
     const from = { itemId: serial.itemId, placementNodeId: "origin", serialId: "serial-1" };
-    await inventory.stock.receive({ operationId: "later-receipt", occurredAtEpochMs: time2, to: from, amount: stockAmount("1", "piece") });
+    await inventory.stock.receive({
+      operationId: "source-receipt", occurredAtEpochMs: scope === "valid-source" ? time0 : time2, to: from, amount: stockAmount("1", "piece"),
+    });
     await inventory.stock.transfer({
       operationId: "backdated-serial-move", occurredAtEpochMs: time1, from, toPlacementNodeId: "destination", amount: stockAmount("1", "piece"),
     });
-    const position = countSerial
-      ? { ...from, itemRevisionId: serial.revisionId, placementNodeId: "destination" }
-      : { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store" };
-    if (!countSerial) {
+    const position = scope === "other-item"
+      ? { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store" }
+      : scope === "same-item"
+        ? { itemId: serial.itemId, itemRevisionId: serial.revisionId, placementNodeId: "store", serialId: "serial-2" }
+        : { ...from, itemRevisionId: serial.revisionId, placementNodeId: "destination" };
+    if (scope === "other-item" || scope === "same-item") {
       await inventory.stock.receive({
-        operationId: "receive-ordinary", occurredAtEpochMs: time0, to: position, amount: stockAmount("2", "piece"),
+        operationId: "receive-counted", occurredAtEpochMs: time0, to: position,
+        amount: stockAmount(scope === "other-item" ? "2" : "1", "piece"),
       });
     }
     const selector = { itemId: position.itemId, placementNodeIds: [position.placementNodeId] };
@@ -879,16 +884,66 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       } }],
     });
     const reconcile = { operationId: "reconcile", countId: "count", completedAtEpochMs: time3 };
-    if (countSerial) {
+    if (scope === "missing-source") {
       await expect(inventory.counts.reconcile(reconcile)).rejects.toThrow("is not currently positive");
     } else {
       const result = await inventory.counts.reconcile(reconcile);
-      expect(result.event?.stockEffects).toMatchObject([
-        { position, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
-      ]);
+      if (scope === "other-item") {
+        expect(result.event?.stockEffects).toMatchObject([
+          { position, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+        ]);
+      } else {
+        expect(result.event).toBeUndefined();
+      }
       expect((await inventory.counts.reconcile(reconcile)).replayed).toBe(true);
     }
     expect(await inventory.read.positions({ itemId: serial.itemId, placementNodeIds: ["destination"] })).toHaveLength(1);
+  });
+
+  it("uses an embodied carrier's route to reconstruct the observed subtree", async () => {
+    const carrier = defineScalarInventoryItem({
+      itemId: "carrier", revisionId: "carrier-v1", axisId: "pieces", unit: "piece",
+      tracking: { lot: InventoryTrackingRequirement.Forbidden, serial: InventoryTrackingRequirement.Optional },
+    });
+    const payload = defineScalarInventoryItem({ itemId: "payload", revisionId: "payload-v1", axisId: "pieces", unit: "piece" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [carrier, payload], activeItemRevisionIds: { carrier: carrier.revisionId, payload: payload.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const amount = stockAmount("1", "piece");
+    const carrierOrigin = { itemId: carrier.itemId, placementNodeId: "origin" };
+    await inventory.stock.receive({ operationId: "receive-carrier", occurredAtEpochMs: time0, to: carrierOrigin, amount });
+    await inventory.stock.individualize({
+      operationId: "individualize", occurredAtEpochMs: time0, from: carrierOrigin, amount,
+      serialId: "cart", asPlacementNode: { category: "cart", acceptsPlacement: true },
+    });
+    const position = { itemId: payload.itemId, itemRevisionId: payload.revisionId, placementNodeId: "cart" };
+    await inventory.stock.receive({
+      operationId: "receive-payload", occurredAtEpochMs: time0, to: position, amount: stockAmount("2", "piece"),
+    });
+    const selector = { itemId: payload.itemId, withinPlacementNodeIds: ["count-root"] };
+    await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: time0 });
+    await inventory.stock.transfer({
+      operationId: "bring-cart", occurredAtEpochMs: time1, from: { ...carrierOrigin, serialId: "cart" },
+      toPlacementNodeId: "count-root", amount,
+    });
+    await inventory.counts.observe({
+      operationId: "observe", countId: "count", observedAtEpochMs: time1,
+      observations: [{ position, measurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [],
+      } }],
+    });
+    await inventory.stock.transfer({
+      operationId: "take-cart", occurredAtEpochMs: time2, from: { ...carrierOrigin, placementNodeId: "count-root", serialId: "cart" },
+      toPlacementNodeId: "later-room", amount,
+    });
+    const reconcile = { operationId: "reconcile", countId: "count", completedAtEpochMs: time3 };
+    const result = await inventory.counts.reconcile(reconcile);
+    expect(result.event?.stockEffects).toMatchObject([
+      { position, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+    ]);
+    expect(await inventory.read.placementAncestry("cart")).toEqual(["cart", "later-room"]);
+    expect((await inventory.counts.reconcile(reconcile)).replayed).toBe(true);
   });
 
   it.each(["receipt", "issue"] as const)("reconciles a backdated correction when a later %s changes the live FIFO layer", async (later) => {
