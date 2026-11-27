@@ -4,6 +4,10 @@ import {
   InventoryDeficitPolicy,
   InventoryReservationFeasibilityStatus,
   InventoryReservationStatus,
+  defineInventoryCatalog,
+  defineScalarInventoryItem,
+  defineScalarInventoryPackaging,
+  packageAmount,
   parseQuantity,
   stockAmount,
   type InventoryOnce,
@@ -28,6 +32,60 @@ import {
   time2,
   time3,
 } from "./test-fixtures.js";
+
+it.each([false, true])("reports each broad claim's whole-piece shortfall after loose stock is issued (canonical: %s)", async (canonical) => {
+  const item = defineScalarInventoryItem({ itemId: "paired", revisionId: "paired-v1", axisId: "pieces", unit: "piece" });
+  const pair = defineScalarInventoryPackaging({ revisionId: "pair", item, packageUnit: "box", contains: "2" });
+  const triple = defineScalarInventoryPackaging({ revisionId: "triple", item, packageUnit: "box", contains: "3" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { paired: item.revisionId }, packagingRevisions: [pair, triple],
+  });
+  const store = { itemId: item.itemId, placementNodeId: "store" };
+  for (const { rows, claims, losses } of [
+    { rows: [{ lot: "even", packaging: pair, packs: 4, loose: "2" }], claims: [["even", 3], ["even", 3]], losses: [["even", 1], ["even", 2]] },
+    { rows: [{ lot: "even", packaging: pair, packs: 100_004, loose: "2" }], claims: [["even", 100_003], ["even", 100_003]],
+      losses: [["even", 1], ["even", 2]] },
+    { rows: [{ lot: "even", packaging: pair, packs: 50_002, loose: "1" }, { lot: "three", packaging: triple, packs: 50_002, loose: "1" }],
+      claims: [["even", 100_003], ["three", 150_004]], losses: [["even", 1], ["three", 2]] },
+    { rows: [{ lot: "even", packaging: pair, packs: 100_004, loose: "1" }, { lot: "spare", packaging: pair, packs: 0, loose: "2" }],
+      claims: [["even", 100_003], ["spare", 1]], losses: [["even", 1]] },
+  ] as const) {
+    // A failpoint routes reference writes through the canonical staged coordinator.
+    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+    const inventory = createTestInventory(storage, catalog);
+    await inventory.stock.receiveMany({
+      operationId: "receive-pairs-and-loose", occurredAtEpochMs: time0,
+      lines: rows.flatMap(({ lot, packaging, packs, loose }) => [
+        ...(packs > 0 ? [{ to: { ...store, lotId: lot }, amount: packageAmount(packs, packaging.revisionId) }] : []),
+        { to: { ...store, lotId: `${lot}-loose` }, amount: stockAmount(loose, "piece") },
+      ]),
+    });
+    let totalRequested = 0;
+    for (const [index, [lot, demand]] of claims.entries()) {
+      totalRequested += demand;
+      const selector = { itemId: item.itemId, placementNodeIds: ["store"], lotIds: [lot, `${lot}-loose`] };
+      await inventory.reservations.reserve({
+        operationId: `reserve-${index}`, reservationId: `hold-${index}`, itemRevisionId: item.revisionId,
+        selector, requested: parseQuantity(String(demand), "piece"), createdAtEpochMs: time1,
+      });
+    }
+    expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+    for (const [lot, shortage] of losses) {
+      await inventory.stock.issue({
+        operationId: `issue-loose-${shortage}`, occurredAtEpochMs: time2,
+        from: { ...store, lotId: `${lot}-loose` }, amount: stockAmount("1", "piece"),
+      });
+      expect(await inventory.read.reservationFeasibility()).toMatchObject({
+        status: InventoryReservationFeasibilityStatus.Shortage,
+        groups: [{
+          requested: parseQuantity(String(totalRequested), "piece"),
+          fulfillable: parseQuantity(String(totalRequested - shortage), "piece"),
+          shortage: parseQuantity(String(shortage), "piece"),
+        }],
+      });
+    }
+  }
+});
 
 /** Runtime and durable adapter after physical loss leaves only claim c1 short. */
 interface ReservationShortageFixture {

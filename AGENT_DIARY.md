@@ -2151,3 +2151,7 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — reweighed stock and exact claims
 
 - Exact claims keep their original allocation quantities after a physical reweigh. Feasibility uses the current whole-pick increment and rounds each bound quantity before summing it against stock capacity. A claim smaller than a reweighed serial or intact measured row cannot use a fraction of that row.
+
+## 2026-11-27 — broad claims after loss of loose stock
+
+- Each broad claim can take whole stock only in multiples of its eligible whole-pick increments. Its eligible loose stock bounds what can fill the remainder. The sum of these ceilings and the shared stock capacity let a proven optimal assignment end the search within its normal work limit.

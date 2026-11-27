@@ -149,7 +149,7 @@ describe("segmented inventory position store", () => {
       operationId: "stale-stock-plan", occurredAtEpochMs: time2, nodeId: "source", into: "destination",
     });
     const { event: issue } = await concurrent.stock.issue({
-      operationId: "stale-stock-concurrent", occurredAtEpochMs: time1, from: loosePosition("destination"), amount,
+      operationId: "stale-stock-concurrent", occurredAtEpochMs: time1, from: loosePosition("source"), amount,
     });
     segment.applyStockEffects({ expectedRevision: 1, nextRevision: 2, event: issue, deficitPolicy: InventoryDeficitPolicy.Record });
     expect(() => segment.applyStockEffects({
