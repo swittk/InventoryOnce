@@ -2115,6 +2115,111 @@ describe("indexed stock planning and availability", () => {
     }]);
   }, 15_000);
 
+  it("finds the best legal partial package after a large pool proves no exact pick", async () => {
+    const base = measuredItemCatalog("weight").activeItem("measured");
+    const item = defineInventoryItem({
+      ...base, primaryAxis: { ...base.primaryAxis, axisId: "weight", unit: unitCode("kg") },
+      independentAxes: [{ axisId: "volume", role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: ([["dry-three", "3", "0"], ["dry-four", "4", "0"],
+        ["wet-three", "3", "3"], ["wet-four", "4", "4"]] as const).map(([id, kg, liters]) => ({
+          revisionId: id, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+          fixedContents: { primary: { axisId: "weight", quantity: parseQuantity(kg, "kg") },
+            independent: liters === "0" ? [] : [{ axisId: "volume", quantity: parseQuantity(liters, "L") }] },
+        })),
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const source = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({ operationId: "receive-old-three-kg-packages", occurredAtEpochMs: time0,
+      lines: Array.from({ length: 4_998 }, (_, index) => ({
+        to: { ...source, lotId: `old-${index}` }, amount: packageAmount(1, "dry-three"),
+      })),
+    });
+    for (const [lotId, occurredAtEpochMs] of [["dry-four", time1], ["wet-three", time1], ["wet-four", time2]] as const) {
+      await inventory.stock.receive({ operationId: `receive-${lotId}`, occurredAtEpochMs,
+        to: { ...source, lotId }, amount: packageAmount(1, lotId) });
+    }
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "move-best-partial-whole-package", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("5", "kg", [{ axisId: "volume", value: "5", unit: "L" }]),
+    });
+    expect(moved.event.stockEffects.filter(({ position }) => position.lotId !== undefined).map(({ position }) => position.lotId))
+      .toEqual(["dry-four", "dry-four"]);
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([{ measurements: {
+      primary: { quantity: parseQuantity("1", "kg") },
+      independent: [{ axisId: "volume", quantity: parseQuantity("5", "L") }],
+    } }]);
+  }, 15_000);
+
+  it.each([false, true])("rejects a measured split even when the primary search reaches its depth bound (deep: %s)", async (deep) => {
+    const item = measuredItemCatalog("pieces", InventoryMeasurementRequirement.Optional).activeItem("measured");
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [{ revisionId: "three-piece-dry-pack", itemId: item.itemId, itemRevisionId: item.revisionId,
+        packageUnit: unitCode("pack"), fixedContents: {
+          primary: { axisId: "pieces", quantity: parseQuantity("3", "piece") }, independent: [],
+        } }],
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const source = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({ operationId: "receive-three-piece-dry-lots", occurredAtEpochMs: time0,
+      lines: Array.from({ length: deep ? 4_999 : 1 }, (_, index) => ({
+        to: { ...source, lotId: `dry-${index}` }, amount: packageAmount(1, "three-piece-dry-pack"),
+      })),
+    });
+    for (const [lotId, value] of [["witness", "1"], ["whole", "4"]] as const) {
+      await inventory.stock.receive({ operationId: `receive-${lotId}`, occurredAtEpochMs: time1,
+        to: { ...source, lotId }, amount: measuredStockAmount(value, "piece", [{ axisId: "weight", value, unit: "kg" }]) });
+    }
+    const before = storage.readSegmentedStockHead();
+    await expect(inventory.stock.transferByPolicy({
+      operationId: "reject-split-after-primary-search", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]),
+    })).rejects.toThrow("intact package/serial increments");
+    expect(storage.readSegmentedStockHead()).toEqual(before);
+  }, 15_000);
+
+  it.each([false, true])("reconciles a count beside a mixed-sign occurrence cut (canonical: %s)", async (canonical) => {
+    const measured = measuredItemCatalog("pieces").activeItem("measured");
+    const counted = defineScalarInventoryItem({ itemId: "counted", revisionId: "counted-v1", axisId: "pieces", unit: "piece" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [measured, counted], activeItemRevisionIds: { measured: measured.revisionId, counted: counted.revisionId },
+    });
+    const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3), InventoryDeficitPolicy.Record);
+    const unrelated = { itemId: measured.itemId, placementNodeId: "store" };
+    const countedPosition = { itemId: counted.itemId, itemRevisionId: counted.revisionId, placementNodeId: "room" };
+    const countSelector = { itemId: counted.itemId, placementNodeIds: ["room"] };
+    /** Measure a single piece from the unlabelled stock position. */
+    const amount = (kg: string) => measuredStockAmount("1", "piece", [{ axisId: "weight", value: kg, unit: "kg" }]);
+    await inventory.stock.receive({ operationId: "early-unlabelled-receipt", occurredAtEpochMs: time0, to: unrelated, amount: amount("1") });
+    await inventory.stock.receive({ operationId: "later-unlabelled-receipt", occurredAtEpochMs: time2, to: unrelated, amount: amount("2") });
+    await inventory.stock.receive({ operationId: "counted-receipt", occurredAtEpochMs: time0, to: countedPosition, amount: stockAmount("2", "piece") });
+    const scrap = await inventory.stock.scrapByPolicy({
+      operationId: "backdated-unlabelled-scrap", occurredAtEpochMs: time1, reason: "Damaged stock",
+      selector: { itemId: measured.itemId, placementNodeIds: ["store"], lotIds: ["unrecorded-lot"] },
+      method: InventoryAllocationMethod.Fifo, amount: amount("2"),
+    });
+    expect(scrap.event.unwitnessedStockMovements).toHaveLength(1);
+    const [unrelatedBefore] = await inventory.read.positions({ itemId: measured.itemId });
+    await inventory.counts.start({ operationId: "start-other-count", countId: "other-count", selector: countSelector, startedAtEpochMs: time0 });
+    await inventory.counts.observe({ operationId: "observe-other-count", countId: "other-count", observedAtEpochMs: time1,
+      observations: [{ position: countedPosition, measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] } }],
+    });
+    const reconciled = await inventory.counts.reconcile({ operationId: "complete-other-count", countId: "other-count",
+      completedAtEpochMs: time3, reason: "Observed one piece.",
+    });
+    expect(reconciled.event?.stockEffects).toMatchObject([{ position: countedPosition,
+      measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+    ]);
+    expect(await inventory.read.positions({ itemId: measured.itemId })).toEqual([unrelatedBefore]);
+  });
+
   it.each([false, true])("previews the exact independently measured witness used in execution (canonical: %s)", async (canonical) => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({

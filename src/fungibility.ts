@@ -419,8 +419,10 @@ function planInventoryFungibilityAllocationWithHolds({
   let unallocatedReservationsPresent = false;
   /** A selected member may require explicit lines if unheld stock cannot fill the request. */
   let selectedIndependentHold = false;
-  /** All contributing members use the same published claim snapshot and reservation time. */
-  let reservations: readonly InventoryReservation[] | undefined;
+  /** One timed snapshot indexed by member revision for preparation and feasibility. */
+  const claimsByRevision = new Map<string, InventoryReservation[]>();
+  /** Defer claim reconstruction until a member actually needs preparation. */
+  let indexedClaims = false;
 
   for (const member of definition.members) {
     const item = catalog.itemRevision(member.itemRevisionId);
@@ -444,11 +446,21 @@ function planInventoryFungibilityAllocationWithHolds({
           inventoryStockPositionMatchesNormalizedSelector(position.key, directSelector)
       )) continue;
     }
-    reservations ??= inventoryReservationsAt(world.reservations, reservationAtEpochMs);
+    if (!indexedClaims) {
+      indexedClaims = true;
+      const memberRevisionIds = new Set<string>();
+      for (const poolMember of definition.members) memberRevisionIds.add(poolMember.itemRevisionId);
+      for (const reservation of inventoryReservationsAt(world.reservations, reservationAtEpochMs)) {
+        if (!memberRevisionIds.has(reservation.itemRevisionId)) continue;
+        const claims = claimsByRevision.get(reservation.itemRevisionId);
+        if (claims === undefined) claimsByRevision.set(reservation.itemRevisionId, [reservation]);
+        else claims.push(reservation);
+      }
+    }
     const { candidateResult, deficitAdjusted } = prepareInventoryPolicyAllocationPool({
       catalog,
       selection,
-      pool: { positions, reservations },
+      pool: { positions, reservations: claimsByRevision.get(member.itemRevisionId) ?? [] },
       method,
       atEpochMs,
       reservationAtEpochMs,
@@ -481,19 +493,6 @@ function planInventoryFungibilityAllocationWithHolds({
     }
   }
 
-  /** Index only pool-member claims for the before and after trial at the same authority time. */
-  const claimsByRevision = new Map<string, InventoryReservation[]>();
-  if (!allowAllocatedStock && (reservations?.length ?? 0) > 0) {
-    const memberRevisionIds = new Set<string>();
-    for (const member of definition.members) memberRevisionIds.add(member.itemRevisionId);
-    for (const reservation of reservations ?? []) {
-      if (!memberRevisionIds.has(reservation.itemRevisionId)) continue;
-      const claims = claimsByRevision.get(reservation.itemRevisionId);
-      if (claims === undefined) claimsByRevision.set(reservation.itemRevisionId, [reservation]);
-      else claims.push(reservation);
-    }
-  }
-
   /** Cache claim shortage baselines by the revision sets tried during allocation. */
   const earlierShortagesByRevisionSet = new Map<string, ReadonlyMap<string, Quantity>>();
   /** Find shortages in the same revision scope, claim book, and authority time as the trial. */
@@ -521,7 +520,7 @@ function planInventoryFungibilityAllocationWithHolds({
     method,
     nowEpochMs: atEpochMs,
     allowExpired: true,
-    acceptAllocations: claimsByRevision.size > 0
+    acceptAllocations: !allowAllocatedStock && claimsByRevision.size > 0
       ? /** Check whether a complete trial preserves claim capacity. */
         (allocations: readonly InventoryAllocation[]): boolean =>
           fungibilityAllocationsPreserveReservations({

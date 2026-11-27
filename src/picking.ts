@@ -345,7 +345,8 @@ export function planWorkingInventoryAllocation({
     // A genuine physical shortage may leave no usable witness, including when a whole pick cannot leave a storable remainder.
     const primaryWasFilled = allocated?.shortfall.amountMinor === 0;
     const incrementBlocked = !primaryWasFilled && allocated?.incrementBlockedStock === true;
-    const rawCapacityCoversBlockedRequest = canRecordPartial && incrementBlocked &&
+    // Exhausting the primary search leaves the increment question open. The exact remainder can still prove a split.
+    const rawCapacityCoversBlockedRequest = canRecordPartial && (incrementBlocked || allocated === undefined) &&
       policyPrimaryCapacityCoversRequest(allocationInput);
     const canRecordWithoutWitness = canRecordPartial && allocated !== undefined &&
       allocated.shortfall.amountMinor > 0 && !rawCapacityCoversBlockedRequest;

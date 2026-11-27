@@ -971,23 +971,16 @@ function applyInventoryCommittedEventInternal(
       earlier?.measurements ??
       zeroInventoryMeasurements(effect.measurementsDelta);
     const next = addInventoryMeasurements(current, effect.measurementsDelta);
-    assertInventoryMeasurementsFollowPrimarySign(
-      next,
-      `Stock position ${identity}`
-    );
-    // Historical planners reject newly exposed shortages; a verified correction
-    // may leave a previously recorded deficit open while improving it.
-    // A count cut can omit backing stock that exists in the published ledger.
-    // Keep ordinary signed balances in that cut so the count computes the exact discrepancy.
-    if (
-      deficitPolicy === InventoryDeficitPolicy.Reject &&
-      normalizedEvent.kind !== InventoryEventKind.Correction &&
-      normalizedEvent.kind !== InventoryEventKind.HistoricalRepair &&
-      (replayStockAge !== "occurrence-cut" ||
-        effect.position.serialId !== undefined ||
-        normalizedEvent.transferLifecycle !== undefined)
-    ) {
-      nonNegativeInventoryMeasurements(next, `Stock position ${identity}`);
+    // A count cut can omit receipts that backed primary and independent axes at publication.
+    // Keep the exact signed axes in the private cut while preserving serial and transfer-lifecycle checks.
+    if (replayStockAge !== "occurrence-cut" || effect.position.serialId !== undefined ||
+        normalizedEvent.transferLifecycle !== undefined) {
+      assertInventoryMeasurementsFollowPrimarySign(next, `Stock position ${identity}`);
+      // A verified correction may improve a previously recorded deficit without closing it.
+      if (deficitPolicy === InventoryDeficitPolicy.Reject && normalizedEvent.kind !== InventoryEventKind.Correction &&
+          normalizedEvent.kind !== InventoryEventKind.HistoricalRepair) {
+        nonNegativeInventoryMeasurements(next, `Stock position ${identity}`);
+      }
     }
     const wasPositive = quantityIsPositive(current.primary.quantity);
     const isPositive = quantityIsPositive(next.primary.quantity);

@@ -2123,3 +2123,9 @@ The R105 portable-current-input authority and final publication both continue to
 
 - When the full-witness proof excludes enough rows to fit the depth bound, run the same ordered exact search on those eligible rows using the original decimal grid. If a full pick is impossible, the partial search can still use the original pool.
 - An exact Reject transfer can publish directly in the native adapter even when it also supports planning reads. The adapter records the actual receipt revision while publishing the signed routes.
+
+## 2026-11-27 — partial search and signed count axes
+
+- Once a full measured pick is ruled out, the ordered partial search can advance past unpicked rows without adding call depth. The smallest legal pick bounds how many selected rows can nest within the existing search limit.
+- If the primary trial exhausts its search, eligible capacity and the exact measured remainder still determine whether realizing the remainder would split an intact row.
+- An occurrence cut can retain a debit while excluding only some of its backing measurements. It keeps the exact signed axes for ordinary rows. Published positions, serial rows, and transfer lifecycle effects retain their sign checks.

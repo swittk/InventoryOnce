@@ -13,6 +13,7 @@ import {
   InventoryStorageWriteStage,
 } from "../src/storage-api.js";
 import { inventoryReservationsAt } from "../src/reservations.js";
+import { inventoryStockPositionIdentity } from "../src/model.js";
 import { projectInventoryEvents } from "../src/projection.js";
 import { replayEffectiveStockAge } from "../src/stock-age.js";
 import {
@@ -726,7 +727,8 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const [arrival] = await inventory.read.positions(selector);
     if (arrival === undefined) throw new Error("Expected the contents arrival.");
     const world = await inventory.read.world();
-    expect(Object.values(world.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual([time0]);
+    const arrivalAges = { [inventoryStockPositionIdentity(arrival.key)]: time0 };
+    expect(world.projection.positiveLayerStartedAtEpochMsByPositionId).toEqual(arrivalAges);
     /** Replay the same committed contents route with or without the later receipt. */
     const retained = includeReceipt
       ? [receipt.event, deficit.event, settled.event, move.event]
@@ -736,7 +738,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     const cutPieces = includeReceipt ? 1 : 1 - debt;
     expect(Object.values(projected.positions).map(({ key, measurements }) => [key, measurements.primary.quantity]))
       .toEqual(cutPieces === 0 ? [] : [[arrival.key, parseQuantity(String(cutPieces), "piece")]]);
-    expect(Object.values(projected.positiveLayerStartedAtEpochMsByPositionId)).toEqual(includeReceipt ? [time0] : []);
+    expect(projected.positiveLayerStartedAtEpochMsByPositionId).toEqual(includeReceipt ? arrivalAges : {});
     await inventory.counts.observe({
       countId, operationId: "observe-arrival-count", observedAtEpochMs: includeReceipt ? time2 : time1,
       observations: [{ position: arrival.key, measurements: arrival.measurements }],

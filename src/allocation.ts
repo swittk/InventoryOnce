@@ -586,6 +586,8 @@ function searchInventoryAllocations(
       }
     }
   }
+  /** A proven partial search can advance past unpicked rows without nesting another call. */
+  let minimumPartialTake: bigint | undefined;
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
     if (ignoreIncrements) return undefined;
     if (minimumShortfallMinor === 0n && fullWitnessPrimaryBudget !== undefined &&
@@ -604,9 +606,22 @@ function searchInventoryAllocations(
         return searchInventoryAllocations({ ...input, requiresPositiveShortfall: true }, decimals);
       }
     }
-    throw new InventoryExactAllocationLimitError(
-      "Exact allocation exceeded its safe search bound; narrow the candidates or request."
-    );
+    if (acceptPartial && minimumShortfallMinor > 0n && acceptAllocations !== undefined) {
+      /** Even the smallest pick must leave space for a positive primary remainder. */
+      let smallestPick = requestedMinor + 1n;
+      for (let index = 0; index < candidates.length; index += 1) {
+        const increment = incrementMinor[index] ?? 1n;
+        if ((capacityMinor[index] ?? 0n) >= increment && increment < smallestPick) smallestPick = increment;
+      }
+      if (requestedMinor - minimumShortfallMinor <= BigInt(MAXIMUM_EXACT_ALLOCATION_DEPTH) * smallestPick) {
+        minimumPartialTake = smallestPick;
+      }
+    }
+    if (minimumPartialTake === undefined) {
+      throw new InventoryExactAllocationLimitError(
+        "Exact allocation exceeded its safe search bound; narrow the candidates or request."
+      );
+    }
   }
 
   /** Chosen shared-scale amount for each sorted candidate. */
@@ -630,144 +645,149 @@ function searchInventoryAllocations(
       }) ?? 0n) + 1n;
 
   /** Search in policy order until a smallest possible shortfall or diagnostic improvement is found. */
-  const findExactSuffix = (index: number, remainingMinor: bigint, axisFreePicked: bigint, wholeRowsPicked: number): boolean => {
-    const complete = remainingMinor === 0n;
-    if (complete || index >= candidates.length) {
-      if (!complete && (!acceptPartial || remainingMinor >= bestRemainingMinor)) return false;
-      // A trial can leave a shortfall that cannot be emitted, even though a later trial fits.
-      const shortfall = complete
-        ? zeroQuantity(requested.unit, requested.decimals)
-        : inventoryAllocationQuantityIfStorable(remainingMinor, decimals, requested.unit);
-      if (shortfall === undefined) return false;
-      const allocations = materializeExactAllocations(candidates, chosenMinor, decimals);
-      if (acceptAllocations !== undefined && !acceptAllocations(allocations)) return false;
-      bestRemainingMinor = remainingMinor;
-      bestAssignment = { allocations, shortfall };
-      return remainingMinor === minimumShortfallMinor || improveOnShortfall !== undefined;
-    }
-    const capacityFromHere = suffixCapacity[index] ?? 0n;
-    const divisorFromHere = suffixDivisor[index] ?? 0n;
-    const unavoidableRemainder = divisorFromHere === 0n ? remainingMinor : remainingMinor % divisorFromHere;
-    const capacityRemainder = remainingMinor - capacityFromHere;
-    const minimumRemainder = capacityRemainder > unavoidableRemainder ? capacityRemainder : unavoidableRemainder;
-    if (acceptPartial ? minimumRemainder >= bestRemainingMinor : minimumRemainder > 0n) {
-      return false;
-    }
-    const state = `${index}:${remainingMinor}`;
-    if (acceptAllocations === undefined && failedStates.has(state))
-      return false;
-    const capacity = capacityMinor[index] ?? 0n;
-    const increment = incrementMinor[index] ?? 1n;
-    const maximum = capacity < remainingMinor ? capacity : remainingMinor;
-    const laterCapacity = suffixCapacity[index + 1] ?? 0n;
-    const laterDivisor = suffixDivisor[index + 1] ?? 0n;
-    /** Prefer exact fitting suffix sums when this row can vary across many primary increments. */
-    let laterWholeSums = suffixWholeSums[index + 1];
-    let laterWholeDivisible = suffixWholeDivisibleCapacity[index + 1] ?? 0n;
-    const laterMeasuredSums = measuredSuffixSums[index + 1];
-    if (capacity / increment > 1n && laterMeasuredSums !== undefined) {
-      const fittingSums: bigint[] = [];
-      for (const { mask, primary } of laterMeasuredSums) {
-        if (wholeMeasuredSubsets?.fitting.has(wholeRowsPicked | mask)) fittingSums.push(primary);
+  const findExactSuffix = (firstIndex: number, remainingMinor: bigint, axisFreePicked: bigint, wholeRowsPicked: number): boolean => {
+    nextRow: for (let index = firstIndex; ; index += 1) {
+      const complete = remainingMinor === 0n;
+      const selectableRemaining = minimumPartialTake === undefined ? remainingMinor : remainingMinor - minimumShortfallMinor;
+      if (complete || index >= candidates.length || (minimumPartialTake !== undefined && selectableRemaining < minimumPartialTake)) {
+        if (!complete && (!acceptPartial || remainingMinor >= bestRemainingMinor)) return false;
+        // A trial can leave a shortfall that cannot be emitted, even though a later trial fits.
+        const shortfall = complete
+          ? zeroQuantity(requested.unit, requested.decimals)
+          : inventoryAllocationQuantityIfStorable(remainingMinor, decimals, requested.unit);
+        if (shortfall === undefined) return false;
+        const allocations = materializeExactAllocations(candidates, chosenMinor, decimals);
+        if (acceptAllocations !== undefined && !acceptAllocations(allocations)) return false;
+        bestRemainingMinor = remainingMinor;
+        bestAssignment = { allocations, shortfall };
+        return remainingMinor === minimumShortfallMinor || improveOnShortfall !== undefined;
       }
-      laterWholeSums = fittingSums;
-      laterWholeDivisible = 0n;
-    }
-    /** A zero-capacity suffix can only accept a zero pending amount. */
-    const exactDivisor = acceptPartial ? undefined : (laterDivisor === 0n ? remainingMinor + 1n : laterDivisor);
-    const terminalPartial = acceptPartial && laterCapacity === 0n;
-    const axisFree = axisFreeRows?.[index] === true;
-    const position = candidates[index]?.position;
-    const excludedFromComplete = position !== undefined && completeExclusions?.has(position);
-    const nextWholeRows = wholeRowsPicked | (wholeRowBits?.[index] ?? 0);
-    let take = (maximum / increment) * increment;
-    // Once a whole-row prefix exceeds an axis, smaller primary-only picks cannot make it fit.
-    if (nextWholeRows !== wholeRowsPicked && !wholeMeasuredSubsets?.fitting.has(nextWholeRows)) take = 0n;
-    while (take >= 0n) {
-      exploredChoices += 1;
-      if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
-        // A diagnostic without a proven improvement must leave the accepted plan usable.
-        if (ignoreIncrements) return true;
-        throw new InventoryExactAllocationLimitError(
-          "Exact allocation exceeded its safe search bound; narrow the candidates or request."
-        );
+      const capacityFromHere = suffixCapacity[index] ?? 0n;
+      const divisorFromHere = suffixDivisor[index] ?? 0n;
+      const unavoidableRemainder = divisorFromHere === 0n ? remainingMinor : remainingMinor % divisorFromHere;
+      const capacityRemainder = remainingMinor - capacityFromHere;
+      const minimumRemainder = capacityRemainder > unavoidableRemainder ? capacityRemainder : unavoidableRemainder;
+      if (acceptPartial ? minimumRemainder >= bestRemainingMinor : minimumRemainder > 0n) {
+        return false;
       }
-      if (axisFreeLimitMinor !== undefined && (!acceptPartial || bestRemainingMinor <= minimumPositiveShortfallMinor)) {
-        // A better result now needs every reported measure. Reserve enough primary capacity for it.
-        if (excludedFromComplete) take = 0n;
-        const axisFreeRemaining = axisFreeLimitMinor - axisFreePicked;
-        if (axisFreeRemaining < 0n) break;
-        if (axisFree && take > axisFreeRemaining) take = axisFreeRemaining - axisFreeRemaining % increment;
+      const state = `${index}:${remainingMinor}`;
+      if (acceptAllocations === undefined && failedStates.has(state))
+        return false;
+      const capacity = capacityMinor[index] ?? 0n;
+      const increment = incrementMinor[index] ?? 1n;
+      const maximum = capacity < selectableRemaining ? capacity : selectableRemaining;
+      const laterCapacity = suffixCapacity[index + 1] ?? 0n;
+      const laterDivisor = suffixDivisor[index + 1] ?? 0n;
+      /** Prefer exact fitting suffix sums when this row can vary across many primary increments. */
+      let laterWholeSums = suffixWholeSums[index + 1];
+      let laterWholeDivisible = suffixWholeDivisibleCapacity[index + 1] ?? 0n;
+      const laterMeasuredSums = measuredSuffixSums[index + 1];
+      if (capacity / increment > 1n && laterMeasuredSums !== undefined) {
+        const fittingSums: bigint[] = [];
+        for (const { mask, primary } of laterMeasuredSums) {
+          if (wholeMeasuredSubsets?.fitting.has(wholeRowsPicked | mask)) fittingSums.push(primary);
+        }
+        laterWholeSums = fittingSums;
+        laterWholeDivisible = 0n;
       }
-      if (exactDivisor !== undefined || storableQuantityScale(take, decimals) === undefined ||
-          (terminalPartial && storableQuantityScale(remainingMinor - take, decimals) === undefined)) {
-        // Exact branches solve the suffix congruence and pick storage divisibility together.
-        const next = largestStorableAllocationTake({
-          limit: take,
-          increment,
-          ...(terminalPartial || exactDivisor !== undefined ? { remaining: remainingMinor } : {}),
-          ...(exactDivisor === undefined ? {} : { suffixDivisor: exactDivisor }),
-        });
-        if (next === undefined) break;
-        take = next;
-      }
-      const pending = remainingMinor - take;
-      if (pending > laterCapacity && !acceptPartial) break;
-      const laterLimit = pending < laterCapacity ? pending : laterCapacity;
-      /** Greatest reachable or relaxed suffix amount now, and the first amount worth revisiting. */
-      let laterUsable = 0n;
-      let nextUsable = laterWholeSums === undefined ? laterCapacity : undefined;
-      if (laterWholeSums !== undefined) {
-        // The next whole subset may be separated by a gap even after using every divisible digit.
-        for (const sum of laterWholeSums) {
-          if (sum <= pending) {
-            const end = sum + laterWholeDivisible;
-            const usable = end < pending ? end : pending;
-            if (usable > laterUsable) laterUsable = usable;
-          } else if (nextUsable === undefined || sum < nextUsable) {
-            nextUsable = sum;
+      /** A zero-capacity suffix can only accept a zero pending amount. */
+      const exactDivisor = acceptPartial ? undefined : (laterDivisor === 0n ? remainingMinor + 1n : laterDivisor);
+      const terminalPartial = acceptPartial && laterCapacity === 0n;
+      const axisFree = axisFreeRows?.[index] === true;
+      const position = candidates[index]?.position;
+      const excludedFromComplete = position !== undefined && completeExclusions?.has(position);
+      const nextWholeRows = wholeRowsPicked | (wholeRowBits?.[index] ?? 0);
+      let take = (maximum / increment) * increment;
+      // Once a whole-row prefix exceeds an axis, smaller primary-only picks cannot make it fit.
+      if (nextWholeRows !== wholeRowsPicked && !wholeMeasuredSubsets?.fitting.has(nextWholeRows)) take = 0n;
+      while (take >= 0n) {
+        exploredChoices += 1;
+        if (exploredChoices > MAXIMUM_EXACT_ALLOCATION_STATES) {
+          // A diagnostic without a proven improvement must leave the accepted plan usable.
+          if (ignoreIncrements) return true;
+          throw new InventoryExactAllocationLimitError(
+            "Exact allocation exceeded its safe search bound; narrow the candidates or request."
+          );
+        }
+        if (axisFreeLimitMinor !== undefined && (!acceptPartial || bestRemainingMinor <= minimumPositiveShortfallMinor)) {
+          // A better result now needs every reported measure. Reserve enough primary capacity for it.
+          if (excludedFromComplete) take = 0n;
+          const axisFreeRemaining = axisFreeLimitMinor - axisFreePicked;
+          if (axisFreeRemaining < 0n) break;
+          if (axisFree && take > axisFreeRemaining) take = axisFreeRemaining - axisFreeRemaining % increment;
+        }
+        if (exactDivisor !== undefined || storableQuantityScale(take, decimals) === undefined ||
+            (terminalPartial && storableQuantityScale(remainingMinor - take, decimals) === undefined)) {
+          // Exact branches solve the suffix congruence and pick storage divisibility together.
+          const next = largestStorableAllocationTake({
+            limit: take,
+            increment,
+            ...(terminalPartial || exactDivisor !== undefined ? { remaining: remainingMinor } : {}),
+            ...(exactDivisor === undefined ? {} : { suffixDivisor: exactDivisor }),
+          });
+          if (next === undefined) break;
+          take = next;
+        }
+        const pending = remainingMinor - take;
+        if (pending > laterCapacity && !acceptPartial) break;
+        const laterLimit = pending < laterCapacity ? pending : laterCapacity;
+        /** Greatest reachable or relaxed suffix amount now, and the first amount worth revisiting. */
+        let laterUsable = 0n;
+        let nextUsable = laterWholeSums === undefined ? laterCapacity : undefined;
+        if (laterWholeSums !== undefined) {
+          // The next whole subset may be separated by a gap even after using every divisible digit.
+          for (const sum of laterWholeSums) {
+            if (sum <= pending) {
+              const end = sum + laterWholeDivisible;
+              const usable = end < pending ? end : pending;
+              if (usable > laterUsable) laterUsable = usable;
+            } else if (nextUsable === undefined || sum < nextUsable) {
+              nextUsable = sum;
+            }
+          }
+        } else if (acceptPartial && laterDivisor !== 0n) {
+          laterUsable = laterLimit - laterLimit % laterDivisor;
+          nextUsable = laterUsable + laterDivisor;
+        }
+        if (acceptPartial) {
+          const floor = pending - laterLimit;
+          if (!terminalPartial && floor > MAXIMUM_STORED_QUANTITY_MINOR) {
+            // This lower bound rises as picks decrease. Jump to where the interval first reaches a storable remainder.
+            const factor = allocationStorageFactor(floor);
+            const firstStorable = ((floor + factor - 1n) / factor) * factor;
+            if (firstStorable >= bestRemainingMinor) break;
+            if (firstStorable > pending) {
+              const limit = remainingMinor - firstStorable;
+              if (limit < 0n) break;
+              take = limit - limit % increment;
+              continue;
+            }
           }
         }
-      } else if (acceptPartial && laterDivisor !== 0n) {
-        laterUsable = laterLimit - laterLimit % laterDivisor;
-        nextUsable = laterUsable + laterDivisor;
-      }
-      if (acceptPartial) {
-        const floor = pending - laterLimit;
-        if (!terminalPartial && floor > MAXIMUM_STORED_QUANTITY_MINOR) {
-          // This lower bound rises as picks decrease. Jump to where the interval first reaches a storable remainder.
-          const factor = allocationStorageFactor(floor);
-          const firstStorable = ((floor + factor - 1n) / factor) * factor;
-          if (firstStorable >= bestRemainingMinor) break;
-          if (firstStorable > pending) {
-            const limit = remainingMinor - firstStorable;
-            if (limit < 0n) break;
-            take = limit - limit % increment;
-            continue;
-          }
+        const cannotImprove = acceptPartial
+          ? pending - laterUsable >= bestRemainingMinor
+          : laterWholeSums !== undefined && pending !== laterUsable;
+        if (cannotImprove) {
+          // Decreasing this pick only makes the gap larger until another suffix amount can fit.
+          if (nextUsable === undefined || laterUsable === laterCapacity) break;
+          const nextLimit = remainingMinor - nextUsable;
+          if (nextLimit < 0n) break;
+          take = nextLimit - nextLimit % increment;
+          continue;
         }
+        chosenMinor[index] = take;
+        // The zero choice is last in policy order. Moving to the next row keeps the same prefix and budget.
+        if (minimumPartialTake !== undefined && take === 0n) continue nextRow;
+        if (findExactSuffix(index + 1, remainingMinor - take, axisFree ? axisFreePicked + take : axisFreePicked,
+          take > 0n ? nextWholeRows : wholeRowsPicked)) return true;
+        if (acceptPartial && bestRemainingMinor <= minimumRemainder) break;
+        if (take === 0n) break;
+        take -= increment;
       }
-      const cannotImprove = acceptPartial
-        ? pending - laterUsable >= bestRemainingMinor
-        : laterWholeSums !== undefined && pending !== laterUsable;
-      if (cannotImprove) {
-        // Decreasing this pick only makes the gap larger until another suffix amount can fit.
-        if (nextUsable === undefined || laterUsable === laterCapacity) break;
-        const nextLimit = remainingMinor - nextUsable;
-        if (nextLimit < 0n) break;
-        take = nextLimit - nextLimit % increment;
-        continue;
-      }
-      chosenMinor[index] = take;
-      if (findExactSuffix(index + 1, remainingMinor - take, axisFree ? axisFreePicked + take : axisFreePicked,
-        take > 0n ? nextWholeRows : wholeRowsPicked)) return true;
-      if (acceptPartial && bestRemainingMinor <= minimumRemainder) break;
-      if (take === 0n) break;
-      take -= increment;
+      chosenMinor[index] = 0n;
+      if (acceptAllocations === undefined) failedStates.add(state);
+      return false;
     }
-    chosenMinor[index] = 0n;
-    if (acceptAllocations === undefined) failedStates.add(state);
-    return false;
   };
 
   findExactSuffix(0, requestedMinor, 0n, 0);
