@@ -1004,12 +1004,12 @@ describe("derived pool summaries and exact member movements", () => {
     });
   });
 
-  it.each([false, true])("diagnoses a discarded reference remainder only when it can improve a complete plan (earlier: %s)", async (earlier) => {
-    const item = oldBrand();
-    const other = newBrand();
+  it.each([[false, "2"], [true, "2"], [true, "3"]] as const)("diagnoses discarded reference capacity (earlier: %s, member reference: %s)", async (earlier, reference) => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "weight", unit: "kg" });
+    const other = defineScalarInventoryItem({ itemId: "other", revisionId: "other-v1", axisId: "weight", unit: "kg" });
     const pool = defineScalarInventoryFungibilityPool({
       poolId: "loose-reference", revisionId: "loose-reference-v1", basisUnit: "equivalent",
-      members: [{ item, memberQuantity: "2" }, { item: other }],
+      members: [{ item, memberQuantity: reference }, { item: other }],
     });
     const catalog = defineInventoryCatalog({
       itemRevisions: [item, other], activeItemRevisionIds: { [item.itemId]: item.revisionId, [other.itemId]: other.revisionId },
@@ -1018,11 +1018,11 @@ describe("derived pool summaries and exact member movements", () => {
     const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
     await inventory.stock.receive({
       operationId: "remainder", occurredAtEpochMs: earlier ? time0 : time1,
-      to: { itemId: item.itemId, lotId: "remainder", placementNodeId: "store" }, amount: stockAmount("1", "piece"),
+      to: { itemId: item.itemId, lotId: "remainder", placementNodeId: "store" }, amount: stockAmount("1", "kg"),
     });
     await inventory.stock.receive({
       operationId: "whole-reference", occurredAtEpochMs: earlier ? time1 : time0,
-      to: { itemId: item.itemId, lotId: "complete", placementNodeId: "store" }, amount: stockAmount("2", "piece"),
+      to: { itemId: item.itemId, lotId: "complete", placementNodeId: "store" }, amount: stockAmount(reference, "kg"),
     });
     const plan = await inventory.fungibility.plan({
       fungibilityRevisionId: pool.revisionId, requested: parseQuantity("1.0", "equivalent"),

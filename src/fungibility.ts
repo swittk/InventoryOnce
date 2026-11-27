@@ -64,6 +64,7 @@ import {
   compareQuantity,
   convertQuantityByReferenceExact,
   integerAtDecimals,
+  MAXIMUM_QUANTITY_DECIMALS,
   positiveQuantity,
   quantity,
   type Quantity,
@@ -631,33 +632,12 @@ function discardedCapacityImprovesFungibilityPlan({
   let earlierCapacityIncreased = false;
   for (const { member, candidates: sources } of memberStock) {
     for (const source of sources) {
-      try {
-        const capacity = inventoryAllocationCandidateCapacity(source).quantity;
-        const available = convertQuantityByReferenceExact(capacity, member.memberQuantity, member.poolQuantity);
-        if (available.amountMinor === 0) continue;
-        const physicalIncrement = source.allocationIncrement === undefined
-          ? undefined
-          : convertQuantityByReferenceExact(
-              materializeInventoryWorkingQuantity(source.allocationIncrement, "Fungibility physical increment"),
-              member.memberQuantity,
-              member.poolQuantity
-            );
-        const legal = rawByPosition.get(source.position);
-        const raw = {
-          position: source.position,
-          receivedAtEpochMs: source.receivedAtEpochMs,
-          ...(source.expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs: source.expiresAtEpochMs }),
-          available: { ...available, amountMinor: BigInt(available.amountMinor) },
-          ...(physicalIncrement === undefined ? {} : {
-            allocationIncrement: { ...physicalIncrement, amountMinor: BigInt(physicalIncrement.amountMinor) },
-          }),
-        };
-        rawByPosition.set(source.position, raw);
-        if (compareWorkingAllocationCandidates(raw, lastCandidate, method) <= 0 &&
-            (legal === undefined || compareWorkingQuantities(raw.available, legal.available) > 0)) earlierCapacityIncreased = true;
-      } catch {
-        // A nonstorable raw conversion cannot be used as evidence for this flag.
-      }
+      const raw = representableFungibilityDiagnosticCandidate(source, member);
+      if (raw === undefined) continue;
+      const legal = rawByPosition.get(source.position);
+      rawByPosition.set(source.position, raw);
+      if (compareWorkingAllocationCandidates(raw, lastCandidate, method) <= 0 &&
+          (legal === undefined || compareWorkingQuantities(raw.available, legal.available) > 0)) earlierCapacityIncreased = true;
     }
   }
   if (!earlierCapacityIncreased) return false;
@@ -704,6 +684,34 @@ function discardedCapacityImprovesFungibilityPlan({
     if (error instanceof InventoryExactAllocationLimitError || error instanceof InventoryReservationFeasibilityLimitError) return false;
     throw error;
   }
+}
+
+/** Enumerate exactly convertible picks without assuming that a whole row converts to a decimal. */
+function representableFungibilityDiagnosticCandidate(
+  source: InventoryWorkingAllocationCandidate,
+  { memberQuantity, poolQuantity }: InventoryFungibilityMemberDefinition
+): InventoryWorkingAllocationCandidate | undefined {
+  const decimals = Math.max(MAXIMUM_QUANTITY_DECIMALS, source.allocationIncrement?.decimals ?? 0);
+  const memberReference = integerAtDecimals(memberQuantity, decimals);
+  const poolReference = integerAtDecimals(poolQuantity, decimals);
+  const divisor = quantityGreatestCommonDivisor(memberReference, poolReference);
+  const memberStep = memberReference / divisor;
+  const physicalStep = source.allocationIncrement === undefined
+    ? 1n : workingQuantityAtDecimals(source.allocationIncrement, decimals);
+  // A native pick must be a multiple of both its physical increment and the conversion grid.
+  const nativeStep = (memberStep / quantityGreatestCommonDivisor(memberStep, physicalStep)) * physicalStep;
+  const capacity = inventoryAllocationCandidateCapacity(source).quantity;
+  const availableSteps = integerAtDecimals(capacity, decimals) / nativeStep;
+  if (availableSteps === 0n) return undefined;
+  const poolStep = (nativeStep / memberStep) * (poolReference / divisor);
+  return {
+    position: source.position,
+    receivedAtEpochMs: source.receivedAtEpochMs,
+    ...(source.expiresAtEpochMs === undefined ? {} : { expiresAtEpochMs: source.expiresAtEpochMs }),
+    // The maximum is a whole number of exact steps no greater than actual available stock.
+    available: { unit: poolQuantity.unit, decimals, amountMinor: poolStep * availableSteps },
+    allocationIncrement: { unit: poolQuantity.unit, decimals, amountMinor: poolStep },
+  };
 }
 
 /** Check whether actual eligible capacity would cover the request if every row were divisible. */
