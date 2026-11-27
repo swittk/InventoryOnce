@@ -2143,3 +2143,7 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — signed historical stock differences
 
 - Correction and historical repair post the difference between desired and actual stock on each measurement axis. Opposite signs can result from two valid measured states. Every posted historical difference still requires a nonzero primary change. Fixed packaging checks its signed whole increment and physical assertions retain their movement sign rules.
+
+## 2026-11-27 — exact claims on subtree contents
+
+- Issuing, scrapping, or changing the status of physical subtree contents leaves any exact reservation bindings as recorded. The reservation feasibility read reports shortfalls at the original keys. Restoring the same stock identity can make those claims feasible again.

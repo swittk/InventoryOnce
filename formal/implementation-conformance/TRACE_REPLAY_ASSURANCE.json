@@ -1116,7 +1116,7 @@
         "test/containers.test.ts"
       ],
       "failpoints": [],
-      "finiteDomain": "Generic nested placement nodes, heterogeneous direct stock anchors, one ancestor move with zero stock effects, target-policy/cycle rejection, and blocked exact-reservation subtree action.",
+      "finiteDomain": "Generic nested placement nodes, heterogeneous direct stock anchors, one ancestor move with zero stock effects, target-policy/cycle rejection, and exact claims retained after physical subtree actions.",
       "invariants": [
         "PlacementIsAcyclic",
         "PlacementTargetsAcceptContents",
@@ -1136,9 +1136,9 @@
         "placement-command"
       ],
       "refinementMode": "bounded-property",
-      "resultProjection": "Ancestor movement changes one direct-parent edge while preserving every descendant stock identity; subtree-content actions affect only the rows their physical verb requires and fail atomically when bound.",
+      "resultProjection": "Ancestor movement changes one direct-parent edge and preserves descendant stock identities. Physical subtree actions affect the same stock as the corresponding exact verbs, retain reservation bindings, and report the resulting shortages.",
       "stateProjection": [
-        "placement relations, direct stock positions, placement-node metadata, event result"
+        "placement relations, direct stock positions, placement-node metadata, event result, reservation claims and feasibility"
       ],
       "status": "covered"
     },

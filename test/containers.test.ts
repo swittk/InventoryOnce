@@ -4,6 +4,7 @@ import {
   InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryReservationFeasibilityStatus,
+  InventoryReservationStatus,
   defineScalarInventoryItem,
   extendInventoryCatalog,
   packageAmount,
@@ -992,24 +993,18 @@ describe("generic placement topology", () => {
       })
     ).toHaveLength(1);
 
-    await expect(
-      inventory.placement.changeContentsStatus({
-        operationId: "blocked-subtree-status",
-        occurredAtEpochMs: time2,
-        nodeId: "PALLET-1",
-        toStatusId: "quarantine",
-      })
-    ).rejects.toThrow("exact reservation bindings");
-    await inventory.reservations.release({
-      operationId: "release-carton-packages",
-      reservationId: "exact-carton-packages",
-      occurredAtEpochMs: time2,
-    });
-    await inventory.placement.changeContentsStatus({
+    const claim = await inventory.read.reservation("exact-carton-packages");
+    const quarantined = await inventory.placement.changeContentsStatus({
       operationId: "quarantine-subtree",
       occurredAtEpochMs: time2,
       nodeId: "PALLET-1",
       toStatusId: "quarantine",
+    });
+    expect(quarantined.event.kind).toBe(InventoryEventKind.Reclassification);
+    expect(await inventory.read.reservation("exact-carton-packages")).toEqual(claim);
+    expect(await inventory.read.reservationFeasibility()).toMatchObject({
+      status: InventoryReservationFeasibilityStatus.Shortage,
+      groups: [{ reservationIds: ["exact-carton-packages"], shortage: parseQuantity("600", "piece") }],
     });
     expect(
       [
@@ -1028,6 +1023,8 @@ describe("generic placement topology", () => {
         ...(await inventory.read.positions({ itemId: "item-b" })),
       ].every((position) => position.key.statusId === undefined)
     ).toBe(true);
+    expect(await inventory.read.reservation("exact-carton-packages")).toEqual(claim);
+    expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
   });
 
   it("enforces optimistic parents, one parent, target policy, and acyclic topology", async () => {
@@ -1144,6 +1141,71 @@ describe("generic placement topology", () => {
     expect((await scrappedInventory.read.reservationFeasibility()).status).toBe(
       InventoryReservationFeasibilityStatus.Shortage
     );
+  });
+
+  it.each([
+    [InventoryDeficitPolicy.Record, false],
+    [InventoryDeficitPolicy.Record, true],
+    [InventoryDeficitPolicy.Reject, false],
+    [InventoryDeficitPolicy.Reject, true],
+  ] as const)("records reserved subtree contents like exact stock (policy: %s, canonical: %s)", async (policy, canonical) => {
+    for (const [verb, kind] of [
+      ["issue", InventoryEventKind.Issue],
+      ["scrap", InventoryEventKind.Scrap],
+      ["changeStatus", InventoryEventKind.Reclassification],
+      ["clearStatus", InventoryEventKind.Reclassification],
+    ] as const) {
+      /** Run an equivalent physical action with either an exact position or its ancestor. */
+      async function recordContents(subtree: boolean) {
+        // A failpoint routes reference writes through the canonical staged coordinator.
+        const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+        const inventory = createTestInventory(storage, undefined, clockAt(time3), policy);
+        const amount = stockAmount("2", "piece");
+        const quantity = parseQuantity("2", "piece");
+        const selector = { itemId: "item-a", placementNodeIds: ["child"] };
+        const to = loosePosition("child", verb === "clearStatus" ? { statusId: "quarantine" } : {});
+        await inventory.stock.receive({ operationId: "receive-contents", occurredAtEpochMs: time0, to, amount });
+        await inventory.placement.move({ operationId: "place-child", occurredAtEpochMs: time0, nodeId: "child", into: "tray" });
+        const [position] = await inventory.read.positions(selector);
+        if (position === undefined) throw new Error("Expected nested stock to allocate.");
+        const allocations = [{ position: position.key, quantity }];
+        const reservationId = "exact-child-claim";
+        await inventory.reservations.reserve({
+          operationId: "reserve-contents", reservationId, itemRevisionId: position.key.itemRevisionId,
+          selector, requested: quantity, createdAtEpochMs: time1,
+        });
+        await inventory.reservations.allocate({
+          operationId: "allocate-contents", reservationId, allocations, occurredAtEpochMs: time1,
+        });
+        expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+        const header = { operationId: "record-contents", occurredAtEpochMs: time2, reason: "Physical stock disposition." };
+        const contents = { ...header, nodeId: "tray" };
+        const exact = { ...header, from: position.key, amount };
+        /** Use the same physical verb for either form of the stock target. */
+        function record() {
+          switch (verb) {
+            case "issue": return subtree ? inventory.placement.issueContents(contents) : inventory.stock.issue(exact);
+            case "scrap": return subtree ? inventory.placement.scrapContents(contents) : inventory.stock.scrap(exact);
+            case "changeStatus": return subtree
+              ? inventory.placement.changeContentsStatus({ ...contents, toStatusId: "quarantine" })
+              : inventory.stock.changeStatus({ ...exact, toStatusId: "quarantine" });
+            case "clearStatus": return subtree ? inventory.placement.clearContentsStatus(contents) : inventory.stock.clearStatus(exact);
+          }
+        }
+        const committed = await record();
+        expect(committed.event.kind).toBe(kind);
+        expect(await record()).toEqual({ ...committed, replayed: true });
+        expect(await inventory.read.reservation(reservationId)).toMatchObject({ status: InventoryReservationStatus.Active, allocations });
+        expect(await inventory.read.reservationFeasibility()).toMatchObject({
+          status: InventoryReservationFeasibilityStatus.Shortage,
+          groups: [{ reservationIds: [reservationId], requested: quantity, fulfillable: parseQuantity("0", "piece"), shortage: quantity }],
+        });
+        expect(await inventory.read.placementAncestry("child")).toEqual(["child", "tray"]);
+        return { effects: committed.event.stockEffects, positions: await inventory.read.positions(selector) };
+      }
+      const exact = await recordContents(false);
+      expect(await recordContents(true)).toEqual(exact);
+    }
   });
 
   it("inherits the earliest use-by from placement ancestry", async () => {

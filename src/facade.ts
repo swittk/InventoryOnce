@@ -289,8 +289,6 @@ import {
   type InventoryReservationAllocation,
   type NewInventoryReservation,
   inspectInventoryReservationFeasibility,
-  inventoryReservationIsActiveAt,
-  inventoryReservationsAt,
   type InventoryReservationFeasibilityReport,
 } from "./reservations.js";
 import {
@@ -7487,11 +7485,7 @@ async function commitInventoryPlacementContentsOperation(
         operation,
         contents
       );
-      assertNoExactReservationBindsPlacementContents(
-        world,
-        affectedPositions,
-        input.occurredAtEpochMs
-      );
+      // Keep exact claims in place so feasibility can report any resulting shortage.
       const event = createInventoryPlacementContentsEvent(
         internals.catalog,
         operation,
@@ -7585,42 +7579,6 @@ function findPositionsChangedByPlacementContentsOperation(
     return changed;
   }
   return contents.positions;
-}
-
-/** Reject a content operation before it could strand an exact claim on an old position key. */
-function assertNoExactReservationBindsPlacementContents(
-  world: InventoryWorldState,
-  positions: readonly InventoryStockPosition[],
-  atEpochMs: number
-): void {
-  const affectedPositionIds = new Set<string>();
-  for (const position of positions) {
-    affectedPositionIds.add(inventoryStockPositionIdentity(position.key));
-  }
-  const blockingReservationIds: string[] = [];
-  for (const reservation of inventoryReservationsAt(world.reservations, atEpochMs)) {
-    if (!inventoryReservationIsActiveAt(reservation, atEpochMs)) continue;
-    for (const allocation of reservation.allocations) {
-      if (
-        !affectedPositionIds.has(
-          inventoryStockPositionIdentity(allocation.position)
-        )
-      ) {
-        continue;
-      }
-      blockingReservationIds.push(reservation.reservationId);
-      break;
-    }
-  }
-  blockingReservationIds.sort(compareInventoryIdentityText);
-  if (blockingReservationIds.length > 0) {
-    throw new Error(
-      "Placement-subtree content operation would move or remove exact reservation bindings; " +
-        `release, consume, or reallocate these claims first: ${blockingReservationIds.join(
-          ", "
-        )}.`
-    );
-  }
 }
 
 /** Build one immutable event carrying every exact subtree-content stock line. */
