@@ -30,6 +30,7 @@ import {
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
 import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
+import { inventoryStockPositionIdentity } from "../src/model.js";
 import { projectInventoryEvents } from "../src/projection.js";
 import { InMemoryInventorySegmentedPlacementStore } from "../src/segmented-placement.js";
 import { replayEffectiveStockAge } from "../src/stock-age.js";
@@ -182,7 +183,8 @@ describe("indexed stock planning and availability", () => {
           quantity: parseQuantity(String(destinationBalance), "piece"),
         } } }]);
         const age = (await inventory.read.world()).projection.positiveLayerStartedAtEpochMsByPositionId;
-        expect(Object.values(age), verb).toEqual(destinationBalance > 0 ? [time0] : []);
+        const destinationId = inventoryStockPositionIdentity({ ...to, itemRevisionId: item.revisionId });
+        expect(age, verb).toEqual(destinationBalance > 0 ? { [destinationId]: time0 } : {});
       }
     }
   });
@@ -205,7 +207,9 @@ describe("indexed stock planning and availability", () => {
       await inventory.stock.transitionRevision({ operationId: "convert-revision", occurredAtEpochMs: time2, plan,
         reason: "Same physical unit" });
       const world = await inventory.read.world();
-      expect(Object.values(world.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual(moved === 1 ? [] : [time0]);
+      const destinationId = inventoryStockPositionIdentity({ ...position, itemRevisionId: after.revisionId });
+      expect(world.projection.positiveLayerStartedAtEpochMsByPositionId)
+        .toEqual(moved === 1 ? {} : { [destinationId]: time0 });
       expect(Object.values(world.projection.positions).map(({ key, measurements }) => [key.itemRevisionId, measurements.primary.quantity]))
         .toEqual(moved === 1 ? [] : [[after.revisionId, parseQuantity("1", "piece")]]);
     }
@@ -386,7 +390,9 @@ describe("indexed stock planning and availability", () => {
         const result = action === "release" ? await inventory.transfers.release(command) : await inventory.transfers.receive(command);
         expect(result.transfer.status).toBe(action === "release" ? InventoryTransferStatus.Released : InventoryTransferStatus.Received);
         const world = await inventory.read.world();
-        expect(Object.values(world.projection.positiveLayerStartedAtEpochMsByPositionId)).toEqual(moved > debt ? [time0] : []);
+        const arrivalId = inventoryStockPositionIdentity({ ...arrival, itemRevisionId: "item-a-v2" });
+        expect(world.projection.positiveLayerStartedAtEpochMsByPositionId)
+          .toEqual(moved > debt ? { [arrivalId]: time0 } : {});
         expect(Object.values(world.projection.positions).map(({ key, measurements }) => [key.placementNodeId, measurements.primary.quantity]))
           .toEqual(moved === debt ? [] : [[arrival.placementNodeId, parseQuantity(String(moved - debt), "piece")]]);
       }
