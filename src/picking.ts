@@ -493,6 +493,26 @@ interface MeasuredWitnessBounds {
   readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
 }
 
+/** Reported axes supported by one selectable row. */
+interface MeasuredWitnessRowSupport {
+  /** First axis on this row, used to link axes that can share primary stock. */
+  readonly firstAxis: number;
+  /** Primary digits in the full row with the same measurement ratio as a legal pick. */
+  readonly primary: bigint;
+  /** Sum of this row's report fractions rounded up to normalized units. */
+  normalized: bigint;
+}
+
+/** Full-witness reserve for axes that can share measured rows. */
+interface MeasuredWitnessAxisGroup {
+  /** Largest individual primary requirement in this group. */
+  minimumPrimary: bigint;
+  /** One normalized unit for each positive axis in the group. */
+  normalizedRequired: bigint;
+  /** Row giving the highest upper bound on contribution per primary digit. */
+  densest?: MeasuredWitnessRowSupport;
+}
+
 /** Bound any witness and the measured primary capacity needed for a complete witness. */
 function measuredWitnessBounds({
   catalog, report, candidates, rows,
@@ -518,8 +538,10 @@ function measuredWitnessBounds({
     axisGroups[axis] = root;
     return root;
   };
-  /** First reported axis on each row, used to identify overlapping witness capacity. */
-  const firstAxisByPosition = report.independent.length > 1 ? new Map<InventoryStockPositionKey, number>() : undefined;
+  /** Shared support and combined contribution matter only for a multi-axis report. */
+  const supportByPosition = report.independent.length > 1 ? new Map<InventoryStockPositionKey, MeasuredWitnessRowSupport>() : undefined;
+  /** Decimal scale for rounding each fraction of an axis's reported quantity upward. */
+  const normalizedAxisUnit = supportByPosition === undefined ? 0n : 10n ** BigInt(decimals);
   /** Lower bound for the primary stock that must carry each reported axis. */
   const requiredByAxis: bigint[] = [];
   /** Known absence of a complete witness on at least one reported axis. */
@@ -561,10 +583,16 @@ function measuredWitnessBounds({
       }
       if (reported === 0n) continue;
       measuredPositions.add(position);
-      if (firstAxisByPosition !== undefined) {
-        const firstAxis = firstAxisByPosition.get(position);
-        if (firstAxis === undefined) firstAxisByPosition.set(position, axisIndex);
-        else axisGroups[groupOf(axisIndex)] = groupOf(firstAxis);
+      if (supportByPosition !== undefined) {
+        const support = supportByPosition.get(position);
+        // Round up each contribution so the combined density cannot overstate required primary.
+        const normalized = (support?.normalized ?? 0n) +
+          (rowMeasured * normalizedAxisUnit + reported - 1n) / reported;
+        if (support === undefined) supportByPosition.set(position, { firstAxis: axisIndex, primary: rowPrimary, normalized });
+        else {
+          support.normalized = normalized;
+          axisGroups[groupOf(axisIndex)] = groupOf(support.firstAxis);
+        }
       }
       if (smallestMeasured === 0n || rowPrimary * smallestMeasured < smallestPrimary * rowMeasured) {
         smallestPrimary = rowPrimary;
@@ -595,16 +623,37 @@ function measuredWitnessBounds({
       requiredByAxis[axisIndex] = (reported * smallestPrimary + smallestMeasured - 1n) / smallestMeasured;
     }
   }
-  /** Axes in a group may share stock, so use their largest bound only once. */
-  const requiredByGroup = new Map<number, bigint>();
+  /** Axes in one group can use the same measured rows. */
+  const groups = new Map<number, MeasuredWitnessAxisGroup>();
   for (const [axis, required] of requiredByAxis.entries()) {
     if (required === undefined) continue;
-    const group = groupOf(axis);
-    if (required > (requiredByGroup.get(group) ?? 0n)) requiredByGroup.set(group, required);
+    const root = groupOf(axis);
+    const group = groups.get(root);
+    if (group === undefined) {
+      groups.set(root, { minimumPrimary: required, normalizedRequired: normalizedAxisUnit });
+    } else {
+      if (required > group.minimumPrimary) group.minimumPrimary = required;
+      group.normalizedRequired += normalizedAxisUnit;
+    }
+  }
+  if (supportByPosition !== undefined) {
+    for (const support of supportByPosition.values()) {
+      const group = groups.get(groupOf(support.firstAxis));
+      if (group === undefined || group.normalizedRequired === normalizedAxisUnit) continue;
+      const densest = group.densest;
+      if (densest === undefined || support.normalized * densest.primary > densest.normalized * support.primary) {
+        group.densest = support;
+      }
+    }
   }
   /** Distinct groups have disjoint supporting rows, so their primary bounds add. */
   let requiredMeasuredPrimary = 0n;
-  for (const required of requiredByGroup.values()) requiredMeasuredPrimary += required;
+  for (const { minimumPrimary, normalizedRequired, densest } of groups.values()) {
+    // Even shared stock needs enough primary to supply its group's report at the best density.
+    const combined = densest === undefined ? 0n :
+      (normalizedRequired * densest.primary + densest.normalized - 1n) / densest.normalized;
+    requiredMeasuredPrimary += combined > minimumPrimary ? combined : minimumPrimary;
+  }
   requiresPositiveShortfall ||= requiredMeasuredPrimary > requested;
   return {
     requiresPositiveShortfall,
@@ -1258,18 +1307,20 @@ function allocationIncrementForPosition(
   position: InventoryPolicyWorkingRow["position"],
   item: InventoryItemDefinitionRevision,
   capacity: InventoryWorkingQuantity,
-): Pick<InventoryWorkingAllocationCandidate, "allocationIncrement"> {
+): Pick<InventoryWorkingAllocationCandidate, "allocationIncrement" | "keepIncrementForAcceptance"> {
   if (position.key.serialId !== undefined)
     return { allocationIncrement: capacity };
   const packagingRevisionId = position.key.packagingRevisionId;
   if (packagingRevisionId === undefined) {
+    // A measured line cannot assign a fraction of this row's independent quantities.
     return policyPositionHasUnfixedContents(position, item)
-      ? { allocationIncrement: capacity }
+      ? { allocationIncrement: capacity, keepIncrementForAcceptance: true }
       : {};
   }
   const packaging = catalog.packagingRevision(packagingRevisionId);
   if (policyPositionHasUnfixedContents(position, item, packaging)) {
-    return { allocationIncrement: capacity };
+    // Package increments alone do not determine its unfixed measured quantities.
+    return { allocationIncrement: capacity, keepIncrementForAcceptance: true };
   }
   return {
     allocationIncrement: inventoryMeasurementAt(

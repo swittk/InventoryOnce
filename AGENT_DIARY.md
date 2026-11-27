@@ -2081,3 +2081,9 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — eligible measured support
 
 - Preview and movement bound measured search using only increments that fit the report. The original primary trial still distinguishes a measurement constraint from a stock shortage when every measured candidate is excluded.
+
+## 2026-11-27 — combined measurement density
+
+- A complete witness must supply every reported axis. The combined contribution per unit of primary stock gives another lower bound within each connected group of axes. Round row contributions up so the bound stays conservative, then add the bounds of groups that use disjoint stock.
+- Fungibility needs a complete common-basis assignment even when allocated stock is permitted or there are no claims to simulate.
+- When a witness must explain unfixed measurements, the increment diagnostic keeps those rows whole. A fractional trial cannot construct their measured lines.

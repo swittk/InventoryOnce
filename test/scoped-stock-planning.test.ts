@@ -1760,7 +1760,8 @@ describe("indexed stock planning and availability", () => {
 
   it.each([false, true].flatMap((canonical) =>
     [InventoryDeficitPolicy.Reject, InventoryDeficitPolicy.Record].flatMap((policy) =>
-      ["disjoint", "shared", "ineligible-first", "ineligible-last"].map((support) => ({ canonical, policy, support })),
+      ["disjoint", "shared", "thin-shared", "thin-with-disjoint", "ineligible-first", "ineligible-last"]
+        .map((support) => ({ canonical, policy, support })),
     ),
   ))("reserves primary for $support axes (canonical: $canonical, policy: $policy)", async ({ canonical, policy, support }) => {
     const base = measuredItemCatalog("weight").activeItem("measured");
@@ -1769,6 +1770,7 @@ describe("indexed stock planning and availability", () => {
       independentAxes: [
         { axisId: "volume", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Optional },
         { axisId: "length", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("m"), requirement: InventoryMeasurementRequirement.Optional },
+        { axisId: "width", role: InventoryMeasurementAxisRole.Independent, unit: unitCode("m"), requirement: InventoryMeasurementRequirement.Optional },
       ],
     });
     const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId } });
@@ -1785,18 +1787,24 @@ describe("indexed stock planning and availability", () => {
     const inventory = createTestInventory(storage, catalog, undefined, policy);
     const volume = { axisId: "volume", value: "1", unit: "L" };
     const length = { axisId: "length", value: "1", unit: "m" };
+    const width = { axisId: "width", value: "1", unit: "m" };
+    const separateAxis = support === "thin-with-disjoint";
     const shared = support === "shared";
     const rows = [
       ["dry-a", "5", [], time0], ["dry-b", "5", [], time0 + 1],
       ["volume", "1", shared ? [volume, length] : [volume], time1],
     ] as const;
     const later = ["length", "1", [length], time2] as const;
+    const thin = ["thin", "1", [{ ...volume, value: "0.5" }, { ...length, value: "0.5" }], time2 + 1] as const;
+    const dense = ["width", "0.25", [width], time2 + 2] as const;
     const ineligible = [{ ...volume, value: "2" }, { ...length, value: "2" }];
     const first = ["ineligible", "1", ineligible, time0 - 1] as const;
     const last = ["ineligible", "1", ineligible, time2 + 1] as const;
     const stock = shared ? rows : [
       ...(support === "ineligible-first" ? [first] : []),
       ...rows, later,
+      ...(support === "thin-shared" || separateAxis ? [thin] : []),
+      ...(separateAxis ? [dense] : []),
       ...(support === "ineligible-last" ? [last] : []),
     ];
     for (const [lotId, weight, measures, occurredAtEpochMs] of stock) {
@@ -1808,13 +1816,14 @@ describe("indexed stock planning and availability", () => {
     }
     const request = {
       selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
-      amount: measuredStockAmount("5.000001", "kg", [volume, length]),
+      amount: measuredStockAmount("5.000001", "kg", separateAxis ? [volume, length, width] : [volume, length]),
     };
     const preview = await inventory.read.planAllocation(request);
-    const dry = shared ? "4.000001" : "3.000001";
+    const dry = shared ? "4.000001" : separateAxis ? "2.750001" : "3.000001";
     expect(preview.lines.map(({ position, allocatedPrimary }) => [position.lotId, allocatedPrimary])).toEqual([
       ["dry-a", parseQuantity(dry, "kg")], ["volume", parseQuantity("1.000000", "kg")],
       ...(shared ? [] : [["length", parseQuantity("1.000000", "kg")]]),
+      ...(separateAxis ? [["width", parseQuantity("0.250000", "kg")]] : []),
     ]);
     const movement = {
       ...request, operationId: "move-disjoint-witness", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
@@ -1827,6 +1836,7 @@ describe("indexed stock planning and availability", () => {
         ["dry-a", parseQuantity(`-${dry}`, "kg")],
         ...(shared ? [] : [["length", parseQuantity("-1.000000", "kg")]]),
         ["volume", parseQuantity("-1.000000", "kg")],
+        ...(separateAxis ? [["width", parseQuantity("-0.250000", "kg")]] : []),
       ]);
     expect(await inventory.stock.transferByPolicy(movement)).toEqual({ ...moved, replayed: true });
   });

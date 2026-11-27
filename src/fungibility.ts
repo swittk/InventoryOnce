@@ -478,8 +478,10 @@ function planInventoryFungibilityAllocationWithHolds({
     }
   }
 
+  /** Simulate claim capacity only when the existing claim protection can apply. */
+  const preserveReservations = !allowAllocatedStock && (reservations?.length ?? 0) > 0;
   /** Keep only pool-member claims in the index used by recording trials. */
-  const recordingClaimsByRevision = recording && !allowAllocatedStock
+  const recordingClaimsByRevision = recording && preserveReservations
     ? new Map<string, InventoryReservation[]>()
     : undefined;
   if (recordingClaimsByRevision !== undefined) {
@@ -520,25 +522,22 @@ function planInventoryFungibilityAllocationWithHolds({
     method,
     nowEpochMs: atEpochMs,
     allowExpired: true,
-    ...(allowAllocatedStock
-      ? {}
-      : {
-          /** Prefer complete assignments that preserve claim capacity. */
-          acceptAllocations: (
-            allocations: readonly InventoryAllocation[]
-          ): boolean =>
-            fungibilityAllocationsPreserveReservations({
-              catalog,
-              world,
-              reservationAtEpochMs,
-              reservationEffect,
-              allocations,
-              evidenceByPosition,
-              ...(recordingClaimsByRevision === undefined ? {} : {
-                recordingClaims: { reservationsByRevision: recordingClaimsByRevision, readEarlierShortages },
-              }),
+    acceptAllocations: preserveReservations
+      ? /** Check whether a complete trial preserves claim capacity. */
+        (allocations: readonly InventoryAllocation[]): boolean =>
+          fungibilityAllocationsPreserveReservations({
+            catalog,
+            world,
+            reservationAtEpochMs,
+            reservationEffect,
+            allocations,
+            evidenceByPosition,
+            ...(recordingClaimsByRevision === undefined ? {} : {
+              recordingClaims: { reservationsByRevision: recordingClaimsByRevision, readEarlierShortages },
             }),
-        }),
+          })
+      : /** Keep the complete-plan requirement even without a claim trial. */
+        (): boolean => true,
   });
   const lines: InventoryFungibilityAllocationLine[] = [];
   for (const allocation of allocated.allocations) {

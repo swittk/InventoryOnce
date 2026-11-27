@@ -139,6 +139,30 @@ async function receiveMember(input: {
 }
 
 describe("revision-frozen mutual-fungibility catalogue", () => {
+  it("keeps the exact-plan contract when allocated stock is allowed without any claims", async () => {
+    const inventory = createInventoryOnce({
+      catalog: fungibilityCatalog(), storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),
+    });
+    await receiveMember({
+      inventory, operationId: "receive-exact-plan-stock", itemId: "old-brand", itemRevisionId: "old-brand-v1",
+      lotId: "EXACT-PLAN", quantity: "2", occurredAtEpochMs: time0,
+    });
+    for (const quantity of ["1", "2", "3"]) {
+      const requested = parseQuantity(quantity, "dose-equivalent");
+      const input = {
+        fungibilityRevisionId: "brand-pool-v1", requested, atEpochMs: time1,
+        method: InventoryAllocationMethod.Fifo, scope: { placementNodeIds: ["store"] },
+      };
+      const held = await inventory.fungibility.plan(input);
+      const physical = await inventory.fungibility.plan({ ...input, allowAllocatedStock: true });
+      expect(physical).toEqual(held);
+      expect(physical).toMatchObject(quantity === "3" ? { lines: [], shortfall: requested } : {
+        lines: [{ position: { lotId: "EXACT-PLAN" }, poolQuantity: requested }],
+        shortfall: parseQuantity("0", "dose-equivalent"),
+      });
+    }
+  });
+
   it("derives and allocates a storable pool total across mixed-scale rows", async () => {
     const catalog = fungibilityCatalog();
     const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
@@ -1791,6 +1815,25 @@ describe("derived pool summaries and exact member movements", () => {
       ],
       occurredAtEpochMs: time2,
     });
+
+    const request = {
+      fungibilityRevisionId: "brand-pool-v1", method: InventoryAllocationMethod.Fifo, atEpochMs: time3,
+      scope: { placementNodeIds: ["store"] }, requested: parseQuantity("1", "dose-equivalent"),
+    };
+    expect(await inventory.fungibility.plan(request)).toMatchObject({
+      lines: [{ position: { lotId: "FREE-NEW" } }],
+    });
+    expect(await inventory.fungibility.plan({ ...request, allowAllocatedStock: true })).toMatchObject({
+      lines: [{ position: { lotId: "RESERVED-OLD" } }],
+    });
+    const freeScope = { ...request, scope: { ...request.scope, lotIds: ["FREE-NEW"] } };
+    expect(await inventory.fungibility.plan({ ...freeScope, allowAllocatedStock: true }))
+      .toEqual(await inventory.fungibility.plan(freeScope));
+    for (const allowAllocatedStock of [false, true]) {
+      const requested = parseQuantity("3", "dose-equivalent");
+      expect(await inventory.fungibility.plan({ ...request, requested, allowAllocatedStock }))
+        .toMatchObject({ lines: [], shortfall: requested });
+    }
 
     const issued = await inventory.fungibility.issue({
       operationId: "issue-free-fungible-member",
