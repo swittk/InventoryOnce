@@ -478,6 +478,21 @@ function planInventoryFungibilityAllocationWithHolds({
     }
   }
 
+  /** Keep only pool-member claims in the index used by recording trials. */
+  const recordingClaimsByRevision = recording && !allowAllocatedStock
+    ? new Map<string, InventoryReservation[]>()
+    : undefined;
+  if (recordingClaimsByRevision !== undefined) {
+    const memberRevisionIds = new Set<string>();
+    for (const member of definition.members) memberRevisionIds.add(member.itemRevisionId);
+    for (const reservation of reservations ?? []) {
+      if (!memberRevisionIds.has(reservation.itemRevisionId)) continue;
+      const claims = recordingClaimsByRevision.get(reservation.itemRevisionId);
+      if (claims === undefined) recordingClaimsByRevision.set(reservation.itemRevisionId, [reservation]);
+      else claims.push(reservation);
+    }
+  }
+
   /** Cache claim shortage baselines by the revision sets tried during physical recording. */
   const earlierShortagesByRevisionSet = new Map<string, ReadonlyMap<string, Quantity>>();
   /** Find shortages in the same revision scope, claim book, and authority time as the trial. */
@@ -519,7 +534,9 @@ function planInventoryFungibilityAllocationWithHolds({
               reservationEffect,
               allocations,
               evidenceByPosition,
-              ...(recording ? { recordingClaims: { reservations: reservations ?? [], readEarlierShortages } } : {}),
+              ...(recordingClaimsByRevision === undefined ? {} : {
+                recordingClaims: { reservationsByRevision: recordingClaimsByRevision, readEarlierShortages },
+              }),
             }),
         }),
   });
@@ -646,8 +663,8 @@ interface FungibilityReservationPreservationInput {
   >;
   /** Claim evidence for physical recording, which can preserve an existing shortage. */
   readonly recordingClaims?: {
-    /** Claim rows already resolved at the trial's reservation authority time. */
-    readonly reservations: readonly InventoryReservation[];
+    /** Claim rows indexed by exact member revision at the trial's reservation authority time. */
+    readonly reservationsByRevision: ReadonlyMap<string, readonly InventoryReservation[]>;
     /** Baseline at the same authority time and within the same changed revisions. */
     readonly readEarlierShortages: (
       itemRevisionIds: ReadonlySet<string>,
@@ -798,8 +815,8 @@ function fungibilityAllocationsPreserveReservations({
   if (recordingClaims !== undefined) {
     /** Claims compete only within the exact item revision frozen by reservation creation. */
     const reservations = createInventorySparseRecord<InventoryReservation>();
-    for (const reservation of recordingClaims.reservations) {
-      if (changedItemRevisionIds.has(reservation.itemRevisionId)) {
+    for (const revisionId of changedItemRevisionIds) {
+      for (const reservation of recordingClaims.reservationsByRevision.get(revisionId) ?? []) {
         setInventorySparseRecordValue(reservations, reservation.reservationId, reservation);
       }
     }

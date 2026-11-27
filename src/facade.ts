@@ -6,6 +6,7 @@ import {
 } from "./stock-scope.js";
 import { assertInventoryAmountKind } from "./stock-amount-rules.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { InventoryExactAllocationLimitError } from "./allocation.js";
 import {
   summarizeInventoryAvailability,
   type InventoryAvailabilitySummary,
@@ -5594,10 +5595,20 @@ async function commitInventoryPolicyMovement(
 function planInventoryAllocationForRecording(
   input: PlanWorkingInventoryAllocationInput
 ): InventoryWorkingPolicyAllocationPlan {
-  const preferred = planWorkingInventoryAllocation({
-    ...input,
-    recordingAttempt: input.allowAllocatedStock ? "all-physical" : "prefer-unheld",
+  /** Plan against all eligible physical stock, including stock held by a reservation. */
+  const planPhysical = () => planWorkingInventoryAllocation({
+    ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
   });
+  /** Keep the preferred result only when its search decides a pick within budget. */
+  let preferred: InventoryWorkingPolicyAllocationPlan | undefined;
+  if (!input.allowAllocatedStock) {
+    try {
+      preferred = planWorkingInventoryAllocation({ ...input, recordingAttempt: "prefer-unheld" });
+    } catch (error) {
+      if (!(error instanceof InventoryExactAllocationLimitError)) throw error;
+      // An exhausted preference search says nothing about the full physical pool.
+    }
+  }
   const measured = input.amount.independent.length !== 0;
   const item = input.selection.item;
   /** Calculate the remaining reported axes for one measured witness plan. */
@@ -5605,13 +5616,11 @@ function planInventoryAllocationForRecording(
     inventoryPolicyMovementRemainder({
       catalog: input.catalog, item, report: plan.requestedMeasurements, lines: plan.lines,
     });
-  let selected = preferred;
-  let residual = measured ? remainderOf(preferred) : undefined;
-  if (!input.allowAllocatedStock && (preferred.shortfall.amountMinor !== 0 ||
+  let selected = preferred ?? planPhysical();
+  let residual = measured ? remainderOf(selected) : undefined;
+  if (preferred !== undefined && (preferred.shortfall.amountMinor !== 0 ||
     (measured && residual === undefined))) {
-    const physical = planWorkingInventoryAllocation({
-      ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
-    });
+    const physical = planPhysical();
     const physicalResidual = measured ? remainderOf(physical) : undefined;
     const shortfallComparison = compareQuantity(physical.shortfall, preferred.shortfall);
     // A coherent partial witness is better than a fuller count that contradicts the report.

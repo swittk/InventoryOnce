@@ -4,6 +4,7 @@ import {
   defineInventoryCatalog,
   defineInventoryItem,
   defineScalarInventoryItem,
+  defineScalarInventoryPackaging,
   extendInventoryCatalog,
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
@@ -1480,6 +1481,59 @@ describe("indexed stock planning and availability", () => {
     expect(compareQuantity(whole.measurementsDelta.primary.quantity, parseQuantity("2", "kg"))).toBe(0);
     expect(whole.measurementsDelta.independent).toEqual([{ axisId: "volume", quantity: parseQuantity("1", "L") }]);
   });
+
+  it("retries a bounded policy search with held physical stock and rejects an exhausted physical search", async () => {
+    const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "pieces", unit: "piece" });
+    const box = defineScalarInventoryPackaging({ revisionId: "bulk-box", item, packageUnit: "box", contains: "2" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { bulk: item.revisionId }, packagingRevisions: [box],
+    });
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, clockAt(time3), InventoryDeficitPolicy.Record);
+    const from = { itemId: item.itemId, placementNodeId: "store", lotId: "held-loose" };
+    const quantity = parseQuantity("3", "piece");
+    await inventory.stock.receive({ operationId: "seed-held-depth-lot", occurredAtEpochMs: time0, to: from, amount: stockAmount("3", "piece") });
+    const heldScope = inventoryStockSelector(item.itemId, { placementNodeIds: ["store"], lotIds: [from.lotId] });
+    const [held] = await inventory.read.positions(heldScope);
+    if (held === undefined) throw new Error("Expected the held position.");
+    await inventory.reservations.reserve({
+      operationId: "reserve-depth-lot", reservationId: "depth-claim", itemRevisionId: item.revisionId,
+      selector: heldScope, requested: quantity, createdAtEpochMs: time1,
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate-depth-lot", reservationId: "depth-claim", occurredAtEpochMs: time1,
+      allocations: [{ position: held.key, quantity }],
+    });
+    await inventory.stock.receiveMany({
+      operationId: "seed-depth-boxes", occurredAtEpochMs: time1,
+      lines: Array.from({ length: 5_001 }, (_, index) => ({
+        to: { ...from, lotId: `two-${index}` }, amount: packageAmount(1, box.revisionId),
+      })),
+    });
+    const claim = await inventory.read.reservation("depth-claim");
+    const command = {
+      operationId: "record-policy-depth", occurredAtEpochMs: time2, toPlacementNodeId: "room",
+      selector: inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] }),
+      method: InventoryAllocationMethod.Fifo, amount: stockAmount("3", "piece"),
+    };
+    const result = await inventory.stock.transferByPolicy(command);
+    expect(result.event.unwitnessedStockMovements).toBeUndefined();
+    expect(result.event.stockEffects.map(({ position, measurementsDelta }) => [
+      position.lotId, position.placementNodeId, measurementsDelta.primary.quantity,
+    ])).toEqual([
+      ["held-loose", "room", quantity], ["held-loose", "store", parseQuantity("-3", "piece")],
+    ]);
+    expect(await inventory.read.reservation("depth-claim")).toEqual(claim);
+    expect((await inventory.read.reservationFeasibility(time3)).groups[0]?.shortage).toEqual(quantity);
+
+    // The remaining packages cannot be searched within the physical depth budget.
+    const head = storage.readSegmentedStockHead();
+    const exhaustedOperationId = "record-policy-physical-limit";
+    await expect(inventory.stock.transferByPolicy({ ...command, operationId: exhaustedOperationId }))
+      .rejects.toThrow("Exact allocation exceeded its safe search bound");
+    expect(storage.readSegmentedStockHead()).toEqual(head);
+    expect(await storage.readOperation(exhaustedOperationId)).toBeUndefined();
+  }, 15_000);
 
   it("records a proven measured remainder when the stock pool exceeds the search depth", async () => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
