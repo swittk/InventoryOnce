@@ -1,7 +1,7 @@
 import { InventoryEventKind, type InventoryCommittedEvent } from "./events.js";
 import { inventoryStockPositionIdentity } from "./model.js";
 
-/** Internal replay marker for corrected history that can remove a retained transfer's source age. */
+/** Internal replay marker for corrected or filtered history that can omit a retained transfer's source age. */
 export const replayEffectiveStockAge = Symbol("replayEffectiveStockAge");
 
 /** Preserve FIFO provenance only for the final positive stock row of a correction. */
@@ -24,7 +24,7 @@ export function captureConservedPositiveLayerStarts(
     const destinationId = inventoryStockPositionIdentity(transfer.to);
     const sourceStartedAtEpochMs = positiveLayerStart(sourceId);
     if (sourceStartedAtEpochMs === undefined) {
-      // A corrected earlier receipt can expose a shortage behind a retained
+      // A corrected or excluded receipt can expose a shortage behind a retained
       // loose-stock transfer. The route remains evidence, with no earlier age to carry.
       if (replayEffectiveHistory && transfer.from.serialId === undefined &&
         inventoryConservedArrivalCanSettleDeficit(event)) continue;

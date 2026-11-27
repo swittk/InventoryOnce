@@ -624,6 +624,50 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ]);
   });
 
+  it("reconciles a mixed transfer when the occurrence cut excludes its source receipt", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const selector = { itemId: "item-a", placementNodeIds: ["destination"] };
+    await inventory.counts.start({
+      countId: "mixed-transfer-count", operationId: "start-mixed-transfer-count", selector,
+      startedAtEpochMs: time0,
+    });
+    await inventory.stock.receive({
+      operationId: "later-source-receipt", occurredAtEpochMs: time2,
+      to: loosePosition("source"), amount: stockAmount("1", "piece"),
+    });
+    const moved = await inventory.stock.transfer({
+      operationId: "backdated-mixed-transfer", occurredAtEpochMs: time1,
+      from: loosePosition("source"), toPlacementNodeId: "destination", amount: stockAmount("2", "piece"),
+    });
+    expect(moved.event.positiveLayerProvenanceTransfers).toHaveLength(1);
+    expect(moved.event.unwitnessedStockMovements).toMatchObject([
+      { measurements: { primary: { quantity: parseQuantity("1", "piece") } } },
+    ]);
+    const [arrival] = await inventory.read.positions(selector);
+    if (arrival === undefined) throw new Error("Expected the mixed transfer arrival.");
+    await inventory.counts.observe({
+      countId: "mixed-transfer-count", operationId: "observe-mixed-transfer-count", observedAtEpochMs: time1,
+      observations: [{
+        position: arrival.key,
+        measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    await inventory.stock.receive({
+      operationId: "post-observation-arrival", occurredAtEpochMs: time2,
+      to: loosePosition("destination"), amount: stockAmount("3", "piece"),
+    });
+    const result = await inventory.counts.reconcile({
+      countId: "mixed-transfer-count", operationId: "reconcile-mixed-transfer-count", completedAtEpochMs: time3,
+      reason: "One transferred piece was missing at observation.",
+    });
+    expect(result.count.status).toBe(InventoryCountStatus.Completed);
+    expect(result.event?.stockEffects).toMatchObject([
+      { position: arrival.key, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+    ]);
+    expect((await inventory.read.positions(selector)).map(({ measurements }) => measurements.primary.quantity))
+      .toEqual([parseQuantity("4", "piece")]);
+  });
+
   it("retains correction supersession predecessors in occurrence-time count replay", async () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({

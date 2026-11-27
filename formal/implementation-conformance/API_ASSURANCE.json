@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4254,
-    "compilerCallGraphEdges": 12123,
+    "compilerCallGraphCallables": 4256,
+    "compilerCallGraphEdges": 12135,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -21963,9 +21963,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:23000:abandonInventoryCount",
+              "id": "src/counts.ts:23216:abandonInventoryCount",
               "kind": "FunctionDeclaration",
-              "line": 610,
+              "line": 614,
               "name": "abandonInventoryCount",
               "reason": "resolved-call"
             }
@@ -21974,9 +21974,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:23000:abandonInventoryCount",
+            "id": "src/counts.ts:23216:abandonInventoryCount",
             "kind": "FunctionDeclaration",
-            "line": 610,
+            "line": 614,
             "name": "abandonInventoryCount"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -22004,9 +22004,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:23000:abandonInventoryCount",
+          "id": "src/counts.ts:23216:abandonInventoryCount",
           "kind": "FunctionDeclaration",
-          "line": 610,
+          "line": 614,
           "name": "abandonInventoryCount"
         }
       ],
@@ -25727,9 +25727,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:21013:completeInventoryCount",
+              "id": "src/counts.ts:21229:completeInventoryCount",
               "kind": "FunctionDeclaration",
-              "line": 558,
+              "line": 562,
               "name": "completeInventoryCount",
               "reason": "resolved-call"
             }
@@ -25738,9 +25738,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:21013:completeInventoryCount",
+            "id": "src/counts.ts:21229:completeInventoryCount",
             "kind": "FunctionDeclaration",
-            "line": 558,
+            "line": 562,
             "name": "completeInventoryCount"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -25768,9 +25768,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:21013:completeInventoryCount",
+          "id": "src/counts.ts:21229:completeInventoryCount",
           "kind": "FunctionDeclaration",
-          "line": 558,
+          "line": 562,
           "name": "completeInventoryCount"
         }
       ],
@@ -26610,9 +26610,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:13670:createInventoryCountReconciliationPlan",
+              "id": "src/counts.ts:13728:createInventoryCountReconciliationPlan",
               "kind": "FunctionDeclaration",
-              "line": 365,
+              "line": 366,
               "name": "createInventoryCountReconciliationPlan",
               "reason": "resolved-call"
             }
@@ -26621,9 +26621,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:13670:createInventoryCountReconciliationPlan",
+            "id": "src/counts.ts:13728:createInventoryCountReconciliationPlan",
             "kind": "FunctionDeclaration",
-            "line": 365,
+            "line": 366,
             "name": "createInventoryCountReconciliationPlan"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -26651,9 +26651,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:13670:createInventoryCountReconciliationPlan",
+          "id": "src/counts.ts:13728:createInventoryCountReconciliationPlan",
           "kind": "FunctionDeclaration",
-          "line": 365,
+          "line": 366,
           "name": "createInventoryCountReconciliationPlan"
         }
       ],
@@ -33175,9 +33175,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:5420:emptyInventoryCountBook",
+              "id": "src/counts.ts:5478:emptyInventoryCountBook",
               "kind": "FunctionDeclaration",
-              "line": 152,
+              "line": 153,
               "name": "emptyInventoryCountBook",
               "reason": "resolved-call"
             }
@@ -33186,9 +33186,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:5420:emptyInventoryCountBook",
+            "id": "src/counts.ts:5478:emptyInventoryCountBook",
             "kind": "FunctionDeclaration",
-            "line": 152,
+            "line": 153,
             "name": "emptyInventoryCountBook"
           },
           "test": "test/record-key-domain.test.ts"
@@ -33216,9 +33216,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:5420:emptyInventoryCountBook",
+          "id": "src/counts.ts:5478:emptyInventoryCountBook",
           "kind": "FunctionDeclaration",
-          "line": 152,
+          "line": 153,
           "name": "emptyInventoryCountBook"
         }
       ],
@@ -45974,9 +45974,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:10161:observeInventoryCount",
+              "id": "src/counts.ts:10219:observeInventoryCount",
               "kind": "FunctionDeclaration",
-              "line": 274,
+              "line": 275,
               "name": "observeInventoryCount",
               "reason": "resolved-call"
             }
@@ -45985,9 +45985,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:10161:observeInventoryCount",
+            "id": "src/counts.ts:10219:observeInventoryCount",
             "kind": "FunctionDeclaration",
-            "line": 274,
+            "line": 275,
             "name": "observeInventoryCount"
           },
           "test": "test/record-key-domain.test.ts"
@@ -46015,9 +46015,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:10161:observeInventoryCount",
+          "id": "src/counts.ts:10219:observeInventoryCount",
           "kind": "FunctionDeclaration",
-          "line": 274,
+          "line": 275,
           "name": "observeInventoryCount"
         }
       ],
@@ -49160,9 +49160,9 @@
               "column": 1,
               "file": "src/counts.ts",
               "hasBody": true,
-              "id": "src/counts.ts:6678:startInventoryCount",
+              "id": "src/counts.ts:6736:startInventoryCount",
               "kind": "FunctionDeclaration",
-              "line": 186,
+              "line": 187,
               "name": "startInventoryCount",
               "reason": "resolved-call"
             }
@@ -49171,9 +49171,9 @@
             "column": 1,
             "file": "src/counts.ts",
             "hasBody": true,
-            "id": "src/counts.ts:6678:startInventoryCount",
+            "id": "src/counts.ts:6736:startInventoryCount",
             "kind": "FunctionDeclaration",
-            "line": 186,
+            "line": 187,
             "name": "startInventoryCount"
           },
           "test": "test/record-key-domain.test.ts"
@@ -49201,9 +49201,9 @@
           "column": 1,
           "file": "src/counts.ts",
           "hasBody": true,
-          "id": "src/counts.ts:6678:startInventoryCount",
+          "id": "src/counts.ts:6736:startInventoryCount",
           "kind": "FunctionDeclaration",
-          "line": 186,
+          "line": 187,
           "name": "startInventoryCount"
         }
       ],
@@ -77761,6 +77761,10 @@
           "path": "src/corrections.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/counts.ts"
+        },
+        {
           "occurrences": 4,
           "path": "src/event-query.ts"
         },
@@ -79801,10 +79805,10 @@
               "column": 82,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:28299:<anonymous@806>",
+              "id": "test/reservations-counts.test.ts:30727:<anonymous@850>",
               "kind": "ArrowFunction",
-              "line": 806,
-              "name": "<anonymous@806>",
+              "line": 850,
+              "name": "<anonymous@850>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -94197,6 +94201,10 @@
           "path": "src/corrections.ts"
         },
         {
+          "occurrences": 1,
+          "path": "src/counts.ts"
+        },
+        {
           "occurrences": 4,
           "path": "src/event-query.ts"
         },
@@ -102030,5 +102038,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "5f65135dd2b8800071a21f4cc65cfbbc2ff40a0931c88f837f5db3b4cd64ca60"
+  "surfaceSha256": "2f28329bb78183fbd7101b8ad8942a0a0621e3dd7bd4c1f04309e1d5a2ac6946"
 }

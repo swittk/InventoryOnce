@@ -51,6 +51,7 @@ import {
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
 } from "./selectors.js";
+import { replayEffectiveStockAge } from "./stock-age.js";
 
 /** Durable lifecycle of one physical/cycle count. */
 export enum InventoryCountStatus {
@@ -531,11 +532,14 @@ function projectInventoryEventsAtOrBefore(
     occurrenceCut.push({ ...event, recordSequence: cutSequence });
     cutSequence += 1;
   }
-  return projectInventoryEvents({
+  // The cut can retain a transfer while excluding the receipt that gave its source a FIFO age.
+  const replay = {
     catalog,
     events: occurrenceCut,
     deficitPolicy,
-  });
+    [replayEffectiveStockAge]: true,
+  };
+  return projectInventoryEvents(replay);
 }
 
 /** Inputs for atomically marking one reconciliation plan completed. */
