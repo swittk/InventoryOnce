@@ -1393,7 +1393,7 @@ describe("derived pool summaries and exact member movements", () => {
     expect(reservation?.allocations).toEqual([{ position: position.key, quantity: requested }]);
   });
 
-  it.each(["unrelated", "transferred"] as const)("records a fungible transfer with a short broad claim on the %s item beyond the feasibility search bound", async (claimTarget) => {
+  it.each(["unrelated", "transferred"] as const)("reports a large packaged claim shortage after a fungible transfer on the %s item", async (claimTarget) => {
     const member = oldBrand();
     const alternative = newBrand();
     const unrelated = doubleStrength();
@@ -1458,8 +1458,15 @@ describe("derived pool summaries and exact member movements", () => {
         packaging.revisionId, packaging.revisionId,
       ]);
       expect(remaining).toMatchObject([{ measurements: { primary: { quantity: parseQuantity("199998", "piece") } } }]);
-      await expect(inventory.read.reservationFeasibility(time3)).rejects.toThrow("exceeded its safe search bound");
     }
+    expect((await inventory.read.reservationFeasibility(time3)).groups).toEqual([
+      expect.objectContaining({
+        reservationIds: ["package-claim"],
+        requested: parseQuantity("200004", "piece"),
+        fulfillable: parseQuantity(claimTarget === "transferred" ? "199998" : "200002", "piece"),
+        shortage: parseQuantity(claimTarget === "transferred" ? "6" : "2", "piece"),
+      }),
+    ]);
     expect(await inventory.read.reservation("package-claim")).toEqual(claim);
   });
 

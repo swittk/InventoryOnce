@@ -16,6 +16,7 @@ import {
   stockAmount,
   unitCode,
 } from "../src/index.js";
+import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
   createTestInventory,
   loosePosition,
@@ -52,6 +53,42 @@ async function quantityByLot(
 }
 
 describe("native FIFO/FEFO movement policy", () => {
+  it.each([false, true])("replays a recorded deficit under Reject mode (canonical=%s)", async (canonical) => {
+    const storage = createInMemoryInventoryDurableStorage(canonical ? {
+      /** Keep both façades on the canonical coordinator for this case. */
+      failpoint: () => undefined,
+    } : undefined);
+    const record = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    const reject = createTestInventory(storage);
+    const request = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
+      amount: stockAmount("3", "piece"),
+      method: InventoryAllocationMethod.Fifo,
+      deficitPosition: loosePosition("store"),
+    };
+    const single = { ...request, operationId: "record-mode-single", occurredAtEpochMs: time1 };
+    const batchRequest = { ...request, requestId: "deficit" };
+    const batch = {
+      operationId: "record-mode-batch", occurredAtEpochMs: time2,
+      requests: [batchRequest],
+    };
+    const issued = await record.stock.issueByPolicy(single);
+    const issuedBatch = await record.stock.issueManyByPolicy(batch);
+    expect(await reject.stock.issueByPolicy(single)).toEqual({ ...issued, replayed: true });
+    expect(await reject.stock.issueManyByPolicy(batch)).toEqual({ ...issuedBatch, replayed: true });
+    await expect(reject.stock.issueByPolicy({ ...single, amount: stockAmount("4", "piece") }))
+      .rejects.toThrow("changed intent");
+    await expect(reject.stock.issueManyByPolicy({
+      ...batch, requests: [{ ...batchRequest, requestId: "changed" }],
+    })).rejects.toThrow("changed intent");
+    await expect(reject.stock.issueByPolicy({ ...single, operationId: "reject-mode-single" }))
+      .rejects.toThrow("only under Record mode");
+    await expect(reject.stock.issueManyByPolicy({ ...batch, operationId: "reject-mode-batch" }))
+      .rejects.toThrow("only under Record mode");
+    expect(await storage.readOperation("reject-mode-single")).toBeUndefined();
+    expect(await storage.readOperation("reject-mode-batch")).toBeUndefined();
+  });
+
   it("previews and atomically issues FEFO across exact lots", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({

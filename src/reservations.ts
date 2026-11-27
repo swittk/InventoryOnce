@@ -1339,6 +1339,8 @@ function reservationGroupFeasibility(
 
   /** Merged package/serial capacities; ordinary package count does not create search nodes. */
   const indivisibleGroups: ReservationIndivisibleGroup[] = [];
+  /** Total candidate capacity bounds any legal assignment after recorded deficits. */
+  let totalCapacity = 0n;
   for (
     let positionIndex = 0;
     positionIndex < positions.length;
@@ -1346,9 +1348,10 @@ function reservationGroupFeasibility(
   ) {
     const candidate = positions[positionIndex];
     if (candidate === undefined) continue;
+    const capacityMinor = quantityAtDecimals(candidate.capacity, decimals);
+    totalCapacity += capacityMinor;
     const increment = candidate.indivisibleIncrement;
     if (increment === undefined) continue;
-    const capacityMinor = quantityAtDecimals(candidate.capacity, decimals);
     const incrementMinor = quantityAtDecimals(increment, decimals);
     const slotCount = capacityMinor / incrementMinor;
     if (capacityMinor % incrementMinor !== 0n) {
@@ -1385,7 +1388,7 @@ function reservationGroupFeasibility(
       requestedByReservation,
       edgeCapacityByReservation,
       decimals,
-      totalRequested
+      totalRequested < totalCapacity ? totalRequested : totalCapacity
     ),
   };
 }
@@ -1606,14 +1609,14 @@ function createIndivisibleReservationIncrement(
   };
 }
 
-/** Assign grouped whole package/serial capacity exactly, then fill from divisible rows. */
+/** Assign whole packages and serials exactly, stopping once a real assignment reaches the upper bound. */
 function maximumReservationAssignmentWithIndivisibleGroups(
   positions: readonly ReservationFeasibilityPosition[],
   groups: readonly ReservationIndivisibleGroup[],
   requestedByReservation: readonly bigint[],
   edgeCapacityByReservation: readonly bigint[][],
   decimals: number,
-  totalRequested: bigint
+  fulfillableUpperBound: bigint
 ): bigint {
   let best = 0n;
   let exploredStates = 0;
@@ -1625,7 +1628,7 @@ function maximumReservationAssignmentWithIndivisibleGroups(
     remainingEdgeCapacity: bigint[][],
     assignedMinor: bigint
   ): void => {
-    if (best === totalRequested) return;
+    if (best === fulfillableUpperBound) return;
     exploredStates += 1;
     if (exploredStates > MAXIMUM_RESERVATION_FEASIBILITY_STATES) {
       throw new InventoryReservationFeasibilityLimitError(
@@ -1661,7 +1664,7 @@ function maximumReservationAssignmentWithIndivisibleGroups(
       remainingEdgeCapacity,
       /** Try each real integer distribution, with large assignments first for quick full-demand exits. */
       (assignedCounts) => {
-        if (best === totalRequested) return false;
+        if (best === fulfillableUpperBound) return false;
         const nextDemand = [...remainingDemand];
         const nextEdges = remainingEdgeCapacity.map(
           /** Copy one claim's edge capacities before changing this group branch. */
@@ -1698,7 +1701,7 @@ function maximumReservationAssignmentWithIndivisibleGroups(
           nextEdges,
           assignedMinor + groupAssignedMinor
         );
-        return best !== totalRequested;
+        return best !== fulfillableUpperBound;
       }
     );
   };

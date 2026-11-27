@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4250,
-    "compilerCallGraphEdges": 12093,
+    "compilerCallGraphCallables": 4253,
+    "compilerCallGraphEdges": 12104,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -12499,9 +12499,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -16529,9 +16529,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -19769,7 +19769,7 @@
           "path": "src/events.ts"
         },
         {
-          "occurrences": 344,
+          "occurrences": 345,
           "path": "src/facade.ts"
         },
         {
@@ -23397,9 +23397,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:338989:defineInventoryAmountLineGroup",
+              "id": "src/facade.ts:339477:defineInventoryAmountLineGroup",
               "kind": "FunctionDeclaration",
-              "line": 8792,
+              "line": 8785,
               "name": "defineInventoryAmountLineGroup",
               "reason": "resolved-call"
             },
@@ -27049,9 +27049,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -27818,9 +27818,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:302412:define",
+              "id": "src/facade.ts:302900:define",
               "kind": "MethodDeclaration",
-              "line": 7788,
+              "line": 7781,
               "name": "define",
               "reason": "interface-to-implementation"
             },
@@ -36719,9 +36719,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -36883,9 +36883,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -37058,9 +37058,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -40070,9 +40070,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411212:placementAncestry",
+              "id": "src/facade.ts:411700:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10748,
+              "line": 10741,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             },
@@ -40706,9 +40706,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:409525:placementParent",
+              "id": "src/facade.ts:410013:placementParent",
               "kind": "MethodDeclaration",
-              "line": 10704,
+              "line": 10697,
               "name": "placementParent",
               "reason": "interface-to-implementation"
             },
@@ -42836,9 +42836,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:353170:start",
+              "id": "src/facade.ts:353658:start",
               "kind": "MethodDeclaration",
-              "line": 9154,
+              "line": 9147,
               "name": "start",
               "reason": "interface-to-implementation"
             },
@@ -43877,9 +43877,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408342:packagingRevisions",
+              "id": "src/facade.ts:408830:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10671,
+              "line": 10664,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             },
@@ -45195,9 +45195,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -48192,9 +48192,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -50152,9 +50152,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403910:summary",
+              "id": "src/facade.ts:404398:summary",
               "kind": "MethodDeclaration",
-              "line": 10575,
+              "line": 10568,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -53698,9 +53698,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:338989:defineInventoryAmountLineGroup",
+              "id": "src/facade.ts:339477:defineInventoryAmountLineGroup",
               "kind": "FunctionDeclaration",
-              "line": 8792,
+              "line": 8785,
               "name": "defineInventoryAmountLineGroup",
               "reason": "resolved-call"
             },
@@ -54864,9 +54864,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:339631:combineInventoryAmountLineGroups",
+              "id": "src/facade.ts:340119:combineInventoryAmountLineGroups",
               "kind": "FunctionDeclaration",
-              "line": 8815,
+              "line": 8808,
               "name": "combineInventoryAmountLineGroups",
               "reason": "resolved-call"
             }
@@ -54875,9 +54875,9 @@
             "column": 1,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:339631:combineInventoryAmountLineGroups",
+            "id": "src/facade.ts:340119:combineInventoryAmountLineGroups",
             "kind": "FunctionDeclaration",
-            "line": 8815,
+            "line": 8808,
             "name": "combineInventoryAmountLineGroups"
           },
           "test": "test/allocation-results.test.ts"
@@ -54902,9 +54902,9 @@
           "column": 1,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:339631:combineInventoryAmountLineGroups",
+          "id": "src/facade.ts:340119:combineInventoryAmountLineGroups",
           "kind": "FunctionDeclaration",
-          "line": 8815,
+          "line": 8808,
           "name": "combineInventoryAmountLineGroups"
         }
       ],
@@ -54986,9 +54986,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:348110:combineInventoryPolicyBatchRequestGroups",
+              "id": "src/facade.ts:348598:combineInventoryPolicyBatchRequestGroups",
               "kind": "FunctionDeclaration",
-              "line": 9022,
+              "line": 9015,
               "name": "combineInventoryPolicyBatchRequestGroups",
               "reason": "resolved-call"
             }
@@ -54997,9 +54997,9 @@
             "column": 1,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:348110:combineInventoryPolicyBatchRequestGroups",
+            "id": "src/facade.ts:348598:combineInventoryPolicyBatchRequestGroups",
             "kind": "FunctionDeclaration",
-            "line": 9022,
+            "line": 9015,
             "name": "combineInventoryPolicyBatchRequestGroups"
           },
           "test": "test/allocation-results.test.ts"
@@ -55024,9 +55024,9 @@
           "column": 1,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:348110:combineInventoryPolicyBatchRequestGroups",
+          "id": "src/facade.ts:348598:combineInventoryPolicyBatchRequestGroups",
           "kind": "FunctionDeclaration",
-          "line": 9022,
+          "line": 9015,
           "name": "combineInventoryPolicyBatchRequestGroups"
         }
       ],
@@ -55991,9 +55991,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:338989:defineInventoryAmountLineGroup",
+              "id": "src/facade.ts:339477:defineInventoryAmountLineGroup",
               "kind": "FunctionDeclaration",
-              "line": 8792,
+              "line": 8785,
               "name": "defineInventoryAmountLineGroup",
               "reason": "resolved-call"
             }
@@ -56002,9 +56002,9 @@
             "column": 1,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:338989:defineInventoryAmountLineGroup",
+            "id": "src/facade.ts:339477:defineInventoryAmountLineGroup",
             "kind": "FunctionDeclaration",
-            "line": 8792,
+            "line": 8785,
             "name": "defineInventoryAmountLineGroup"
           },
           "test": "test/allocation-results.test.ts"
@@ -56029,9 +56029,9 @@
           "column": 1,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:338989:defineInventoryAmountLineGroup",
+          "id": "src/facade.ts:339477:defineInventoryAmountLineGroup",
           "kind": "FunctionDeclaration",
-          "line": 8792,
+          "line": 8785,
           "name": "defineInventoryAmountLineGroup"
         }
       ],
@@ -56945,9 +56945,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:345374:defineInventoryPolicyBatchRequestGroup",
+              "id": "src/facade.ts:345862:defineInventoryPolicyBatchRequestGroup",
               "kind": "FunctionDeclaration",
-              "line": 8942,
+              "line": 8935,
               "name": "defineInventoryPolicyBatchRequestGroup",
               "reason": "resolved-call"
             }
@@ -56956,9 +56956,9 @@
             "column": 1,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:345374:defineInventoryPolicyBatchRequestGroup",
+            "id": "src/facade.ts:345862:defineInventoryPolicyBatchRequestGroup",
             "kind": "FunctionDeclaration",
-            "line": 8942,
+            "line": 8935,
             "name": "defineInventoryPolicyBatchRequestGroup"
           },
           "test": "test/allocation-results.test.ts"
@@ -56983,9 +56983,9 @@
           "column": 1,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:345374:defineInventoryPolicyBatchRequestGroup",
+          "id": "src/facade.ts:345862:defineInventoryPolicyBatchRequestGroup",
           "kind": "FunctionDeclaration",
-          "line": 8942,
+          "line": 8935,
           "name": "defineInventoryPolicyBatchRequestGroup"
         }
       ],
@@ -61486,9 +61486,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:349708:inventoryPolicyBatchAllocationLinesByReference",
+              "id": "src/facade.ts:350196:inventoryPolicyBatchAllocationLinesByReference",
               "kind": "FunctionDeclaration",
-              "line": 9058,
+              "line": 9051,
               "name": "inventoryPolicyBatchAllocationLinesByReference",
               "reason": "resolved-call"
             }
@@ -61497,9 +61497,9 @@
             "column": 1,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:349708:inventoryPolicyBatchAllocationLinesByReference",
+            "id": "src/facade.ts:350196:inventoryPolicyBatchAllocationLinesByReference",
             "kind": "FunctionDeclaration",
-            "line": 9058,
+            "line": 9051,
             "name": "inventoryPolicyBatchAllocationLinesByReference"
           },
           "test": "test/allocation-results.test.ts"
@@ -61524,9 +61524,9 @@
           "column": 1,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:349708:inventoryPolicyBatchAllocationLinesByReference",
+          "id": "src/facade.ts:350196:inventoryPolicyBatchAllocationLinesByReference",
           "kind": "FunctionDeclaration",
-          "line": 9058,
+          "line": 9051,
           "name": "inventoryPolicyBatchAllocationLinesByReference"
         }
       ],
@@ -62402,9 +62402,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408342:packagingRevisions",
+              "id": "src/facade.ts:408830:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10671,
+              "line": 10664,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             },
@@ -67487,9 +67487,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403910:summary",
+              "id": "src/facade.ts:404398:summary",
               "kind": "MethodDeclaration",
-              "line": 10575,
+              "line": 10568,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -71713,9 +71713,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -71869,9 +71869,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411212:placementAncestry",
+              "id": "src/facade.ts:411700:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10748,
+              "line": 10741,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             },
@@ -72021,9 +72021,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:402004:positions",
+              "id": "src/facade.ts:402492:positions",
               "kind": "MethodDeclaration",
-              "line": 10530,
+              "line": 10523,
               "name": "positions",
               "reason": "interface-to-implementation"
             },
@@ -72355,9 +72355,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403910:summary",
+              "id": "src/facade.ts:404398:summary",
               "kind": "MethodDeclaration",
-              "line": 10575,
+              "line": 10568,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -73096,9 +73096,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:402004:positions",
+              "id": "src/facade.ts:402492:positions",
               "kind": "MethodDeclaration",
-              "line": 10530,
+              "line": 10523,
               "name": "positions",
               "reason": "interface-to-implementation"
             },
@@ -75794,9 +75794,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:359055:abandon",
+              "id": "src/facade.ts:359543:abandon",
               "kind": "MethodDeclaration",
-              "line": 9312,
+              "line": 9305,
               "name": "abandon",
               "reason": "interface-to-implementation"
             }
@@ -75805,9 +75805,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:359055:abandon",
+            "id": "src/facade.ts:359543:abandon",
             "kind": "MethodDeclaration",
-            "line": 9312,
+            "line": 9305,
             "name": "abandon"
           },
           "test": "test/reservations-counts.test.ts"
@@ -75831,9 +75831,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:359055:abandon",
+          "id": "src/facade.ts:359543:abandon",
           "kind": "MethodDeclaration",
-          "line": 9312,
+          "line": 9305,
           "name": "abandon"
         }
       ],
@@ -75945,9 +75945,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:355282:observe",
+              "id": "src/facade.ts:355770:observe",
               "kind": "MethodDeclaration",
-              "line": 9211,
+              "line": 9204,
               "name": "observe",
               "reason": "interface-to-implementation"
             }
@@ -75956,9 +75956,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:355282:observe",
+            "id": "src/facade.ts:355770:observe",
             "kind": "MethodDeclaration",
-            "line": 9211,
+            "line": 9204,
             "name": "observe"
           },
           "test": "test/containers.test.ts"
@@ -75982,9 +75982,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:355282:observe",
+          "id": "src/facade.ts:355770:observe",
           "kind": "MethodDeclaration",
-          "line": 9211,
+          "line": 9204,
           "name": "observe"
         }
       ],
@@ -76088,9 +76088,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:356857:reconcile",
+              "id": "src/facade.ts:357345:reconcile",
               "kind": "MethodDeclaration",
-              "line": 9255,
+              "line": 9248,
               "name": "reconcile",
               "reason": "interface-to-implementation"
             }
@@ -76099,9 +76099,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:356857:reconcile",
+            "id": "src/facade.ts:357345:reconcile",
             "kind": "MethodDeclaration",
-            "line": 9255,
+            "line": 9248,
             "name": "reconcile"
           },
           "test": "test/containers.test.ts"
@@ -76125,9 +76125,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:356857:reconcile",
+          "id": "src/facade.ts:357345:reconcile",
           "kind": "MethodDeclaration",
-          "line": 9255,
+          "line": 9248,
           "name": "reconcile"
         }
       ],
@@ -76249,9 +76249,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:350895:replaceAbsolute",
+              "id": "src/facade.ts:351383:replaceAbsolute",
               "kind": "MethodDeclaration",
-              "line": 9088,
+              "line": 9081,
               "name": "replaceAbsolute",
               "reason": "interface-to-implementation"
             }
@@ -76260,9 +76260,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:350895:replaceAbsolute",
+            "id": "src/facade.ts:351383:replaceAbsolute",
             "kind": "MethodDeclaration",
-            "line": 9088,
+            "line": 9081,
             "name": "replaceAbsolute"
           },
           "test": "test/dual-measure-counts.test.ts"
@@ -76286,9 +76286,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:350895:replaceAbsolute",
+          "id": "src/facade.ts:351383:replaceAbsolute",
           "kind": "MethodDeclaration",
-          "line": 9088,
+          "line": 9081,
           "name": "replaceAbsolute"
         }
       ],
@@ -76388,9 +76388,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:353170:start",
+              "id": "src/facade.ts:353658:start",
               "kind": "MethodDeclaration",
-              "line": 9154,
+              "line": 9147,
               "name": "start",
               "reason": "interface-to-implementation"
             }
@@ -76399,9 +76399,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:353170:start",
+            "id": "src/facade.ts:353658:start",
             "kind": "MethodDeclaration",
-            "line": 9154,
+            "line": 9147,
             "name": "start"
           },
           "test": "test/containers.test.ts"
@@ -76425,9 +76425,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:353170:start",
+          "id": "src/facade.ts:353658:start",
           "kind": "MethodDeclaration",
-          "line": 9154,
+          "line": 9147,
           "name": "start"
         }
       ],
@@ -77769,7 +77769,7 @@
           "path": "src/events.ts"
         },
         {
-          "occurrences": 84,
+          "occurrences": 83,
           "path": "src/facade.ts"
         },
         {
@@ -77938,9 +77938,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:302824:correct",
+              "id": "src/facade.ts:303312:correct",
               "kind": "MethodDeclaration",
-              "line": 7802,
+              "line": 7795,
               "name": "correct",
               "reason": "interface-to-implementation"
             }
@@ -77949,9 +77949,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:302824:correct",
+            "id": "src/facade.ts:303312:correct",
             "kind": "MethodDeclaration",
-            "line": 7802,
+            "line": 7795,
             "name": "correct"
           },
           "test": "test/lots.test.ts"
@@ -77973,9 +77973,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:302824:correct",
+          "id": "src/facade.ts:303312:correct",
           "kind": "MethodDeclaration",
-          "line": 7802,
+          "line": 7795,
           "name": "correct"
         }
       ],
@@ -78084,9 +78084,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:302412:define",
+              "id": "src/facade.ts:302900:define",
               "kind": "MethodDeclaration",
-              "line": 7788,
+              "line": 7781,
               "name": "define",
               "reason": "interface-to-implementation"
             }
@@ -78095,9 +78095,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:302412:define",
+            "id": "src/facade.ts:302900:define",
             "kind": "MethodDeclaration",
-            "line": 7788,
+            "line": 7781,
             "name": "define"
           },
           "test": "test/storage-conformance.test.ts"
@@ -78119,9 +78119,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:302412:define",
+          "id": "src/facade.ts:302900:define",
           "kind": "MethodDeclaration",
-          "line": 7788,
+          "line": 7781,
           "name": "define"
         }
       ],
@@ -78240,9 +78240,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:270917:changeContentsStatus",
+              "id": "src/facade.ts:271405:changeContentsStatus",
               "kind": "MethodDeclaration",
-              "line": 6916,
+              "line": 6909,
               "name": "changeContentsStatus",
               "reason": "interface-to-implementation"
             }
@@ -78251,9 +78251,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:270917:changeContentsStatus",
+            "id": "src/facade.ts:271405:changeContentsStatus",
             "kind": "MethodDeclaration",
-            "line": 6916,
+            "line": 6909,
             "name": "changeContentsStatus"
           },
           "test": "test/containers.test.ts"
@@ -78276,9 +78276,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:270917:changeContentsStatus",
+          "id": "src/facade.ts:271405:changeContentsStatus",
           "kind": "MethodDeclaration",
-          "line": 6916,
+          "line": 6909,
           "name": "changeContentsStatus"
         }
       ],
@@ -78390,9 +78390,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:271282:clearContentsStatus",
+              "id": "src/facade.ts:271770:clearContentsStatus",
               "kind": "MethodDeclaration",
-              "line": 6926,
+              "line": 6919,
               "name": "clearContentsStatus",
               "reason": "interface-to-implementation"
             }
@@ -78401,9 +78401,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:271282:clearContentsStatus",
+            "id": "src/facade.ts:271770:clearContentsStatus",
             "kind": "MethodDeclaration",
-            "line": 6926,
+            "line": 6919,
             "name": "clearContentsStatus"
           },
           "test": "test/containers.test.ts"
@@ -78426,9 +78426,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:271282:clearContentsStatus",
+          "id": "src/facade.ts:271770:clearContentsStatus",
           "kind": "MethodDeclaration",
-          "line": 6926,
+          "line": 6919,
           "name": "clearContentsStatus"
         }
       ],
@@ -78540,9 +78540,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:272086:correct",
+              "id": "src/facade.ts:272574:correct",
               "kind": "MethodDeclaration",
-              "line": 6950,
+              "line": 6943,
               "name": "correct",
               "reason": "interface-to-implementation"
             }
@@ -78551,9 +78551,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:272086:correct",
+            "id": "src/facade.ts:272574:correct",
             "kind": "MethodDeclaration",
-            "line": 6950,
+            "line": 6943,
             "name": "correct"
           },
           "test": "test/containers.test.ts"
@@ -78576,9 +78576,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:272086:correct",
+          "id": "src/facade.ts:272574:correct",
           "kind": "MethodDeclaration",
-          "line": 6950,
+          "line": 6943,
           "name": "correct"
         }
       ],
@@ -78692,9 +78692,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:271657:define",
+              "id": "src/facade.ts:272145:define",
               "kind": "MethodDeclaration",
-              "line": 6936,
+              "line": 6929,
               "name": "define",
               "reason": "interface-to-implementation"
             }
@@ -78703,9 +78703,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:271657:define",
+            "id": "src/facade.ts:272145:define",
             "kind": "MethodDeclaration",
-            "line": 6936,
+            "line": 6929,
             "name": "define"
           },
           "test": "test/storage-conformance.test.ts"
@@ -78728,9 +78728,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:271657:define",
+          "id": "src/facade.ts:272145:define",
           "kind": "MethodDeclaration",
-          "line": 6936,
+          "line": 6929,
           "name": "define"
         }
       ],
@@ -78854,9 +78854,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:270211:issueContents",
+              "id": "src/facade.ts:270699:issueContents",
               "kind": "MethodDeclaration",
-              "line": 6896,
+              "line": 6889,
               "name": "issueContents",
               "reason": "interface-to-implementation"
             }
@@ -78865,9 +78865,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:270211:issueContents",
+            "id": "src/facade.ts:270699:issueContents",
             "kind": "MethodDeclaration",
-            "line": 6896,
+            "line": 6889,
             "name": "issueContents"
           },
           "test": "test/containers.test.ts"
@@ -78890,9 +78890,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:270211:issueContents",
+          "id": "src/facade.ts:270699:issueContents",
           "kind": "MethodDeclaration",
-          "line": 6896,
+          "line": 6889,
           "name": "issueContents"
         }
       ],
@@ -78994,9 +78994,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:269397:move",
+              "id": "src/facade.ts:269885:move",
               "kind": "MethodDeclaration",
-              "line": 6875,
+              "line": 6868,
               "name": "move",
               "reason": "interface-to-implementation"
             }
@@ -79005,9 +79005,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:269397:move",
+            "id": "src/facade.ts:269885:move",
             "kind": "MethodDeclaration",
-            "line": 6875,
+            "line": 6868,
             "name": "move"
           },
           "test": "test/containers.test.ts"
@@ -79030,9 +79030,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:269397:move",
+          "id": "src/facade.ts:269885:move",
           "kind": "MethodDeclaration",
-          "line": 6875,
+          "line": 6868,
           "name": "move"
         }
       ],
@@ -79174,9 +79174,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:269935:moveContents",
+              "id": "src/facade.ts:270423:moveContents",
               "kind": "MethodDeclaration",
-              "line": 6889,
+              "line": 6882,
               "name": "moveContents",
               "reason": "interface-to-implementation"
             }
@@ -79185,9 +79185,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:269935:moveContents",
+            "id": "src/facade.ts:270423:moveContents",
             "kind": "MethodDeclaration",
-            "line": 6889,
+            "line": 6882,
             "name": "moveContents"
           },
           "test": "test/containers.test.ts"
@@ -79210,9 +79210,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:269935:moveContents",
+          "id": "src/facade.ts:270423:moveContents",
           "kind": "MethodDeclaration",
-          "line": 6889,
+          "line": 6882,
           "name": "moveContents"
         }
       ],
@@ -79324,9 +79324,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:270564:scrapContents",
+              "id": "src/facade.ts:271052:scrapContents",
               "kind": "MethodDeclaration",
-              "line": 6906,
+              "line": 6899,
               "name": "scrapContents",
               "reason": "interface-to-implementation"
             }
@@ -79335,9 +79335,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:270564:scrapContents",
+            "id": "src/facade.ts:271052:scrapContents",
             "kind": "MethodDeclaration",
-            "line": 6906,
+            "line": 6899,
             "name": "scrapContents"
           },
           "test": "test/containers.test.ts"
@@ -79360,9 +79360,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:270564:scrapContents",
+          "id": "src/facade.ts:271052:scrapContents",
           "kind": "MethodDeclaration",
-          "line": 6906,
+          "line": 6899,
           "name": "scrapContents"
         }
       ],
@@ -79464,9 +79464,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:269662:unplace",
+              "id": "src/facade.ts:270150:unplace",
               "kind": "MethodDeclaration",
-              "line": 6882,
+              "line": 6875,
               "name": "unplace",
               "reason": "interface-to-implementation"
             }
@@ -79475,9 +79475,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:269662:unplace",
+            "id": "src/facade.ts:270150:unplace",
             "kind": "MethodDeclaration",
-            "line": 6882,
+            "line": 6875,
             "name": "unplace"
           },
           "test": "test/containers.test.ts"
@@ -79500,9 +79500,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:269662:unplace",
+          "id": "src/facade.ts:270150:unplace",
           "kind": "MethodDeclaration",
-          "line": 6882,
+          "line": 6875,
           "name": "unplace"
         }
       ],
@@ -79617,9 +79617,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:405218:availability",
+              "id": "src/facade.ts:405706:availability",
               "kind": "MethodDeclaration",
-              "line": 10601,
+              "line": 10594,
               "name": "availability",
               "reason": "interface-to-implementation"
             }
@@ -79628,9 +79628,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:405218:availability",
+            "id": "src/facade.ts:405706:availability",
             "kind": "MethodDeclaration",
-            "line": 10601,
+            "line": 10594,
             "name": "availability"
           },
           "test": "test/availability.test.ts"
@@ -79653,9 +79653,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:405218:availability",
+          "id": "src/facade.ts:405706:availability",
           "kind": "MethodDeclaration",
-          "line": 10601,
+          "line": 10594,
           "name": "availability"
         }
       ],
@@ -79821,9 +79821,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:413141:count",
+              "id": "src/facade.ts:413629:count",
               "kind": "MethodDeclaration",
-              "line": 10801,
+              "line": 10794,
               "name": "count",
               "reason": "interface-to-implementation"
             }
@@ -79832,9 +79832,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:413141:count",
+            "id": "src/facade.ts:413629:count",
             "kind": "MethodDeclaration",
-            "line": 10801,
+            "line": 10794,
             "name": "count"
           },
           "test": "test/reservations-counts.test.ts"
@@ -79857,9 +79857,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:413141:count",
+          "id": "src/facade.ts:413629:count",
           "kind": "MethodDeclaration",
-          "line": 10801,
+          "line": 10794,
           "name": "count"
         }
       ],
@@ -80079,9 +80079,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:412615:event",
+              "id": "src/facade.ts:413103:event",
               "kind": "MethodDeclaration",
-              "line": 10787,
+              "line": 10780,
               "name": "event",
               "reason": "interface-to-implementation"
             }
@@ -80090,9 +80090,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412615:event",
+            "id": "src/facade.ts:413103:event",
             "kind": "MethodDeclaration",
-            "line": 10787,
+            "line": 10780,
             "name": "event"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -80115,9 +80115,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412615:event",
+          "id": "src/facade.ts:413103:event",
           "kind": "MethodDeclaration",
-          "line": 10787,
+          "line": 10780,
           "name": "event"
         }
       ],
@@ -80382,9 +80382,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403449:events",
+              "id": "src/facade.ts:403937:events",
               "kind": "MethodDeclaration",
-              "line": 10566,
+              "line": 10559,
               "name": "events",
               "reason": "interface-to-implementation"
             }
@@ -80393,9 +80393,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:403449:events",
+            "id": "src/facade.ts:403937:events",
             "kind": "MethodDeclaration",
-            "line": 10566,
+            "line": 10559,
             "name": "events"
           },
           "test": "test/event-query.test.ts"
@@ -80416,9 +80416,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:403449:events",
+          "id": "src/facade.ts:403937:events",
           "kind": "MethodDeclaration",
-          "line": 10566,
+          "line": 10559,
           "name": "events"
         }
       ],
@@ -80658,9 +80658,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:412096:lot",
+              "id": "src/facade.ts:412584:lot",
               "kind": "MethodDeclaration",
-              "line": 10771,
+              "line": 10764,
               "name": "lot",
               "reason": "interface-to-implementation"
             }
@@ -80669,9 +80669,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412096:lot",
+            "id": "src/facade.ts:412584:lot",
             "kind": "MethodDeclaration",
-            "line": 10771,
+            "line": 10764,
             "name": "lot"
           },
           "test": "test/catalog-stock.test.ts"
@@ -80694,9 +80694,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412096:lot",
+          "id": "src/facade.ts:412584:lot",
           "kind": "MethodDeclaration",
-          "line": 10771,
+          "line": 10764,
           "name": "lot"
         }
       ],
@@ -80926,9 +80926,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:412394:lots",
+              "id": "src/facade.ts:412882:lots",
               "kind": "MethodDeclaration",
-              "line": 10780,
+              "line": 10773,
               "name": "lots",
               "reason": "interface-to-implementation"
             }
@@ -80937,9 +80937,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412394:lots",
+            "id": "src/facade.ts:412882:lots",
             "kind": "MethodDeclaration",
-            "line": 10780,
+            "line": 10773,
             "name": "lots"
           },
           "test": "test/lots.test.ts"
@@ -80962,9 +80962,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412394:lots",
+          "id": "src/facade.ts:412882:lots",
           "kind": "MethodDeclaration",
-          "line": 10780,
+          "line": 10773,
           "name": "lots"
         }
       ],
@@ -81128,9 +81128,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408342:packagingRevisions",
+              "id": "src/facade.ts:408830:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10671,
+              "line": 10664,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             }
@@ -81139,9 +81139,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:408342:packagingRevisions",
+            "id": "src/facade.ts:408830:packagingRevisions",
             "kind": "MethodDeclaration",
-            "line": 10671,
+            "line": 10664,
             "name": "packagingRevisions"
           },
           "test": "test/catalog-publication.test.ts"
@@ -81164,9 +81164,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:408342:packagingRevisions",
+          "id": "src/facade.ts:408830:packagingRevisions",
           "kind": "MethodDeclaration",
-          "line": 10671,
+          "line": 10664,
           "name": "packagingRevisions"
         }
       ],
@@ -81292,9 +81292,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411212:placementAncestry",
+              "id": "src/facade.ts:411700:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10748,
+              "line": 10741,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             }
@@ -81303,9 +81303,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:411212:placementAncestry",
+            "id": "src/facade.ts:411700:placementAncestry",
             "kind": "MethodDeclaration",
-            "line": 10748,
+            "line": 10741,
             "name": "placementAncestry"
           },
           "test": "test/containers.test.ts"
@@ -81328,9 +81328,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:411212:placementAncestry",
+          "id": "src/facade.ts:411700:placementAncestry",
           "kind": "MethodDeclaration",
-          "line": 10748,
+          "line": 10741,
           "name": "placementAncestry"
         }
       ],
@@ -81450,9 +81450,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410258:placementChildren",
+              "id": "src/facade.ts:410746:placementChildren",
               "kind": "MethodDeclaration",
-              "line": 10722,
+              "line": 10715,
               "name": "placementChildren",
               "reason": "interface-to-implementation"
             }
@@ -81461,9 +81461,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:410258:placementChildren",
+            "id": "src/facade.ts:410746:placementChildren",
             "kind": "MethodDeclaration",
-            "line": 10722,
+            "line": 10715,
             "name": "placementChildren"
           },
           "test": "test/containers.test.ts"
@@ -81486,9 +81486,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:410258:placementChildren",
+          "id": "src/facade.ts:410746:placementChildren",
           "kind": "MethodDeclaration",
-          "line": 10722,
+          "line": 10715,
           "name": "placementChildren"
         }
       ],
@@ -81608,9 +81608,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408831:placementNode",
+              "id": "src/facade.ts:409319:placementNode",
               "kind": "MethodDeclaration",
-              "line": 10683,
+              "line": 10676,
               "name": "placementNode",
               "reason": "interface-to-implementation"
             }
@@ -81619,9 +81619,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:408831:placementNode",
+            "id": "src/facade.ts:409319:placementNode",
             "kind": "MethodDeclaration",
-            "line": 10683,
+            "line": 10676,
             "name": "placementNode"
           },
           "test": "test/containers.test.ts"
@@ -81644,9 +81644,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:408831:placementNode",
+          "id": "src/facade.ts:409319:placementNode",
           "kind": "MethodDeclaration",
-          "line": 10683,
+          "line": 10676,
           "name": "placementNode"
         }
       ],
@@ -81786,9 +81786,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:409192:placementNodes",
+              "id": "src/facade.ts:409680:placementNodes",
               "kind": "MethodDeclaration",
-              "line": 10694,
+              "line": 10687,
               "name": "placementNodes",
               "reason": "interface-to-implementation"
             }
@@ -81797,9 +81797,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:409192:placementNodes",
+            "id": "src/facade.ts:409680:placementNodes",
             "kind": "MethodDeclaration",
-            "line": 10694,
+            "line": 10687,
             "name": "placementNodes"
           },
           "test": "test/containers.test.ts"
@@ -81822,9 +81822,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:409192:placementNodes",
+          "id": "src/facade.ts:409680:placementNodes",
           "kind": "MethodDeclaration",
-          "line": 10694,
+          "line": 10687,
           "name": "placementNodes"
         }
       ],
@@ -81960,9 +81960,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:409525:placementParent",
+              "id": "src/facade.ts:410013:placementParent",
               "kind": "MethodDeclaration",
-              "line": 10704,
+              "line": 10697,
               "name": "placementParent",
               "reason": "interface-to-implementation"
             }
@@ -81971,9 +81971,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:409525:placementParent",
+            "id": "src/facade.ts:410013:placementParent",
             "kind": "MethodDeclaration",
-            "line": 10704,
+            "line": 10697,
             "name": "placementParent"
           },
           "test": "test/containers.test.ts"
@@ -81996,9 +81996,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:409525:placementParent",
+          "id": "src/facade.ts:410013:placementParent",
           "kind": "MethodDeclaration",
-          "line": 10704,
+          "line": 10697,
           "name": "placementParent"
         }
       ],
@@ -82118,9 +82118,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:405817:planAllocation",
+              "id": "src/facade.ts:406305:planAllocation",
               "kind": "MethodDeclaration",
-              "line": 10617,
+              "line": 10610,
               "name": "planAllocation",
               "reason": "interface-to-implementation"
             }
@@ -82129,9 +82129,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:405817:planAllocation",
+            "id": "src/facade.ts:406305:planAllocation",
             "kind": "MethodDeclaration",
-            "line": 10617,
+            "line": 10610,
             "name": "planAllocation"
           },
           "test": "test/containers.test.ts"
@@ -82154,9 +82154,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:405817:planAllocation",
+          "id": "src/facade.ts:406305:planAllocation",
           "kind": "MethodDeclaration",
-          "line": 10617,
+          "line": 10610,
           "name": "planAllocation"
         }
       ],
@@ -82266,9 +82266,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:402004:positions",
+              "id": "src/facade.ts:402492:positions",
               "kind": "MethodDeclaration",
-              "line": 10530,
+              "line": 10523,
               "name": "positions",
               "reason": "interface-to-implementation"
             }
@@ -82277,9 +82277,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:402004:positions",
+            "id": "src/facade.ts:402492:positions",
             "kind": "MethodDeclaration",
-            "line": 10530,
+            "line": 10523,
             "name": "positions"
           },
           "test": "test/containers.test.ts"
@@ -82302,9 +82302,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:402004:positions",
+          "id": "src/facade.ts:402492:positions",
           "kind": "MethodDeclaration",
-          "line": 10530,
+          "line": 10523,
           "name": "positions"
         }
       ],
@@ -82351,7 +82351,7 @@
           "path": "src/events.ts"
         },
         {
-          "occurrences": 87,
+          "occurrences": 89,
           "path": "src/facade.ts"
         },
         {
@@ -82532,9 +82532,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:412861:reservation",
+              "id": "src/facade.ts:413349:reservation",
               "kind": "MethodDeclaration",
-              "line": 10793,
+              "line": 10786,
               "name": "reservation",
               "reason": "interface-to-implementation"
             }
@@ -82543,9 +82543,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412861:reservation",
+            "id": "src/facade.ts:413349:reservation",
             "kind": "MethodDeclaration",
-            "line": 10793,
+            "line": 10786,
             "name": "reservation"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -82568,9 +82568,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412861:reservation",
+          "id": "src/facade.ts:413349:reservation",
           "kind": "MethodDeclaration",
-          "line": 10793,
+          "line": 10786,
           "name": "reservation"
         }
       ],
@@ -82750,9 +82750,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:413421:reservationFeasibility",
+              "id": "src/facade.ts:413909:reservationFeasibility",
               "kind": "MethodDeclaration",
-              "line": 10806,
+              "line": 10799,
               "name": "reservationFeasibility",
               "reason": "interface-to-implementation"
             }
@@ -82761,9 +82761,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:413421:reservationFeasibility",
+            "id": "src/facade.ts:413909:reservationFeasibility",
             "kind": "MethodDeclaration",
-            "line": 10806,
+            "line": 10799,
             "name": "reservationFeasibility"
           },
           "test": "test/containers.test.ts"
@@ -82786,9 +82786,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:413421:reservationFeasibility",
+          "id": "src/facade.ts:413909:reservationFeasibility",
           "kind": "MethodDeclaration",
-          "line": 10806,
+          "line": 10799,
           "name": "reservationFeasibility"
         }
       ],
@@ -82913,9 +82913,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:401178:snapshot",
+              "id": "src/facade.ts:401666:snapshot",
               "kind": "MethodDeclaration",
-              "line": 10510,
+              "line": 10503,
               "name": "snapshot",
               "reason": "interface-to-implementation"
             }
@@ -82924,9 +82924,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:401178:snapshot",
+            "id": "src/facade.ts:401666:snapshot",
             "kind": "MethodDeclaration",
-            "line": 10510,
+            "line": 10503,
             "name": "snapshot"
           },
           "test": "test/event-query.test.ts"
@@ -82949,9 +82949,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:401178:snapshot",
+          "id": "src/facade.ts:401666:snapshot",
           "kind": "MethodDeclaration",
-          "line": 10510,
+          "line": 10503,
           "name": "snapshot"
         }
       ],
@@ -83114,9 +83114,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403910:summary",
+              "id": "src/facade.ts:404398:summary",
               "kind": "MethodDeclaration",
-              "line": 10575,
+              "line": 10568,
               "name": "summary",
               "reason": "interface-to-implementation"
             }
@@ -83125,9 +83125,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:403910:summary",
+            "id": "src/facade.ts:404398:summary",
             "kind": "MethodDeclaration",
-            "line": 10575,
+            "line": 10568,
             "name": "summary"
           },
           "test": "test/catalog-publication.test.ts"
@@ -83150,9 +83150,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:403910:summary",
+          "id": "src/facade.ts:404398:summary",
           "kind": "MethodDeclaration",
-          "line": 10575,
+          "line": 10568,
           "name": "summary"
         }
       ],
@@ -83288,9 +83288,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:402808:whereabouts",
+              "id": "src/facade.ts:403296:whereabouts",
               "kind": "MethodDeclaration",
-              "line": 10549,
+              "line": 10542,
               "name": "whereabouts",
               "reason": "interface-to-implementation"
             }
@@ -83299,9 +83299,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:402808:whereabouts",
+            "id": "src/facade.ts:403296:whereabouts",
             "kind": "MethodDeclaration",
-            "line": 10549,
+            "line": 10542,
             "name": "whereabouts"
           },
           "test": "test/availability.test.ts"
@@ -83324,9 +83324,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:402808:whereabouts",
+          "id": "src/facade.ts:403296:whereabouts",
           "kind": "MethodDeclaration",
-          "line": 10549,
+          "line": 10542,
           "name": "whereabouts"
         }
       ],
@@ -83498,9 +83498,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:403130:whereaboutsHistory",
+              "id": "src/facade.ts:403618:whereaboutsHistory",
               "kind": "MethodDeclaration",
-              "line": 10559,
+              "line": 10552,
               "name": "whereaboutsHistory",
               "reason": "interface-to-implementation"
             }
@@ -83509,9 +83509,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:403130:whereaboutsHistory",
+            "id": "src/facade.ts:403618:whereaboutsHistory",
             "kind": "MethodDeclaration",
-            "line": 10559,
+            "line": 10552,
             "name": "whereaboutsHistory"
           },
           "test": "test/composition.test.ts"
@@ -83534,9 +83534,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:403130:whereaboutsHistory",
+          "id": "src/facade.ts:403618:whereaboutsHistory",
           "kind": "MethodDeclaration",
-          "line": 10559,
+          "line": 10552,
           "name": "whereaboutsHistory"
         }
       ],
@@ -83646,9 +83646,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:401675:world",
+              "id": "src/facade.ts:402163:world",
               "kind": "MethodDeclaration",
-              "line": 10522,
+              "line": 10515,
               "name": "world",
               "reason": "interface-to-implementation"
             }
@@ -83657,9 +83657,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:401675:world",
+            "id": "src/facade.ts:402163:world",
             "kind": "MethodDeclaration",
-            "line": 10522,
+            "line": 10515,
             "name": "world"
           },
           "test": "test/containers.test.ts"
@@ -83682,9 +83682,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:401675:world",
+          "id": "src/facade.ts:402163:world",
           "kind": "MethodDeclaration",
-          "line": 10522,
+          "line": 10515,
           "name": "world"
         }
       ],
@@ -83869,9 +83869,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:314268:allocate",
+              "id": "src/facade.ts:314756:allocate",
               "kind": "MethodDeclaration",
-              "line": 8122,
+              "line": 8115,
               "name": "allocate",
               "reason": "interface-to-implementation"
             }
@@ -83880,9 +83880,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:314268:allocate",
+            "id": "src/facade.ts:314756:allocate",
             "kind": "MethodDeclaration",
-            "line": 8122,
+            "line": 8115,
             "name": "allocate"
           },
           "test": "test/containers.test.ts"
@@ -83904,9 +83904,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:314268:allocate",
+          "id": "src/facade.ts:314756:allocate",
           "kind": "MethodDeclaration",
-          "line": 8122,
+          "line": 8115,
           "name": "allocate"
         }
       ],
@@ -84033,9 +84033,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:315950:allocateByPolicy",
+              "id": "src/facade.ts:316438:allocateByPolicy",
               "kind": "MethodDeclaration",
-              "line": 8168,
+              "line": 8161,
               "name": "allocateByPolicy",
               "reason": "interface-to-implementation"
             }
@@ -84044,9 +84044,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:315950:allocateByPolicy",
+            "id": "src/facade.ts:316438:allocateByPolicy",
             "kind": "MethodDeclaration",
-            "line": 8168,
+            "line": 8161,
             "name": "allocateByPolicy"
           },
           "test": "test/availability.test.ts"
@@ -84068,9 +84068,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:315950:allocateByPolicy",
+          "id": "src/facade.ts:316438:allocateByPolicy",
           "kind": "MethodDeclaration",
-          "line": 8168,
+          "line": 8161,
           "name": "allocateByPolicy"
         }
       ],
@@ -84181,9 +84181,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:319882:consume",
+              "id": "src/facade.ts:320370:consume",
               "kind": "MethodDeclaration",
-              "line": 8271,
+              "line": 8264,
               "name": "consume",
               "reason": "interface-to-implementation"
             }
@@ -84192,9 +84192,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:319882:consume",
+            "id": "src/facade.ts:320370:consume",
             "kind": "MethodDeclaration",
-            "line": 8271,
+            "line": 8264,
             "name": "consume"
           },
           "test": "test/reservation-consume-shortage.test.ts"
@@ -84216,9 +84216,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:319882:consume",
+          "id": "src/facade.ts:320370:consume",
           "kind": "MethodDeclaration",
-          "line": 8271,
+          "line": 8264,
           "name": "consume"
         }
       ],
@@ -84327,20 +84327,20 @@
               "column": 50,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:27335:<anonymous@794>",
+              "id": "test/policy-operations.test.ts:29488:<anonymous@831>",
               "kind": "ArrowFunction",
-              "line": 794,
-              "name": "<anonymous@794>",
+              "line": 831,
+              "name": "<anonymous@831>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 98,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:29418:<anonymous@856>",
+              "id": "test/policy-operations.test.ts:31571:<anonymous@893>",
               "kind": "ArrowFunction",
-              "line": 856,
-              "name": "<anonymous@856>",
+              "line": 893,
+              "name": "<anonymous@893>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -84357,9 +84357,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:322168:consumeAllocated",
+              "id": "src/facade.ts:322656:consumeAllocated",
               "kind": "MethodDeclaration",
-              "line": 8333,
+              "line": 8326,
               "name": "consumeAllocated",
               "reason": "interface-to-implementation"
             }
@@ -84368,9 +84368,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:322168:consumeAllocated",
+            "id": "src/facade.ts:322656:consumeAllocated",
             "kind": "MethodDeclaration",
-            "line": 8333,
+            "line": 8326,
             "name": "consumeAllocated"
           },
           "test": "test/policy-operations.test.ts"
@@ -84392,9 +84392,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:322168:consumeAllocated",
+          "id": "src/facade.ts:322656:consumeAllocated",
           "kind": "MethodDeclaration",
-          "line": 8333,
+          "line": 8326,
           "name": "consumeAllocated"
         }
       ],
@@ -84505,9 +84505,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:319632:expire",
+              "id": "src/facade.ts:320120:expire",
               "kind": "MethodDeclaration",
-              "line": 8264,
+              "line": 8257,
               "name": "expire",
               "reason": "interface-to-implementation"
             }
@@ -84516,9 +84516,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:319632:expire",
+            "id": "src/facade.ts:320120:expire",
             "kind": "MethodDeclaration",
-            "line": 8264,
+            "line": 8257,
             "name": "expire"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -84540,9 +84540,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:319632:expire",
+          "id": "src/facade.ts:320120:expire",
           "kind": "MethodDeclaration",
-          "line": 8264,
+          "line": 8257,
           "name": "expire"
         }
       ],
@@ -84657,9 +84657,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:312637:refine",
+              "id": "src/facade.ts:313125:refine",
               "kind": "MethodDeclaration",
-              "line": 8078,
+              "line": 8071,
               "name": "refine",
               "reason": "interface-to-implementation"
             }
@@ -84668,9 +84668,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:312637:refine",
+            "id": "src/facade.ts:313125:refine",
             "kind": "MethodDeclaration",
-            "line": 8078,
+            "line": 8071,
             "name": "refine"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -84692,9 +84692,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:312637:refine",
+          "id": "src/facade.ts:313125:refine",
           "kind": "MethodDeclaration",
-          "line": 8078,
+          "line": 8071,
           "name": "refine"
         }
       ],
@@ -84813,9 +84813,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:319390:release",
+              "id": "src/facade.ts:319878:release",
               "kind": "MethodDeclaration",
-              "line": 8257,
+              "line": 8250,
               "name": "release",
               "reason": "interface-to-implementation"
             }
@@ -84824,9 +84824,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:319390:release",
+            "id": "src/facade.ts:319878:release",
             "kind": "MethodDeclaration",
-            "line": 8257,
+            "line": 8250,
             "name": "release"
           },
           "test": "test/containers.test.ts"
@@ -84848,9 +84848,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:319390:release",
+          "id": "src/facade.ts:319878:release",
           "kind": "MethodDeclaration",
-          "line": 8257,
+          "line": 8250,
           "name": "release"
         }
       ],
@@ -84983,9 +84983,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:311372:reserve",
+              "id": "src/facade.ts:311860:reserve",
               "kind": "MethodDeclaration",
-              "line": 8046,
+              "line": 8039,
               "name": "reserve",
               "reason": "interface-to-implementation"
             }
@@ -84994,9 +84994,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:311372:reserve",
+            "id": "src/facade.ts:311860:reserve",
             "kind": "MethodDeclaration",
-            "line": 8046,
+            "line": 8039,
             "name": "reserve"
           },
           "test": "test/storage-conformance.test.ts"
@@ -85018,9 +85018,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:311372:reserve",
+          "id": "src/facade.ts:311860:reserve",
           "kind": "MethodDeclaration",
-          "line": 8046,
+          "line": 8039,
           "name": "reserve"
         }
       ],
@@ -85135,9 +85135,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:393143:availability",
+              "id": "src/facade.ts:393631:availability",
               "kind": "MethodDeclaration",
-              "line": 10283,
+              "line": 10276,
               "name": "availability",
               "reason": "interface-to-implementation"
             }
@@ -85146,9 +85146,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:393143:availability",
+            "id": "src/facade.ts:393631:availability",
             "kind": "MethodDeclaration",
-            "line": 10283,
+            "line": 10276,
             "name": "availability"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -85171,9 +85171,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:393143:availability",
+          "id": "src/facade.ts:393631:availability",
           "kind": "MethodDeclaration",
-          "line": 10283,
+          "line": 10276,
           "name": "availability"
         }
       ],
@@ -85347,9 +85347,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:397327:collectionSummary",
+              "id": "src/facade.ts:397815:collectionSummary",
               "kind": "MethodDeclaration",
-              "line": 10409,
+              "line": 10402,
               "name": "collectionSummary",
               "reason": "interface-to-implementation"
             }
@@ -85358,9 +85358,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:397327:collectionSummary",
+            "id": "src/facade.ts:397815:collectionSummary",
             "kind": "MethodDeclaration",
-            "line": 10409,
+            "line": 10402,
             "name": "collectionSummary"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -85383,9 +85383,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:397327:collectionSummary",
+          "id": "src/facade.ts:397815:collectionSummary",
           "kind": "MethodDeclaration",
-          "line": 10409,
+          "line": 10402,
           "name": "collectionSummary"
         }
       ],
@@ -85493,9 +85493,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:396746:compositionRevisionsForItem",
+              "id": "src/facade.ts:397234:compositionRevisionsForItem",
               "kind": "MethodDeclaration",
-              "line": 10394,
+              "line": 10387,
               "name": "compositionRevisionsForItem",
               "reason": "interface-to-implementation"
             }
@@ -85504,9 +85504,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:396746:compositionRevisionsForItem",
+            "id": "src/facade.ts:397234:compositionRevisionsForItem",
             "kind": "MethodDeclaration",
-            "line": 10394,
+            "line": 10387,
             "name": "compositionRevisionsForItem"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -85529,9 +85529,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:396746:compositionRevisionsForItem",
+          "id": "src/facade.ts:397234:compositionRevisionsForItem",
           "kind": "MethodDeclaration",
-          "line": 10394,
+          "line": 10387,
           "name": "compositionRevisionsForItem"
         }
       ],
@@ -85639,9 +85639,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:398577:count",
+              "id": "src/facade.ts:399065:count",
               "kind": "MethodDeclaration",
-              "line": 10443,
+              "line": 10436,
               "name": "count",
               "reason": "interface-to-implementation"
             }
@@ -85650,9 +85650,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:398577:count",
+            "id": "src/facade.ts:399065:count",
             "kind": "MethodDeclaration",
-            "line": 10443,
+            "line": 10436,
             "name": "count"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -85675,9 +85675,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:398577:count",
+          "id": "src/facade.ts:399065:count",
           "kind": "MethodDeclaration",
-          "line": 10443,
+          "line": 10436,
           "name": "count"
         }
       ],
@@ -85885,9 +85885,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:398155:event",
+              "id": "src/facade.ts:398643:event",
               "kind": "MethodDeclaration",
-              "line": 10433,
+              "line": 10426,
               "name": "event",
               "reason": "interface-to-implementation"
             }
@@ -85896,9 +85896,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:398155:event",
+            "id": "src/facade.ts:398643:event",
             "kind": "MethodDeclaration",
-            "line": 10433,
+            "line": 10426,
             "name": "event"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -85921,9 +85921,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:398155:event",
+          "id": "src/facade.ts:398643:event",
           "kind": "MethodDeclaration",
-          "line": 10433,
+          "line": 10426,
           "name": "event"
         }
       ],
@@ -86175,9 +86175,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:392650:events",
+              "id": "src/facade.ts:393138:events",
               "kind": "MethodDeclaration",
-              "line": 10269,
+              "line": 10262,
               "name": "events",
               "reason": "interface-to-implementation"
             }
@@ -86186,9 +86186,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:392650:events",
+            "id": "src/facade.ts:393138:events",
             "kind": "MethodDeclaration",
-            "line": 10269,
+            "line": 10262,
             "name": "events"
           },
           "test": "test/event-query.test.ts"
@@ -86211,9 +86211,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:392650:events",
+          "id": "src/facade.ts:393138:events",
           "kind": "MethodDeclaration",
-          "line": 10269,
+          "line": 10262,
           "name": "events"
         }
       ],
@@ -86477,9 +86477,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:397751:fungibilitySummary",
+              "id": "src/facade.ts:398239:fungibilitySummary",
               "kind": "MethodDeclaration",
-              "line": 10421,
+              "line": 10414,
               "name": "fungibilitySummary",
               "reason": "interface-to-implementation"
             }
@@ -86488,9 +86488,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:397751:fungibilitySummary",
+            "id": "src/facade.ts:398239:fungibilitySummary",
             "kind": "MethodDeclaration",
-            "line": 10421,
+            "line": 10414,
             "name": "fungibilitySummary"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -86513,9 +86513,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:397751:fungibilitySummary",
+          "id": "src/facade.ts:398239:fungibilitySummary",
           "kind": "MethodDeclaration",
-          "line": 10421,
+          "line": 10414,
           "name": "fungibilitySummary"
         }
       ],
@@ -86623,9 +86623,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:396286:lot",
+              "id": "src/facade.ts:396774:lot",
               "kind": "MethodDeclaration",
-              "line": 10381,
+              "line": 10374,
               "name": "lot",
               "reason": "interface-to-implementation"
             }
@@ -86634,9 +86634,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:396286:lot",
+            "id": "src/facade.ts:396774:lot",
             "kind": "MethodDeclaration",
-            "line": 10381,
+            "line": 10374,
             "name": "lot"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -86659,9 +86659,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:396286:lot",
+          "id": "src/facade.ts:396774:lot",
           "kind": "MethodDeclaration",
-          "line": 10381,
+          "line": 10374,
           "name": "lot"
         }
       ],
@@ -86879,9 +86879,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:396523:lots",
+              "id": "src/facade.ts:397011:lots",
               "kind": "MethodDeclaration",
-              "line": 10389,
+              "line": 10382,
               "name": "lots",
               "reason": "interface-to-implementation"
             }
@@ -86890,9 +86890,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:396523:lots",
+            "id": "src/facade.ts:397011:lots",
             "kind": "MethodDeclaration",
-            "line": 10389,
+            "line": 10382,
             "name": "lots"
           },
           "test": "test/read-snapshot.test.ts"
@@ -86915,9 +86915,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:396523:lots",
+          "id": "src/facade.ts:397011:lots",
           "kind": "MethodDeclaration",
-          "line": 10389,
+          "line": 10382,
           "name": "lots"
         }
       ],
@@ -87069,9 +87069,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:394567:packagingRevisions",
+              "id": "src/facade.ts:395055:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10326,
+              "line": 10319,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             }
@@ -87080,9 +87080,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:394567:packagingRevisions",
+            "id": "src/facade.ts:395055:packagingRevisions",
             "kind": "MethodDeclaration",
-            "line": 10326,
+            "line": 10319,
             "name": "packagingRevisions"
           },
           "test": "test/read-snapshot.test.ts"
@@ -87105,9 +87105,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:394567:packagingRevisions",
+          "id": "src/facade.ts:395055:packagingRevisions",
           "kind": "MethodDeclaration",
-          "line": 10326,
+          "line": 10319,
           "name": "packagingRevisions"
         }
       ],
@@ -87231,9 +87231,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:396058:placementAncestry",
+              "id": "src/facade.ts:396546:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10373,
+              "line": 10366,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             }
@@ -87242,9 +87242,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:396058:placementAncestry",
+            "id": "src/facade.ts:396546:placementAncestry",
             "kind": "MethodDeclaration",
-            "line": 10373,
+            "line": 10366,
             "name": "placementAncestry"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -87267,9 +87267,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:396058:placementAncestry",
+          "id": "src/facade.ts:396546:placementAncestry",
           "kind": "MethodDeclaration",
-          "line": 10373,
+          "line": 10366,
           "name": "placementAncestry"
         }
       ],
@@ -87377,9 +87377,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:395735:placementChildren",
+              "id": "src/facade.ts:396223:placementChildren",
               "kind": "MethodDeclaration",
-              "line": 10362,
+              "line": 10355,
               "name": "placementChildren",
               "reason": "interface-to-implementation"
             }
@@ -87388,9 +87388,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:395735:placementChildren",
+            "id": "src/facade.ts:396223:placementChildren",
             "kind": "MethodDeclaration",
-            "line": 10362,
+            "line": 10355,
             "name": "placementChildren"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -87413,9 +87413,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:395735:placementChildren",
+          "id": "src/facade.ts:396223:placementChildren",
           "kind": "MethodDeclaration",
-          "line": 10362,
+          "line": 10355,
           "name": "placementChildren"
         }
       ],
@@ -87523,9 +87523,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:394891:placementNode",
+              "id": "src/facade.ts:395379:placementNode",
               "kind": "MethodDeclaration",
-              "line": 10336,
+              "line": 10329,
               "name": "placementNode",
               "reason": "interface-to-implementation"
             }
@@ -87534,9 +87534,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:394891:placementNode",
+            "id": "src/facade.ts:395379:placementNode",
             "kind": "MethodDeclaration",
-            "line": 10336,
+            "line": 10329,
             "name": "placementNode"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -87559,9 +87559,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:394891:placementNode",
+          "id": "src/facade.ts:395379:placementNode",
           "kind": "MethodDeclaration",
-          "line": 10336,
+          "line": 10329,
           "name": "placementNode"
         }
       ],
@@ -87689,9 +87689,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:395220:placementNodes",
+              "id": "src/facade.ts:395708:placementNodes",
               "kind": "MethodDeclaration",
-              "line": 10347,
+              "line": 10340,
               "name": "placementNodes",
               "reason": "interface-to-implementation"
             }
@@ -87700,9 +87700,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:395220:placementNodes",
+            "id": "src/facade.ts:395708:placementNodes",
             "kind": "MethodDeclaration",
-            "line": 10347,
+            "line": 10340,
             "name": "placementNodes"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -87725,9 +87725,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:395220:placementNodes",
+          "id": "src/facade.ts:395708:placementNodes",
           "kind": "MethodDeclaration",
-          "line": 10347,
+          "line": 10340,
           "name": "placementNodes"
         }
       ],
@@ -87851,9 +87851,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:395497:placementParent",
+              "id": "src/facade.ts:395985:placementParent",
               "kind": "MethodDeclaration",
-              "line": 10354,
+              "line": 10347,
               "name": "placementParent",
               "reason": "interface-to-implementation"
             }
@@ -87862,9 +87862,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:395497:placementParent",
+            "id": "src/facade.ts:395985:placementParent",
             "kind": "MethodDeclaration",
-            "line": 10354,
+            "line": 10347,
             "name": "placementParent"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -87887,9 +87887,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:395497:placementParent",
+          "id": "src/facade.ts:395985:placementParent",
           "kind": "MethodDeclaration",
-          "line": 10354,
+          "line": 10347,
           "name": "placementParent"
         }
       ],
@@ -87997,9 +87997,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:393548:planAllocation",
+              "id": "src/facade.ts:394036:planAllocation",
               "kind": "MethodDeclaration",
-              "line": 10297,
+              "line": 10290,
               "name": "planAllocation",
               "reason": "interface-to-implementation"
             }
@@ -88008,9 +88008,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:393548:planAllocation",
+            "id": "src/facade.ts:394036:planAllocation",
             "kind": "MethodDeclaration",
-            "line": 10297,
+            "line": 10290,
             "name": "planAllocation"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -88033,9 +88033,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:393548:planAllocation",
+          "id": "src/facade.ts:394036:planAllocation",
           "kind": "MethodDeclaration",
-          "line": 10297,
+          "line": 10290,
           "name": "planAllocation"
         }
       ],
@@ -88143,9 +88143,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:391847:positions",
+              "id": "src/facade.ts:392335:positions",
               "kind": "MethodDeclaration",
-              "line": 10245,
+              "line": 10238,
               "name": "positions",
               "reason": "interface-to-implementation"
             }
@@ -88154,9 +88154,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:391847:positions",
+            "id": "src/facade.ts:392335:positions",
             "kind": "MethodDeclaration",
-            "line": 10245,
+            "line": 10238,
             "name": "positions"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -88179,9 +88179,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:391847:positions",
+          "id": "src/facade.ts:392335:positions",
           "kind": "MethodDeclaration",
-          "line": 10245,
+          "line": 10238,
           "name": "positions"
         }
       ],
@@ -88228,7 +88228,7 @@
           "path": "src/events.ts"
         },
         {
-          "occurrences": 87,
+          "occurrences": 89,
           "path": "src/facade.ts"
         },
         {
@@ -88397,9 +88397,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:398353:reservation",
+              "id": "src/facade.ts:398841:reservation",
               "kind": "MethodDeclaration",
-              "line": 10438,
+              "line": 10431,
               "name": "reservation",
               "reason": "interface-to-implementation"
             }
@@ -88408,9 +88408,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:398353:reservation",
+            "id": "src/facade.ts:398841:reservation",
             "kind": "MethodDeclaration",
-            "line": 10438,
+            "line": 10431,
             "name": "reservation"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -88433,9 +88433,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:398353:reservation",
+          "id": "src/facade.ts:398841:reservation",
           "kind": "MethodDeclaration",
-          "line": 10438,
+          "line": 10431,
           "name": "reservation"
         }
       ],
@@ -88603,9 +88603,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:398787:reservationFeasibility",
+              "id": "src/facade.ts:399275:reservationFeasibility",
               "kind": "MethodDeclaration",
-              "line": 10448,
+              "line": 10441,
               "name": "reservationFeasibility",
               "reason": "interface-to-implementation"
             }
@@ -88614,9 +88614,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:398787:reservationFeasibility",
+            "id": "src/facade.ts:399275:reservationFeasibility",
             "kind": "MethodDeclaration",
-            "line": 10448,
+            "line": 10441,
             "name": "reservationFeasibility"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -88639,9 +88639,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:398787:reservationFeasibility",
+          "id": "src/facade.ts:399275:reservationFeasibility",
           "kind": "MethodDeclaration",
-          "line": 10448,
+          "line": 10441,
           "name": "reservationFeasibility"
         }
       ],
@@ -88753,9 +88753,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:392864:summary",
+              "id": "src/facade.ts:393352:summary",
               "kind": "MethodDeclaration",
-              "line": 10274,
+              "line": 10267,
               "name": "summary",
               "reason": "interface-to-implementation"
             }
@@ -88764,9 +88764,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:392864:summary",
+            "id": "src/facade.ts:393352:summary",
             "kind": "MethodDeclaration",
-            "line": 10274,
+            "line": 10267,
             "name": "summary"
           },
           "test": "test/read-snapshot.test.ts"
@@ -88789,9 +88789,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:392864:summary",
+          "id": "src/facade.ts:393352:summary",
           "kind": "MethodDeclaration",
-          "line": 10274,
+          "line": 10267,
           "name": "summary"
         }
       ],
@@ -88915,9 +88915,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:392092:whereabouts",
+              "id": "src/facade.ts:392580:whereabouts",
               "kind": "MethodDeclaration",
-              "line": 10252,
+              "line": 10245,
               "name": "whereabouts",
               "reason": "interface-to-implementation"
             }
@@ -88926,9 +88926,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:392092:whereabouts",
+            "id": "src/facade.ts:392580:whereabouts",
             "kind": "MethodDeclaration",
-            "line": 10252,
+            "line": 10245,
             "name": "whereabouts"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -88951,9 +88951,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:392092:whereabouts",
+          "id": "src/facade.ts:392580:whereabouts",
           "kind": "MethodDeclaration",
-          "line": 10252,
+          "line": 10245,
           "name": "whereabouts"
         }
       ],
@@ -89113,9 +89113,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:392391:whereaboutsHistory",
+              "id": "src/facade.ts:392879:whereaboutsHistory",
               "kind": "MethodDeclaration",
-              "line": 10262,
+              "line": 10255,
               "name": "whereaboutsHistory",
               "reason": "interface-to-implementation"
             }
@@ -89124,9 +89124,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:392391:whereaboutsHistory",
+            "id": "src/facade.ts:392879:whereaboutsHistory",
             "kind": "MethodDeclaration",
-            "line": 10262,
+            "line": 10255,
             "name": "whereaboutsHistory"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -89149,9 +89149,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:392391:whereaboutsHistory",
+          "id": "src/facade.ts:392879:whereaboutsHistory",
           "kind": "MethodDeclaration",
-          "line": 10262,
+          "line": 10255,
           "name": "whereaboutsHistory"
         }
       ],
@@ -93798,20 +93798,20 @@
               "column": 50,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:27335:<anonymous@794>",
+              "id": "test/policy-operations.test.ts:29488:<anonymous@831>",
               "kind": "ArrowFunction",
-              "line": 794,
-              "name": "<anonymous@794>",
+              "line": 831,
+              "name": "<anonymous@831>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 94,
               "file": "test/policy-operations.test.ts",
               "hasBody": true,
-              "id": "test/policy-operations.test.ts:37827:<anonymous@1085>",
+              "id": "test/policy-operations.test.ts:39980:<anonymous@1122>",
               "kind": "ArrowFunction",
-              "line": 1085,
-              "name": "<anonymous@1085>",
+              "line": 1122,
+              "name": "<anonymous@1122>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -94205,7 +94205,7 @@
           "path": "src/events.ts"
         },
         {
-          "occurrences": 84,
+          "occurrences": 83,
           "path": "src/facade.ts"
         },
         {
@@ -95290,9 +95290,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:382461:associate",
+              "id": "src/facade.ts:382949:associate",
               "kind": "MethodDeclaration",
-              "line": 9971,
+              "line": 9964,
               "name": "associate",
               "reason": "interface-to-implementation"
             }
@@ -95301,9 +95301,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:382461:associate",
+            "id": "src/facade.ts:382949:associate",
             "kind": "MethodDeclaration",
-            "line": 9971,
+            "line": 9964,
             "name": "associate"
           },
           "test": "test/storage-conformance.test.ts"
@@ -95327,9 +95327,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:382461:associate",
+          "id": "src/facade.ts:382949:associate",
           "kind": "MethodDeclaration",
-          "line": 9971,
+          "line": 9964,
           "name": "associate"
         }
       ],
@@ -95438,9 +95438,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:382785:disassociate",
+              "id": "src/facade.ts:383273:disassociate",
               "kind": "MethodDeclaration",
-              "line": 9982,
+              "line": 9975,
               "name": "disassociate",
               "reason": "interface-to-implementation"
             }
@@ -95449,9 +95449,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:382785:disassociate",
+            "id": "src/facade.ts:383273:disassociate",
             "kind": "MethodDeclaration",
-            "line": 9982,
+            "line": 9975,
             "name": "disassociate"
           },
           "test": "test/traceability-corrections.test.ts"
@@ -95475,9 +95475,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:382785:disassociate",
+          "id": "src/facade.ts:383273:disassociate",
           "kind": "MethodDeclaration",
-          "line": 9982,
+          "line": 9975,
           "name": "disassociate"
         }
       ],
@@ -95586,9 +95586,9 @@
               "column": 61,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:308326:dispatch",
+              "id": "src/facade.ts:308814:dispatch",
               "kind": "MethodDeclaration",
-              "line": 7956,
+              "line": 7949,
               "name": "dispatch",
               "reason": "interface-to-implementation"
             }
@@ -95597,9 +95597,9 @@
             "column": 61,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:308326:dispatch",
+            "id": "src/facade.ts:308814:dispatch",
             "kind": "MethodDeclaration",
-            "line": 7956,
+            "line": 7949,
             "name": "dispatch"
           },
           "test": "test/review-hardening.test.ts"
@@ -95620,9 +95620,9 @@
           "column": 61,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:308326:dispatch",
+          "id": "src/facade.ts:308814:dispatch",
           "kind": "MethodDeclaration",
-          "line": 7956,
+          "line": 7949,
           "name": "dispatch"
         }
       ],
@@ -95754,9 +95754,9 @@
               "column": 57,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:310614:find",
+              "id": "src/facade.ts:311102:find",
               "kind": "MethodDeclaration",
-              "line": 8024,
+              "line": 8017,
               "name": "find",
               "reason": "interface-to-implementation"
             }
@@ -95765,9 +95765,9 @@
             "column": 57,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:310614:find",
+            "id": "src/facade.ts:311102:find",
             "kind": "MethodDeclaration",
-            "line": 8024,
+            "line": 8017,
             "name": "find"
           },
           "test": "test/transfer-lifecycle.test.ts"
@@ -95788,9 +95788,9 @@
           "column": 57,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:310614:find",
+          "id": "src/facade.ts:311102:find",
           "kind": "MethodDeclaration",
-          "line": 8024,
+          "line": 8017,
           "name": "find"
         }
       ],
@@ -95930,9 +95930,9 @@
               "column": 60,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:307713:prepare",
+              "id": "src/facade.ts:308201:prepare",
               "kind": "MethodDeclaration",
-              "line": 7938,
+              "line": 7931,
               "name": "prepare",
               "reason": "interface-to-implementation"
             }
@@ -95941,9 +95941,9 @@
             "column": 60,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:307713:prepare",
+            "id": "src/facade.ts:308201:prepare",
             "kind": "MethodDeclaration",
-            "line": 7938,
+            "line": 7931,
             "name": "prepare"
           },
           "test": "test/formal-implementation-refinement.test.ts"
@@ -95964,9 +95964,9 @@
           "column": 60,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:307713:prepare",
+          "id": "src/facade.ts:308201:prepare",
           "kind": "MethodDeclaration",
-          "line": 7938,
+          "line": 7931,
           "name": "prepare"
         }
       ],
@@ -96098,9 +96098,9 @@
               "column": 60,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:309116:receive",
+              "id": "src/facade.ts:309604:receive",
               "kind": "MethodDeclaration",
-              "line": 7980,
+              "line": 7973,
               "name": "receive",
               "reason": "interface-to-implementation"
             }
@@ -96109,9 +96109,9 @@
             "column": 60,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:309116:receive",
+            "id": "src/facade.ts:309604:receive",
             "kind": "MethodDeclaration",
-            "line": 7980,
+            "line": 7973,
             "name": "receive"
           },
           "test": "test/review-hardening.test.ts"
@@ -96132,9 +96132,9 @@
           "column": 60,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:309116:receive",
+          "id": "src/facade.ts:309604:receive",
           "kind": "MethodDeclaration",
-          "line": 7980,
+          "line": 7973,
           "name": "receive"
         }
       ],
@@ -96282,9 +96282,9 @@
               "column": 60,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:309889:release",
+              "id": "src/facade.ts:310377:release",
               "kind": "MethodDeclaration",
-              "line": 8004,
+              "line": 7997,
               "name": "release",
               "reason": "interface-to-implementation"
             }
@@ -96293,9 +96293,9 @@
             "column": 60,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:309889:release",
+            "id": "src/facade.ts:310377:release",
             "kind": "MethodDeclaration",
-            "line": 8004,
+            "line": 7997,
             "name": "release"
           },
           "test": "test/review-hardening.test.ts"
@@ -96316,9 +96316,9 @@
           "column": 60,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:309889:release",
+          "id": "src/facade.ts:310377:release",
           "kind": "MethodDeclaration",
-          "line": 8004,
+          "line": 7997,
           "name": "release"
         }
       ],
@@ -102030,5 +102030,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "66e9ada975ab71f8c0aaa5885f2dceab1ac35011f669f14dd959fda8d2923cb4"
+  "surfaceSha256": "5dfd137106d524c084c3195addc29af3443dad671b1eb74ac2e4184401e675b9"
 }

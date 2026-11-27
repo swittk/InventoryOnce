@@ -4531,12 +4531,8 @@ async function commitInventoryPolicyBatch(
     throw new Error("Inventory policy batch supports only issue or transfer.");
   }
   const internals = requireInventoryOnceInternals(owner);
-  assertInventoryPolicyBatchInput(
-    kind,
-    input,
-    toPlacementNodeId,
-    internals.deficitPolicy
-  );
+  /** Only new planning needs to check whether this façade can record a deficit. */
+  const hasDeficitPosition = assertInventoryPolicyBatchInput(kind, input, toPlacementNodeId);
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-batch-${kind}`,
     input.operationId,
@@ -4556,6 +4552,7 @@ async function commitInventoryPolicyBatch(
     intentFingerprint,
     /** Freeze ordered requests over one published fence and their private signed overlay. */
     plan: async (source, recordedAtEpochMs) => {
+      assertInventoryPolicyDeficitMode(hasDeficitPosition, internals.deficitPolicy);
       assertInventoryLifecycleTimeWasRecorded(
         input.occurredAtEpochMs,
         recordedAtEpochMs,
@@ -4684,13 +4681,12 @@ async function commitInventoryPolicyBatch(
   };
 }
 
-/** Reject ambiguous request identities and unsafe transfer scopes before writing. */
+/** Validate batch intent and report whether any request names a deficit position. */
 function assertInventoryPolicyBatchInput(
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyBatchInput,
-  toPlacementNodeId: string | undefined,
-  deficitPolicy: InventoryDeficitPolicy
-): void {
+  toPlacementNodeId: string | undefined
+): boolean {
   if (input.requests.length === 0) {
     throw new Error("Inventory policy batch needs at least one request.");
   }
@@ -4699,6 +4695,8 @@ function assertInventoryPolicyBatchInput(
       `Inventory metadata key '${inventoryPolicyBatchMetadataKey}' is reserved for core allocation evidence.`
     );
   }
+  /** Remember explicit deficit positions while visiting each request once. */
+  let hasDeficitPosition = false;
   const requestIds = new Set<string>();
   for (const request of input.requests) {
     const requestId = request.requestId.trim();
@@ -4737,10 +4735,11 @@ function assertInventoryPolicyBatchInput(
           ? {}
           : { deficitPosition: request.deficitPosition }),
       },
-      toPlacementNodeId,
-      deficitPolicy
+      toPlacementNodeId
     );
+    hasDeficitPosition ||= request.deficitPosition !== undefined;
   }
+  return hasDeficitPosition;
 }
 
 /** Stable caller-intent identity for one ordered policy-batch request. */
@@ -5510,12 +5509,7 @@ async function commitInventoryPolicyMovement(
   toPlacementNodeId?: string
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  assertPolicyMovementRequest(
-    kind,
-    input,
-    toPlacementNodeId,
-    internals.deficitPolicy
-  );
+  assertPolicyMovementRequest(kind, input, toPlacementNodeId);
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-${kind}`,
     input.operationId,
@@ -5541,6 +5535,7 @@ async function commitInventoryPolicyMovement(
     intentFingerprint,
     /** Derive the exact movement legs from one published signed pool. */
     plan: async (source, recordedAtEpochMs) => {
+      assertInventoryPolicyDeficitMode(input.deficitPosition !== undefined, internals.deficitPolicy);
       assertInventoryLifecycleTimeWasRecorded(
         input.occurredAtEpochMs,
         recordedAtEpochMs,
@@ -5649,12 +5644,11 @@ function planInventoryAllocationForRecording(
   return { ...selected, shortfallAmount: reportedRemainderAmount(input.catalog, packagingRevisionId, residual) };
 }
 
-/** Reject unsafe policy combinations before planning or writing. */
+/** Reject unsafe combinations of fields in the frozen policy intent. */
 function assertPolicyMovementRequest(
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyMovementInput,
-  toPlacementNodeId: string | undefined,
-  deficitPolicy: InventoryDeficitPolicy
+  toPlacementNodeId: string | undefined
 ): void {
   if (input.reservationId !== undefined) {
     throw new Error(
@@ -5667,14 +5661,6 @@ function assertPolicyMovementRequest(
   ) {
     throw new Error(
       "Inventory policy metadata cannot replace core allocation/deficit evidence."
-    );
-  }
-  if (
-    input.deficitPosition !== undefined &&
-    deficitPolicy !== InventoryDeficitPolicy.Record
-  ) {
-    throw new Error(
-      "Inventory deficitPosition is accepted only under Record mode."
     );
   }
   if (kind !== InventoryPolicyMovementKind.Issue && input.deficitPosition?.lotId !== undefined) {
@@ -5714,6 +5700,13 @@ function assertPolicyMovementRequest(
     (input.reason ?? "").trim().length === 0
   ) {
     throw new Error("Policy scrap needs an explicit reason.");
+  }
+}
+
+/** Allow explicit deficit positions only when planning a new Record-mode operation. */
+function assertInventoryPolicyDeficitMode(hasDeficitPosition: boolean, deficitPolicy: InventoryDeficitPolicy): void {
+  if (hasDeficitPosition && deficitPolicy !== InventoryDeficitPolicy.Record) {
+    throw new Error("Inventory deficitPosition is accepted only under Record mode.");
   }
 }
 
