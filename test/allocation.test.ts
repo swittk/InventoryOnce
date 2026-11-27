@@ -483,8 +483,8 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       method: InventoryAllocationMethod.Fifo,
       nowEpochMs: time2,
     });
-    expect(result.allocations.map((line) => line.quantity)).toEqual([
-      parseQuantity("100.000001", "kg"), parseQuantity("1.000000", "kg"),
+    expect(result.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual([
+      ["divisible", parseQuantity("100.000001", "kg")], ["incremented", parseQuantity("1.000000", "kg")],
     ]);
     expect(result.shortfall).toEqual(parseQuantity("1.999999", "kg"));
   });
@@ -642,8 +642,8 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       ],
       method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
     });
-    expect(result.allocations.map((line) => line.quantity)).toEqual([
-      parseQuantity("0.100000", "kg"), parseQuantity("1.900000", "kg"),
+    expect(result.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual([
+      ["early", parseQuantity("0.100000", "kg")], ["last", parseQuantity("1.900000", "kg")],
     ]);
     expect(result.shortfall).toEqual(parseQuantity("9007199254740989", "kg"));
   });

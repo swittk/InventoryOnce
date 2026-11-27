@@ -2114,3 +2114,7 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — signed stock in Reject count cuts
 
 - A count observation cut can keep an ordinary stock debit while excluding the later-occurring receipt that backed the published operation. The cut keeps that signed balance so reconciliation measures the observed discrepancy. Reject still checks the adjustment against current stock, and serialized stock and transfer lifecycle replay keep their backing rules.
+
+## 2026-11-27 — correction age in count cuts
+
+- A correction's FIFO override describes the full ledger at publication. A count cut can omit the receipt that starts that layer or the issue that depletes it. Validate the cut's positive-layer evidence from its own postings while keeping the correction's signed stock delta. Published FIFO replay still applies the stored override.

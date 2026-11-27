@@ -1494,7 +1494,7 @@ describe("indexed stock planning and availability", () => {
         },
       }],
     });
-    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : undefined);
+    const storage = policyPickingStorage(canonical);
     const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
     await inventory.stock.receive({
       operationId: "receive-two-fixed-weight-packs", occurredAtEpochMs: time0,
@@ -3132,7 +3132,7 @@ describe("indexed stock planning and availability", () => {
     { kind: "scrap", canonical: false },
     { kind: "transfer", canonical: true },
   ])("requires an expiry override for unlabelled $kind settlement (canonical: $canonical)", async ({ kind, canonical }) => {
-    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+    const storage = policyPickingStorage(canonical);
     const inventory = createTestInventory(storage, undefined, clockAt(time3), InventoryDeficitPolicy.Record);
     const source = loosePosition("store");
     await inventory.stock.receive({
@@ -3140,7 +3140,7 @@ describe("indexed stock planning and availability", () => {
       to: source, amount: stockAmount("2", "piece"),
       placementNode: { useByEpochMs: time2 },
     });
-    const before = storage.readSegmentedStockHead();
+    const before = await inventory.read.world();
     /** Report a lot that was not present, so the unlabelled position can settle the debit. */
     const report = (allowExpiredLots: boolean) => {
       const request = {
@@ -3156,7 +3156,7 @@ describe("indexed stock planning and availability", () => {
       return inventory.stock.transferByPolicy({ ...header, ...request, toPlacementNodeId: "destination" });
     };
     await expect(report(false)).rejects.toThrow("excluding expired stock");
-    expect(storage.readSegmentedStockHead()).toEqual(before);
+    expect(await inventory.read.world()).toEqual(before);
     expect(await report(true)).toMatchObject({
       event: { unwitnessedStockMovements: [{
         from: source, measurements: { primary: { quantity: parseQuantity("1", "piece") } },

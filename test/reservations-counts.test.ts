@@ -756,6 +756,54 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       .toEqual(parseQuantity(String(includeReceipt ? 1 : 1 + debt), "piece"));
   });
 
+  it.each(["receipt", "issue"] as const)("reconciles a backdated correction when a later %s changes the live FIFO layer", async (later) => {
+    const inventory = createTestInventory();
+    const from = loosePosition("store");
+    const position = { ...from, itemRevisionId: "item-a-v2" };
+    const selector = { itemId: position.itemId, placementNodeIds: ["store"] };
+    const receipt = await inventory.stock.receive({
+      operationId: "original-receipt", occurredAtEpochMs: time0, to: from, amount: stockAmount("3", "piece"),
+    });
+    await inventory.counts.start({
+      countId: "corrected-cut", operationId: "start-corrected-cut", selector, startedAtEpochMs: time0,
+    });
+    if (later === "receipt") {
+      await inventory.stock.receive({
+        operationId: "later-receipt", occurredAtEpochMs: time2, to: from, amount: stockAmount("3", "piece"),
+      });
+    } else {
+      await inventory.stock.issue({
+        operationId: "later-issue", occurredAtEpochMs: time2, from, amount: stockAmount("2", "piece"),
+      });
+    }
+    const correction = await inventory.stock.correct({
+      operationId: "correct-original-receipt", occurredAtEpochMs: time1, correctsEventId: receipt.event.eventId,
+      reason: "Correct the original physical receipt.",
+      replaceWith: (plans) => later === "receipt"
+        ? plans.omit()
+        : plans.receive({ occurredAtEpochMs: time0, to: from, amount: stockAmount("2", "piece") }),
+    });
+    expect(correction.event.positiveLayerProvenanceOverrides).toHaveLength(1);
+    expect(correction.event.positiveLayerProvenanceOverrides?.[0]?.startedAtEpochMs)
+      .toBe(later === "receipt" ? time2 : undefined);
+    await inventory.counts.observe({
+      countId: "corrected-cut", operationId: "observe-corrected-cut", observedAtEpochMs: time1,
+      observations: [{ position, measurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity(later === "receipt" ? "1" : "3", "piece") },
+        independent: [],
+      } }],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "corrected-cut", operationId: "reconcile-corrected-cut", completedAtEpochMs: time3,
+    });
+    expect(reconciled.count.status).toBe(InventoryCountStatus.Completed);
+    expect(reconciled.event?.stockEffects).toMatchObject([
+      { position, measurementsDelta: { primary: { quantity: parseQuantity("1", "piece") } } },
+    ]);
+    expect((await inventory.read.positions(selector)).map(({ measurements }) => measurements.primary.quantity))
+      .toEqual([parseQuantity(later === "receipt" ? "4" : "1", "piece")]);
+  });
+
   it("retains correction supersession predecessors in occurrence-time count replay", async () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({

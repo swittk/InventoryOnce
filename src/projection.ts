@@ -1118,12 +1118,17 @@ function applyInventoryCommittedEventInternal(
     []) {
     const identity = inventoryStockPositionIdentity(override.position);
     const position = positions[identity];
+    // Counts need signed balances from included postings. A full-ledger
+    // correction age can refer to a layer outside that observation cut.
+    const startedAtEpochMs = replayStockAge === "occurrence-cut"
+      ? inventorySparseRecordValue(positiveLayerStartedAtEpochMsByPositionId, identity)
+      : override.startedAtEpochMs;
     assertInventoryStockAgeOverride(
-      override.startedAtEpochMs,
+      startedAtEpochMs,
       position !== undefined && quantityIsPositive(position.measurements.primary.quantity),
       identity
     );
-    if (override.startedAtEpochMs === undefined) {
+    if (startedAtEpochMs === undefined) {
       deleteInventorySparseRecordValue(
         positiveLayerStartedAtEpochMsByPositionId,
         identity
@@ -1133,7 +1138,7 @@ function applyInventoryCommittedEventInternal(
     setInventorySparseRecordValue(
       positiveLayerStartedAtEpochMsByPositionId,
       identity,
-      override.startedAtEpochMs
+      startedAtEpochMs
     );
   }
   refreshTouchedSerialIndexes({
