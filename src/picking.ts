@@ -1634,7 +1634,10 @@ function inventoryAllocationIndependentAmounts(
       // Taking a whole row preserves an observed zero without inventing a missing axis.
       if (!takesWholePosition) continue;
       const stored = "measurements" in position
-        ? position.measurements.independent.some((entry) => entry.axisId === axis.axisId)
+        ? position.measurements.independent.some(
+            /** Match the optional axis by its stored identity. */
+            (entry) => entry.axisId === axis.axisId
+          )
         : position.totals.has(axis.axisId);
       if (!stored) continue;
     }
