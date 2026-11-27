@@ -28,6 +28,7 @@ import type { InventoryProjectionState } from "./projection.js";
 import { InventoryReservationFeasibilityLimitError } from "./reservation-feasibility-limit.js";
 import {
   materializeInventoryWorkingQuantity,
+  quantityGreatestCommonDivisor,
   workingQuantityAtDecimals,
   type InventoryWorkingQuantity,
 } from "./quantity-storage.js";
@@ -1341,6 +1342,8 @@ function reservationGroupFeasibility(
   const indivisibleGroups: ReservationIndivisibleGroup[] = [];
   /** Total candidate capacity bounds any legal assignment after recorded deficits. */
   let totalCapacity = 0n;
+  /** A divisible row permits the smallest digit; otherwise every assignment shares this increment. */
+  let stockIncrement = 0n;
   for (
     let positionIndex = 0;
     positionIndex < positions.length;
@@ -1351,7 +1354,10 @@ function reservationGroupFeasibility(
     const capacityMinor = quantityAtDecimals(candidate.capacity, decimals);
     totalCapacity += capacityMinor;
     const increment = candidate.indivisibleIncrement;
-    if (increment === undefined) continue;
+    if (increment === undefined) {
+      stockIncrement = 1n;
+      continue;
+    }
     const incrementMinor = quantityAtDecimals(increment, decimals);
     const slotCount = capacityMinor / incrementMinor;
     if (capacityMinor % incrementMinor !== 0n) {
@@ -1366,6 +1372,7 @@ function reservationGroupFeasibility(
       }
     }
     if (eligibleReservationCount === 0) continue;
+    if (stockIncrement !== 1n) stockIncrement = quantityGreatestCommonDivisor(stockIncrement, incrementMinor);
     indivisibleGroups.push({
       positionIndex,
       capacityMinor: incrementMinor,
@@ -1379,6 +1386,9 @@ function reservationGroupFeasibility(
     }
   }
   indivisibleGroups.sort(compareReservationIndivisibleGroup);
+  /** Whole-only assignments cannot fill a remainder below their shared increment. */
+  const capacityBound = totalRequested < totalCapacity ? totalRequested : totalCapacity;
+  const fulfillableBound = stockIncrement > 1n ? capacityBound - capacityBound % stockIncrement : capacityBound;
   return {
     decimals,
     requestedMinor: totalRequested,
@@ -1388,7 +1398,7 @@ function reservationGroupFeasibility(
       requestedByReservation,
       edgeCapacityByReservation,
       decimals,
-      totalRequested < totalCapacity ? totalRequested : totalCapacity
+      fulfillableBound
     ),
   };
 }

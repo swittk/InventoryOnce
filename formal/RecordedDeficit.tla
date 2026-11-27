@@ -21,7 +21,8 @@ Min(left, right) == IF left <= right THEN left ELSE right
 Max(left, right) == IF left >= right THEN left ELSE right
 Available(physicalValue, issueDeficit, unlabelled) ==
   Max(physicalValue + unlabelled - issueDeficit, 0)
-Intent(mode, quantity, verb) == <<mode, quantity, verb>>
+Intent(quantity, verb) == <<quantity, verb>>
+PublishedIntent(mode, quantity, verb) == <<mode, quantity, verb>>
 
 VARIABLES physical, deficit, signedNet, beforePhysical, beforeDeficit,
           beforeSignedNet, unlabelledNet, beforeUnlabelledNet,
@@ -61,10 +62,12 @@ Init ==
   /\ beforeArrivals = NoArrivals
 
 Fresh(op) == op \in OperationIds /\ ~Seen(op)
-SameIntent(op, mode, quantity, verb) ==
-  Seen(op) /\ intentByOperation[op] = Intent(mode, quantity, verb)
-ChangedIntent(op, mode, quantity, verb) ==
-  Seen(op) /\ intentByOperation[op] # Intent(mode, quantity, verb)
+\* The stored mode records the publication choice. A retry compares only the command.
+StoredCommand(op) == <<intentByOperation[op][2], intentByOperation[op][3]>>
+SameIntent(op, quantity, verb) ==
+  Seen(op) /\ StoredCommand(op) = Intent(quantity, verb)
+ChangedIntent(op, quantity, verb) ==
+  Seen(op) /\ StoredCommand(op) # Intent(quantity, verb)
 
 Receipt(quantity) ==
   /\ quantity \in MovementQuantities
@@ -113,7 +116,7 @@ RecordMovement(op, quantity, verb, fabricate) ==
                         (IF verb = "issue" THEN 0 ELSE shortfall)
     /\ signedNet' = physical' - deficit' + unlabelledNet'
     /\ intentByOperation' = [intentByOperation EXCEPT
-         ![op] = Intent("record", quantity, verb)]
+         ![op] = PublishedIntent("record", quantity, verb)]
     /\ resultShortfallByOperation' = [resultShortfallByOperation EXCEPT
          ![op] = shortfall]
     /\ lastOperation' = op
@@ -160,7 +163,7 @@ RejectMovement(op, quantity, verb) ==
                /\ deficit' = deficit
                /\ signedNet' = physical' - deficit' + unlabelledNet'
                /\ intentByOperation' = [intentByOperation EXCEPT
-                    ![op] = Intent("reject", quantity, verb)]
+                    ![op] = PublishedIntent("reject", quantity, verb)]
                /\ resultShortfallByOperation' = [resultShortfallByOperation EXCEPT
                     ![op] = 0]
                /\ lastOperation' = op
@@ -177,7 +180,7 @@ RejectMovement(op, quantity, verb) ==
 Replay(op, mode, quantity, verb) ==
   /\ mode \in Modes
   /\ quantity \in MovementQuantities
-  /\ SameIntent(op, mode, quantity, verb)
+  /\ SameIntent(op, quantity, verb)
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
   /\ beforeSignedNet' = signedNet
@@ -198,7 +201,7 @@ Replay(op, mode, quantity, verb) ==
 RejectChangedIntent(op, mode, quantity, verb) ==
   /\ mode \in Modes
   /\ quantity \in MovementQuantities
-  /\ ChangedIntent(op, mode, quantity, verb)
+  /\ ChangedIntent(op, quantity, verb)
   /\ beforePhysical' = physical
   /\ beforeDeficit' = deficit
   /\ beforeSignedNet' = signedNet
@@ -301,7 +304,7 @@ RecordShortageIsExplicit ==
     /\ Seen(lastOperation)
     /\ lastMode = "record"
     /\ lastShortfall > 0
-    /\ intentByOperation[lastOperation] = Intent(lastMode, lastRequested, lastVerb)
+    /\ intentByOperation[lastOperation] = PublishedIntent(lastMode, lastRequested, lastVerb)
     /\ resultShortfallByOperation[lastOperation] = lastShortfall
     /\ deficit = IF lastVerb = "issue" THEN beforeDeficit + lastShortfall ELSE beforeDeficit
     /\ signedNet = beforeSignedNet - lastRequested
@@ -333,7 +336,7 @@ ReplayPreservesTruthAndResult ==
     /\ signedNet = beforeSignedNet
     /\ lastOperation \in OperationIds
     /\ Seen(lastOperation)
-    /\ intentByOperation[lastOperation] = Intent(lastMode, lastRequested, lastVerb)
+    /\ StoredCommand(lastOperation) = Intent(lastRequested, lastVerb)
     /\ lastShortfall = resultShortfallByOperation[lastOperation]
 
 ChangedIntentRejectsAndStutters ==
@@ -345,7 +348,7 @@ ChangedIntentRejectsAndStutters ==
     /\ signedNet = beforeSignedNet
     /\ lastOperation \in OperationIds
     /\ Seen(lastOperation)
-    /\ intentByOperation[lastOperation] # Intent(lastMode, lastRequested, lastVerb)
+    /\ StoredCommand(lastOperation) # Intent(lastRequested, lastVerb)
     /\ lastShortfall = resultShortfallByOperation[lastOperation]
 
 \* A transfer publishes the two arrival portions with the signed source in one step.
@@ -377,5 +380,10 @@ PositiveUnlabelledSettlementIsUnreachable ==
 PositiveUnlabelledAllocationIsUnreachable ==
   ~(lastVerb = "transfer" /\ lastOutcome = "record-full" /\
     beforePhysical > physical /\ WitnessedUnlabelledDebit > 0 /\ lastShortfall = 0)
+
+\* A Reject-mode retry can return a shortage that was published in Record mode.
+CrossModeShortageReplayIsUnreachable ==
+  ~(lastOutcome = "replay" /\ lastOperation \in OperationIds /\
+    intentByOperation[lastOperation][1] = "record" /\ lastMode = "reject" /\ lastShortfall > 0)
 
 =============================================================================

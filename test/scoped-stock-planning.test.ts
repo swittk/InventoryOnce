@@ -1355,6 +1355,7 @@ describe("indexed stock planning and availability", () => {
     { volumeCase: "unreachable-volume-increments", volume: "0.0006" },
     { volumeCase: "reachable-whole-lot", volume: "0.001" },
     { volumeCase: "reachable-fixed-package", volume: "1" },
+    { volumeCase: "reject-whole-lot", volume: "1" },
   ])("records exact witnesses and remainder for $volumeCase", async ({ volumeCase, volume }) => {
     const item = defineInventoryItem({
       itemId: "material", revisionId: "material-v1",
@@ -1380,7 +1381,9 @@ describe("indexed stock planning and availability", () => {
     const catalog = defineInventoryCatalog({
       itemRevisions: [item], activeItemRevisionIds: { material: item.revisionId }, packagingRevisions: [packaging],
     });
-    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const reject = volumeCase === "reject-whole-lot";
+    const inventory = createTestInventory(undefined, catalog, undefined,
+      reject ? InventoryDeficitPolicy.Reject : InventoryDeficitPolicy.Record);
     for (const [lotId, occurredAtEpochMs] of [["older", time0], ["newer", time1]] as const) {
       await inventory.stock.receive({
         operationId: `receive-${lotId}`, occurredAtEpochMs,
@@ -1413,7 +1416,7 @@ describe("indexed stock planning and availability", () => {
       operationId: "transfer-with-unwitnessed-volume", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
       selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
       amount: measuredStockAmount(combinedVolume ? "7" : "5.000001", "kg", [
-        { axisId: "volume", value: volumeCase === "reachable-fixed-package" ? "1" : "0.001", unit: "L" },
+        { axisId: "volume", value: reject || volumeCase === "reachable-fixed-package" ? "1" : "0.001", unit: "L" },
       ]),
     });
     const arrived = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["destination"] });
@@ -1422,12 +1425,13 @@ describe("indexed stock planning and availability", () => {
       expect(result.event.unwitnessedStockMovements).toBeUndefined();
       return;
     }
-    if (volumeCase === "reachable-whole-lot" || volumeCase === "reachable-fixed-package") {
+    if (reject || volumeCase === "reachable-whole-lot" || volumeCase === "reachable-fixed-package") {
       expect(arrived.map(({ key }) => key.lotId).sort()).toEqual(["measured-later", "older"]);
       expect(arrived.find(({ key }) => key.lotId === "older")?.measurements.primary.quantity).toEqual(parseQuantity("4.000001", "kg"));
       const measured = arrived.find(({ key }) => key.lotId === "measured-later");
       if (measured === undefined) throw new Error("Expected the whole measured witness.");
       expect(compareQuantity(measured.measurements.primary.quantity, parseQuantity("1", "kg"))).toBe(0);
+      if (reject) expect(measured.measurements.independent).toEqual([{ axisId: "volume", quantity: parseQuantity("1", "L") }]);
       expect(result.event.unwitnessedStockMovements).toBeUndefined();
       return;
     }

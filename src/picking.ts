@@ -350,12 +350,14 @@ export function planWorkingInventoryAllocation({
         catalog, report: resolved.measurements, candidates: deficitAdjusted.candidates, rows: candidateResult.rowsById,
       };
       const measuredCandidates = canRecordPartial ? selectableMeasuredWitnesses(selectable) : measuredInput.candidates;
+      /** Complete movements need primary capacity to carry every reported axis. */
+      const bounds = deferMeasuredShortfall ? measuredWitnessBounds({ ...selectable, candidates: measuredCandidates }) : {};
       const measured = canRecordPartial
         ? allocateInventoryUpTo({
             ...measuredInput, candidates: measuredCandidates, assessIncrementBlockage: false,
-            ...measuredWitnessBounds({ ...selectable, candidates: measuredCandidates }),
+            ...bounds,
           })
-        : allocateWorkingInventory(measuredInput);
+        : allocateWorkingInventory({ ...measuredInput, ...bounds });
       if (lines === undefined || measured.allocations.length > 0 || canRecordWithoutWitness) {
         allocated = measured;
         lines = buildLines(measured.allocations);

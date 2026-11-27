@@ -79,6 +79,12 @@ export interface InventoryWorkingAllocationCandidate
 export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInput, "candidates"> {
   /** Eligible stock with exact private or published capacities. */
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+  /** The reported movement needs a positive primary remainder for an unwitnessed axis. */
+  readonly requiresPositiveShortfall?: boolean;
+  /** Proven upper limit on primary stock that can fit the measured report. */
+  readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
+  /** Primary capacity that must remain available for a complete measured witness. */
+  readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
 }
 
 /** Limit on stock without a reported measurement in a fully witnessed assignment. */
@@ -93,12 +99,6 @@ export interface InventoryFullWitnessPrimaryBudget {
 interface AllocateInventoryUpToInput extends AllocateWorkingInventoryInput {
   /** Skip relaxed trials when measured evidence cannot be inferred for a split. */
   readonly assessIncrementBlockage?: boolean;
-  /** The reported movement needs a positive primary remainder for an unwitnessed axis. */
-  readonly requiresPositiveShortfall?: boolean;
-  /** Proven upper limit on primary stock that can fit the measured report. */
-  readonly maximumWitnessPrimary?: InventoryWorkingQuantity;
-  /** Primary capacity that must remain available for a complete measured witness. */
-  readonly fullWitnessPrimaryBudget?: InventoryFullWitnessPrimaryBudget;
 }
 
 /** One exact position/quantity chosen by automatic allocation. */
@@ -190,11 +190,13 @@ function allocateInventoryCandidates({
     candidates: eligible,
     ...(acceptAllocations === undefined ? {} : { acceptAllocations }),
   };
+  /** A relaxed exact trial still needs enough primary stock to carry every reported axis. */
+  const witnessBudget = fullWitnessPrimaryBudget === undefined ? {} : { fullWitnessPrimaryBudget };
   // Greedy rounding can strand a remainder even when later package sizes fill the whole request.
   const assignment = searchInventoryAllocations({
     ...searchInput, acceptPartial, requiresPositiveShortfall,
     ...(maximumWitnessPrimary === undefined ? {} : { maximumWitnessPrimary }),
-    ...(fullWitnessPrimaryBudget === undefined ? {} : { fullWitnessPrimaryBudget }),
+    ...witnessBudget,
   });
   if (assignment !== undefined) {
     return {
@@ -203,7 +205,7 @@ function allocateInventoryCandidates({
       expiredStockWasExcluded,
       incrementBlockedStock: assessIncrementBlockage && (assignment.shortfall.amountMinor > 0
         ? partialAllocationHasBlockedIncrement(searchInput, assignment.shortfall)
-        : exactAllocationHasBlockedIncrement(searchInput, assignment.allocations)),
+        : exactAllocationHasBlockedIncrement({ ...searchInput, ...witnessBudget }, assignment.allocations)),
       allocationConstraintBlockedStock: false,
     };
   }
@@ -279,7 +281,7 @@ function allocateInventoryCandidates({
 
 /** Confirm that relaxing increments admits an earlier accepted full plan. */
 function exactAllocationHasBlockedIncrement(
-  input: Pick<SearchInventoryAllocationsInput, "requested" | "candidates" | "acceptAllocations">,
+  input: Pick<SearchInventoryAllocationsInput, "requested" | "candidates" | "acceptAllocations" | "fullWitnessPrimaryBudget">,
   allocations: readonly InventoryAllocation[]
 ): boolean {
   if (!input.candidates.some(
@@ -447,7 +449,7 @@ function searchInventoryAllocations({
     if (remainder > minimumShortfallMinor) minimumShortfallMinor = remainder;
   }
   const totalCapacity = suffixCapacity[0] ?? 0n;
-  if (!acceptPartial && totalCapacity < requestedMinor) return undefined;
+  if (!acceptPartial && (totalCapacity < requestedMinor || minimumShortfallMinor > 0n)) return undefined;
   if (totalCapacity <= requestedMinor) {
     // Taking every legal unit has the smallest possible remainder without a search.
     const remaining = requestedMinor - totalCapacity;
@@ -576,7 +578,7 @@ function searchInventoryAllocations({
           "Exact allocation exceeded its safe search bound; narrow the candidates or request."
         );
       }
-      if (axisFreeLimitMinor !== undefined && bestRemainingMinor <= minimumPositiveShortfallMinor) {
+      if (axisFreeLimitMinor !== undefined && (!acceptPartial || bestRemainingMinor <= minimumPositiveShortfallMinor)) {
         // A better result now needs every reported measure. Reserve enough primary capacity for it.
         const axisFreeRemaining = axisFreeLimitMinor - axisFreePicked;
         if (axisFreeRemaining < 0n) break;

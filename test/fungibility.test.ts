@@ -1470,6 +1470,54 @@ describe("derived pool summaries and exact member movements", () => {
     expect(await inventory.read.reservation("package-claim")).toEqual(claim);
   });
 
+  it("reports a one-piece shortage when an odd claim is left with only two-piece packs", async () => {
+    const item = oldBrand();
+    const alternative = newBrand();
+    const pack = defineScalarInventoryPackaging({ revisionId: "two-piece", item, packageUnit: "pack", contains: "2" });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "pack-pool", revisionId: "pack-pool-v1", basisUnit: "equivalent",
+      members: [{ item }, { item: alternative }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item, alternative],
+      activeItemRevisionIds: { [item.itemId]: item.revisionId, [alternative.itemId]: alternative.revisionId },
+      packagingRevisions: [pack], fungibilityRevisions: [pool], activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({ catalog, storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3) });
+    const loose = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receive({
+      operationId: "receive-odd-claim-packs", occurredAtEpochMs: time0,
+      to: { ...loose, packagingRevisionId: pack.revisionId }, amount: packageAmount(100_002, pack.revisionId),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-odd-claim-loose", occurredAtEpochMs: time0,
+      to: loose, amount: stockAmount("1", "piece"),
+    });
+    const selector = inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] });
+    const requested = parseQuantity("200003", "piece");
+    await inventory.reservations.reserve({
+      operationId: "reserve-odd-claim", reservationId: "odd-claim", itemRevisionId: item.revisionId,
+      selector, requested, createdAtEpochMs: time1,
+    });
+    const claim = await inventory.read.reservation("odd-claim");
+    const result = await inventory.fungibility.transfer({
+      operationId: "move-odd-claim-loose", occurredAtEpochMs: time2, fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("1", "equivalent"), method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] }, toPlacementNodeId: "room",
+    });
+    expect(result.event.stockEffects).toMatchObject([
+      { position: { placementNodeId: "room" }, measurementsDelta: { primary: { quantity: parseQuantity("1", "piece") } } },
+      { position: { placementNodeId: "store" }, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+    ]);
+    expect((await inventory.read.reservationFeasibility(time3)).groups).toEqual([
+      expect.objectContaining({
+        reservationIds: ["odd-claim"], requested,
+        fulfillable: parseQuantity("200002", "piece"), shortage: parseQuantity("1", "piece"),
+      }),
+    ]);
+    expect(await inventory.read.reservation("odd-claim")).toEqual(claim);
+  });
+
   it("records a fungible transfer after claim-preserving picks exhaust the exact search budget", async () => {
     const inventory = createInventoryOnce({
       catalog: fungibilityCatalog(), storage: createInMemoryInventoryDurableStorage(), clock: clockAt(time3),

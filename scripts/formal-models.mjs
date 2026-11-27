@@ -263,6 +263,7 @@ export const formalPositiveReachabilityChecks = Object.freeze([
   ["RecordedDeficit", "RecordedDeficitMixedTransferWitness", "MixedTransferIsUnreachable"],
   ["RecordedDeficit", "RecordedDeficitPositiveUnlabelledWitness", "PositiveUnlabelledSettlementIsUnreachable"],
   ["RecordedDeficit", "RecordedDeficitUnlabelledAllocationWitness", "PositiveUnlabelledAllocationIsUnreachable"],
+  ["RecordedDeficit", "RecordedDeficitCrossModeReplayWitness", "CrossModeShortageReplayIsUnreachable"],
   ["SnapshotSupersededWorkflow", "SnapshotSupersededWorkflowNonzeroWitness", "NonzeroSnapshotIsUnreachable"],
 ]);
 
