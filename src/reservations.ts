@@ -1260,8 +1260,10 @@ function reservationGroupFeasibility(
       decimals = Math.max(decimals, allocation.quantity.decimals);
     }
   }
-  for (const position of positions)
-    decimals = Math.max(decimals, position.capacity.decimals);
+  // A fixed package increment can have more decimals than the materialized balance.
+  for (const position of positions) {
+    decimals = Math.max(decimals, position.capacity.decimals, position.indivisibleIncrement?.decimals ?? 0);
+  }
 
   if (broadReservations.length === 0) {
     return exactReservationGroupFeasibility({
@@ -1272,11 +1274,6 @@ function reservationGroupFeasibility(
       atEpochMs,
       decimals,
     });
-  }
-
-  // Materialized balances may have fewer decimals than one fixed package increment.
-  for (const position of positions) {
-    decimals = Math.max(decimals, position.indivisibleIncrement?.decimals ?? 0);
   }
 
   let totalRequested = 0n;
@@ -1421,8 +1418,8 @@ interface ExactReservationGroupFeasibilityInput {
 
 /**
  * Solve an exact-only claim group without materializing a dense claim × position graph.
- * Exact allocations already freeze each claim's legal edges, so full coexistence reduces to
- * checking the summed bound quantity against each exact position's current capacity.
+ * Each claim freezes its position ceilings. On each position, sum the legal
+ * quantity under each ceiling and cap the result by the current capacity.
  */
 function exactReservationGroupFeasibility({
   reservations,
@@ -1432,13 +1429,21 @@ function exactReservationGroupFeasibility({
   atEpochMs,
   decimals,
 }: ExactReservationGroupFeasibilityInput): ReservationGroupFeasibility {
-  const capacityByPositionIdentity = new Map<string, bigint>();
+  const stockByIdentity = new Map<string, {
+    /** Available shared-scale quantity after deficit burden. */
+    readonly capacity: bigint;
+    /** Shared-scale size of one current whole pick, when the position is indivisible. */
+    readonly increment: bigint | undefined;
+  }>();
   for (const position of positions) {
-    capacityByPositionIdentity.set(
-      position.identity,
-      quantityAtDecimals(position.capacity, decimals)
-    );
+    stockByIdentity.set(position.identity, {
+      capacity: quantityAtDecimals(position.capacity, decimals),
+      increment: position.indivisibleIncrement === undefined
+        ? undefined
+        : quantityAtDecimals(position.indivisibleIncrement, decimals),
+    });
   }
+  /** Sum only legal portions of the frozen claims competing for each row. */
   const allocatedByPositionIdentity = new Map<string, bigint>();
   let totalRequested = 0n;
   for (
@@ -1456,8 +1461,9 @@ function exactReservationGroupFeasibility({
       const allocationMinor = quantityAtDecimals(allocation.quantity, decimals);
       allocationTotal += allocationMinor;
       const identity = inventoryStockPositionIdentity(allocation.position);
+      const stock = stockByIdentity.get(identity);
       if (
-        !capacityByPositionIdentity.has(identity) ||
+        stock === undefined ||
         !reservationPositionEligible(
           reservation,
           projection,
@@ -1467,9 +1473,13 @@ function exactReservationGroupFeasibility({
       ) {
         continue;
       }
+      // Round each claim before summing so two partial claims cannot share a whole unit.
+      const legalAllocation = stock.increment === undefined
+        ? allocationMinor
+        : allocationMinor - allocationMinor % stock.increment;
       allocatedByPositionIdentity.set(
         identity,
-        (allocatedByPositionIdentity.get(identity) ?? 0n) + allocationMinor
+        (allocatedByPositionIdentity.get(identity) ?? 0n) + legalAllocation
       );
     }
     if (allocationTotal !== requested) {
@@ -1480,7 +1490,7 @@ function exactReservationGroupFeasibility({
   }
 
   let fulfillable = 0n;
-  for (const [identity, capacity] of capacityByPositionIdentity) {
+  for (const [identity, { capacity }] of stockByIdentity) {
     const allocated = allocatedByPositionIdentity.get(identity) ?? 0n;
     fulfillable += allocated < capacity ? allocated : capacity;
   }

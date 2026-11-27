@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4410,
-    "compilerCallGraphEdges": 12747,
+    "compilerCallGraphCallables": 4413,
+    "compilerCallGraphEdges": 12769,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -12652,20 +12652,20 @@
               "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 102,
-              "name": "<anonymous@102>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
+              "id": "test/dual-measure-counts.test.ts:3529:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 103,
-              "name": "<anonymous@103>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -19817,7 +19817,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 114,
+          "occurrences": 117,
           "path": "src/reservations.ts"
         },
         {
@@ -24762,41 +24762,41 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/formal-public-surface-direct.test.ts",
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test-root:test/formal-public-surface-direct.test.ts",
+              "id": "test-root:test/dual-measure-counts.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/formal-public-surface-direct.test.ts"
+              "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 70,
-              "file": "test/formal-public-surface-direct.test.ts",
+              "column": 55,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 58,
-              "name": "<anonymous@58>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 73,
-              "file": "test/formal-public-surface-direct.test.ts",
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 59,
-              "name": "<anonymous@59>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
+              "id": "src/quantity.ts:4727:compareQuantity",
               "kind": "FunctionDeclaration",
-              "line": 227,
-              "name": "leastCommonQuantityMultiple",
+              "line": 113,
+              "name": "compareQuantity",
               "reason": "resolved-call"
             },
             {
@@ -24819,7 +24819,7 @@
             "line": 108,
             "name": "assertSameUnit"
           },
-          "test": "test/formal-public-surface-direct.test.ts"
+          "test": "test/dual-measure-counts.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -25496,31 +25496,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/scoped-stock-planning.test.ts",
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test-root:test/scoped-stock-planning.test.ts",
+              "id": "test-root:test/dual-measure-counts.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/scoped-stock-planning.test.ts"
+              "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 53,
-              "file": "test/scoped-stock-planning.test.ts",
+              "column": 55,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:5555:<anonymous@134>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 134,
-              "name": "<anonymous@134>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 63,
-              "file": "test/scoped-stock-planning.test.ts",
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:109381:<anonymous@1776>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 1776,
-              "name": "<anonymous@1776>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -25543,14 +25543,14 @@
             "line": 113,
             "name": "compareQuantity"
           },
-          "test": "test/scoped-stock-planning.test.ts"
+          "test": "test/dual-measure-counts.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/scoped-stock-planning.test.ts"
+        "test/dual-measure-counts.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/scoped-stock-planning.test.ts"
+        "test/dual-measure-counts.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -32358,20 +32358,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 196,
-              "name": "<anonymous@196>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 92,
+              "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 236,
-              "name": "<anonymous@236>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34718,41 +34718,41 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/review-hardening.test.ts",
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test-root:test/review-hardening.test.ts",
+              "id": "test-root:test/dual-measure-counts.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/review-hardening.test.ts"
+              "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 37,
-              "file": "test/review-hardening.test.ts",
+              "column": 55,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:1793:<anonymous@66>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 89,
-              "file": "test/review-hardening.test.ts",
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:2258:<anonymous@77>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 77,
-              "name": "<anonymous@77>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:5833:subtractQuantity",
+              "id": "src/quantity.ts:4727:compareQuantity",
               "kind": "FunctionDeclaration",
-              "line": 139,
-              "name": "subtractQuantity",
+              "line": 113,
+              "name": "compareQuantity",
               "reason": "resolved-call"
             },
             {
@@ -34775,7 +34775,7 @@
             "line": 340,
             "name": "integerAtDecimals"
           },
-          "test": "test/review-hardening.test.ts"
+          "test": "test/dual-measure-counts.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -38919,20 +38919,20 @@
               "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 102,
-              "name": "<anonymous@102>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
+              "id": "test/dual-measure-counts.test.ts:3529:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 103,
-              "name": "<anonymous@103>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -47325,7 +47325,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 33,
+          "occurrences": 34,
           "path": "src/reservations.ts"
         },
         {
@@ -50594,20 +50594,20 @@
               "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 102,
-              "name": "<anonymous@102>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
+              "id": "test/dual-measure-counts.test.ts:3529:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 103,
-              "name": "<anonymous@103>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -54412,41 +54412,41 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/formal-public-surface-direct.test.ts",
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test-root:test/formal-public-surface-direct.test.ts",
+              "id": "test-root:test/dual-measure-counts.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/formal-public-surface-direct.test.ts"
+              "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 70,
-              "file": "test/formal-public-surface-direct.test.ts",
+              "column": 55,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-direct.test.ts:1829:<anonymous@58>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 58,
-              "name": "<anonymous@58>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 73,
-              "file": "test/formal-public-surface-direct.test.ts",
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/formal-public-surface-direct.test.ts:1909:<anonymous@59>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 59,
-              "name": "<anonymous@59>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:9197:leastCommonQuantityMultiple",
+              "id": "src/quantity.ts:4727:compareQuantity",
               "kind": "FunctionDeclaration",
-              "line": 227,
-              "name": "leastCommonQuantityMultiple",
+              "line": 113,
+              "name": "compareQuantity",
               "reason": "resolved-call"
             },
             {
@@ -54469,7 +54469,7 @@
             "line": 108,
             "name": "assertSameUnit"
           },
-          "test": "test/formal-public-surface-direct.test.ts"
+          "test": "test/dual-measure-counts.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -55073,31 +55073,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/scoped-stock-planning.test.ts",
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test-root:test/scoped-stock-planning.test.ts",
+              "id": "test-root:test/dual-measure-counts.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/scoped-stock-planning.test.ts"
+              "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 53,
-              "file": "test/scoped-stock-planning.test.ts",
+              "column": 55,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:5555:<anonymous@134>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 134,
-              "name": "<anonymous@134>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 63,
-              "file": "test/scoped-stock-planning.test.ts",
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:109381:<anonymous@1776>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 1776,
-              "name": "<anonymous@1776>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -55120,14 +55120,14 @@
             "line": 113,
             "name": "compareQuantity"
           },
-          "test": "test/scoped-stock-planning.test.ts"
+          "test": "test/dual-measure-counts.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/scoped-stock-planning.test.ts"
+        "test/dual-measure-counts.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/scoped-stock-planning.test.ts"
+        "test/dual-measure-counts.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -56780,20 +56780,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 196,
-              "name": "<anonymous@196>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 92,
+              "column": 100,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:8786:<anonymous@236>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 236,
-              "name": "<anonymous@236>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -58400,41 +58400,41 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/review-hardening.test.ts",
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test-root:test/review-hardening.test.ts",
+              "id": "test-root:test/dual-measure-counts.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/review-hardening.test.ts"
+              "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 37,
-              "file": "test/review-hardening.test.ts",
+              "column": 55,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:1793:<anonymous@66>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 89,
-              "file": "test/review-hardening.test.ts",
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/review-hardening.test.ts:2258:<anonymous@77>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 77,
-              "name": "<anonymous@77>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/quantity.ts",
               "hasBody": true,
-              "id": "src/quantity.ts:5833:subtractQuantity",
+              "id": "src/quantity.ts:4727:compareQuantity",
               "kind": "FunctionDeclaration",
-              "line": 139,
-              "name": "subtractQuantity",
+              "line": 113,
+              "name": "compareQuantity",
               "reason": "resolved-call"
             },
             {
@@ -58457,7 +58457,7 @@
             "line": 340,
             "name": "integerAtDecimals"
           },
-          "test": "test/review-hardening.test.ts"
+          "test": "test/dual-measure-counts.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -60500,20 +60500,20 @@
               "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 102,
-              "name": "<anonymous@102>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
+              "id": "test/dual-measure-counts.test.ts:3529:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 103,
-              "name": "<anonymous@103>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -65077,7 +65077,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 33,
+          "occurrences": 34,
           "path": "src/reservations.ts"
         },
         {
@@ -67929,20 +67929,20 @@
               "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 102,
-              "name": "<anonymous@102>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
+              "id": "test/dual-measure-counts.test.ts:3529:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 103,
-              "name": "<anonymous@103>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -76215,20 +76215,20 @@
               "column": 55,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:7192:<anonymous@196>",
-              "kind": "ArrowFunction",
-              "line": 196,
-              "name": "<anonymous@196>",
-              "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 72,
-              "file": "test/dual-measure-counts.test.ts",
-              "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:7271:<anonymous@197>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
               "line": 197,
               "name": "<anonymous@197>",
+              "reason": "external-callback-dispatch"
+            },
+            {
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
+              "hasBody": true,
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
+              "kind": "ArrowFunction",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -82395,7 +82395,7 @@
           "path": "src/read-model.ts"
         },
         {
-          "occurrences": 37,
+          "occurrences": 36,
           "path": "src/reservations.ts"
         },
         {
@@ -84156,31 +84156,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/reservation-consume-shortage.test.ts",
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test-root:test/reservation-consume-shortage.test.ts",
+              "id": "test-root:test/dual-measure-counts.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/reservation-consume-shortage.test.ts"
+              "name": "test/dual-measure-counts.test.ts"
             },
             {
-              "column": 66,
-              "file": "test/reservation-consume-shortage.test.ts",
+              "column": 55,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservation-consume-shortage.test.ts:5608:<anonymous@171>",
+              "id": "test/dual-measure-counts.test.ts:7211:<anonymous@197>",
               "kind": "ArrowFunction",
-              "line": 171,
-              "name": "<anonymous@171>",
+              "line": 197,
+              "name": "<anonymous@197>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 85,
-              "file": "test/reservation-consume-shortage.test.ts",
+              "column": 100,
+              "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservation-consume-shortage.test.ts:13780:<anonymous@364>",
+              "id": "test/dual-measure-counts.test.ts:7318:<anonymous@198>",
               "kind": "ArrowFunction",
-              "line": 364,
-              "name": "<anonymous@364>",
+              "line": 198,
+              "name": "<anonymous@198>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -84213,7 +84213,7 @@
             "line": 8222,
             "name": "consume"
           },
-          "test": "test/reservation-consume-shortage.test.ts"
+          "test": "test/dual-measure-counts.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -88292,7 +88292,7 @@
           "path": "src/read-model.ts"
         },
         {
-          "occurrences": 37,
+          "occurrences": 36,
           "path": "src/reservations.ts"
         },
         {
@@ -92587,20 +92587,20 @@
               "column": 66,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3413:<anonymous@102>",
+              "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
               "kind": "ArrowFunction",
-              "line": 102,
-              "name": "<anonymous@102>",
+              "line": 103,
+              "name": "<anonymous@103>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/dual-measure-counts.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:3510:<anonymous@103>",
+              "id": "test/dual-measure-counts.test.ts:3529:<anonymous@104>",
               "kind": "ArrowFunction",
-              "line": 103,
-              "name": "<anonymous@103>",
+              "line": 104,
+              "name": "<anonymous@104>",
               "reason": "external-callback-dispatch"
             },
             {
