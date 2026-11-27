@@ -2168,3 +2168,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-28 — placement in count observation cuts
 
 - A retained placement event sets its recorded destination in the observation forest. That forest can omit the event that established its former parent. Live publication still requires the recorded former parent and checks every resulting edge.
+
+## 2026-11-28 — stock scope and repair assertions at observation
+
+- A direct count replays the counted item's stock without rebuilding unrelated placement. A subtree count also retains the stock of serialized resources that determine ancestry.
+- Count reconciliation uses active repair assertions at their individual occurrence times. The aggregate repair envelope remains the durable effect on published stock.

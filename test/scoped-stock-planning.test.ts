@@ -1948,7 +1948,7 @@ describe("indexed stock planning and availability", () => {
     }
   }, 15_000);
 
-  it.each([false, true])("publishes independently signed count adjustments (canonical: %s)", async (canonical) => {
+  it.each([false, true])("publishes independently signed count adjustments after stock setup (canonical adapter configuration: %s)", async (canonical) => {
     const catalog = measuredItemCatalog("pieces");
     const item = catalog.activeItem("measured");
     const position = { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store" };

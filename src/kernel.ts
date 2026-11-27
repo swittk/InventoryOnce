@@ -22,7 +22,16 @@ export * from "./counts.js";
 /** Append-only event-correction planner. */
 export * from "./corrections.js";
 /** Shared corrected/late historical replay planner. */
-export * from "./historical-replay.js";
+export {
+  InventoryHistoricalReplayConflictError,
+  replayInventoryHistoricalScenario,
+  type InventoryHistoricalReplayConflictCode,
+  type InventoryHistoricalReplayConflict,
+  type InventoryPendingHistoricalAssertion,
+  type InventoryHistoricalRootReplacement,
+  type ReplayInventoryHistoricalScenarioInput,
+  type InventoryHistoricalReplayResult,
+} from "./historical-replay.js";
 /** Historical-repair envelope planner. */
 export * from "./historical-repair.js";
 /** Indexed event-history query helpers. */

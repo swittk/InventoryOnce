@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  createInventoryOnce,
+  defineInventoryCatalog,
+  defineScalarInventoryItem,
   InventoryCountStatus,
   InventoryDeficitPolicy,
   InventoryOptionalIdentityConstraintKind,
   InventoryReservationFeasibilityStatus,
   InventoryReservationStatus,
+  InventoryTrackingRequirement,
   parseQuantity,
   stockAmount,
 } from "../src/index.js";
@@ -802,6 +806,89 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     }
     expect((await inventory.read.positions(selector))[0]?.measurements.primary.quantity)
       .toEqual(parseQuantity(String(includeReceipt ? 1 : 1 + debt), "piece"));
+  });
+
+  it.each([false, true])("keeps a direct count independent of a backdated topology cycle (subtree: %s)", async (subtree) => {
+    const inventory = createTestInventory();
+    const position = { ...loosePosition(subtree ? "node-a" : "store"), itemRevisionId: "item-a-v2" };
+    await inventory.stock.receive({
+      operationId: "receive-count-stock", occurredAtEpochMs: time0, to: position, amount: stockAmount("2", "piece"),
+    });
+    await inventory.placement.move({ operationId: "nest-b", occurredAtEpochMs: time0, nodeId: "node-b", into: "node-a" });
+    await inventory.placement.move({ operationId: "nest-a", occurredAtEpochMs: time0, nodeId: "node-a", into: "source" });
+    await inventory.placement.unplace({
+      operationId: "later-unplace-b", occurredAtEpochMs: time2, nodeId: "node-b", expectedParent: "node-a",
+    });
+    await inventory.placement.moveContents({
+      operationId: "backdated-contents", occurredAtEpochMs: time1, nodeId: "source", into: "node-b",
+    });
+    const selector = subtree
+      ? { itemId: position.itemId, withinPlacementNodeIds: ["node-b"] }
+      : { itemId: position.itemId, placementNodeIds: ["store"] };
+    await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: time0 });
+    await inventory.counts.observe({
+      operationId: "observe", countId: "count", observedAtEpochMs: time1,
+      observations: [{ position, measurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [],
+      } }],
+    });
+    const reconcile = { operationId: "reconcile", countId: "count", completedAtEpochMs: time3 };
+    if (subtree) {
+      await expect(inventory.counts.reconcile(reconcile)).rejects.toThrow("Placement graph contains a cycle");
+    } else {
+      const result = await inventory.counts.reconcile(reconcile);
+      expect(result.event?.stockEffects).toMatchObject([
+        { position, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+      ]);
+      expect((await inventory.counts.reconcile(reconcile)).replayed).toBe(true);
+    }
+    expect(await inventory.read.placementAncestry("node-a")).toEqual(["node-a", "node-b"]);
+  });
+
+  it.each([false, true])("checks backdated serial source age only for stock a count depends on (serial: %s)", async (countSerial) => {
+    const item = defineScalarInventoryItem({ itemId: "ordinary", revisionId: "ordinary-v1", axisId: "pieces", unit: "piece" });
+    const serial = defineScalarInventoryItem({
+      itemId: "serialized", revisionId: "serialized-v1", axisId: "pieces", unit: "piece",
+      tracking: { lot: InventoryTrackingRequirement.Forbidden, serial: InventoryTrackingRequirement.Required },
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item, serial], activeItemRevisionIds: { ordinary: item.revisionId, serialized: serial.revisionId },
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: { nowEpochMs: () => time3 },
+    });
+    const from = { itemId: serial.itemId, placementNodeId: "origin", serialId: "serial-1" };
+    await inventory.stock.receive({ operationId: "later-receipt", occurredAtEpochMs: time2, to: from, amount: stockAmount("1", "piece") });
+    await inventory.stock.transfer({
+      operationId: "backdated-serial-move", occurredAtEpochMs: time1, from, toPlacementNodeId: "destination", amount: stockAmount("1", "piece"),
+    });
+    const position = countSerial
+      ? { ...from, itemRevisionId: serial.revisionId, placementNodeId: "destination" }
+      : { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store" };
+    if (!countSerial) {
+      await inventory.stock.receive({
+        operationId: "receive-ordinary", occurredAtEpochMs: time0, to: position, amount: stockAmount("2", "piece"),
+      });
+    }
+    const selector = { itemId: position.itemId, placementNodeIds: [position.placementNodeId] };
+    await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: time0 });
+    await inventory.counts.observe({
+      operationId: "observe", countId: "count", observedAtEpochMs: time1,
+      observations: [{ position, measurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [],
+      } }],
+    });
+    const reconcile = { operationId: "reconcile", countId: "count", completedAtEpochMs: time3 };
+    if (countSerial) {
+      await expect(inventory.counts.reconcile(reconcile)).rejects.toThrow("is not currently positive");
+    } else {
+      const result = await inventory.counts.reconcile(reconcile);
+      expect(result.event?.stockEffects).toMatchObject([
+        { position, measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
+      ]);
+      expect((await inventory.counts.reconcile(reconcile)).replayed).toBe(true);
+    }
+    expect(await inventory.read.positions({ itemId: serial.itemId, placementNodeIds: ["destination"] })).toHaveLength(1);
   });
 
   it.each(["receipt", "issue"] as const)("reconciles a backdated correction when a later %s changes the live FIFO layer", async (later) => {

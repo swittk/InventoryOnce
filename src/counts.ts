@@ -16,6 +16,7 @@ import {
   inventoryMetadataFingerprint,
 } from "./canonical.js";
 import { inventoryEventIdForOperation } from "./commands.js";
+import { expandInventoryCountRepairAssertions } from "./historical-replay.js";
 import {
   InventoryEventKind,
   assertInventoryEpochMilliseconds,
@@ -51,7 +52,7 @@ import {
   normalizeInventoryStockSelector,
   type InventoryStockSelector,
 } from "./selectors.js";
-import { replayEffectiveStockAge } from "./stock-age.js";
+import { replayCountScope, replayEffectiveStockAge } from "./stock-age.js";
 
 /** Durable lifecycle of one physical/cycle count. */
 export enum InventoryCountStatus {
@@ -401,7 +402,8 @@ export function createInventoryCountReconciliationPlan(
     input.catalog,
     input.events,
     input.deficitPolicy,
-    count.observedAtEpochMs
+    count.observedAtEpochMs,
+    count.selector
   );
   const expectedPositions = findInventoryPositions(
     expectedProjection,
@@ -499,9 +501,10 @@ function projectInventoryEventsAtOrBefore(
   catalog: InventoryCatalog,
   events: readonly InventoryCommittedEvent[],
   deficitPolicy: InventoryDeficitPolicy,
-  observedAtEpochMs: number
+  observedAtEpochMs: number,
+  selector: InventoryStockSelector
 ): InventoryProjectionState {
-  const ordered = inventoryEventsInRecordSequence(events);
+  const ordered = expandInventoryCountRepairAssertions(inventoryEventsInRecordSequence(events));
   // Retain every ordered event by identity so required correction predecessors can be recovered.
   const eventById = new Map<string, InventoryCommittedEvent>();
   // Track events participating in the observed-at replay, including predecessor evidence added below.
@@ -538,6 +541,7 @@ function projectInventoryEventsAtOrBefore(
     events: occurrenceCut,
     deficitPolicy,
     [replayEffectiveStockAge]: "occurrence-cut",
+    [replayCountScope]: { itemId: selector.itemId, includePlacement: selector.withinPlacementNodeIds !== undefined },
   };
   return projectInventoryEvents(replay);
 }

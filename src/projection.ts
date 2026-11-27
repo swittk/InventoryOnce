@@ -1,5 +1,13 @@
 import { candidateSubtreePositionIds } from "./stock-scope.js";
-import { assertInventoryStockAgeOverride, captureConservedPositiveLayerStarts, inventoryConservedArrivalCanSettleDeficit, replayEffectiveStockAge, type InventoryStockAgeReplay } from "./stock-age.js";
+import {
+  assertInventoryStockAgeOverride,
+  captureConservedPositiveLayerStarts,
+  inventoryConservedArrivalCanSettleDeficit,
+  replayCountScope,
+  replayEffectiveStockAge,
+  type InventoryCountReplayScope,
+  type InventoryStockAgeReplay,
+} from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   cloneInventorySparseRecord,
@@ -373,6 +381,14 @@ function cloneInventoryProjectionForEventBatch(
   };
 }
 
+/** Prepared stock and placement selection used only by a private count cut. */
+interface InventoryCountProjectionScope {
+  /** Whether the observation needs the historical placement forest. */
+  readonly includePlacement: boolean;
+  /** Stock that belongs to the counted item or contributes to needed ancestry. */
+  readonly includesPosition: (position: InventoryStockPositionKey) => boolean;
+}
+
 /**
  * Shared reducer. Whole-history replay owns a fresh private projection and may mutate its maps
  * to avoid cloning every growing index once per event; live commits always use copy-on-write.
@@ -382,7 +398,8 @@ function applyInventoryCommittedEventInternal(
   mutateProjection: boolean,
   projectTraceability: boolean,
   ownsPlacement = mutateProjection,
-  replayStockAge?: InventoryStockAgeReplay
+  replayStockAge?: InventoryStockAgeReplay,
+  countScope?: InventoryCountProjectionScope
 ): ApplyInventoryCommittedEventResult {
   const normalizedDraft = defineInventoryEvent({ catalog, event });
   const normalizedEvent = commitInventoryEvent(
@@ -437,10 +454,17 @@ function applyInventoryCommittedEventInternal(
       `Inventory recordSequence ${normalizedEvent.recordSequence} already exists.`
     );
   }
+  // Normalize the full fact before limiting private replay to the stock the count can depend on.
+  const stockEvent = countScope === undefined
+    ? normalizedEvent
+    : countScopedStockEvent(normalizedEvent, countScope);
+  const placementNodeDefinitions = countScope?.includePlacement === false
+    ? []
+    : normalizedEvent.placementNodeDefinitions ?? [];
   /** Whether this event can change the correction ownership index. */
   const correctionProjectionChanges = normalizedEvent.correction !== undefined;
   /** Whether stock effects touch a serial historically/currently bound to a node. */
-  const embodiedSerialStockChanges = normalizedEvent.stockEffects.some(
+  const embodiedSerialStockChanges = stockEvent.stockEffects.some(
     /** Detect one serial whose lifetime or placement can change embodied topology. */
     (effect) =>
       effect.position.serialId !== undefined &&
@@ -453,15 +477,15 @@ function applyInventoryCommittedEventInternal(
   const placementNodeProjectionChanges =
     correctionProjectionChanges ||
     embodiedSerialStockChanges ||
-    (normalizedEvent.placementNodeDefinitions?.length ?? 0) > 0;
+    placementNodeDefinitions.length > 0;
   /** Whether lot metadata/root ownership needs a private copy for this event. */
   const lotProjectionChanges =
     correctionProjectionChanges ||
     (normalizedEvent.lotDefinitions?.length ?? 0) > 0;
   /** Whether any current stock/index/FIFO/serial value can change. */
   const stockProjectionChanges =
-    normalizedEvent.stockEffects.length > 0 ||
-    (normalizedEvent.positiveLayerProvenanceOverrides?.length ?? 0) > 0;
+    stockEvent.stockEffects.length > 0 ||
+    (stockEvent.positiveLayerProvenanceOverrides?.length ?? 0) > 0;
   const correctionEventIdByCorrectedEventId: Record<string, string> =
     mutateProjection
       ? (state.correctionEventIdByCorrectedEventId as Record<string, string>)
@@ -570,7 +594,7 @@ function applyInventoryCommittedEventInternal(
     normalizedEvent
   );
   const replacementPlacementNodeIds = new Set<string>();
-  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+  for (const definition of placementNodeDefinitions) {
     replacementPlacementNodeIds.add(definition.nodeId);
   }
   /** Only nodes redefined or removed by this event can change serial binding identities. */
@@ -602,7 +626,7 @@ function applyInventoryCommittedEventInternal(
       }
     }
   }
-  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+  for (const definition of placementNodeDefinitions) {
     const nodeId = definition.nodeId;
     rememberPreviousPlacementNode(nodeId);
     const rootEventId =
@@ -928,12 +952,12 @@ function applyInventoryCommittedEventInternal(
   /** Conserved moves carry the oldest current source/destination layer into the destination. */
   const conservedPositiveLayerStartByDestinationId =
     captureConservedPositiveLayerStarts(
-      normalizedEvent,
+      stockEvent,
       /** Read a FIFO start from the published state before applying any effect. */
       (positionId) => state.positiveLayerStartedAtEpochMsByPositionId[positionId],
       replayStockAge
     );
-  for (const effect of normalizedEvent.stockEffects) {
+  for (const effect of stockEvent.stockEffects) {
     /** Embodied serial stock must still have a positive instance after a move. */
     let embodiedNodeId: string | undefined;
     if (effect.position.serialId !== undefined) {
@@ -1108,7 +1132,7 @@ function applyInventoryCommittedEventInternal(
       startedAtEpochMs
     );
   }
-  for (const override of normalizedEvent.positiveLayerProvenanceOverrides ??
+  for (const override of stockEvent.positiveLayerProvenanceOverrides ??
     []) {
     const identity = inventoryStockPositionIdentity(override.position);
     const position = positions[identity];
@@ -1140,7 +1164,7 @@ function applyInventoryCommittedEventInternal(
     touchedPositionIdsBySerialIdentity,
     positivePositionIdBySerialIdentity,
   });
-  const placementChanges = normalizedEvent.placementChanges ?? [];
+  const placementChanges = countScope?.includePlacement === false ? [] : normalizedEvent.placementChanges ?? [];
   for (const change of placementChanges) {
     const projected = inventorySparseRecordValue(placementNodes, change.nodeId);
     if (
@@ -1201,7 +1225,7 @@ function applyInventoryCommittedEventInternal(
       : { omittedHistoricalAssertionIds: normalizedEvent.historicalRepair.omittedAssertionIds }),
     retainedEvents: state.events,
   });
-  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+  for (const definition of placementNodeDefinitions) {
     if (definition.acceptsPlacement !== false) continue;
     const directPositions =
       inventorySparseRecordValue(
@@ -1699,6 +1723,50 @@ function placementChangesForOccurrenceCut(
   return replayChanges;
 }
 
+/** Keep only stock effects and corresponding age evidence used by a count cut. */
+function countScopedStockEvent(
+  event: InventoryCommittedEvent,
+  { includesPosition }: InventoryCountProjectionScope
+): InventoryCommittedEvent {
+  const { positiveLayerProvenanceTransfers, positiveLayerProvenanceOverrides } = event;
+  return {
+    ...event,
+    stockEffects: event.stockEffects.filter(({ position }) => includesPosition(position)),
+    ...(positiveLayerProvenanceTransfers === undefined ? {} : {
+      positiveLayerProvenanceTransfers: positiveLayerProvenanceTransfers.filter(({ from }) => includesPosition(from)),
+    }),
+    ...(positiveLayerProvenanceOverrides === undefined ? {} : {
+      positiveLayerProvenanceOverrides: positiveLayerProvenanceOverrides.filter(({ position }) => includesPosition(position)),
+    }),
+  };
+}
+
+/** Retain serials whose stock determines ancestry for a subtree observation. */
+function prepareCountProjectionScope(
+  input: ProjectInventoryEventsInput & {
+    /** Internal selector dependency passed only by count reconciliation. */
+    readonly [replayCountScope]?: InventoryCountReplayScope;
+  }
+): InventoryCountProjectionScope | undefined {
+  const scope = input[replayCountScope];
+  if (scope === undefined) return undefined;
+  const embodiedSerials = new Set<string>();
+  if (scope.includePlacement) {
+    for (const event of input.events) {
+      for (const { embodiedBy } of event.placementNodeDefinitions ?? []) {
+        if (embodiedBy !== undefined) {
+          embodiedSerials.add(inventorySerialIdentity(embodiedBy.itemId, embodiedBy.serialId));
+        }
+      }
+    }
+  }
+  return {
+    includePlacement: scope.includePlacement,
+    includesPosition: ({ itemId, serialId }) => itemId === scope.itemId ||
+      (serialId !== undefined && embodiedSerials.has(inventorySerialIdentity(itemId, serialId))),
+  };
+}
+
 /** Replay committed history through the same reducer used for live commits. */
 export function projectInventoryEvents(input: ProjectInventoryEventsInput): InventoryProjectionState {
   const { catalog, events, deficitPolicy, throughRecordSequence } = input;
@@ -1711,6 +1779,7 @@ export function projectInventoryEvents(input: ProjectInventoryEventsInput): Inve
     throw new Error("throughRecordSequence must be a non-negative safe integer.");
   }
   const ordered = inventoryEventsInRecordSequence(events);
+  const countScope = prepareCountProjectionScope(input);
   let state = emptyInventoryProjectionState();
   /** Number of ordered events actually replayed into this requested historical cut. */
   let appliedEventCount = 0;
@@ -1725,10 +1794,13 @@ export function projectInventoryEvents(input: ProjectInventoryEventsInput): Inve
       true,
       false,
       true,
-      replayStockAge
+      replayStockAge,
+      countScope
     ).state;
     appliedEventCount += 1;
   }
+  // The count only needs stock and, for subtree selectors, the placement forest.
+  if (countScope !== undefined) return state;
   /** Reuse the exact replayed prefix so post-cut graph changes can never leak into the historical state. */
   const traceabilityEvents =
     throughRecordSequence === undefined

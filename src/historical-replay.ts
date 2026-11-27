@@ -140,16 +140,18 @@ export function replayInventoryHistoricalScenario({
   assertions = [],
   omittedAssertionIds = [],
 }: ReplayInventoryHistoricalScenarioInput): InventoryHistoricalReplayResult {
+  const ordered = sourceEvents === undefined
+    ? orderedProjectionEvents(projection)
+    : [...sourceEvents].sort(
+        /** Replay one indexed component in exact durable order. */
+        (left, right) => left.recordSequence - right.recordSequence
+      );
   const actualEvents = reconcileInventoryHistoricalGraphEvents(
-    effectiveInventoryHistoryEvents({
-      projection,
-      ...(sourceEvents === undefined ? {} : { sourceEvents }),
-    })
+    effectiveInventoryHistoryEvents({ ordered })
   );
   const effectiveEvents = reconcileInventoryHistoricalGraphEvents(
     effectiveInventoryHistoryEvents({
-      projection,
-      ...(sourceEvents === undefined ? {} : { sourceEvents }),
+      ordered,
       assertions,
       omittedAssertionIds,
       ...(rootReplacement === undefined ? {} : { rootReplacement }),
@@ -267,37 +269,40 @@ export function replayInventoryHistoricalScenario({
   };
 }
 
+/** Expand repairs into physical facts before the count selects events by occurrence. */
+export function expandInventoryCountRepairAssertions(
+  ordered: readonly InventoryCommittedEvent[]
+): readonly InventoryCommittedEvent[] {
+  if (!ordered.some((event) => event.kind === InventoryEventKind.HistoricalRepair)) return ordered;
+  // Corrections retain their own observation rule and predecessor evidence.
+  return effectiveInventoryHistoryEvents({ ordered, retainCorrections: true });
+}
+
 /** Collect current active embedded assertions, merge new evidence, then replay in deterministic order. */
 function effectiveInventoryHistoryEvents({
-  projection,
-  sourceEvents,
+  ordered,
   assertions = [],
   omittedAssertionIds = [],
   rootReplacement,
+  retainCorrections = false,
 }: {
-  /** Current projection owning the complete durable event indexes. */
-  readonly projection: InventoryProjectionState;
-  /** Optional indexed transitive event component. */
-  readonly sourceEvents?: readonly InventoryCommittedEvent[];
+  /** Retained event component in durable order. */
+  readonly ordered: readonly InventoryCommittedEvent[];
   /** New late assertions to merge into effective history. */
   readonly assertions?: readonly InventoryPendingHistoricalAssertion[];
   /** Active embedded assertions to remove from effective history. */
   readonly omittedAssertionIds?: readonly string[];
   /** Optional retained root replacement used by correction planning. */
   readonly rootReplacement?: InventoryHistoricalRootReplacement;
+  /** Count cuts apply committed corrections rather than rewriting their root events. */
+  readonly retainCorrections?: boolean;
 }): readonly InventoryCommittedEvent[] {
-  const ordered = sourceEvents === undefined
-    ? orderedProjectionEvents(projection)
-    : [...sourceEvents].sort(
-        /** Replay one indexed component in exact durable order. */
-        (left, right) => left.recordSequence - right.recordSequence
-      );
   const active = new Map<string, InventoryPendingHistoricalAssertion>();
   const ordinary: InventoryCommittedEvent[] = [];
   /** Last current-format replacement (including explicit omitted-root null) by root event. */
   const correctionByRoot = new Map<string, InventoryEventDraft | null>();
   for (const event of ordered) {
-    if (event.kind === InventoryEventKind.Correction) {
+    if (event.kind === InventoryEventKind.Correction && !retainCorrections) {
       const rootId = event.correction?.correctsEventId;
       if (rootId === undefined) {
         throw new InventoryHistoricalReplayConflictError({

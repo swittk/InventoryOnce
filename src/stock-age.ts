@@ -4,6 +4,17 @@ import { inventoryStockPositionIdentity } from "./model.js";
 /** Internal replay marker for histories that can omit source age or the stock behind a count debit. */
 export const replayEffectiveStockAge = Symbol("replayEffectiveStockAge");
 
+/** Internal scope for reconstructing a count baseline from committed history. */
+export const replayCountScope = Symbol("replayCountScope");
+
+/** Stock and topology needed to evaluate an observation selector. */
+export interface InventoryCountReplayScope {
+  /** Counted item. All its positions can supply conserved routes into the count. */
+  readonly itemId: string;
+  /** Whether the selector depends on historical ancestry. */
+  readonly includePlacement: boolean;
+}
+
 /** The filtered view that owns the age reconstruction. */
 export type InventoryStockAgeReplay = "effective-history" | "occurrence-cut";
 

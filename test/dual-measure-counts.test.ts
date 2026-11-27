@@ -101,6 +101,48 @@ function measuredShortageAmount(pieces: string, weight: string) {
 }
 
 describe("historical shortages on independently measured stock", () => {
+  it.each([
+    ["before", 2, 3, "2", "34"],
+    ["straddling", 2, 5, "1", "10"],
+    ["after", 5, 6, "3", "33"],
+    ["omitted", 2, 3, "3", "33"],
+  ] as const)("counts only active repair assertions at the observation (%s)", async (mode, issueOffset, receiveOffset, pieces, weight) => {
+    const { strict: inventory } = measuredShortageFacades();
+    const position = { itemId, itemRevisionId, placementNodeId: "store" };
+    const selector = { itemId, placementNodeIds: ["store"] };
+    await inventory.stock.receive({
+      operationId: "receive", occurredAtEpochMs, to: position, amount: measuredShortageAmount("3", "33"),
+    });
+    await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: occurredAtEpochMs });
+    await inventory.counts.observe({
+      operationId: "observe", countId: "count", observedAtEpochMs: occurredAtEpochMs + 4,
+      observations: [{ position, measurements: measuredVector(pieces, weight) }],
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "late-repair", occurredAtEpochMs: occurredAtEpochMs + 7, reason: "Record late issue and receipt.",
+      assertions: [
+        { assertionId: "late-issue", assert: (plans) => plans.issue({
+          occurredAtEpochMs: occurredAtEpochMs + issueOffset, from: position, amount: measuredShortageAmount("2", "23"),
+        }) },
+        { assertionId: "late-receipt", assert: (plans) => plans.receive({
+          occurredAtEpochMs: occurredAtEpochMs + receiveOffset, to: position, amount: measuredShortageAmount("1", "24"),
+        }) },
+      ],
+    });
+    if (mode === "omitted") {
+      await inventory.stock.recordHistorical({
+        operationId: "omit-repair", occurredAtEpochMs: occurredAtEpochMs + 8, reason: "Remove both superseded assertions.",
+        assertions: [], omittedAssertionIds: ["late-issue", "late-receipt"],
+      });
+    }
+    const command = { operationId: "reconcile", countId: "count", completedAtEpochMs: occurredAtEpochMs + 9 };
+    const result = await inventory.counts.reconcile(command);
+    expect(result.event).toBeUndefined();
+    expect((await inventory.counts.reconcile(command)).replayed).toBe(true);
+    expect((await inventory.read.positions(selector)).map(({ measurements }) => measurements))
+      .toEqual([mode === "omitted" ? measuredVector("3", "33") : measuredVector("2", "34")]);
+  });
+
   it("rejects a historical correction deepening weight despite an unchanged piece peak", async () => {
     const { recorder, strict } = measuredShortageFacades();
     const position = { itemId, placementNodeId: "measured-historical-bin" };
@@ -247,6 +289,7 @@ describe("independent physical count reconciliation", () => {
             });
           }
           const claim = await inventory.read.reservation("held");
+          expect(claim?.allocations).toEqual(allocations);
           await inventory.counts.replaceAbsolute({
             countId: "reweigh", operationId: "reweigh", itemRevisionId, selector,
             observedMeasurements: measuredVector(pieces, weight), occurredAtEpochMs: occurredAtEpochMs + 2,

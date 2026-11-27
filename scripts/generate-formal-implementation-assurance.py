@@ -213,6 +213,7 @@ def kernel_family(name,decl):
  if decl in {'src/read-model.ts','src/availability.ts','src/usability.ts','src/whereabouts.ts'}: return 'read-current'
  if decl == 'src/event-query.ts': return 'read-history'
  if decl in {'src/historical-repair.ts','src/historical-replay.ts','src/historical-dependencies.ts'}: return 'historical-repair'
+ if decl == 'src/kernel.ts' and name in {'InventoryHistoricalReplayConflictError','replayInventoryHistoricalScenario'}: return 'historical-repair'
  if decl == 'src/projection.ts': return 'dimension-reclassification'
  if decl in {'src/events.ts','src/commands.ts'}:
   if name == 'createInventoryRevisionTransitionEvent': return 'revision-transition'
