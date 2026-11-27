@@ -391,11 +391,15 @@ interface WholeMeasuredSuffixSum {
   readonly primary: bigint;
 }
 
-/** Find the largest allowed assignment, breaking quantity ties by FIFO/FEFO order. */
-function searchInventoryAllocations({
-  requested, candidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
-  maximumWitnessPrimary, fullWitnessPrimaryBudget, wholeMeasuredSubsets, ignoreIncrements = false, improveOnShortfall,
-}: SearchInventoryAllocationsInput): InventoryAllocationAssignment | undefined {
+/** Find the largest ordered assignment, keeping the original decimal grid if the search narrows its rows. */
+function searchInventoryAllocations(
+  input: SearchInventoryAllocationsInput,
+  minimumDecimals = input.requested.decimals
+): InventoryAllocationAssignment | undefined {
+  const {
+    requested, candidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
+    maximumWitnessPrimary, fullWitnessPrimaryBudget, wholeMeasuredSubsets, ignoreIncrements = false, improveOnShortfall,
+  } = input;
   /** Relaxed trials can present fractional packages that a normal predicate cannot represent. */
   const acceptAllocations = predicate === undefined || !ignoreIncrements ? predicate :
     /** Discard an invalid synthetic trial without invalidating the accepted physical plan. */
@@ -406,7 +410,7 @@ function searchInventoryAllocations({
         return false;
       }
     };
-  let decimals = requested.decimals;
+  let decimals = minimumDecimals;
   for (const candidate of candidates) {
     decimals = Math.max(decimals, candidate.available.decimals);
     if (candidate.allocationIncrement !== undefined) {
@@ -584,6 +588,22 @@ function searchInventoryAllocations({
   }
   if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
     if (ignoreIncrements) return undefined;
+    if (minimumShortfallMinor === 0n && fullWitnessPrimaryBudget !== undefined &&
+        (axisFreeLimitMinor === 0n || completeExclusions !== undefined)) {
+      const completeCandidates = candidates.filter(
+        /** Keep policy order and omit only rows that cannot appear in a full witness. */
+        ({ position }) => !completeExclusions?.has(position) &&
+          (axisFreeLimitMinor !== 0n || fullWitnessPrimaryBudget.measuredPositions.has(position))
+      );
+      if (completeCandidates.length <= MAXIMUM_EXACT_ALLOCATION_DEPTH) {
+        const complete = searchInventoryAllocations({
+          ...input, candidates: completeCandidates, acceptPartial: false,
+        }, decimals);
+        if (complete !== undefined || !acceptPartial) return complete;
+        // The complete search proved that a partial witness is the best possible result.
+        return searchInventoryAllocations({ ...input, requiresPositiveShortfall: true }, decimals);
+      }
+    }
     throw new InventoryExactAllocationLimitError(
       "Exact allocation exceeded its safe search bound; narrow the candidates or request."
     );

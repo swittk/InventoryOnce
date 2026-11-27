@@ -744,7 +744,7 @@ describe("projection index real-world scale", () => {
     expect(facade).toContain("const changed = new Map<string, InventoryPolicyWorkingPosition>()");
     expect(facade).toContain("policyPoolAfterPriorRequests(");
     expect(facade).not.toContain("...world.projection.positions");
-    expect(facade).not.toContain("Object.entries(world.projection.positionIdsByItemRevisionId");
+    expect(facade).not.toMatch(/Object\.entries\(\s*world\.projection\.positionIdsByItemRevisionId/);
     expect(facade).not.toContain("inventoryWorldAfterPolicyAllocation(");
     expect(facade).toContain(
       "inventorySparseRecordValue(projection.lotIdentitiesByItemId, itemId)"

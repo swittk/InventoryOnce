@@ -2052,6 +2052,69 @@ describe("indexed stock planning and availability", () => {
     expect(moved.event.stockEffects.map(({ position }) => position.lotId)).toEqual(["lot-0001", "lot-0001"]);
   }, 15_000);
 
+  it("finds the later exact measured package beyond the search depth of dry lots", async () => {
+    const item = measuredItemCatalog("pieces", InventoryMeasurementRequirement.Optional).activeItem("measured");
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: ["0.5", "1"].map((weight) => ({
+        revisionId: `pack-${weight}`, itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("pack"),
+        fixedContents: {
+          primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+          independent: [{ axisId: "weight", quantity: parseQuantity(weight, "kg") }],
+        },
+      })),
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const source = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "receive-dry-lots", occurredAtEpochMs: time0,
+      lines: Array.from({ length: 4_999 }, (_, index) => ({
+        to: { ...source, lotId: `dry-${index}` }, amount: stockAmount("1", "piece"),
+      })),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-light-packages", occurredAtEpochMs: time1,
+      to: { ...source, lotId: "light" }, amount: packageAmount(2, "pack-0.5"),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-exact-packages", occurredAtEpochMs: time2,
+      to: { ...source, lotId: "exact" }, amount: packageAmount(2, "pack-1"),
+    });
+    const request = {
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] }, method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+    };
+    const command = {
+      ...request, operationId: "transfer-later-package", occurredAtEpochMs: time3, toPlacementNodeId: "destination",
+    };
+    const moved = await inventory.stock.transferByPolicy(command);
+    expect(moved.event.unwitnessedStockMovements).toBeUndefined();
+    expect(moved.event.stockEffects.map(({ position, measurementsDelta }) => [
+      position.lotId, position.placementNodeId, measurementsDelta.primary.quantity,
+    ])).toEqual([
+      ["exact", "destination", parseQuantity("1", "piece")],
+      ["exact", "store", parseQuantity("-1", "piece")],
+    ]);
+    expect(await inventory.stock.transferByPolicy(command)).toEqual({ ...moved, replayed: true });
+    expect((await inventory.read.planAllocation(request)).lines.map(({ position }) => position.lotId)).toEqual(["exact"]);
+    const partial = await inventory.stock.transferByPolicy({
+      ...command, operationId: "transfer-partial-after-exact-search",
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "1.25", unit: "kg" }]),
+    });
+    expect(partial.event.stockEffects).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        position: expect.objectContaining({ lotId: "dry-0", placementNodeId: "destination" }),
+        measurementsDelta: expect.objectContaining({ primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") } }),
+      }),
+    ]));
+    expect(partial.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: {
+        primary: { quantity: parseQuantity("1", "piece") },
+        independent: [{ axisId: "weight", quantity: parseQuantity("1.25", "kg") }],
+      },
+    }]);
+  }, 15_000);
+
   it.each([false, true])("previews the exact independently measured witness used in execution (canonical: %s)", async (canonical) => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({
@@ -3042,6 +3105,45 @@ describe("indexed stock planning and availability", () => {
     expect(await move(reopened)).toEqual({ ...result, replayed: true });
     await expect(move(reopened, "Changed report.")).rejects.toThrow("changed intent");
     expect(readRestoredWorld).not.toHaveBeenCalled();
+  });
+
+  it.each(["single", "many"])("publishes a Reject-mode %s exact transfer during unrelated native writes", async (form) => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const from = loosePosition("store");
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "receive-backed-stock", occurredAtEpochMs: time0, to: from, amount });
+    const before = storage.readSegmentedStockHead();
+    const line = { from, toPlacementNodeId: "destination", amount };
+    const header = { operationId: "transfer-backed-stock", occurredAtEpochMs: time2 };
+    /** Advance an unrelated position before each attempted publication of the transfer. */
+    let competingWrites = 0;
+    const commit = storage.commitSegmentedStockEvent.bind(storage);
+    vi.spyOn(storage, "commitSegmentedStockEvent").mockImplementation(async (input) => {
+      if (input.operationId === header.operationId) {
+        competingWrites += 1;
+        await inventory.stock.receive({
+          operationId: `competing-receipt-${competingWrites}`, occurredAtEpochMs: time1,
+          to: loosePosition("other"), amount,
+        });
+      }
+      return commit(input);
+    });
+    /** Submit the same transfer through the selected exact public operation. */
+    const transfer = (target: ReturnType<typeof createTestInventory>, toPlacementNodeId: string) =>
+      form === "single" ? target.stock.transfer({ ...header, ...line, toPlacementNodeId })
+        : target.stock.transferMany({ ...header, lines: [{ ...line, toPlacementNodeId }] });
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+    const moved = await transfer(inventory, "destination");
+    expect(competingWrites).toBe(1);
+    expect(moved.receipt.worldRevision).toBe(before.worldRevision + 2);
+    expect(readWorld).not.toHaveBeenCalled();
+    readWorld.mockRestore();
+    const reopenedStorage = createInMemoryInventoryDurableStorage({ initialWorld: await inventory.read.world() });
+    const reopened = createTestInventory(reopenedStorage);
+    expect(await transfer(reopened, "destination")).toEqual({ ...moved, replayed: true });
+    await expect(transfer(reopened, "changed-destination")).rejects.toThrow("changed intent");
+    expect(reopenedStorage.readSegmentedStockHead().worldRevision).toBe(moved.receipt.worldRevision);
   });
 
   it("replays a serialized reported transfer after reopening the exact journal", async () => {

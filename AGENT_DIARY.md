@@ -2118,3 +2118,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — correction age in count cuts
 
 - A correction's FIFO override describes the full ledger at publication. A count cut can omit the receipt that starts that layer or the issue that depletes it. Validate the cut's positive-layer evidence from its own postings while keeping the correction's signed stock delta. Published FIFO replay still applies the stored override.
+
+## 2026-11-27 — measured depth bounds and exact transfers
+
+- When the full-witness proof excludes enough rows to fit the depth bound, run the same ordered exact search on those eligible rows using the original decimal grid. If a full pick is impossible, the partial search can still use the original pool.
+- An exact Reject transfer can publish directly in the native adapter even when it also supports planning reads. The adapter records the actual receipt revision while publishing the signed routes.

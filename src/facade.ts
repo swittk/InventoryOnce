@@ -4098,8 +4098,8 @@ async function commitInventoryReportedExactTransfer(
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
   // Exact Reject-mode transfers need no planning read. The native publisher owns the receipt revision.
-  if (internals.deficitPolicy === InventoryDeficitPolicy.Reject &&
-      !inventoryStorageSupportsSegmentedStockPlanning(internals.storage)) {
+  // Adapters that decline native publication still use the existing planning routes.
+  if (internals.deficitPolicy === InventoryDeficitPolicy.Reject) {
     const committed = await commitInventorySegmentedStockEventIfEligible(owner, event);
     if (committed !== undefined) return committed;
   }
