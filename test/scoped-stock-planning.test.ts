@@ -17,6 +17,7 @@ import {
   InventoryTrackingRequirement,
   InventoryTransferStatus,
   inventoryCatalogSnapshot,
+  inventoryMeasurementVector,
   inventoryStockSelector,
   measuredStockAmount,
   packageAmount,
@@ -1902,7 +1903,7 @@ describe("indexed stock planning and availability", () => {
     expect(whole.measurementsDelta.independent).toEqual([{ axisId: "volume", quantity: parseQuantity("1", "L") }]);
   });
 
-  it.each([false, true])("keeps intact FIFO picks independent of oversized lots (canonical: %s)", async (canonical) => {
+  it.each([false, true])("keeps intact FIFO picks independent of later lots (canonical: %s)", async (canonical) => {
     const item = defineScalarInventoryItem({ itemId: "intact", revisionId: "intact-v1", axisId: "pieces", unit: "piece" });
     const packaging = [3, 4, 7].map((pieces) => defineScalarInventoryPackaging({
       revisionId: `pack-${pieces}`, item, packageUnit: "pack", contains: String(pieces),
@@ -1910,7 +1911,7 @@ describe("indexed stock planning and availability", () => {
     const catalog = defineInventoryCatalog({
       itemRevisions: [item], activeItemRevisionIds: { intact: item.revisionId }, packagingRevisions: packaging,
     });
-    for (const padding of [0, 4_998]) {
+    for (const paddingSize of [0, 7, 3]) {
       const storage = policyPickingStorage(canonical);
       const inventory = createTestInventory(storage, catalog, clockAt(time3));
       const source = { itemId: item.itemId, placementNodeId: "store" };
@@ -1919,10 +1920,10 @@ describe("indexed stock planning and availability", () => {
       await inventory.stock.receiveMany({ operationId: "receive-threes", occurredAtEpochMs: time1,
         lines: ["three-a", "three-b"].map((lotId) => ({ to: { ...source, lotId }, amount: packageAmount(1, "pack-3") })),
       });
-      if (padding > 0) {
-        await inventory.stock.receiveMany({ operationId: "receive-sevens", occurredAtEpochMs: time2,
-          lines: Array.from({ length: padding }, (_, index) => ({
-            to: { ...source, lotId: `oversized-${index}` }, amount: packageAmount(1, "pack-7"),
+      if (paddingSize > 0) {
+        await inventory.stock.receiveMany({ operationId: "receive-padding", occurredAtEpochMs: time2,
+          lines: Array.from({ length: 4_998 }, (_, index) => ({
+            to: { ...source, lotId: `padding-${index}` }, amount: packageAmount(1, `pack-${paddingSize}`),
           })),
         });
       }
@@ -1941,13 +1942,99 @@ describe("indexed stock planning and availability", () => {
       ]);
       expect(moved.event.unwitnessedStockMovements).toBeUndefined();
       await expect(inventory.stock.transferByPolicy({ ...request, operationId: "reject-intact-split", occurredAtEpochMs: time3,
-        toPlacementNodeId: "destination", amount: stockAmount("3", "piece") }))
+        toPlacementNodeId: "destination", amount: stockAmount("2", "piece") }))
         .rejects.toThrow("intact package/serial increments");
       expect(await storage.readOperation("reject-intact-split")).toBeUndefined();
     }
   }, 15_000);
 
-  it("retries a bounded policy search with held physical stock and rejects an exhausted physical search", async () => {
+  it.each([false, true])("publishes independently signed count adjustments (canonical: %s)", async (canonical) => {
+    const catalog = measuredItemCatalog("pieces");
+    const item = catalog.activeItem("measured");
+    const position = { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store" };
+    const selector = inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] });
+    /** Compare the exact signed axes in the receipt and the new physical stock. */
+    const vector = (pieces: string, kg: string) => inventoryMeasurementVector(
+      { axisId: "pieces", quantity: parseQuantity(pieces, "piece") },
+      [{ axisId: "weight", quantity: parseQuantity(kg, "kg") }],
+    );
+    for (const [pieces, weight, deltaPieces, deltaWeight] of [
+      ["3", "19", "1", "-1"], ["1", "21", "-1", "1"],
+    ] as const) {
+      for (const replace of [false, true]) {
+        const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3));
+        await inventory.stock.receive({ operationId: "initial-count-stock", occurredAtEpochMs: time0, to: position,
+          amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "20", unit: "kg" }]) });
+        const observed = vector(pieces, weight);
+        if (!replace) {
+          await inventory.counts.start({ countId: "count", operationId: "start-count", selector, startedAtEpochMs: time0 });
+          await inventory.counts.observe({ countId: "count", operationId: "observe-count", observedAtEpochMs: time1,
+            observations: [{ position, measurements: observed }] });
+        }
+        const result = replace
+          ? await inventory.counts.replaceAbsolute({ countId: "count", operationId: "replace-count", selector,
+              itemRevisionId: item.revisionId, observedMeasurements: observed, occurredAtEpochMs: time1 })
+          : await inventory.counts.reconcile({ countId: "count", operationId: "reconcile-count", completedAtEpochMs: time2 });
+        expect(result.event?.stockEffects).toMatchObject([{ position, measurementsDelta: vector(deltaPieces, deltaWeight) }]);
+        expect((await inventory.read.positions(selector)).map(({ measurements }) => measurements)).toEqual([observed]);
+      }
+    }
+    const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3));
+    await inventory.stock.receive({ operationId: "initial-late-count-stock", occurredAtEpochMs: time0, to: position,
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "20", unit: "kg" }]) });
+    await inventory.counts.start({ countId: "late-count", operationId: "start-late-count", selector, startedAtEpochMs: time0 });
+    await inventory.counts.observe({ countId: "late-count", operationId: "observe-late-count", observedAtEpochMs: time1,
+      observations: [{ position, measurements: vector("3", "19") }] });
+    await inventory.stock.issue({ operationId: "later-issue", occurredAtEpochMs: time2, from: position,
+      amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "20", unit: "kg" }]) });
+    await expect(inventory.counts.reconcile({ countId: "late-count", operationId: "reconcile-late-count", completedAtEpochMs: time3 }))
+      .rejects.toThrow("cannot be negative while primary is positive");
+    expect((await inventory.read.positions(selector)).map(({ measurements }) => measurements)).toEqual([vector("1", "0")]);
+  });
+
+  it.each([false, true])("keeps whole fixed axes and count differences for measured packages (canonical: %s)", async (canonical) => {
+    const item = measuredItemCatalog("pieces", InventoryMeasurementRequirement.Optional).activeItem("measured");
+    /** Describe the item or package measurement vector without applying a movement sign. */
+    const vector = (pieces: string, kg?: string) => inventoryMeasurementVector(
+      { axisId: "pieces", quantity: parseQuantity(pieces, "piece") },
+      kg === undefined ? [] : [{ axisId: "weight", quantity: parseQuantity(kg, "kg") }],
+    );
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
+      packagingRevisions: [
+        { revisionId: "dynamic", itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("box"), fixedContents: vector("24") },
+        { revisionId: "fixed", itemId: item.itemId, itemRevisionId: item.revisionId, packageUnit: unitCode("box"), fixedContents: vector("24", "10") },
+      ],
+    });
+    const storage = policyPickingStorage(canonical);
+    const inventory = createTestInventory(storage, catalog, clockAt(time3));
+    for (const packagingRevisionId of ["dynamic", "fixed"]) {
+      await inventory.stock.receive({ operationId: `receive-${packagingRevisionId}`, occurredAtEpochMs: time0,
+        to: { itemId: item.itemId, placementNodeId: "store", packagingRevisionId },
+        amount: packagingRevisionId === "fixed" ? packageAmount(2, packagingRevisionId)
+          : packageAmount(2, packagingRevisionId, [{ axisId: "weight", value: "20", unit: "kg" }]),
+      });
+    }
+    /** Submit one absolute observation for the exact package revision. */
+    const count = (operationId: string, packagingRevisionId: string, pieces: string, kg: string) =>
+      inventory.counts.replaceAbsolute({ operationId, countId: operationId, itemRevisionId: item.revisionId,
+        selector: inventoryStockSelector(item.itemId, { placementNodeIds: ["store"], packagingRevisionIds: [packagingRevisionId] }),
+        occurredAtEpochMs: time1, observedMeasurements: vector(pieces, kg),
+      });
+    await expect(count("partial-package", "dynamic", "70", "19")).rejects.toThrow("whole multiple");
+    await expect(count("incorrect-fixed-axis", "fixed", "72", "19")).rejects.toThrow("whole package count");
+    expect(await storage.readOperation("partial-package")).toBeUndefined();
+    expect(await storage.readOperation("incorrect-fixed-axis")).toBeUndefined();
+    const dynamic = await count("count-dynamic", "dynamic", "72", "19");
+    expect(dynamic.event?.stockEffects).toMatchObject([{ measurementsDelta: vector("24", "-1") }]);
+    const fixed = await count("count-fixed", "fixed", "72", "30");
+    expect(fixed.event?.stockEffects).toMatchObject([{ measurementsDelta: vector("24", "10") }]);
+    const positions = await inventory.read.positions(inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] }));
+    expect(positions.map(({ key, measurements }) => [key.packagingRevisionId, measurements]))
+      .toEqual([["dynamic", vector("72", "19")], ["fixed", vector("72", "30")]]);
+  });
+
+  it("uses held physical stock and later rejects an impossible whole-package pick", async () => {
     const item = defineScalarInventoryItem({ itemId: "bulk", revisionId: "bulk-v1", axisId: "pieces", unit: "piece" });
     const box = defineScalarInventoryPackaging({ revisionId: "bulk-box", item, packageUnit: "box", contains: "2" });
     const catalog = defineInventoryCatalog({
@@ -1991,13 +2078,13 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.read.reservation("depth-claim")).toEqual(claim);
     expect((await inventory.read.reservationFeasibility(time3)).groups[0]?.shortage).toEqual(quantity);
 
-    // The remaining packages cannot be searched within the physical depth budget.
+    // Two-piece increments cannot exactly fill a three-piece request, regardless of the remaining lot count.
     const head = storage.readSegmentedStockHead();
-    const exhaustedOperationId = "record-policy-physical-limit";
-    await expect(inventory.stock.transferByPolicy({ ...command, operationId: exhaustedOperationId }))
-      .rejects.toThrow("Exact allocation exceeded its safe search bound");
+    const splitOperationId = "record-policy-physical-split";
+    await expect(inventory.stock.transferByPolicy({ ...command, operationId: splitOperationId }))
+      .rejects.toThrow("intact package/serial increments");
     expect(storage.readSegmentedStockHead()).toEqual(head);
-    expect(await storage.readOperation(exhaustedOperationId)).toBeUndefined();
+    expect(await storage.readOperation(splitOperationId)).toBeUndefined();
   }, 15_000);
 
   it("records a proven measured remainder when the stock pool exceeds the search depth", async () => {

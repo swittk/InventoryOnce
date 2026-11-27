@@ -141,7 +141,7 @@ export const MAXIMUM_EXACT_ALLOCATION_STATES = 100_000;
 /** The exact allocator reached its depth or state budget before it could decide the pick. */
 export class InventoryExactAllocationLimitError extends Error {}
 
-/** Maximum recursive exact-search depth before callers must narrow the candidate set. */
+/** Maximum nested positive choices in an exact search before callers must narrow the candidate set. */
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
 
 /** Enumerate subsets of up to three whole-only rows at the end of the candidate list. */
@@ -391,6 +391,18 @@ interface WholeMeasuredSuffixSum {
   readonly primary: bigint;
 }
 
+/** A positive choice's remaining search state. */
+interface InventoryAllocationSearchBranch {
+  /** First candidate that can follow the chosen row. */
+  readonly firstIndex: number;
+  /** Exact unassigned primary digits. */
+  readonly remainingMinor: bigint;
+  /** Exact selected primary without a reported axis contribution. */
+  readonly axisFreePicked: bigint;
+  /** Whole measured rows already selected in the prefix. */
+  readonly wholeRowsPicked: number;
+}
+
 /** Find the largest ordered assignment, keeping the original decimal grid if the search narrows its rows. */
 function searchInventoryAllocations(
   input: SearchInventoryAllocationsInput,
@@ -595,41 +607,26 @@ function searchInventoryAllocations(
       }
     }
   }
-  /** A proven partial search can advance past unpicked rows without nesting another call. */
-  let minimumPartialTake: bigint | undefined;
-  if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
-    if (ignoreIncrements) return undefined;
-    if (minimumShortfallMinor === 0n && fullWitnessPrimaryBudget !== undefined && axisFreeLimitMinor !== undefined) {
-      const completeCandidates = candidates.filter(
-        /** Omit an axis-free row when even its smallest legal pick exceeds the complete witness budget. */
-        ({ position }, index) => !completeExclusions?.has(position) &&
-          (fullWitnessPrimaryBudget.measuredPositions.has(position) || (incrementMinor[index] ?? 1n) <= axisFreeLimitMinor)
-      );
-      if (completeCandidates.length <= MAXIMUM_EXACT_ALLOCATION_DEPTH) {
-        const complete = searchInventoryAllocations({
-          ...input, candidates: completeCandidates, acceptPartial: false,
-        }, decimals);
-        if (complete !== undefined || !acceptPartial) return complete;
-        // The complete search proved that a partial witness is the best possible result.
-        return searchInventoryAllocations({ ...input, requiresPositiveShortfall: true }, decimals);
-      }
+  if (candidates.length > MAXIMUM_EXACT_ALLOCATION_DEPTH && !ignoreIncrements &&
+      minimumShortfallMinor === 0n && fullWitnessPrimaryBudget !== undefined && axisFreeLimitMinor !== undefined) {
+    const completeCandidates = candidates.filter(
+      /** Omit an axis-free row when even its smallest legal pick exceeds the complete witness budget. */
+      ({ position }, index) => !completeExclusions?.has(position) &&
+        (fullWitnessPrimaryBudget.measuredPositions.has(position) || (incrementMinor[index] ?? 1n) <= axisFreeLimitMinor)
+    );
+    if (completeCandidates.length <= MAXIMUM_EXACT_ALLOCATION_DEPTH) {
+      const complete = searchInventoryAllocations({
+        ...input, candidates: completeCandidates, acceptPartial: false,
+      }, decimals);
+      if (complete !== undefined || !acceptPartial) return complete;
+      // The complete search proved that a partial witness is the best possible result.
+      return searchInventoryAllocations({ ...input, requiresPositiveShortfall: true }, decimals);
     }
-    if (acceptPartial && minimumShortfallMinor > 0n && acceptAllocations !== undefined) {
-      /** Even the smallest pick must leave space for a positive primary remainder. */
-      let smallestPick = requestedMinor + 1n;
-      for (let index = 0; index < candidates.length; index += 1) {
-        const increment = incrementMinor[index] ?? 1n;
-        if ((capacityMinor[index] ?? 0n) >= increment && increment < smallestPick) smallestPick = increment;
-      }
-      if (requestedMinor - minimumShortfallMinor <= BigInt(MAXIMUM_EXACT_ALLOCATION_DEPTH) * smallestPick) {
-        minimumPartialTake = smallestPick;
-      }
-    }
-    if (minimumPartialTake === undefined) {
-      throw new InventoryExactAllocationLimitError(
-        "Exact allocation exceeded its safe search bound; narrow the candidates or request."
-      );
-    }
+  }
+  /** When the remainder cannot fit even the smallest increment, only the current prefix can be accepted. */
+  let smallestPick = requestedMinor + 1n;
+  for (const increment of incrementMinor) {
+    if (increment < smallestPick) smallestPick = increment;
   }
 
   /** Chosen shared-scale amount for each sorted candidate. */
@@ -641,7 +638,7 @@ function searchInventoryAllocations(
     /** Membership is based on the exact candidate key retained during sorting. */
     ({ position }) => !fullWitnessPrimaryBudget.measuredPositions.has(position)
   );
-  /** Count trial steps, including jumps that skip recursion. */
+  /** Count trial steps, including jumps that skip a branch. */
   let exploredChoices = 0;
   /** Best coherent result so far. Equal quantities keep the first policy choice. */
   let bestAssignment: InventoryAllocationAssignment | undefined;
@@ -653,11 +650,12 @@ function searchInventoryAllocations(
       }) ?? 0n) + 1n;
 
   /** Search in policy order until a smallest possible shortfall or diagnostic improvement is found. */
-  const findExactSuffix = (firstIndex: number, remainingMinor: bigint, axisFreePicked: bigint, wholeRowsPicked: number): boolean => {
+  function* findExactSuffix({ firstIndex, remainingMinor, axisFreePicked, wholeRowsPicked }: InventoryAllocationSearchBranch):
+    Generator<InventoryAllocationSearchBranch, boolean> {
     nextRow: for (let index = firstIndex; ; index += 1) {
       const complete = remainingMinor === 0n;
-      const selectableRemaining = minimumPartialTake === undefined ? remainingMinor : remainingMinor - minimumShortfallMinor;
-      if (complete || index >= candidates.length || (minimumPartialTake !== undefined && selectableRemaining < minimumPartialTake)) {
+      const selectableRemaining = remainingMinor - minimumShortfallMinor;
+      if (complete || index >= candidates.length || selectableRemaining < smallestPick) {
         if (!complete && (!acceptPartial || remainingMinor >= bestRemainingMinor)) return false;
         // A trial can leave a shortfall that cannot be emitted, even though a later trial fits.
         const shortfall = complete
@@ -784,21 +782,40 @@ function searchInventoryAllocations(
           continue;
         }
         chosenMinor[index] = take;
-        // The zero choice is last in policy order. Moving to the next row keeps the same prefix and budget.
-        if (minimumPartialTake !== undefined && take === 0n) continue nextRow;
-        if (findExactSuffix(index + 1, remainingMinor - take, axisFree ? axisFreePicked + take : axisFreePicked,
-          take > 0n ? nextWholeRows : wholeRowsPicked)) return true;
+        if (take === 0n) {
+          // All positive choices are exhausted. The zero choice continues with the same prefix and no new frame.
+          if (acceptAllocations === undefined) failedStates.add(state);
+          continue nextRow;
+        }
+        yield { firstIndex: index + 1, remainingMinor: pending,
+          axisFreePicked: axisFree ? axisFreePicked + take : axisFreePicked, wholeRowsPicked: nextWholeRows };
         if (acceptPartial && bestRemainingMinor <= minimumRemainder) break;
-        if (take === 0n) break;
         take -= increment;
       }
       chosenMinor[index] = 0n;
       if (acceptAllocations === undefined) failedStates.add(state);
       return false;
     }
-  };
+  }
 
-  findExactSuffix(0, requestedMinor, 0n, 0);
+  /** Pause each positive prefix while its child runs without using the JavaScript call stack. */
+  const branches = [findExactSuffix({ firstIndex: 0, remainingMinor: requestedMinor, axisFreePicked: 0n, wholeRowsPicked: 0 })];
+  for (let branch = branches.at(-1); branch !== undefined; branch = branches.at(-1)) {
+    const next = branch.next();
+    if (next.done) {
+      if (next.value) break;
+      branches.pop();
+      continue;
+    }
+    // The root frame holds no positive choice. Every subsequent frame accounts for one selected row.
+    if (branches.length > MAXIMUM_EXACT_ALLOCATION_DEPTH) {
+      if (ignoreIncrements) break;
+      throw new InventoryExactAllocationLimitError(
+        "Exact allocation exceeded its safe search bound; narrow the candidates or request."
+      );
+    }
+    branches.push(findExactSuffix(next.value));
+  }
   return bestAssignment;
 }
 

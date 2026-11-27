@@ -2134,3 +2134,8 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-27 — rows with no legal pick
 
 - Each exact search drops rows whose first legal increment exceeds their available stock or the whole request. It keeps the original decimal scale and policy order. Relaxed diagnostics decide eligibility again using their own increments. Only rows that can contribute a positive pick count toward the search depth limit.
+
+## 2026-11-27 — nested picks and count differences
+
+- An unpicked row advances the ordered search without another frame. A stack holds only positive choices. Its depth bound and the separate trial budget both apply to complete, partial and diagnostic searches.
+- A count adjustment is observed minus expected on each measurement axis. Its signed package difference still has to match whole increments and fixed axes. The resulting published position still has to satisfy stock sign and serial rules.

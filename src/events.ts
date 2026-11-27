@@ -1668,17 +1668,10 @@ function normalizeStockEffects(
     if (inventoryMeasurementsAreZero(rawEffect.measurementsDelta)) {
       throw new Error("Inventory event must not contain a zero stock effect.");
     }
-    const primaryDeltaIsZero =
-      compareQuantity(
-        rawEffect.measurementsDelta.primary.quantity,
-        zeroQuantity(
-          rawEffect.measurementsDelta.primary.quantity.unit,
-          rawEffect.measurementsDelta.primary.quantity.decimals
-        )
-      ) === 0;
-    const absolute =
-      primaryDeltaIsZero && kind === InventoryEventKind.CountAdjustment
-        ? undefined
+    // A count posts observed minus expected on each axis. Physical movements still require one direction.
+    const checkedDelta =
+      kind === InventoryEventKind.CountAdjustment
+        ? rawEffect.measurementsDelta
         : absoluteInventoryMeasurements(rawEffect.measurementsDelta);
     const positionIdentity = inventoryStockPositionIdentity(position);
     if (seenPositions.has(positionIdentity)) {
@@ -1697,10 +1690,7 @@ function normalizeStockEffects(
           "Packaged stock effect does not match its exact item/package revisions."
         );
       }
-      assertWholeMeasurementMultiple(
-        absolute ?? rawEffect.measurementsDelta,
-        packaging.fixedContents
-      );
+      assertWholeMeasurementMultiple(checkedDelta, packaging.fixedContents);
     }
     if (rawEffect.evidence !== undefined) {
       assertMeasurementsMatchItem(
