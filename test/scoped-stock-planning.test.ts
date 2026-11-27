@@ -2361,6 +2361,73 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.read.positions({ itemId: measured.itemId })).toEqual([unrelatedBefore]);
   });
 
+  it.each([false, true])("posts signed receipt corrections on independent axes (canonical: %s)", async (canonical) => {
+    const catalog = measuredItemCatalog("pieces");
+    const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3));
+    const position = { itemId: "measured", itemRevisionId: "measured-v1", placementNodeId: "store" };
+    const receipt = await inventory.stock.receive({
+      operationId: "measured-receipt", occurredAtEpochMs: time0, to: position,
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "33", unit: "kg" }]),
+    });
+    const correction: Parameters<typeof inventory.stock.correct>[0] = {
+      operationId: "correct-measured-receipt", occurredAtEpochMs: time2, correctsEventId: receipt.event.eventId,
+      reason: "Corrected receipt measurements.",
+      /** Replace the original receipt with the observed piece count and weight. */
+      replaceWith: (plans) => plans.receive({
+        occurredAtEpochMs: time0, to: position,
+        amount: measuredStockAmount("4", "piece", [{ axisId: "weight", value: "32", unit: "kg" }]),
+      }),
+    };
+    expect((await inventory.stock.planCorrection(correction)).valid).toBe(true);
+    const committed = await inventory.stock.correct(correction);
+    expect(committed.event.stockEffects).toMatchObject([{ position,
+      measurementsDelta: inventoryMeasurementVector({ axisId: "pieces", quantity: parseQuantity("1", "piece") },
+        [{ axisId: "weight", quantity: parseQuantity("-1", "kg") }]),
+    }]);
+    expect(await inventory.read.positions({ itemId: position.itemId })).toMatchObject([{ key: position,
+      measurements: inventoryMeasurementVector({ axisId: "pieces", quantity: parseQuantity("4", "piece") },
+        [{ axisId: "weight", quantity: parseQuantity("32", "kg") }]),
+    }]);
+  });
+
+  it.each([false, true])("posts signed historical physical differences on independent axes (canonical: %s)", async (canonical) => {
+    const catalog = measuredItemCatalog("pieces");
+    const inventory = createTestInventory(policyPickingStorage(canonical), catalog, clockAt(time3));
+    const position = { itemId: "measured", itemRevisionId: "measured-v1", placementNodeId: "store" };
+    await inventory.stock.receive({
+      operationId: "measured-receipt", occurredAtEpochMs: time0, to: position,
+      amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "33", unit: "kg" }]),
+    });
+    const repair: Parameters<typeof inventory.stock.recordHistorical>[0] = {
+      operationId: "record-historical-measured-movements", occurredAtEpochMs: time3,
+      reason: "Recorded a past issue and receipt.",
+      assertions: [
+        { assertionId: "earlier-issue",
+          /** Remove two pieces with their observed weight. */
+          assert: (plans) => plans.issue({ occurredAtEpochMs: time1, from: position,
+            amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "23", unit: "kg" }]),
+          }),
+        },
+        { assertionId: "earlier-receipt",
+          /** Receive one piece with a different observed weight. */
+          assert: (plans) => plans.receive({ occurredAtEpochMs: time2, to: position,
+            amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "24", unit: "kg" }]),
+          }),
+        },
+      ],
+    };
+    expect((await inventory.stock.planHistorical(repair)).valid).toBe(true);
+    const committed = await inventory.stock.recordHistorical(repair);
+    expect(committed.event?.stockEffects).toMatchObject([{ position,
+      measurementsDelta: inventoryMeasurementVector({ axisId: "pieces", quantity: parseQuantity("-1", "piece") },
+        [{ axisId: "weight", quantity: parseQuantity("1", "kg") }]),
+    }]);
+    expect(await inventory.read.positions({ itemId: position.itemId })).toMatchObject([{ key: position,
+      measurements: inventoryMeasurementVector({ axisId: "pieces", quantity: parseQuantity("2", "piece") },
+        [{ axisId: "weight", quantity: parseQuantity("34", "kg") }]),
+    }]);
+  });
+
   it.each([false, true])("previews the exact independently measured witness used in execution (canonical: %s)", async (canonical) => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({

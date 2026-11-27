@@ -1652,6 +1652,12 @@ function normalizeStockEffects(
 ): readonly InventoryStockEffect[] {
   const normalized: NormalizedStockEffectEntry[] = [];
   const seenPositions = new Set<string>();
+  // These envelopes post the difference between valid states on each axis.
+  const isHistoricalDelta =
+    kind === InventoryEventKind.Correction ||
+    kind === InventoryEventKind.HistoricalRepair;
+  const isAlgebraicDelta =
+    isHistoricalDelta || kind === InventoryEventKind.CountAdjustment;
   for (const rawEffect of effects) {
     const item = catalog.itemRevision(rawEffect.itemRevisionId);
     const position = normalizeInventoryStockPositionKey(rawEffect.position);
@@ -1668,11 +1674,11 @@ function normalizeStockEffects(
     if (inventoryMeasurementsAreZero(rawEffect.measurementsDelta)) {
       throw new Error("Inventory event must not contain a zero stock effect.");
     }
-    // A count posts observed minus expected on each axis. Physical movements still require one direction.
-    const checkedDelta =
-      kind === InventoryEventKind.CountAdjustment
-        ? rawEffect.measurementsDelta
-        : absoluteInventoryMeasurements(rawEffect.measurementsDelta);
+    // Historical corrections still require a primary change for each posted position.
+    if (isHistoricalDelta) primarySign(rawEffect.measurementsDelta);
+    const checkedDelta = isAlgebraicDelta
+      ? rawEffect.measurementsDelta
+      : absoluteInventoryMeasurements(rawEffect.measurementsDelta);
     const positionIdentity = inventoryStockPositionIdentity(position);
     if (seenPositions.has(positionIdentity)) {
       throw new Error(

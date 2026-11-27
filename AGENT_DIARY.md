@@ -2139,3 +2139,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - An unpicked row advances the ordered search without another frame. A stack holds only positive choices. Its depth bound and the separate trial budget both apply to complete, partial and diagnostic searches.
 - A count adjustment is observed minus expected on each measurement axis. Its signed package difference still has to match whole increments and fixed axes. The resulting published position still has to satisfy stock sign and serial rules.
+
+## 2026-11-27 — signed historical stock differences
+
+- Correction and historical repair post the difference between desired and actual stock on each measurement axis. Opposite signs can result from two valid measured states. Every posted historical difference still requires a nonzero primary change. Fixed packaging checks its signed whole increment and physical assertions retain their movement sign rules.
