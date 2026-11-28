@@ -3410,6 +3410,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
         (assertion) => assertion.event
       ),
       assertionIds: omittedAssertionIds,
+      afterEventIds: collectHistoricalAfterEventIds(assertions),
     });
     try {
       const planned = createInventoryHistoricalRepairEvent(
@@ -3511,6 +3512,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
           (assertion) => assertion.event
         ),
         assertionIds: omittedAssertionIds,
+        afterEventIds: collectHistoricalAfterEventIds(assertions),
       });
       return createInventoryHistoricalRepairEvent(
         {
@@ -6781,6 +6783,19 @@ function buildInventoryHistoricalAssertions(
     }
   }
   return result;
+}
+
+/** Collect every explicit anchor event id referenced by pending historical assertions. */
+function collectHistoricalAfterEventIds(
+  assertions: readonly InventoryHistoricalAssertion[]
+): readonly string[] {
+  const afterEventIds: string[] = [];
+  for (const assertion of assertions) {
+    if (assertion.afterEventId !== undefined) {
+      afterEventIds.push(assertion.afterEventId);
+    }
+  }
+  return afterEventIds;
 }
 
 /** Normalize one stable unique assertion-id set. */

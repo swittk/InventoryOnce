@@ -18,6 +18,8 @@ export interface LoadInventoryHistoricalDependenciesInput {
   readonly seedEvents: readonly InventoryEventDraft[];
   /** Embedded historical assertion identities whose envelopes seed the closure. */
   readonly assertionIds?: readonly string[];
+  /** Explicit anchor event identities whose containing envelopes seed the closure. */
+  readonly afterEventIds?: readonly string[];
 }
 
 /**
@@ -30,6 +32,7 @@ export async function loadInventoryHistoricalDependencies({
   projection,
   seedEvents,
   assertionIds = [],
+  afterEventIds = [],
 }: LoadInventoryHistoricalDependenciesInput): Promise<
   readonly InventoryCommittedEvent[] | undefined
 > {
@@ -40,6 +43,9 @@ export async function loadInventoryHistoricalDependencies({
   }
   for (const assertionId of assertionIds) {
     pendingKeys.add("dep:assertion:" + assertionId);
+  }
+  for (const afterEventId of afterEventIds) {
+    pendingKeys.add("dep:event:" + afterEventId);
   }
   if (pendingKeys.size === 0) return [];
   const queriedKeys = new Set<string>();

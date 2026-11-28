@@ -1750,4 +1750,324 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     expect(reconciled.event).toBeUndefined();
   });
+
+  it("excludes cycles involving destinations entered only when leaving a counted root", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "fd-dest-stock-r",
+      occurredAtEpochMs: time0,
+      to: loosePosition("R"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "fd-dest-x-r",
+      occurredAtEpochMs: time0 + 1,
+      nodeId: "X",
+      into: "R",
+    });
+    await inventory.placement.move({
+      operationId: "fd-dest-x-s",
+      occurredAtEpochMs: time0 + 2,
+      nodeId: "X",
+      into: "S",
+    });
+    await inventory.placement.unplace({
+      operationId: "fd-dest-unplace-x",
+      occurredAtEpochMs: time3,
+      nodeId: "X",
+    });
+    await inventory.placement.move({
+      operationId: "fd-dest-s-x-backdated",
+      occurredAtEpochMs: time1,
+      nodeId: "S",
+      into: "X",
+    });
+    await inventory.counts.start({
+      countId: "fd-dest-count",
+      operationId: "fd-dest-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await inventory.counts.observe({
+      countId: "fd-dest-count",
+      operationId: "fd-dest-observe",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: { ...loosePosition("R"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "fd-dest-count",
+      operationId: "fd-dest-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
+
+  it("excludes cycles on former root ancestors while still rejecting cycles on current root ancestors", async () => {
+    const runScenario = async (stayUnderS: boolean) => {
+      const inventory = createTestInventory();
+      await inventory.stock.receive({
+        operationId: "fra-stock-r",
+        occurredAtEpochMs: time0,
+        to: loosePosition("R"),
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.placement.move({
+        operationId: "fra-r-s",
+        occurredAtEpochMs: time0 + 1,
+        nodeId: "R",
+        into: "S",
+      });
+      if (!stayUnderS) {
+        await inventory.placement.move({
+          operationId: "fra-r-t",
+          occurredAtEpochMs: time0 + 2,
+          nodeId: "R",
+          into: "T",
+        });
+      }
+      await inventory.placement.move({
+        operationId: "fra-x-s",
+        occurredAtEpochMs: time0 + 3,
+        nodeId: "X",
+        into: "S",
+      });
+      await inventory.placement.unplace({
+        operationId: "fra-unplace-x",
+        occurredAtEpochMs: time3,
+        nodeId: "X",
+      });
+      await inventory.placement.move({
+        operationId: "fra-s-x-backdated",
+        occurredAtEpochMs: time1,
+        nodeId: "S",
+        into: "X",
+      });
+      await inventory.counts.start({
+        countId: "fra-count",
+        operationId: "fra-start",
+        startedAtEpochMs: time1,
+        selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+      });
+      await inventory.counts.observe({
+        countId: "fra-count",
+        operationId: "fra-observe",
+        observedAtEpochMs: time1,
+        observations: [
+          {
+            position: { ...loosePosition("R"), itemRevisionId: "item-a-v2" },
+            measurements: {
+              primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+              independent: [],
+            },
+          },
+        ],
+      });
+      return inventory.counts.reconcile({
+        countId: "fra-count",
+        operationId: "fra-reconcile",
+        completedAtEpochMs: time1 + 1,
+      });
+    };
+
+    expect((await runScenario(false)).event).toBeUndefined();
+    await expect(runScenario(true)).rejects.toThrow(/cycle/iu);
+  });
+
+  it("preserves exact embodied carrier counts across direct, structured, and detach/reattach routes", async () => {
+    const cartItem = defineScalarInventoryItem({
+      itemId: "carrier-item",
+      revisionId: "carrier-item-v1",
+      unit: "piece",
+      axisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Optional,
+      },
+    });
+    const payloadItem = defineScalarInventoryItem({
+      itemId: "payload-item",
+      revisionId: "payload-item-v1",
+      unit: "piece",
+      axisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [cartItem, payloadItem],
+      activeItemRevisionIds: {
+        [cartItem.itemId]: cartItem.revisionId,
+        [payloadItem.itemId]: payloadItem.revisionId,
+      },
+    });
+    const modes = ["direct", "structured", "detach-reattach"] as const;
+    const directions = [["A", "Z"], ["Z", "A"]] as const;
+    for (const canonical of [false, true]) {
+      for (const mode of modes) {
+        for (const [origin, dest] of directions) {
+          for (const childBefore of [true, false]) {
+            const backing = createInMemoryInventoryDurableStorage();
+            const storage = canonical
+              ? new Proxy(backing, {
+                  /** Mask native segmented/indexed capabilities so counts exercise the canonical coordinator. */
+                  get(target, property) {
+                    if (
+                      property === "readSegmentedStockPool" ||
+                      property === "readPlacementSegment" ||
+                      property === "commitSegmentedPlacementChange" ||
+                      property === "queryInventoryEvents" ||
+                      property === "queryInventoryEventsByResourceKeys"
+                    ) {
+                      return undefined;
+                    }
+                    const member = Reflect.get(target, property);
+                    return typeof member === "function" ? member.bind(target) : member;
+                  },
+                })
+              : backing;
+            const inventory = createInventoryOnce({
+              catalog,
+              storage,
+              deficitPolicy: InventoryDeficitPolicy.Reject,
+              clock: { nowEpochMs: () => time3 },
+            });
+            const cartId = "CART";
+            const destPos = { itemId: payloadItem.itemId, placementNodeId: dest };
+            const cartChildPos = { itemId: payloadItem.itemId, placementNodeId: cartId };
+            await inventory.stock.receive({
+              operationId: "matrix-root-stock",
+              occurredAtEpochMs: time0,
+              to: destPos,
+              amount: stockAmount("1", "piece"),
+            });
+            await inventory.stock.receive({
+              operationId: "matrix-cart-stock",
+              occurredAtEpochMs: time0,
+              to: { itemId: cartItem.itemId, placementNodeId: origin },
+              amount: stockAmount("1", "piece"),
+            });
+            await inventory.stock.individualize({
+              operationId: "matrix-cart-embody",
+              occurredAtEpochMs: time0 + 1,
+              from: { itemId: cartItem.itemId, placementNodeId: origin },
+              amount: stockAmount("1", "piece"),
+              serialId: cartId,
+              asPlacementNode: { category: "cart", acceptsPlacement: true },
+            });
+            const cartPos = { itemId: cartItem.itemId, placementNodeId: origin, serialId: cartId };
+            if (childBefore) {
+              await inventory.stock.receive({
+                operationId: "matrix-child-before",
+                occurredAtEpochMs: time0 + 2,
+                to: cartChildPos,
+                amount: stockAmount("1", "piece"),
+              });
+            }
+            if (mode === "direct") {
+              await inventory.stock.transfer({
+                operationId: "matrix-direct-move",
+                occurredAtEpochMs: time1,
+                from: cartPos,
+                toPlacementNodeId: dest,
+                amount: stockAmount("1", "piece"),
+              });
+            } else if (mode === "structured") {
+              await inventory.transfers.prepare({
+                operationId: "matrix-structured-prepare",
+                occurredAtEpochMs: time1,
+                transferId: "matrix-tx",
+                transitPlacementNodeId: "transit",
+                destinationPlacementNodeId: dest,
+                lines: [{ lineId: "cart", from: cartPos, amount: stockAmount("1", "piece") }],
+              });
+              await inventory.transfers.dispatch({
+                operationId: "matrix-structured-dispatch",
+                occurredAtEpochMs: time1 + 1,
+                transferId: "matrix-tx",
+              });
+              await inventory.transfers.receive({
+                operationId: "matrix-structured-receive",
+                occurredAtEpochMs: time1 + 2,
+                transferId: "matrix-tx",
+              });
+            } else {
+              const detached = await inventory.stock.detach({
+                operationId: "matrix-detach",
+                occurredAtEpochMs: time1,
+                from: cartPos,
+                amount: stockAmount("1", "piece"),
+              });
+              const detachedCartPos = detached.event.stockEffects.find(
+                /** Locate the detached carrier position. */
+                (effect) => effect.position.whereaboutsId !== undefined,
+              )?.position;
+              if (detachedCartPos === undefined) throw new Error("Expected detached carrier position.");
+              await inventory.stock.place({
+                operationId: "matrix-reattach",
+                occurredAtEpochMs: time1 + 1,
+                from: detachedCartPos,
+                into: dest,
+                amount: stockAmount("1", "piece"),
+              });
+            }
+            if (!childBefore) {
+              await inventory.stock.receive({
+                operationId: "matrix-child-after",
+                occurredAtEpochMs: time1 + 3,
+                to: cartChildPos,
+                amount: stockAmount("1", "piece"),
+              });
+            }
+            await inventory.counts.start({
+              countId: "matrix-count",
+              operationId: "matrix-count-start",
+              startedAtEpochMs: time2,
+              selector: { itemId: payloadItem.itemId, withinPlacementNodeIds: [dest] },
+            });
+            await inventory.counts.observe({
+              countId: "matrix-count",
+              operationId: "matrix-count-observe",
+              observedAtEpochMs: time2,
+              observations: [
+                {
+                  position: { ...destPos, itemRevisionId: payloadItem.revisionId },
+                  measurements: {
+                    primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+                    independent: [],
+                  },
+                },
+                {
+                  position: { ...cartChildPos, itemRevisionId: payloadItem.revisionId },
+                  measurements: {
+                    primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+                    independent: [],
+                  },
+                },
+              ],
+            });
+            const reconciled = await inventory.counts.reconcile({
+              countId: "matrix-count",
+              operationId: "matrix-count-reconcile",
+              completedAtEpochMs: time2 + 1,
+            });
+            expect(reconciled.event).toBeUndefined();
+            const livePayload = await inventory.read.positions({
+              itemId: payloadItem.itemId,
+              withinPlacementNodeIds: [dest],
+            });
+            expect(livePayload).toHaveLength(2);
+          }
+        }
+      }
+    }
+  });
 });

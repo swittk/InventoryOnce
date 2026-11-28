@@ -8,6 +8,7 @@ import {
   type InventoryStockAgeReplay,
 } from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { addExactQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
 import {
   cloneInventorySparseRecord,
   createInventorySparseRecord,
@@ -2015,7 +2016,15 @@ interface InventoryCountPlacementDependencies {
   readonly embodiedSerials: ReadonlySet<string>;
 }
 
-/** Find possible dependencies in cut order so former descendants cannot pull outside conflicts. */
+/** Working primary balance and current placement of one embodied serial position. */
+interface InventoryEmbodiedPositionBalance {
+  /** Direct parent placement node, or undefined when in-transit, detached, or missing. */
+  readonly placementNodeId: string | undefined;
+  /** Exact working primary digits across applied stock effects. */
+  readonly primary: ExactQuantityDigits;
+}
+
+/** Find possible dependencies in cut order so former descendants and former ancestors cannot pull outside cycles. */
 function countPlacementDependencies(
   events: readonly InventoryCommittedEvent[],
   roots: readonly string[]
@@ -2033,12 +2042,13 @@ function countPlacementDependencies(
   }
   const rootsSet = new Set(roots);
   const nodeIds = new Set(roots);
-  const rootAncestors = new Set(roots);
   const placementEventIds = new Set<string>();
   /** Lightweight parent pointers in cut order so moves out of roots stop pulling later outside moves. */
   const parentByNode = new Map<string, string>();
   const childrenByParent = new Map<string, Set<string>>();
   const lastEdgeEventIdByNode = new Map<string, string>();
+  /** Per-serial position primary balances so embodied moves derive from the whole-event ending position. */
+  const serialBalances = new Map<string, Map<string, InventoryEmbodiedPositionBalance>>();
 
   /** True when a node currently resides inside any counted root subtree. */
   function isUnderRoot(nodeId: string): boolean {
@@ -2050,6 +2060,19 @@ function countPlacementDependencies(
       current = parentByNode.get(current);
     }
     return false;
+  }
+
+  /** Walk live ancestors above all counted roots so moved-away roots or leaving destinations do not stay sticky. */
+  function currentRootAncestors(): Set<string> {
+    const ancestors = new Set<string>();
+    for (const root of roots) {
+      let current: string | undefined = root;
+      while (current !== undefined && !ancestors.has(current)) {
+        ancestors.add(current);
+        current = parentByNode.get(current);
+      }
+    }
+    return ancestors;
   }
 
   /** Retain all current live descendants and their defining edges when a detached node re-enters roots. */
@@ -2069,13 +2092,12 @@ function countPlacementDependencies(
   }
 
   /** Retain all upward ancestors and their defining edges for cycle validation. */
-  function retainAncestors(startNodeId: string, markAsRootAncestor: boolean): void {
+  function retainAncestors(startNodeId: string): void {
     const seen = new Set<string>();
     let current: string | undefined = startNodeId;
     while (current !== undefined && !seen.has(current)) {
       seen.add(current);
       nodeIds.add(current);
-      if (markAsRootAncestor) rootAncestors.add(current);
       const edgeEventId = lastEdgeEventIdByNode.get(current);
       if (edgeEventId !== undefined) placementEventIds.add(edgeEventId);
       current = parentByNode.get(current);
@@ -2086,13 +2108,18 @@ function countPlacementDependencies(
   function applyEdge(eventId: string, nodeId: string, toParentNodeId: string | undefined): void {
     const wasUnderRoot = isUnderRoot(nodeId);
     const toUnderRoot = toParentNodeId !== undefined && isUnderRoot(toParentNodeId);
-    const touchesAncestor = rootAncestors.has(nodeId);
+    const touchesAncestor = currentRootAncestors().has(nodeId);
     if (wasUnderRoot || toUnderRoot || touchesAncestor) {
       placementEventIds.add(eventId);
       nodeIds.add(nodeId);
       if (!wasUnderRoot && toUnderRoot) retainDescendants(nodeId);
       if (toParentNodeId !== undefined) {
-        retainAncestors(toParentNodeId, wasUnderRoot || toUnderRoot || touchesAncestor);
+        if (toUnderRoot || touchesAncestor) {
+          retainAncestors(toParentNodeId);
+        } else {
+          // A child leaving roots only needs its destination node definition retained, not outside ancestry.
+          nodeIds.add(toParentNodeId);
+        }
       }
     }
     const previousParent = parentByNode.get(nodeId);
@@ -2111,15 +2138,61 @@ function countPlacementDependencies(
     }
   }
 
+  /** Resolve the post-event live parent placement from the one positive position of an embodied serial. */
+  function desiredEmbodiedParent(serialId: string): string | undefined {
+    const positions = serialBalances.get(serialId);
+    if (positions === undefined) return undefined;
+    for (const entry of positions.values()) {
+      if (entry.primary.minor > 0n) return entry.placementNodeId;
+    }
+    return undefined;
+  }
+
   for (const event of events) {
     for (const { nodeId, toParentNodeId } of event.placementChanges ?? []) {
       applyEdge(event.eventId, nodeId, toParentNodeId);
     }
     if (nodesBySerial.size > 0) {
-      for (const { position } of event.stockEffects) {
-        if (position.serialId === undefined || position.placementNodeId === undefined) continue;
-        const nodes = nodesBySerial.get(inventorySerialIdentity(position.itemId, position.serialId));
-        for (const nodeId of nodes ?? []) applyEdge(event.eventId, nodeId, position.placementNodeId);
+      const touchedSerials = new Set<string>();
+      for (const definition of event.placementNodeDefinitions ?? []) {
+        if (definition.embodiedBy === undefined) continue;
+        touchedSerials.add(
+          inventorySerialIdentity(definition.embodiedBy.itemId, definition.embodiedBy.serialId)
+        );
+      }
+      for (const { position, measurementsDelta } of event.stockEffects) {
+        if (position.serialId === undefined) continue;
+        const serialId = inventorySerialIdentity(position.itemId, position.serialId);
+        if (!nodesBySerial.has(serialId)) continue;
+        touchedSerials.add(serialId);
+        let positions = serialBalances.get(serialId);
+        if (positions === undefined) {
+          positions = new Map<string, InventoryEmbodiedPositionBalance>();
+          serialBalances.set(serialId, positions);
+        }
+        const posId = inventoryStockPositionIdentity(position);
+        const existing = positions.get(posId);
+        const delta = measurementsDelta.primary.quantity;
+        if (existing === undefined) {
+          const minor = BigInt(delta.amountMinor);
+          if (minor !== 0n) {
+            positions.set(posId, {
+              placementNodeId: position.placementNodeId,
+              primary: { minor, decimals: delta.decimals },
+            });
+          }
+        } else {
+          addExactQuantityDigits(existing.primary, BigInt(delta.amountMinor), delta.decimals);
+          if (existing.primary.minor === 0n) positions.delete(posId);
+        }
+      }
+      for (const serialId of touchedSerials) {
+        const desiredParent = desiredEmbodiedParent(serialId);
+        for (const nodeId of nodesBySerial.get(serialId) ?? []) {
+          if (parentByNode.get(nodeId) !== desiredParent) {
+            applyEdge(event.eventId, nodeId, desiredParent);
+          }
+        }
       }
     }
   }

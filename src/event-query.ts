@@ -605,8 +605,21 @@ function inventoryEventDependencyKeysForMode(
   mode: "query" | "index"
 ): readonly string[] {
   const keys = new Set<string>(["dep:event:" + event.eventId]);
+  if (
+    mode === "index" &&
+    event.correctionReplacement !== undefined &&
+    event.correctionReplacement !== null
+  ) {
+    keys.add("dep:event:" + event.correctionReplacement.eventId);
+  }
   for (const assertion of event.historicalRepair?.assertions ?? []) {
     keys.add("dep:assertion:" + assertion.assertionId);
+    if (mode === "index") {
+      keys.add("dep:event:" + assertion.event.eventId);
+    }
+    if (assertion.afterEventId !== undefined) {
+      keys.add("dep:event:" + assertion.afterEventId);
+    }
   }
   for (const assertionId of event.historicalRepair?.omittedAssertionIds ?? []) {
     keys.add("dep:assertion:" + assertionId);

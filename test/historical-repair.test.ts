@@ -1899,26 +1899,121 @@ describe("late historical repair", () => {
       deficitPolicy: InventoryDeficitPolicy.Reject,
     });
 
-    // Anchor anchorB is on bin-b, so an unanchored issue on bin-a must not pull anchored-receipt-a by itself.
+    // Anchor anchorB occurred at time0 (<= time1), so an unanchored issue on bin-a pulls both
+    // anchorB and anchored-receipt-a together while keeping unrelated anchored-receipt-c after seed-b-t200.
+    const binAReplay = replayInventoryHistoricalScenario({
+      catalog,
+      projection,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+      assertions: [
+        {
+          assertion: {
+            assertionId: "unanchored-issue-bin-a",
+            event: createInventoryIssueEvent({
+              catalog,
+              operationId: "issue-bin-a-t150",
+              occurredAtEpochMs: time1,
+              from: binA,
+              amount: one,
+            }),
+          },
+          recordedAtEpochMs: time3,
+          durableOrder: projection.lastRecordSequence + 1,
+          assertionOrder: 0,
+        },
+      ],
+    });
+    expect(binAReplay.impact.deficits).toEqual([]);
+    const binASequenceByOp = new Map(
+      binAReplay.effectiveEvents.map((event) => [event.operationId, event.recordSequence])
+    );
+    const binASequenceById = new Map(
+      binAReplay.effectiveEvents.map((event) => [event.eventId, event.recordSequence])
+    );
+    expect(binASequenceByOp.get("seed-b-t100")!).toBeLessThan(
+      binASequenceById.get(anchoredReceiptA.eventId)!
+    );
+    expect(binASequenceById.get(anchoredReceiptA.eventId)!).toBeLessThan(
+      binASequenceByOp.get("issue-bin-a-t150")!
+    );
+    expect(binASequenceByOp.get("issue-bin-a-t150")!).toBeLessThan(
+      binASequenceByOp.get("seed-a-t200")!
+    );
+    expect(binASequenceByOp.get("seed-b-t200")!).toBeLessThan(
+      binASequenceById.get(anchoredReceiptC.eventId)!
+    );
+
+    // An anchored assertion whose anchor occurred AFTER time1 (time2) cannot move ahead of time1.
+    const binD = loosePosition("bin-d");
+    const seedD200 = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-d-t200",
+        occurredAtEpochMs: time2,
+        to: binD,
+        amount: one,
+      }),
+      time2,
+      2
+    );
+    const seedB200Late = commitInventoryEvent(seedB200, time2, 3);
+    const anchorBLate = commitInventoryEvent(anchorB, time2, 4);
+    const lateProjection = projectInventoryEvents({
+      catalog,
+      events: [seedA, seedD200, seedB200Late, anchorBLate],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const lateRepairEvent = commitInventoryEvent(
+      createInventoryHistoricalRepairEvent(
+        {
+          catalog,
+          projection: lateProjection,
+          operationId: "anchored-a-on-late-b",
+          occurredAtEpochMs: time3,
+          recordedAtEpochMs: time3,
+          reason: "Anchor after seed-b-t200 so pre-time2 replay cannot cross it.",
+          assertions: [
+            {
+              assertionId: "anchored-receipt-d-late",
+              afterEventId: seedB200Late.eventId,
+              event: createInventoryReceiptEvent({
+                catalog,
+                operationId: "anchored-receipt-d",
+                occurredAtEpochMs: time0 + 10,
+                to: binD,
+                amount: one,
+              }),
+            },
+          ],
+        },
+        InventoryDeficitPolicy.Reject
+      ).event,
+      time3,
+      5
+    );
     expect(() =>
       replayInventoryHistoricalScenario({
         catalog,
-        projection,
+        projection: projectInventoryEvents({
+          catalog,
+          events: [seedA, seedD200, seedB200Late, anchorBLate, lateRepairEvent],
+          deficitPolicy: InventoryDeficitPolicy.Reject,
+        }),
         deficitPolicy: InventoryDeficitPolicy.Reject,
         assertions: [
           {
             assertion: {
-              assertionId: "unanchored-issue-bin-a",
+              assertionId: "unanchored-issue-bin-d",
               event: createInventoryIssueEvent({
                 catalog,
-                operationId: "issue-bin-a-t150",
+                operationId: "issue-bin-d-t150",
                 occurredAtEpochMs: time1,
-                from: binA,
+                from: binD,
                 amount: one,
               }),
             },
             recordedAtEpochMs: time3,
-            durableOrder: projection.lastRecordSequence + 1,
+            durableOrder: 6,
             assertionOrder: 0,
           },
         ],
@@ -2117,5 +2212,106 @@ describe("late historical repair", () => {
     expect(reconciled.event).toBeUndefined();
     expect(await inventory.read.placementAncestry("X")).toEqual(["X", "C"]);
   });
+
+  it.each([false, true])(
+    "loads and orders exact anchor prerequisites across retained and repaired effective events (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical full-history loading and publication paths. */
+            get(target, property) {
+              if (property === "queryInventoryEventsByResourceKeys") return undefined;
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const binA = loosePosition("anchor-bin-a");
+      const binB = loosePosition("anchor-bin-b");
+      const one = stockAmount("1", "piece");
+      const two = stockAmount("2", "piece");
+
+      await inventory.stock.receive({
+        operationId: "anchor-parity-seed-b",
+        occurredAtEpochMs: time2,
+        to: binB,
+        amount: one,
+      });
+      const anchorB = await inventory.stock.receive({
+        operationId: "anchor-parity-early-b",
+        occurredAtEpochMs: time0,
+        to: binB,
+        amount: one,
+      });
+      const firstRepair = await inventory.stock.recordHistorical({
+        operationId: "anchor-parity-repair-1",
+        occurredAtEpochMs: time3,
+        reason: "Anchor receipt on bin A directly onto earlier retained bin B event.",
+        assertions: [
+          {
+            assertionId: "anchored-receipt-a1",
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 10,
+                to: binA,
+                amount: one,
+              }),
+          },
+        ],
+      });
+      const effectiveA1Id = firstRepair.event.historicalRepair?.assertions[0]?.event.eventId;
+      if (effectiveA1Id === undefined) {
+        throw new Error("Expected effective eventId from first anchored repair.");
+      }
+
+      await inventory.stock.recordHistorical({
+        operationId: "anchor-parity-repair-2",
+        occurredAtEpochMs: time3,
+        reason: "Chain second anchored receipt onto the effective event emitted by the first repair.",
+        assertions: [
+          {
+            assertionId: "anchored-receipt-a2",
+            afterEventId: effectiveA1Id,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 20,
+                to: binA,
+                amount: one,
+              }),
+          },
+        ],
+      });
+
+      const issueBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "anchor-parity-issue-a",
+        occurredAtEpochMs: time3,
+        reason: "Consume both earlier anchored receipts on bin A before later retained activity.",
+        assertions: [
+          {
+            assertionId: "unanchored-issue-a",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time1,
+                from: binA,
+                amount: two,
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(issueBundle);
+      expect(planned.valid).toBe(true);
+      if (!planned.valid) throw new Error(planned.conflict.message);
+      expect(planned.impact.deficits).toEqual([]);
+
+      const recorded = await inventory.stock.recordHistorical(issueBundle);
+      expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+      expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["anchor-bin-a"] })).toEqual([]);
+      const remainingB = await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["anchor-bin-b"] });
+      expect(remainingB[0]?.measurements.primary.quantity).toEqual(parseQuantity("2", "piece"));
+    },
+  );
 
 });

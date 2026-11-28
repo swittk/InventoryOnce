@@ -1385,4 +1385,98 @@ describe("detached and missing stock whereabouts", () => {
     expect(reclassified.event.stockEffects).toHaveLength(4);
   });
 
+  it("retains explicit zero optional measurement presence across detached cohort reclassifyMany", async () => {
+    const optionalItem = defineInventoryItem({
+      itemId: "whereabouts-optional-zero",
+      revisionId: "whereabouts-optional-zero-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        role: InventoryMeasurementAxisRole.Primary,
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          unit: unitCode("kg"),
+          role: InventoryMeasurementAxisRole.Independent,
+          requirement: InventoryMeasurementRequirement.Optional,
+        },
+      ],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+      qualifiedDimensions: [],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [optionalItem],
+      activeItemRevisionIds: { [optionalItem.itemId]: optionalItem.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const bin = { itemId: optionalItem.itemId, placementNodeId: "whereabouts-zero-bin" };
+    await inventory.stock.receive({
+      operationId: "whereabouts-zero-receive",
+      occurredAtEpochMs: time0,
+      to: bin,
+      amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+    });
+    const detached = await inventory.stock.detach({
+      operationId: "whereabouts-zero-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+    });
+    const cohortPosition = detached.event.stockEffects.find(
+      /** Locate the detached zero-weight cohort position. */
+      (effect) => effect.position.whereaboutsId !== undefined,
+    )?.position;
+    if (cohortPosition === undefined) {
+      throw new Error("Expected detached optional-zero cohort.");
+    }
+
+    await expect(
+      inventory.stock.reclassifyMany({
+        operationId: "whereabouts-zero-drop-axis",
+        occurredAtEpochMs: time2,
+        consume: [
+          {
+            from: cohortPosition,
+            amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+          },
+        ],
+        produce: [
+          {
+            to: { ...cohortPosition, lotId: "quarantine" },
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      }),
+    ).rejects.toThrow("Generic reclassification must preserve each detached/missing whereabouts cohort exactly.");
+
+    await inventory.stock.reclassifyMany({
+      operationId: "whereabouts-zero-keep-axis",
+      occurredAtEpochMs: time2,
+      consume: [
+        {
+          from: cohortPosition,
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+        },
+      ],
+      produce: [
+        {
+          to: { ...cohortPosition, lotId: "quarantine" },
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+        },
+      ],
+    });
+    const lifecycles = await inventory.read.whereabouts({
+      whereaboutsIds: [cohortPosition.whereaboutsId!],
+    });
+    expect(lifecycles[0]?.currentPositions[0]?.measurements.independent).toEqual([
+      { axisId: "weight", quantity: parseQuantity("0", "kg") },
+    ]);
+  });
+
 });

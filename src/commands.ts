@@ -2019,6 +2019,7 @@ function assertInventoryReclassificationManyPreservesWhereabouts(
     const destinationMeasurements = destinationTotals.get(identity);
     if (
       destinationMeasurements === undefined ||
+      !inventoryMeasurementTotalsShareAxes(sourceMeasurements, destinationMeasurements) ||
       !inventoryMeasurementTotalsCancel(sourceMeasurements, destinationMeasurements)
     ) {
       throw new Error(
@@ -2026,6 +2027,18 @@ function assertInventoryReclassificationManyPreservesWhereabouts(
       );
     }
   }
+}
+
+/** Require source and destination cohort accumulators to name the same normalized axes, including explicit zeroes. */
+function inventoryMeasurementTotalsShareAxes(
+  left: InventoryMeasurementTotals,
+  right: InventoryMeasurementTotals
+): boolean {
+  if (left.size !== right.size) return false;
+  for (const axisId of left.keys()) {
+    if (!right.has(axisId)) return false;
+  }
+  return true;
 }
 
 /** Aggregate unresolved measurements in working precision by item/revision plus exact lifecycle tuple. */

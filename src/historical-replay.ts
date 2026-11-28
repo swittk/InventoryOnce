@@ -576,17 +576,22 @@ function bringForwardHistoricalPredecessors(
   dependencies: ReadonlySet<string>,
   sourcePositionIds: ReadonlySet<string>
 ): number {
+  /** Events already ordered before the insertion slice satisfy anchor prerequisites immediately. */
+  const priorEventIds = new Set<string>();
+  for (let index = 0; index < firstLater; index += 1) {
+    priorEventIds.add(target[index]!.event.eventId);
+  }
   /** Earlier facts can be connected through ordinary keys or already-selected anchors. */
   const keysByIndex = new Map<number, readonly string[]>();
-  /** Ordinary earlier facts indexed by dependency key so they remain discoverable in O(1) per key. */
+  /** Eligible earlier facts indexed by dependency key, including explicitly anchored supplies. */
   const indexesByKey = new Map<string, number[]>();
-  /** Eligible explicitly anchored descendants waiting for their anchor to join the closure. */
-  const anchoredByAnchorId = new Map<string, number[]>();
+  /** Eligible in-slice positions by event id so anchored supplies can pull their anchor chain. */
+  const eligibleIndexByEventId = new Map<string, number>();
   /** Superseded corrections can be required even when they changed no stock or placement. */
   const correctionIndexesById = new Map<string, number>();
   for (let index = firstLater; index < target.length; index += 1) {
     const entry = target[index]!;
-    const { event, afterEventId } = entry;
+    const { event } = entry;
     if (event.kind === InventoryEventKind.Correction) correctionIndexesById.set(event.eventId, index);
     if (
       index === firstLater ||
@@ -598,74 +603,52 @@ function bringForwardHistoricalPredecessors(
     }
     const keys = inventoryEventDependencyKeys(event);
     keysByIndex.set(index, keys);
-    if (afterEventId === undefined) {
-      for (const key of keys) {
-        const indexes = indexesByKey.get(key);
-        if (indexes === undefined) indexesByKey.set(key, [index]);
-        else indexes.push(index);
-      }
-      continue;
+    eligibleIndexByEventId.set(event.eventId, index);
+    for (const key of keys) {
+      const indexes = indexesByKey.get(key);
+      if (indexes === undefined) indexesByKey.set(key, [index]);
+      else indexes.push(index);
     }
-    const anchored = anchoredByAnchorId.get(afterEventId);
-    if (anchored === undefined) anchoredByAnchorId.set(afterEventId, [index]);
-    else anchored.push(index);
   }
-  /** Anchors selected into this predecessor component. */
-  const selectedEventIds = new Set<string>();
-  const pendingAnchors: string[] = [];
-  /** Expand reached keys and anchor-selected descendants without letting anchored entries seed closure. */
+  /** Expand reached dependency keys while keeping anchored supplies contingent on eligible anchors. */
   const reached = new Set(dependencies);
   const pendingKeys = [...reached];
   const predecessors = new Set<number>();
-  /** Anchor-selected descendants whose keys have not yet intersected the reached component. */
-  const anchoredWaitingByKey = new Map<string, number[]>();
-  /** Select one predecessor and enqueue its newly reached keys and anchor identity. */
+  /** Resolve an eligible anchor prerequisite chain, returning in-slice anchors or undefined if blocked. */
+  function resolveAnchorChain(startIndex: number): number[] | undefined {
+    const chain: number[] = [];
+    const seen = new Set<number>([startIndex]);
+    let anchorId = target[startIndex]!.afterEventId;
+    while (anchorId !== undefined) {
+      if (priorEventIds.has(anchorId)) break;
+      const anchorIndex = eligibleIndexByEventId.get(anchorId);
+      if (anchorIndex === undefined || seen.has(anchorIndex)) return undefined;
+      seen.add(anchorIndex);
+      chain.push(anchorIndex);
+      anchorId = target[anchorIndex]!.afterEventId;
+    }
+    return chain;
+  }
+  /** Select one predecessor and its anchor prerequisites, enqueueing newly reached resource keys. */
   function selectPredecessor(index: number): void {
     if (predecessors.has(index)) return;
-    predecessors.add(index);
-    const eventId = target[index]!.event.eventId;
-    if (!selectedEventIds.has(eventId)) {
-      selectedEventIds.add(eventId);
-      pendingAnchors.push(eventId);
-    }
-    for (const dependency of keysByIndex.get(index) ?? []) {
-      if (reached.has(dependency)) continue;
-      reached.add(dependency);
-      pendingKeys.push(dependency);
+    const anchorChain = resolveAnchorChain(index);
+    if (anchorChain === undefined) return;
+    const batch = [index, ...anchorChain];
+    for (const selectedIndex of batch) {
+      if (predecessors.has(selectedIndex)) continue;
+      predecessors.add(selectedIndex);
+      for (const dependency of keysByIndex.get(selectedIndex) ?? []) {
+        if (reached.has(dependency)) continue;
+        reached.add(dependency);
+        pendingKeys.push(dependency);
+      }
     }
   }
-  while (pendingKeys.length > 0 || pendingAnchors.length > 0) {
-    while (pendingKeys.length > 0) {
-      const key = pendingKeys.pop()!;
-      for (const index of indexesByKey.get(key) ?? []) {
-        selectPredecessor(index);
-      }
-      const waiting = anchoredWaitingByKey.get(key);
-      if (waiting !== undefined) {
-        anchoredWaitingByKey.delete(key);
-        for (const index of waiting) {
-          selectPredecessor(index);
-        }
-      }
-    }
-    while (pendingAnchors.length > 0) {
-      const anchorId = pendingAnchors.pop()!;
-      for (const index of anchoredByAnchorId.get(anchorId) ?? []) {
-        if (predecessors.has(index)) continue;
-        const keys = keysByIndex.get(index) ?? [];
-        if (keys.some(
-          /** Join only when this anchored descendant also shares a reached dependency key. */
-          (key) => reached.has(key)
-        )) {
-          selectPredecessor(index);
-        } else {
-          for (const key of keys) {
-            const waiting = anchoredWaitingByKey.get(key);
-            if (waiting === undefined) anchoredWaitingByKey.set(key, [index]);
-            else waiting.push(index);
-          }
-        }
-      }
+  while (pendingKeys.length > 0) {
+    const key = pendingKeys.pop()!;
+    for (const index of indexesByKey.get(key) ?? []) {
+      selectPredecessor(index);
     }
   }
   if (predecessors.size === 0) return 0;
