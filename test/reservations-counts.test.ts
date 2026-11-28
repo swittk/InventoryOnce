@@ -93,6 +93,86 @@ function createExactPackageReservationFixture(canonical: boolean) {
 }
 
 describe("broad reservations and physical truth", () => {
+  it.each([
+    { canonical: false, primaryClaim: false },
+    { canonical: false, primaryClaim: true },
+    { canonical: true, primaryClaim: false },
+    { canonical: true, primaryClaim: true },
+  ])("checks the exact claim axis on loose measured stock ($canonical, $primaryClaim)", async ({
+    canonical, primaryClaim,
+  }) => {
+    const item = defineInventoryItem({
+      ...defineScalarInventoryItem({
+        itemId: "measured", revisionId: "measured-v1",
+        axisId: primaryClaim ? "volume" : "pieces", unit: primaryClaim ? "L" : "piece",
+      }),
+      reservationAxisId: "volume",
+      independentAxes: [{
+        axisId: primaryClaim ? "pieces" : "volume", role: InventoryMeasurementAxisRole.Independent,
+        requirement: InventoryMeasurementRequirement.Required, unit: unitCode(primaryClaim ? "piece" : "L"),
+      }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { measured: item.revisionId },
+    });
+    const backing = createInMemoryInventoryDurableStorage();
+    const storage = canonical ? new Proxy(backing, {
+      /** Use a canonical adapter without optional segmented stock capabilities. */
+      get(target, property) {
+        if (property === "commitSegmentedStockEvent" || property === "queryInventoryEventsByResourceKeys") return undefined;
+        const member = Reflect.get(target, property);
+        return typeof member === "function" ? member.bind(target) : member;
+      },
+    }) : backing;
+    const inventory = createInventoryOnce({ catalog, storage, clock: { nowEpochMs: () => time3 } });
+    const source = { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store", lotId: "source" };
+    const alternate = { ...source, lotId: "alternate" };
+    const selector = { itemId: item.itemId, placementNodeIds: ["store"] };
+    /** Build the actual issue with the same claimed volume on either axis. */
+    const amount = (pieces: string, volume: string) => primaryClaim
+      ? measuredStockAmount(volume, "L", [{ axisId: "pieces", unit: "piece", value: pieces }])
+      : measuredStockAmount(pieces, "piece", [{ axisId: "volume", unit: "L", value: volume }]);
+    const requested = parseQuantity("1.500000000000005", "L");
+    await inventory.stock.receive({
+      operationId: "receive", occurredAtEpochMs: time0, to: source, amount: amount("2", "15.00000000000005"),
+    });
+    const reserve = {
+      operationId: "reserve", reservationId: "claim", createdAtEpochMs: time1,
+      itemRevisionId: item.revisionId, selector, requested,
+    };
+    await expect(inventory.reservations.reserve(reserve)).rejects.toThrow("cannot all be fulfilled simultaneously");
+    expect(await backing.readOperation(reserve.operationId)).toBeUndefined();
+    await inventory.stock.receive({
+      operationId: "receive-alternate", occurredAtEpochMs: time1, to: alternate, amount: amount("1", "1.500000000000005"),
+    });
+    await inventory.reservations.reserve(reserve);
+    const allocate = {
+      operationId: "allocate", reservationId: "claim", occurredAtEpochMs: time2,
+      allocations: [{ position: source, quantity: requested }],
+    };
+    await expect(inventory.reservations.allocate(allocate)).rejects.toThrow("exact remaining balance");
+    expect(await backing.readOperation(allocate.operationId)).toBeUndefined();
+    await inventory.reservations.allocate({ ...allocate, allocations: [{ position: alternate, quantity: requested }] });
+    const consume = { operationId: "consume", reservationId: "claim", occurredAtEpochMs: time2,
+      fulfillment: [{ from: alternate, amount: amount("1", "1.500000000000005") }] };
+    const consumed = await inventory.reservations.consume(consume);
+    expect(consumed.reservation.status).toBe(InventoryReservationStatus.Consumed);
+    expect(await inventory.reservations.consume(consume)).toEqual({ ...consumed, replayed: true });
+
+    const legal = parseQuantity("3.00000000000001", "L");
+    await inventory.reservations.reserve({
+      ...reserve, operationId: "reserve-legal", reservationId: "legal", createdAtEpochMs: time2, requested: legal,
+    });
+    await inventory.reservations.allocate({
+      ...allocate, operationId: "allocate-legal", reservationId: "legal",
+      allocations: [{ position: source, quantity: legal }],
+    });
+    expect((await inventory.reservations.consume({
+      ...consume, operationId: "consume-legal", reservationId: "legal",
+      fulfillment: [{ from: source, amount: amount("1", "3.00000000000001") }],
+    })).reservation.status).toBe(InventoryReservationStatus.Consumed);
+  });
+
   it.each([false, true])("checks exact scalar remainder before admitting and binding a claim (canonical: %s)", async (canonical) => {
     const item = defineScalarInventoryItem({ itemId: "liquid", revisionId: "liquid-v1", axisId: "volume", unit: "L" });
     const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { liquid: item.revisionId } });

@@ -2281,3 +2281,7 @@ A fixed-axis package claim must be issuable as one exact movement and leave a st
 ## 2026-11-28 — executable policy picks and scalar claims
 
 A standalone policy preview checks the exact source balance left by each candidate. Transfer recording also checks the selected destination balance under the same publication fence. If a destination cannot store the first pick, the same bounded search considers alternatives using only the exact destinations for eligible source rows. Ordered batches still carry private balances until their final effects are known. Pure scalar claims use the shared exact split arithmetic when the common decimal grid makes a physical row too large at that scale. Ordinary divisible rows still use continuous flow, and exact claims still aggregate sparsely.
+
+## 2026-11-28 — exact remainder on the reserved measurement axis
+
+An exact claim freezes one axis even when the issue measures other axes separately. Loose stock now checks the reserved axis before admitting or binding the claim. Loose rows still use continuous flow when their aligned digits fit. Higher precision rows use the existing bounded split arithmetic, with the physical balance separate from the capacity after deficit attribution.

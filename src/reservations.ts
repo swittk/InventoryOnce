@@ -913,13 +913,14 @@ function assertReservationAllocationCanBecomeLegalIssue(
     );
   }
   const packagingRevisionId = allocation.position.packagingRevisionId;
-  const item = catalog.itemRevision(allocation.position.itemRevisionId);
   if (packagingRevisionId === undefined) {
-    if (item.independentAxes.length === 0 && !inventoryQuantityChangeFitsStorage(capacity, allocation.quantity, -1)) {
-      throw new Error("Scalar allocation cannot store its exact remaining balance.");
+    // Fulfillment fixes this axis even when the caller measures other axes at issue.
+    if (!inventoryQuantityChangeFitsStorage(capacity, allocation.quantity, -1)) {
+      throw new Error("Reservation allocation cannot store the exact remaining balance on its claim axis.");
     }
     return;
   }
+  const item = catalog.itemRevision(allocation.position.itemRevisionId);
   const packaging = catalog.packagingRevision(packagingRevisionId);
   const onePackage = inventoryMeasurementAt(
     packaging.fixedContents,
@@ -1015,7 +1016,7 @@ interface ReservationDeficitBurdenPosition
   readonly eligibleReservationCount: number;
 }
 
-/** Exact integer capacity from one package, serial or precision-constrained scalar row. */
+/** Exact integer capacity from one package, serial or precision-constrained loose row. */
 interface ReservationIndivisibleGroup {
   /** Position index these equal legal issue pieces come from. */
   readonly positionIndex: number;
@@ -1413,13 +1414,17 @@ function reservationGroupFeasibility(
     decimals = Math.max(decimals, position.capacity.decimals, position.indivisibleIncrement?.decimals ?? 0);
     hasWholeStock ||= position.indivisibleIncrement !== undefined;
   }
-  if (decimals > 0 && item.independentAxes.length === 0) {
+  if (decimals > 0) {
     for (const [index, position] of positions.entries()) {
       if (position.indivisibleIncrement !== undefined) continue;
-      const physical = projection.positions[position.identity]?.measurements.primary.quantity;
-      if (physical === undefined || physical.decimals >= decimals) continue;
+      const row = projection.positions[position.identity];
+      if (row === undefined) continue;
+      // An explicit measured issue may choose the other axes. The claim freezes this one.
+      const physical = inventoryMeasurementAt(row.measurements, axis.axisId, axis.unit);
+      if (physical.decimals >= decimals) continue;
+      // An aligned integer within the safe digit range remains exactly divisible.
+      if (Number.isSafeInteger(physical.amountMinor * 10 ** (decimals - physical.decimals))) continue;
       const stockCount = quantityAtDecimals(physical, decimals);
-      if (stockCount <= MAXIMUM_STORED_QUANTITY_MINOR) continue;
       // At any finer scale at least one side would need to cancel its extra
       // digits to fit. As the total is on this grid, both sides stay on it.
       positions[index] = {

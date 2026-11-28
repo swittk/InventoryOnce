@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4778,
-    "compilerCallGraphEdges": 14241,
+    "compilerCallGraphCallables": 4782,
+    "compilerCallGraphEdges": 14256,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -13697,20 +13697,20 @@
               "column": 75,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:33069:<anonymous@768>",
+              "id": "test/reservations-counts.test.ts:37657:<anonymous@848>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 848,
+              "name": "<anonymous@848>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 76,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:127184:<anonymous@3028>",
+              "id": "test/reservations-counts.test.ts:131772:<anonymous@3108>",
               "kind": "ArrowFunction",
-              "line": 3028,
-              "name": "<anonymous@3028>",
+              "line": 3108,
+              "name": "<anonymous@3108>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -28348,20 +28348,20 @@
               "column": 75,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:33069:<anonymous@768>",
+              "id": "test/reservations-counts.test.ts:37657:<anonymous@848>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 848,
+              "name": "<anonymous@848>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 103,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:95427:<anonymous@2160>",
+              "id": "test/reservations-counts.test.ts:100015:<anonymous@2240>",
               "kind": "ArrowFunction",
-              "line": 2160,
-              "name": "<anonymous@2160>",
+              "line": 2240,
+              "name": "<anonymous@2240>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -35733,9 +35733,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -35743,9 +35743,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -38061,9 +38061,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -38071,9 +38071,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -38935,7 +38935,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 5,
+          "occurrences": 6,
           "path": "src/reservations.ts"
         },
         {
@@ -40929,9 +40929,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -40939,9 +40939,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -41116,9 +41116,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -41126,9 +41126,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -41442,10 +41442,10 @@
               "column": 69,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:16406:<anonymous@315>",
+              "id": "test/reservations-counts.test.ts:20994:<anonymous@395>",
               "kind": "ArrowFunction",
-              "line": 315,
-              "name": "<anonymous@315>",
+              "line": 395,
+              "name": "<anonymous@395>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -47233,7 +47233,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 49,
+          "occurrences": 48,
           "path": "src/reservations.ts"
         },
         {
@@ -59391,9 +59391,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -59401,9 +59401,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -59757,9 +59757,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -59767,9 +59767,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -60486,7 +60486,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 5,
+          "occurrences": 6,
           "path": "src/reservations.ts"
         },
         {
@@ -61503,9 +61503,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -61513,9 +61513,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -61690,9 +61690,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:45386:reservationGroupFeasibility",
+              "id": "src/reservations.ts:45457:reservationGroupFeasibility",
               "kind": "FunctionDeclaration",
-              "line": 1198,
+              "line": 1199,
               "name": "reservationGroupFeasibility",
               "reason": "resolved-call"
             },
@@ -61700,9 +61700,9 @@
               "column": 1,
               "file": "src/reservations.ts",
               "hasBody": true,
-              "id": "src/reservations.ts:44636:reservationPositionEligible",
+              "id": "src/reservations.ts:44707:reservationPositionEligible",
               "kind": "FunctionDeclaration",
-              "line": 1172,
+              "line": 1173,
               "name": "reservationPositionEligible",
               "reason": "resolved-call"
             },
@@ -64951,7 +64951,7 @@
           "path": "src/recorded-movement.ts"
         },
         {
-          "occurrences": 49,
+          "occurrences": 48,
           "path": "src/reservations.ts"
         },
         {
@@ -75646,10 +75646,10 @@
               "column": 101,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:27926:<anonymous@635>",
+              "id": "test/reservations-counts.test.ts:32514:<anonymous@715>",
               "kind": "ArrowFunction",
-              "line": 635,
-              "name": "<anonymous@635>",
+              "line": 715,
+              "name": "<anonymous@715>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -76915,7 +76915,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 15,
           "path": "src/reservations.ts"
         },
         {
@@ -79667,20 +79667,20 @@
               "column": 75,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:33069:<anonymous@768>",
+              "id": "test/reservations-counts.test.ts:37657:<anonymous@848>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 848,
+              "name": "<anonymous@848>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 82,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:79628:<anonymous@1681>",
+              "id": "test/reservations-counts.test.ts:84216:<anonymous@1761>",
               "kind": "ArrowFunction",
-              "line": 1681,
-              "name": "<anonymous@1681>",
+              "line": 1761,
+              "name": "<anonymous@1761>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -91469,7 +91469,7 @@
           "path": "src/picking.ts"
         },
         {
-          "occurrences": 13,
+          "occurrences": 15,
           "path": "src/reservations.ts"
         },
         {
@@ -92325,20 +92325,20 @@
               "column": 75,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:33069:<anonymous@768>",
+              "id": "test/reservations-counts.test.ts:37657:<anonymous@848>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 848,
+              "name": "<anonymous@848>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 103,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:95427:<anonymous@2160>",
+              "id": "test/reservations-counts.test.ts:100015:<anonymous@2240>",
               "kind": "ArrowFunction",
-              "line": 2160,
-              "name": "<anonymous@2160>",
+              "line": 2240,
+              "name": "<anonymous@2240>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -95486,20 +95486,20 @@
               "column": 75,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:33069:<anonymous@768>",
+              "id": "test/reservations-counts.test.ts:37657:<anonymous@848>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 848,
+              "name": "<anonymous@848>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 114,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:70559:<anonymous@1453>",
+              "id": "test/reservations-counts.test.ts:75147:<anonymous@1533>",
               "kind": "ArrowFunction",
-              "line": 1453,
-              "name": "<anonymous@1453>",
+              "line": 1533,
+              "name": "<anonymous@1533>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -96006,20 +96006,20 @@
               "column": 75,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:33069:<anonymous@768>",
+              "id": "test/reservations-counts.test.ts:37657:<anonymous@848>",
               "kind": "ArrowFunction",
-              "line": 768,
-              "name": "<anonymous@768>",
+              "line": 848,
+              "name": "<anonymous@848>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 114,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:70559:<anonymous@1453>",
+              "id": "test/reservations-counts.test.ts:75147:<anonymous@1533>",
               "kind": "ArrowFunction",
-              "line": 1453,
-              "name": "<anonymous@1453>",
+              "line": 1533,
+              "name": "<anonymous@1533>",
               "reason": "external-callback-dispatch"
             },
             {
