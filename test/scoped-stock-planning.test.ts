@@ -132,6 +132,40 @@ function threeAxisPickingFixture(canonical: boolean, policy: InventoryDeficitPol
 }
 
 describe("indexed stock planning and availability", () => {
+  it("attributes the same deficit to a lot regardless of scoped adapter row order", async () => {
+    const catalog = createTabletCatalog();
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    for (const lotId of ["A", "B"]) {
+      await inventory.stock.receive({
+        operationId: "ordered-availability-" + lotId, occurredAtEpochMs: time0,
+        to: loosePosition("store", { lotId }), amount: stockAmount("5", "piece"),
+      });
+    }
+    await inventory.stock.issue({
+      operationId: "ordered-availability-deficit", occurredAtEpochMs: time1,
+      from: loosePosition("store"), amount: stockAmount("2", "piece"),
+    });
+    const scope = {
+      storage, catalog, itemRevisionId: "item-a-v2", atEpochMs: time2,
+      selector: { itemId: "item-a", placementNodeIds: ["store"], lotIds: ["A"] },
+    };
+    const ordered = await readInventoryScopedStockAvailability(scope);
+    const readPool = storage.readSegmentedStockPool.bind(storage);
+    vi.spyOn(storage, "readSegmentedStockPool").mockImplementation(
+      /** Return the same complete pool in a different valid adapter order. */
+      (input) => {
+        const pool = readPool(input);
+        return { ...pool, positions: [...pool.positions].reverse() };
+      }
+    );
+    expect(await readInventoryScopedStockAvailability(scope)).toEqual(ordered);
+    const three = parseQuantity("3", "piece");
+    expect(ordered.onHand.primary.quantity).toEqual(three);
+    expect(ordered.usableOnHand.primary.quantity).toEqual(three);
+    expect(ordered.unallocatedUsablePhysical).toEqual(three);
+  });
+
   it.each([false, true])("retains FIFO age only for positive conserved arrivals (canonical: %s)", async (canonical) => {
     const item = defineScalarInventoryItem({ itemId: "age", revisionId: "age-v1", axisId: "pieces", unit: "piece" });
     const packaging = defineScalarInventoryPackaging({ revisionId: "age-box", item, packageUnit: "box", contains: "1" });

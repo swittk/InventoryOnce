@@ -498,6 +498,19 @@ function isSharedPlacementCorrection(
   );
 }
 
+/** Match a stock correction that adds capacity at one exact source of an assertion. */
+function isHistoricalStockSupplyCorrection(
+  event: InventoryEventDraft | InventoryCommittedEvent,
+  sourcePositionIds: ReadonlySet<string>
+): boolean {
+  return event.kind === InventoryEventKind.Correction && sourcePositionIds.size > 0 &&
+    event.stockEffects.some(
+      /** A correction must add primary stock to the same exact position that is debited. */
+      (effect) => effect.measurementsDelta.primary.quantity.amountMinor > 0 &&
+        sourcePositionIds.has(inventoryStockPositionIdentity(effect.position))
+    );
+}
+
 /** Insert after an explicit anchor or between the earlier and later facts using the same resources. */
 function insertHistoricalAssertion(
   target: InventoryHistoricalReplayEntry[],
@@ -520,11 +533,19 @@ function insertHistoricalAssertion(
   } else {
     /** Only events using these resources can constrain this assertion's replay order. */
     const dependencies = new Set(inventoryEventDependencyKeys(assertion.event));
+    /** Exact stock positions this assertion needs to debit. */
+    const sourcePositionIds = new Set<string>();
+    for (const effect of assertion.event.stockEffects) {
+      if (effect.measurementsDelta.primary.quantity.amountMinor < 0) {
+        sourcePositionIds.add(inventoryStockPositionIdentity(effect.position));
+      }
+    }
     const occurredAt = assertion.event.occurredAtEpochMs;
     for (let index = 0; index < target.length; index += 1) {
       const event = target[index]!.event;
-      // Retained count corrections are adjustments, whereas shared placement corrections set topology order.
-      if (event.kind === InventoryEventKind.Correction && !isSharedPlacementCorrection(event, dependencies)) {
+      // Keep shared topology corrections and earlier corrections that supply the assertion's stock.
+      if (event.kind === InventoryEventKind.Correction && !isSharedPlacementCorrection(event, dependencies) &&
+          (event.occurredAtEpochMs > occurredAt || !isHistoricalStockSupplyCorrection(event, sourcePositionIds))) {
         continue;
       }
       if (event.occurredAtEpochMs <= occurredAt) {
@@ -534,7 +555,7 @@ function insertHistoricalAssertion(
         (key) => dependencies.has(key)
       )) {
         // First put any backdated predecessors ahead of this later fact.
-        const predecessors = bringForwardHistoricalPredecessors(target, index, occurredAt, dependencies);
+        const predecessors = bringForwardHistoricalPredecessors(target, index, occurredAt, dependencies, sourcePositionIds);
         if (predecessors > 0) insertionIndex = index + predecessors - 1;
         break;
       }
@@ -552,7 +573,8 @@ function bringForwardHistoricalPredecessors(
   target: InventoryHistoricalReplayEntry[],
   firstLater: number,
   occurredAt: number,
-  dependencies: ReadonlySet<string>
+  dependencies: ReadonlySet<string>,
+  sourcePositionIds: ReadonlySet<string>
 ): number {
   /** Earlier facts can be connected through ordinary keys or already-selected anchors. */
   const keysByIndex = new Map<number, readonly string[]>();
@@ -560,12 +582,17 @@ function bringForwardHistoricalPredecessors(
   const indexesByKey = new Map<string, number[]>();
   /** Eligible explicitly anchored descendants waiting for their anchor to join the closure. */
   const anchoredByAnchorId = new Map<string, number[]>();
-  for (let index = firstLater + 1; index < target.length; index += 1) {
+  /** Superseded corrections can be required even when they changed no stock or placement. */
+  const correctionIndexesById = new Map<string, number>();
+  for (let index = firstLater; index < target.length; index += 1) {
     const entry = target[index]!;
     const { event, afterEventId } = entry;
+    if (event.kind === InventoryEventKind.Correction) correctionIndexesById.set(event.eventId, index);
     if (
+      index === firstLater ||
       event.occurredAtEpochMs > occurredAt ||
-      (event.kind === InventoryEventKind.Correction && (event.placementChanges ?? []).length === 0)
+      (event.kind === InventoryEventKind.Correction && (event.placementChanges ?? []).length === 0 &&
+        !isHistoricalStockSupplyCorrection(event, sourcePositionIds))
     ) {
       continue;
     }
@@ -643,6 +670,14 @@ function bringForwardHistoricalPredecessors(
   }
   if (predecessors.size === 0) return 0;
 
+  // A selected correction's deltas require its durable predecessors, even when their effects
+  // did not seed the closure. A predecessor already in the prefix stays where it is.
+  for (const index of predecessors) {
+    const supersededId = target[index]!.event.correction?.supersedesCorrectionEventId;
+    if (supersededId === undefined) continue;
+    const supersededIndex = correctionIndexesById.get(supersededId);
+    if (supersededIndex !== undefined) predecessors.add(supersededIndex);
+  }
   const earlier: InventoryHistoricalReplayEntry[] = [];
   const remaining: InventoryHistoricalReplayEntry[] = [];
   for (let index = firstLater; index < target.length; index += 1) {
@@ -716,7 +751,7 @@ function popHistoricalReadyIndex(
   return root;
 }
 
-/** Order moved predecessors by occurrence time while preserving explicit in-slice anchor constraints. */
+/** Order moved predecessors by occurrence time while retaining in-slice anchor and correction dependencies. */
 function orderHistoricalPredecessors(
   earlier: readonly InventoryHistoricalReplayEntry[]
 ): readonly InventoryHistoricalReplayEntry[] {
@@ -726,19 +761,22 @@ function orderHistoricalPredecessors(
   }
   const dependentsByIndex = new Map<number, number[]>();
   const inDegree = new Array<number>(earlier.length).fill(0);
-  let hasAnchorConstraint = false;
+  /** Only constraints with both ends in this slice require the ready heap. */
+  let hasOrderingConstraint = false;
   for (let index = 0; index < earlier.length; index += 1) {
-    const afterEventId = earlier[index]!.afterEventId;
-    if (afterEventId === undefined) continue;
-    const anchorIndex = indexByEventId.get(afterEventId);
-    if (anchorIndex === undefined || anchorIndex === index) continue;
-    hasAnchorConstraint = true;
-    inDegree[index] = (inDegree[index] ?? 0) + 1;
-    const dependents = dependentsByIndex.get(anchorIndex);
-    if (dependents === undefined) dependentsByIndex.set(anchorIndex, [index]);
-    else dependents.push(index);
+    const { afterEventId, event } = earlier[index]!;
+    for (const predecessorId of [afterEventId, event.correction?.supersedesCorrectionEventId]) {
+      if (predecessorId === undefined) continue;
+      const predecessorIndex = indexByEventId.get(predecessorId);
+      if (predecessorIndex === undefined || predecessorIndex === index) continue;
+      hasOrderingConstraint = true;
+      inDegree[index] = (inDegree[index] ?? 0) + 1;
+      const dependents = dependentsByIndex.get(predecessorIndex);
+      if (dependents === undefined) dependentsByIndex.set(predecessorIndex, [index]);
+      else dependents.push(index);
+    }
   }
-  if (!hasAnchorConstraint) {
+  if (!hasOrderingConstraint) {
     const sorted = [...earlier];
     sorted.sort(
       /** Keep the collected durable/anchor order for equal occurrences. */

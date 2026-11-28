@@ -33,6 +33,40 @@ import {
   time3,
 } from "./test-fixtures.js";
 
+it.each([
+  { requested: 400001, triples: 1, fulfillable: 400000 },
+  { requested: 400002, triples: 2, fulfillable: 400002 },
+])("prunes smaller single-claim picks only when later packs cannot improve $requested", async ({
+  requested, triples, fulfillable,
+}) => {
+  const item = defineScalarInventoryItem({ itemId: "packed", revisionId: "packed-v1", axisId: "pieces", unit: "piece" });
+  const quad = defineScalarInventoryPackaging({ revisionId: "quad", item, packageUnit: "box", contains: "4" });
+  const triple = defineScalarInventoryPackaging({ revisionId: "triple", item, packageUnit: "box", contains: "3" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { packed: item.revisionId }, packagingRevisions: [quad, triple],
+  });
+  const inventory = createTestInventory(undefined, catalog);
+  const position = { itemId: item.itemId, placementNodeId: "store" };
+  const loose = { ...position, lotId: "loose" };
+  await inventory.stock.receiveMany({ operationId: "single-claim-stock", occurredAtEpochMs: time0, lines: [
+    { to: { ...position, lotId: "quad" }, amount: packageAmount(100001, quad.revisionId) },
+    { to: { ...position, lotId: "triple" }, amount: packageAmount(triples, triple.revisionId) },
+    { to: loose, amount: stockAmount("1", "piece") },
+  ] });
+  await inventory.reservations.reserve({
+    reservationId: "single-claim", operationId: "single-claim-reserve", itemRevisionId: item.revisionId,
+    selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+    requested: parseQuantity(String(requested), "piece"), createdAtEpochMs: time1,
+  });
+  await inventory.stock.issue({
+    operationId: "single-claim-issue", occurredAtEpochMs: time2, from: loose, amount: stockAmount("1", "piece"),
+  });
+  expect((await inventory.read.reservationFeasibility()).groups).toMatchObject([{
+    fulfillable: parseQuantity(String(fulfillable), "piece"),
+    shortage: parseQuantity(String(requested - fulfillable), "piece"),
+  }]);
+});
+
 it("keeps a large supported whole-stock assignment within the runtime stack", async () => {
   const item = defineScalarInventoryItem({ itemId: "packed", revisionId: "packed-v1", axisId: "pieces", unit: "piece" });
   const pack = defineScalarInventoryPackaging({ revisionId: "single", item, packageUnit: "box", contains: "1" });

@@ -79,6 +79,8 @@ export interface InventoryWorkingAllocationCandidate
 export interface AllocateWorkingInventoryInput extends Omit<AllocateInventoryInput, "candidates"> {
   /** Eligible stock with exact private or published capacities. */
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
+  /** Run the increment diagnostic without changing which picks can be accepted. */
+  readonly assessIncrementBlockage?: boolean;
   /** Diagnose physical increments on a shortfall when no legal pick exists even without the predicate. */
   readonly diagnosePhysicalShortfall?: true;
   /** The reported movement needs a positive primary remainder for an unwitnessed axis. */
@@ -107,12 +109,6 @@ export interface InventoryFullWitnessPrimaryBudget {
   readonly axisFreeLimit: InventoryWorkingQuantity;
   /** Whole rows proved unable to participate in a complete measured witness at legal increments. */
   readonly completeExclusions?: ReadonlySet<InventoryStockPositionKey>;
-}
-
-/** Inputs for selecting a partial witness with an optional primary-increment diagnosis. */
-interface AllocateInventoryUpToInput extends AllocateWorkingInventoryInput {
-  /** Skip relaxed trials when measured evidence cannot be inferred for a split. */
-  readonly assessIncrementBlockage?: boolean;
 }
 
 /** One exact position/quantity chosen by automatic allocation. */
@@ -171,7 +167,7 @@ export function allocateInventory(input: AllocateInventoryInput): InventoryAlloc
 }
 
 /** Find the largest accepted witness, keeping the first FIFO/FEFO choice on ties. */
-export function allocateInventoryUpTo(input: AllocateInventoryUpToInput): InventoryAllocationResult {
+export function allocateInventoryUpTo(input: AllocateWorkingInventoryInput): InventoryAllocationResult {
   return allocateInventoryCandidates(input, true);
 }
 
@@ -194,7 +190,7 @@ function allocateInventoryCandidates({
   maximumWitnessPrimary,
   fullWitnessPrimaryBudget,
   wholeMeasuredSubsets,
-}: AllocateInventoryUpToInput, acceptPartial: boolean): InventoryAllocationResult {
+}: AllocateWorkingInventoryInput, acceptPartial: boolean): InventoryAllocationResult {
   positiveQuantity(requested, "Requested allocation");
   assertInventoryEpochMilliseconds(nowEpochMs, "allocation now");
   let expiredStockWasExcluded = false;

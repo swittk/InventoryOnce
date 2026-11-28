@@ -2222,3 +2222,9 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-28 — measured witnesses in ordered transfer batches
 
 An unwitnessed debit can leave a private transfer-batch row with positive primary stock and a negative independent axis while a later request can make the final signed balance valid. The physical picker excludes that private row as a witness and still considers other eligible lots. Settlement keeps the exact signed totals and publication still validates the final sign. The grouped reservation search also stops serializing the edge matrix in each memo key because the matrix is constant for the whole search.
+
+## 2026-11-28 — scoped deficit reports and retained correction order
+
+Availability attributes recorded deficits in exact position order across signed on-hand, usable on-hand, and unallocated capacity. Indexed whereabouts reads validate the configured catalogue against the same accepted head as their history and position reads. A retained correction can supply the exact stock consumed by a historical assertion, and any superseded corrections are required before its deltas can replay. The predecessor closure carries those durable dependencies even for corrections with no stock or placement effects. Other available predecessors still use physical occurrence time.
+
+The whole-stock reservation search can stop decreasing a single-claim group's pick when that pick plus every later position cannot improve the best result. The same search still explores smaller picks that allow a later package increment to fill the claim.

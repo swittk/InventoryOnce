@@ -342,13 +342,25 @@ export function summarizeInventoryPhysicalAvailability({
   const positions: InventoryStockPosition[] = [];
   /** Presence and expiry evidence for every exact row in the pool. */
   const useBy = new Map<string, number | undefined>();
+  /** Only pools with recorded debt need an attribution order. */
+  let hasRecordedDeficit = false;
   // The signed pool retains the report's subtree constraint.
   const { withinPlacementNodeIds: _withinPlacementNodeIds, ...stockSelector } = selector;
   for (const row of pool.positions) {
     const { position } = row;
     poolPositions.push(position);
+    hasRecordedDeficit ||= inventoryPositionIsDeficit(position);
     useBy.set(inventoryStockPositionIdentity(position.key), row.effectiveUseByEpochMs);
     if (inventoryStockPositionMatchesNormalizedSelector(position.key, stockSelector)) positions.push(position);
+  }
+  if (hasRecordedDeficit) {
+    poolPositions.sort(
+      /** Use the same exact identity order for all three deficit calculations. */
+      (left, right) => compareInventoryIdentityText(
+        inventoryStockPositionIdentity(left.key),
+        inventoryStockPositionIdentity(right.key)
+      )
+    );
   }
   const exactHolds = indexScopedAvailabilityHolds(pool, useBy, item, reservationAxis.unit, atEpochMs);
   const pendingPositions: MutableInventoryPositionAvailability[] = [];

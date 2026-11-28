@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4541,
-    "compilerCallGraphEdges": 13333,
+    "compilerCallGraphCallables": 4554,
+    "compilerCallGraphEdges": 13405,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -3529,13 +3529,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -8861,13 +8861,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -11045,10 +11045,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:207408:<anonymous@3326>",
+              "id": "test/scoped-stock-planning.test.ts:209086:<anonymous@3360>",
               "kind": "ArrowFunction",
-              "line": 3326,
-              "name": "<anonymous@3326>",
+              "line": 3360,
+              "name": "<anonymous@3360>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -11691,10 +11691,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:207408:<anonymous@3326>",
+              "id": "test/scoped-stock-planning.test.ts:209086:<anonymous@3360>",
               "kind": "ArrowFunction",
-              "line": 3326,
-              "name": "<anonymous@3326>",
+              "line": 3360,
+              "name": "<anonymous@3360>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -12491,9 +12491,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -13699,10 +13699,10 @@
               "column": 98,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:240232:<anonymous@3871>",
+              "id": "test/scoped-stock-planning.test.ts:241910:<anonymous@3905>",
               "kind": "ArrowFunction",
-              "line": 3871,
-              "name": "<anonymous@3871>",
+              "line": 3905,
+              "name": "<anonymous@3905>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -13850,10 +13850,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14001,10 +14001,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14184,10 +14184,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:218936:<anonymous@3504>",
+              "id": "test/scoped-stock-planning.test.ts:220614:<anonymous@3538>",
               "kind": "ArrowFunction",
-              "line": 3504,
-              "name": "<anonymous@3504>",
+              "line": 3538,
+              "name": "<anonymous@3538>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14504,10 +14504,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14687,10 +14687,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:218936:<anonymous@3504>",
+              "id": "test/scoped-stock-planning.test.ts:220614:<anonymous@3538>",
               "kind": "ArrowFunction",
-              "line": 3504,
-              "name": "<anonymous@3504>",
+              "line": 3538,
+              "name": "<anonymous@3538>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -14834,10 +14834,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -15656,7 +15656,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 141,
+          "occurrences": 153,
           "path": "src/historical-replay.ts"
         },
         {
@@ -16509,9 +16509,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -19705,7 +19705,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 75,
+          "occurrences": 76,
           "path": "src/availability.ts"
         },
         {
@@ -19757,7 +19757,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 16,
+          "occurrences": 19,
           "path": "src/historical-replay.ts"
         },
         {
@@ -21323,13 +21323,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -22359,29 +22359,29 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 90,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:6863:<anonymous@145>",
+              "id": "test/allocation.test.ts:6882:<anonymous@146>",
               "kind": "ArrowFunction",
-              "line": 145,
-              "name": "<anonymous@145>",
+              "line": 146,
+              "name": "<anonymous@146>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:7708:allocateInventory",
+              "id": "src/allocation.ts:7536:allocateInventory",
               "kind": "FunctionDeclaration",
-              "line": 169,
+              "line": 165,
               "name": "allocateInventory",
               "reason": "resolved-call"
             }
@@ -22390,9 +22390,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:7708:allocateInventory",
+            "id": "src/allocation.ts:7536:allocateInventory",
             "kind": "FunctionDeclaration",
-            "line": 169,
+            "line": 165,
             "name": "allocateInventory"
           },
           "test": "test/allocation.test.ts"
@@ -22419,9 +22419,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:7708:allocateInventory",
+          "id": "src/allocation.ts:7536:allocateInventory",
           "kind": "FunctionDeclaration",
-          "line": 169,
+          "line": 165,
           "name": "allocateInventory"
         }
       ],
@@ -23534,7 +23534,7 @@
           "path": "src/events.ts"
         },
         {
-          "occurrences": 9,
+          "occurrences": 10,
           "path": "src/facade.ts"
         },
         {
@@ -24244,20 +24244,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -24712,31 +24712,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/dual-measure-counts.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/dual-measure-counts.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/dual-measure-counts.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 55,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 69,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 270,
-              "name": "<anonymous@270>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 95,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 271,
-              "name": "<anonymous@271>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -24769,7 +24769,7 @@
             "line": 108,
             "name": "assertSameUnit"
           },
-          "test": "test/dual-measure-counts.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -25309,29 +25309,29 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 51,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:12953:<anonymous@262>",
+              "id": "test/allocation.test.ts:12972:<anonymous@263>",
               "kind": "ArrowFunction",
-              "line": 262,
-              "name": "<anonymous@262>",
+              "line": 263,
+              "name": "<anonymous@263>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 1,
               "file": "src/allocation.ts",
               "hasBody": true,
-              "id": "src/allocation.ts:55441:compareInventoryAllocationCandidates",
+              "id": "src/allocation.ts:55275:compareInventoryAllocationCandidates",
               "kind": "FunctionDeclaration",
-              "line": 1119,
+              "line": 1115,
               "name": "compareInventoryAllocationCandidates",
               "reason": "resolved-call"
             }
@@ -25340,9 +25340,9 @@
             "column": 1,
             "file": "src/allocation.ts",
             "hasBody": true,
-            "id": "src/allocation.ts:55441:compareInventoryAllocationCandidates",
+            "id": "src/allocation.ts:55275:compareInventoryAllocationCandidates",
             "kind": "FunctionDeclaration",
-            "line": 1119,
+            "line": 1115,
             "name": "compareInventoryAllocationCandidates"
           },
           "test": "test/allocation.test.ts"
@@ -25369,9 +25369,9 @@
           "column": 1,
           "file": "src/allocation.ts",
           "hasBody": true,
-          "id": "src/allocation.ts:55441:compareInventoryAllocationCandidates",
+          "id": "src/allocation.ts:55275:compareInventoryAllocationCandidates",
           "kind": "FunctionDeclaration",
-          "line": 1119,
+          "line": 1115,
           "name": "compareInventoryAllocationCandidates"
         }
       ],
@@ -25446,31 +25446,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/dual-measure-counts.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/dual-measure-counts.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/dual-measure-counts.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 55,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 69,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 270,
-              "name": "<anonymous@270>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 95,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 271,
-              "name": "<anonymous@271>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -25493,14 +25493,14 @@
             "line": 113,
             "name": "compareQuantity"
           },
-          "test": "test/dual-measure-counts.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/dual-measure-counts.test.ts"
+        "test/allocation.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/dual-measure-counts.test.ts"
+        "test/allocation.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -26835,20 +26835,20 @@
               "column": 52,
               "file": "test/whereabouts.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:2281:<anonymous@77>",
+              "id": "test/whereabouts.test.ts:2307:<anonymous@78>",
               "kind": "ArrowFunction",
-              "line": 77,
-              "name": "<anonymous@77>",
+              "line": 78,
+              "name": "<anonymous@78>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 98,
               "file": "test/whereabouts.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:3433:<anonymous@110>",
+              "id": "test/whereabouts.test.ts:5357:<anonymous@136>",
               "kind": "ArrowFunction",
-              "line": 110,
-              "name": "<anonymous@110>",
+              "line": 136,
+              "name": "<anonymous@136>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -27003,9 +27003,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -30384,10 +30384,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -30536,10 +30536,10 @@
               "column": 73,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:203867:<anonymous@3268>",
+              "id": "test/scoped-stock-planning.test.ts:205545:<anonymous@3302>",
               "kind": "ArrowFunction",
-              "line": 3268,
-              "name": "<anonymous@3268>",
+              "line": 3302,
+              "name": "<anonymous@3302>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -31439,13 +31439,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -32140,20 +32140,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -32276,20 +32276,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -32681,13 +32681,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -32802,13 +32802,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34620,31 +34620,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/dual-measure-counts.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/dual-measure-counts.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/dual-measure-counts.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 55,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 69,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 270,
-              "name": "<anonymous@270>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 95,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 271,
-              "name": "<anonymous@271>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -34677,7 +34677,7 @@
             "line": 340,
             "name": "integerAtDecimals"
           },
-          "test": "test/dual-measure-counts.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -36613,9 +36613,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -36777,9 +36777,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -36952,9 +36952,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -38985,20 +38985,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -39964,9 +39964,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:418612:placementAncestry",
+              "id": "src/facade.ts:418703:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10885,
+              "line": 10886,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             },
@@ -40600,9 +40600,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:416925:placementParent",
+              "id": "src/facade.ts:417016:placementParent",
               "kind": "MethodDeclaration",
-              "line": 10841,
+              "line": 10842,
               "name": "placementParent",
               "reason": "interface-to-implementation"
             },
@@ -42073,7 +42073,7 @@
           "path": "src/allocation.ts"
         },
         {
-          "occurrences": 10,
+          "occurrences": 12,
           "path": "src/availability.ts"
         },
         {
@@ -42117,7 +42117,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 6,
+          "occurrences": 8,
           "path": "src/historical-replay.ts"
         },
         {
@@ -43763,9 +43763,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:415742:packagingRevisions",
+              "id": "src/facade.ts:415833:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10808,
+              "line": 10809,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             },
@@ -44039,20 +44039,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -44183,10 +44183,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -44454,10 +44454,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -45081,9 +45081,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -45525,10 +45525,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -45973,13 +45973,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 101,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:6101:<anonymous@119>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 119,
-              "name": "<anonymous@119>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -46575,20 +46575,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -47157,7 +47157,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 14,
+          "occurrences": 16,
           "path": "src/historical-replay.ts"
         },
         {
@@ -48068,9 +48068,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -48609,10 +48609,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -50032,9 +50032,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411310:summary",
+              "id": "src/facade.ts:411401:summary",
               "kind": "MethodDeclaration",
-              "line": 10712,
+              "line": 10713,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -50176,20 +50176,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -52797,13 +52797,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -53038,20 +53038,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -53755,7 +53755,7 @@
           "path": "src/events.ts"
         },
         {
-          "occurrences": 9,
+          "occurrences": 10,
           "path": "src/facade.ts"
         },
         {
@@ -53974,20 +53974,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -54286,31 +54286,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/dual-measure-counts.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/dual-measure-counts.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/dual-measure-counts.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 55,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 69,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 270,
-              "name": "<anonymous@270>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 95,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 271,
-              "name": "<anonymous@271>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -54343,7 +54343,7 @@
             "line": 108,
             "name": "assertSameUnit"
           },
-          "test": "test/dual-measure-counts.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -54947,31 +54947,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/dual-measure-counts.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/dual-measure-counts.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/dual-measure-counts.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 55,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 69,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 270,
-              "name": "<anonymous@270>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 95,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 271,
-              "name": "<anonymous@271>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -54994,14 +54994,14 @@
             "line": 113,
             "name": "compareQuantity"
           },
-          "test": "test/dual-measure-counts.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/dual-measure-counts.test.ts"
+        "test/allocation.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/dual-measure-counts.test.ts"
+        "test/allocation.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -55568,20 +55568,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -55960,13 +55960,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -56508,20 +56508,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -56644,20 +56644,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -57171,13 +57171,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -57292,13 +57292,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -58104,20 +58104,20 @@
               "column": 52,
               "file": "test/whereabouts.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:2281:<anonymous@77>",
+              "id": "test/whereabouts.test.ts:2307:<anonymous@78>",
               "kind": "ArrowFunction",
-              "line": 77,
-              "name": "<anonymous@77>",
+              "line": 78,
+              "name": "<anonymous@78>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 86,
               "file": "test/whereabouts.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:26962:<anonymous@773>",
+              "id": "test/whereabouts.test.ts:28886:<anonymous@799>",
               "kind": "ArrowFunction",
-              "line": 773,
-              "name": "<anonymous@773>",
+              "line": 799,
+              "name": "<anonymous@799>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -58244,31 +58244,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/dual-measure-counts.test.ts",
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test-root:test/dual-measure-counts.test.ts",
+              "id": "test-root:test/allocation.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/dual-measure-counts.test.ts"
+              "name": "test/allocation.test.ts"
             },
             {
-              "column": 55,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 69,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11389:<anonymous@270>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 270,
-              "name": "<anonymous@270>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
-              "file": "test/dual-measure-counts.test.ts",
+              "column": 95,
+              "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/dual-measure-counts.test.ts:11496:<anonymous@271>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 271,
-              "name": "<anonymous@271>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -58301,7 +58301,7 @@
             "line": 340,
             "name": "integerAtDecimals"
           },
-          "test": "test/dual-measure-counts.test.ts"
+          "test": "test/allocation.test.ts"
         }
       ],
       "directExecutableEntrypoints": [],
@@ -60520,20 +60520,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -61931,20 +61931,20 @@
               "column": 52,
               "file": "test/whereabouts.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:2281:<anonymous@77>",
+              "id": "test/whereabouts.test.ts:2307:<anonymous@78>",
               "kind": "ArrowFunction",
-              "line": 77,
-              "name": "<anonymous@77>",
+              "line": 78,
+              "name": "<anonymous@78>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 86,
               "file": "test/whereabouts.test.ts",
               "hasBody": true,
-              "id": "test/whereabouts.test.ts:26962:<anonymous@773>",
+              "id": "test/whereabouts.test.ts:28886:<anonymous@799>",
               "kind": "ArrowFunction",
-              "line": 773,
-              "name": "<anonymous@773>",
+              "line": 799,
+              "name": "<anonymous@799>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -62242,9 +62242,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:415742:packagingRevisions",
+              "id": "src/facade.ts:415833:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10808,
+              "line": 10809,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             },
@@ -62382,20 +62382,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -62526,10 +62526,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -62797,10 +62797,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -63554,13 +63554,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 101,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:6101:<anonymous@119>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 119,
-              "name": "<anonymous@119>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -64156,20 +64156,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -64863,7 +64863,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 14,
+          "occurrences": 16,
           "path": "src/historical-replay.ts"
         },
         {
@@ -66158,10 +66158,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -67317,9 +67317,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411310:summary",
+              "id": "src/facade.ts:411401:summary",
               "kind": "MethodDeclaration",
-              "line": 10712,
+              "line": 10713,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -67461,20 +67461,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -69584,10 +69584,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -70287,10 +70287,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -71689,9 +71689,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:418612:placementAncestry",
+              "id": "src/facade.ts:418703:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10885,
+              "line": 10886,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             },
@@ -71841,9 +71841,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408496:positions",
+              "id": "src/facade.ts:408603:positions",
               "kind": "MethodDeclaration",
-              "line": 10647,
+              "line": 10648,
               "name": "positions",
               "reason": "interface-to-implementation"
             },
@@ -72175,9 +72175,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411310:summary",
+              "id": "src/facade.ts:411401:summary",
               "kind": "MethodDeclaration",
-              "line": 10712,
+              "line": 10713,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -72757,13 +72757,13 @@
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 86,
+              "column": 85,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:55457:<anonymous@859>",
+              "id": "test/scoped-stock-planning.test.ts:5647:<anonymous@135>",
               "kind": "ArrowFunction",
-              "line": 859,
-              "name": "<anonymous@859>",
+              "line": 135,
+              "name": "<anonymous@135>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -72916,9 +72916,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408496:positions",
+              "id": "src/facade.ts:408603:positions",
               "kind": "MethodDeclaration",
-              "line": 10647,
+              "line": 10648,
               "name": "positions",
               "reason": "interface-to-implementation"
             },
@@ -73186,10 +73186,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -79441,9 +79441,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:412618:availability",
+              "id": "src/facade.ts:412709:availability",
               "kind": "MethodDeclaration",
-              "line": 10738,
+              "line": 10739,
               "name": "availability",
               "reason": "interface-to-implementation"
             }
@@ -79452,9 +79452,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412618:availability",
+            "id": "src/facade.ts:412709:availability",
             "kind": "MethodDeclaration",
-            "line": 10738,
+            "line": 10739,
             "name": "availability"
           },
           "test": "test/availability.test.ts"
@@ -79477,9 +79477,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412618:availability",
+          "id": "src/facade.ts:412709:availability",
           "kind": "MethodDeclaration",
-          "line": 10738,
+          "line": 10739,
           "name": "availability"
         }
       ],
@@ -79645,9 +79645,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:420541:count",
+              "id": "src/facade.ts:420632:count",
               "kind": "MethodDeclaration",
-              "line": 10938,
+              "line": 10939,
               "name": "count",
               "reason": "interface-to-implementation"
             }
@@ -79656,9 +79656,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420541:count",
+            "id": "src/facade.ts:420632:count",
             "kind": "MethodDeclaration",
-            "line": 10938,
+            "line": 10939,
             "name": "count"
           },
           "test": "test/reservations-counts.test.ts"
@@ -79681,9 +79681,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420541:count",
+          "id": "src/facade.ts:420632:count",
           "kind": "MethodDeclaration",
-          "line": 10938,
+          "line": 10939,
           "name": "count"
         }
       ],
@@ -79726,7 +79726,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 1,
           "path": "src/historical-replay.ts"
         },
         {
@@ -79911,9 +79911,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:420015:event",
+              "id": "src/facade.ts:420106:event",
               "kind": "MethodDeclaration",
-              "line": 10924,
+              "line": 10925,
               "name": "event",
               "reason": "interface-to-implementation"
             }
@@ -79922,9 +79922,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420015:event",
+            "id": "src/facade.ts:420106:event",
             "kind": "MethodDeclaration",
-            "line": 10924,
+            "line": 10925,
             "name": "event"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -79947,9 +79947,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420015:event",
+          "id": "src/facade.ts:420106:event",
           "kind": "MethodDeclaration",
-          "line": 10924,
+          "line": 10925,
           "name": "event"
         }
       ],
@@ -80012,7 +80012,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 141,
+          "occurrences": 153,
           "path": "src/historical-replay.ts"
         },
         {
@@ -80218,9 +80218,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410849:events",
+              "id": "src/facade.ts:410940:events",
               "kind": "MethodDeclaration",
-              "line": 10703,
+              "line": 10704,
               "name": "events",
               "reason": "interface-to-implementation"
             }
@@ -80229,9 +80229,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:410849:events",
+            "id": "src/facade.ts:410940:events",
             "kind": "MethodDeclaration",
-            "line": 10703,
+            "line": 10704,
             "name": "events"
           },
           "test": "test/event-query.test.ts"
@@ -80252,9 +80252,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:410849:events",
+          "id": "src/facade.ts:410940:events",
           "kind": "MethodDeclaration",
-          "line": 10703,
+          "line": 10704,
           "name": "events"
         }
       ],
@@ -80498,9 +80498,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:419496:lot",
+              "id": "src/facade.ts:419587:lot",
               "kind": "MethodDeclaration",
-              "line": 10908,
+              "line": 10909,
               "name": "lot",
               "reason": "interface-to-implementation"
             }
@@ -80509,9 +80509,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:419496:lot",
+            "id": "src/facade.ts:419587:lot",
             "kind": "MethodDeclaration",
-            "line": 10908,
+            "line": 10909,
             "name": "lot"
           },
           "test": "test/catalog-stock.test.ts"
@@ -80534,9 +80534,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:419496:lot",
+          "id": "src/facade.ts:419587:lot",
           "kind": "MethodDeclaration",
-          "line": 10908,
+          "line": 10909,
           "name": "lot"
         }
       ],
@@ -80766,9 +80766,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:419794:lots",
+              "id": "src/facade.ts:419885:lots",
               "kind": "MethodDeclaration",
-              "line": 10917,
+              "line": 10918,
               "name": "lots",
               "reason": "interface-to-implementation"
             }
@@ -80777,9 +80777,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:419794:lots",
+            "id": "src/facade.ts:419885:lots",
             "kind": "MethodDeclaration",
-            "line": 10917,
+            "line": 10918,
             "name": "lots"
           },
           "test": "test/lots.test.ts"
@@ -80802,9 +80802,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:419794:lots",
+          "id": "src/facade.ts:419885:lots",
           "kind": "MethodDeclaration",
-          "line": 10917,
+          "line": 10918,
           "name": "lots"
         }
       ],
@@ -80968,9 +80968,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:415742:packagingRevisions",
+              "id": "src/facade.ts:415833:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10808,
+              "line": 10809,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             }
@@ -80979,9 +80979,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:415742:packagingRevisions",
+            "id": "src/facade.ts:415833:packagingRevisions",
             "kind": "MethodDeclaration",
-            "line": 10808,
+            "line": 10809,
             "name": "packagingRevisions"
           },
           "test": "test/catalog-publication.test.ts"
@@ -81004,9 +81004,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:415742:packagingRevisions",
+          "id": "src/facade.ts:415833:packagingRevisions",
           "kind": "MethodDeclaration",
-          "line": 10808,
+          "line": 10809,
           "name": "packagingRevisions"
         }
       ],
@@ -81132,9 +81132,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:418612:placementAncestry",
+              "id": "src/facade.ts:418703:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10885,
+              "line": 10886,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             }
@@ -81143,9 +81143,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:418612:placementAncestry",
+            "id": "src/facade.ts:418703:placementAncestry",
             "kind": "MethodDeclaration",
-            "line": 10885,
+            "line": 10886,
             "name": "placementAncestry"
           },
           "test": "test/containers.test.ts"
@@ -81168,9 +81168,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:418612:placementAncestry",
+          "id": "src/facade.ts:418703:placementAncestry",
           "kind": "MethodDeclaration",
-          "line": 10885,
+          "line": 10886,
           "name": "placementAncestry"
         }
       ],
@@ -81290,9 +81290,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:417658:placementChildren",
+              "id": "src/facade.ts:417749:placementChildren",
               "kind": "MethodDeclaration",
-              "line": 10859,
+              "line": 10860,
               "name": "placementChildren",
               "reason": "interface-to-implementation"
             }
@@ -81301,9 +81301,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:417658:placementChildren",
+            "id": "src/facade.ts:417749:placementChildren",
             "kind": "MethodDeclaration",
-            "line": 10859,
+            "line": 10860,
             "name": "placementChildren"
           },
           "test": "test/containers.test.ts"
@@ -81326,9 +81326,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:417658:placementChildren",
+          "id": "src/facade.ts:417749:placementChildren",
           "kind": "MethodDeclaration",
-          "line": 10859,
+          "line": 10860,
           "name": "placementChildren"
         }
       ],
@@ -81448,9 +81448,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:416231:placementNode",
+              "id": "src/facade.ts:416322:placementNode",
               "kind": "MethodDeclaration",
-              "line": 10820,
+              "line": 10821,
               "name": "placementNode",
               "reason": "interface-to-implementation"
             }
@@ -81459,9 +81459,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:416231:placementNode",
+            "id": "src/facade.ts:416322:placementNode",
             "kind": "MethodDeclaration",
-            "line": 10820,
+            "line": 10821,
             "name": "placementNode"
           },
           "test": "test/containers.test.ts"
@@ -81484,9 +81484,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:416231:placementNode",
+          "id": "src/facade.ts:416322:placementNode",
           "kind": "MethodDeclaration",
-          "line": 10820,
+          "line": 10821,
           "name": "placementNode"
         }
       ],
@@ -81626,9 +81626,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:416592:placementNodes",
+              "id": "src/facade.ts:416683:placementNodes",
               "kind": "MethodDeclaration",
-              "line": 10831,
+              "line": 10832,
               "name": "placementNodes",
               "reason": "interface-to-implementation"
             }
@@ -81637,9 +81637,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:416592:placementNodes",
+            "id": "src/facade.ts:416683:placementNodes",
             "kind": "MethodDeclaration",
-            "line": 10831,
+            "line": 10832,
             "name": "placementNodes"
           },
           "test": "test/containers.test.ts"
@@ -81662,9 +81662,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:416592:placementNodes",
+          "id": "src/facade.ts:416683:placementNodes",
           "kind": "MethodDeclaration",
-          "line": 10831,
+          "line": 10832,
           "name": "placementNodes"
         }
       ],
@@ -81800,9 +81800,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:416925:placementParent",
+              "id": "src/facade.ts:417016:placementParent",
               "kind": "MethodDeclaration",
-              "line": 10841,
+              "line": 10842,
               "name": "placementParent",
               "reason": "interface-to-implementation"
             }
@@ -81811,9 +81811,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:416925:placementParent",
+            "id": "src/facade.ts:417016:placementParent",
             "kind": "MethodDeclaration",
-            "line": 10841,
+            "line": 10842,
             "name": "placementParent"
           },
           "test": "test/containers.test.ts"
@@ -81836,9 +81836,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:416925:placementParent",
+          "id": "src/facade.ts:417016:placementParent",
           "kind": "MethodDeclaration",
-          "line": 10841,
+          "line": 10842,
           "name": "placementParent"
         }
       ],
@@ -81958,9 +81958,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:413217:planAllocation",
+              "id": "src/facade.ts:413308:planAllocation",
               "kind": "MethodDeclaration",
-              "line": 10754,
+              "line": 10755,
               "name": "planAllocation",
               "reason": "interface-to-implementation"
             }
@@ -81969,9 +81969,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:413217:planAllocation",
+            "id": "src/facade.ts:413308:planAllocation",
             "kind": "MethodDeclaration",
-            "line": 10754,
+            "line": 10755,
             "name": "planAllocation"
           },
           "test": "test/containers.test.ts"
@@ -81994,9 +81994,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:413217:planAllocation",
+          "id": "src/facade.ts:413308:planAllocation",
           "kind": "MethodDeclaration",
-          "line": 10754,
+          "line": 10755,
           "name": "planAllocation"
         }
       ],
@@ -82106,9 +82106,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408496:positions",
+              "id": "src/facade.ts:408603:positions",
               "kind": "MethodDeclaration",
-              "line": 10647,
+              "line": 10648,
               "name": "positions",
               "reason": "interface-to-implementation"
             }
@@ -82117,9 +82117,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:408496:positions",
+            "id": "src/facade.ts:408603:positions",
             "kind": "MethodDeclaration",
-            "line": 10647,
+            "line": 10648,
             "name": "positions"
           },
           "test": "test/containers.test.ts"
@@ -82142,9 +82142,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:408496:positions",
+          "id": "src/facade.ts:408603:positions",
           "kind": "MethodDeclaration",
-          "line": 10647,
+          "line": 10648,
           "name": "positions"
         }
       ],
@@ -82199,7 +82199,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/historical-replay.ts"
         },
         {
@@ -82342,10 +82342,10 @@
               "column": 101,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:6101:<anonymous@119>",
+              "id": "test/reservation-closure-shortage.test.ts:8101:<anonymous@153>",
               "kind": "ArrowFunction",
-              "line": 119,
-              "name": "<anonymous@119>",
+              "line": 153,
+              "name": "<anonymous@153>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -82362,9 +82362,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:420261:reservation",
+              "id": "src/facade.ts:420352:reservation",
               "kind": "MethodDeclaration",
-              "line": 10930,
+              "line": 10931,
               "name": "reservation",
               "reason": "interface-to-implementation"
             }
@@ -82373,9 +82373,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420261:reservation",
+            "id": "src/facade.ts:420352:reservation",
             "kind": "MethodDeclaration",
-            "line": 10930,
+            "line": 10931,
             "name": "reservation"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -82398,9 +82398,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420261:reservation",
+          "id": "src/facade.ts:420352:reservation",
           "kind": "MethodDeclaration",
-          "line": 10930,
+          "line": 10931,
           "name": "reservation"
         }
       ],
@@ -82547,13 +82547,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -82570,9 +82570,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:420821:reservationFeasibility",
+              "id": "src/facade.ts:420912:reservationFeasibility",
               "kind": "MethodDeclaration",
-              "line": 10943,
+              "line": 10944,
               "name": "reservationFeasibility",
               "reason": "interface-to-implementation"
             }
@@ -82581,9 +82581,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420821:reservationFeasibility",
+            "id": "src/facade.ts:420912:reservationFeasibility",
             "kind": "MethodDeclaration",
-            "line": 10943,
+            "line": 10944,
             "name": "reservationFeasibility"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -82606,9 +82606,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420821:reservationFeasibility",
+          "id": "src/facade.ts:420912:reservationFeasibility",
           "kind": "MethodDeclaration",
-          "line": 10943,
+          "line": 10944,
           "name": "reservationFeasibility"
         }
       ],
@@ -82733,9 +82733,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:407670:snapshot",
+              "id": "src/facade.ts:407777:snapshot",
               "kind": "MethodDeclaration",
-              "line": 10627,
+              "line": 10628,
               "name": "snapshot",
               "reason": "interface-to-implementation"
             }
@@ -82744,9 +82744,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:407670:snapshot",
+            "id": "src/facade.ts:407777:snapshot",
             "kind": "MethodDeclaration",
-            "line": 10627,
+            "line": 10628,
             "name": "snapshot"
           },
           "test": "test/event-query.test.ts"
@@ -82769,9 +82769,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:407670:snapshot",
+          "id": "src/facade.ts:407777:snapshot",
           "kind": "MethodDeclaration",
-          "line": 10627,
+          "line": 10628,
           "name": "snapshot"
         }
       ],
@@ -82934,9 +82934,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411310:summary",
+              "id": "src/facade.ts:411401:summary",
               "kind": "MethodDeclaration",
-              "line": 10712,
+              "line": 10713,
               "name": "summary",
               "reason": "interface-to-implementation"
             }
@@ -82945,9 +82945,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:411310:summary",
+            "id": "src/facade.ts:411401:summary",
             "kind": "MethodDeclaration",
-            "line": 10712,
+            "line": 10713,
             "name": "summary"
           },
           "test": "test/catalog-publication.test.ts"
@@ -82970,9 +82970,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:411310:summary",
+          "id": "src/facade.ts:411401:summary",
           "kind": "MethodDeclaration",
-          "line": 10712,
+          "line": 10713,
           "name": "summary"
         }
       ],
@@ -83108,9 +83108,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:409300:whereabouts",
+              "id": "src/facade.ts:409407:whereabouts",
               "kind": "MethodDeclaration",
-              "line": 10666,
+              "line": 10667,
               "name": "whereabouts",
               "reason": "interface-to-implementation"
             }
@@ -83119,9 +83119,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:409300:whereabouts",
+            "id": "src/facade.ts:409407:whereabouts",
             "kind": "MethodDeclaration",
-            "line": 10666,
+            "line": 10667,
             "name": "whereabouts"
           },
           "test": "test/availability.test.ts"
@@ -83144,9 +83144,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:409300:whereabouts",
+          "id": "src/facade.ts:409407:whereabouts",
           "kind": "MethodDeclaration",
-          "line": 10666,
+          "line": 10667,
           "name": "whereabouts"
         }
       ],
@@ -83318,9 +83318,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410083:whereaboutsHistory",
+              "id": "src/facade.ts:410182:whereaboutsHistory",
               "kind": "MethodDeclaration",
-              "line": 10686,
+              "line": 10687,
               "name": "whereaboutsHistory",
               "reason": "interface-to-implementation"
             }
@@ -83329,9 +83329,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:410083:whereaboutsHistory",
+            "id": "src/facade.ts:410182:whereaboutsHistory",
             "kind": "MethodDeclaration",
-            "line": 10686,
+            "line": 10687,
             "name": "whereaboutsHistory"
           },
           "test": "test/composition.test.ts"
@@ -83354,9 +83354,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:410083:whereaboutsHistory",
+          "id": "src/facade.ts:410182:whereaboutsHistory",
           "kind": "MethodDeclaration",
-          "line": 10686,
+          "line": 10687,
           "name": "whereaboutsHistory"
         }
       ],
@@ -83466,9 +83466,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408167:world",
+              "id": "src/facade.ts:408274:world",
               "kind": "MethodDeclaration",
-              "line": 10639,
+              "line": 10640,
               "name": "world",
               "reason": "interface-to-implementation"
             }
@@ -83477,9 +83477,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:408167:world",
+            "id": "src/facade.ts:408274:world",
             "kind": "MethodDeclaration",
-            "line": 10639,
+            "line": 10640,
             "name": "world"
           },
           "test": "test/containers.test.ts"
@@ -83502,9 +83502,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:408167:world",
+          "id": "src/facade.ts:408274:world",
           "kind": "MethodDeclaration",
-          "line": 10639,
+          "line": 10640,
           "name": "world"
         }
       ],
@@ -84299,20 +84299,20 @@
               "column": 62,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:12828:<anonymous@266>",
+              "id": "test/reservation-closure-shortage.test.ts:14828:<anonymous@300>",
               "kind": "ArrowFunction",
-              "line": 266,
-              "name": "<anonymous@266>",
+              "line": 300,
+              "name": "<anonymous@300>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 87,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:15128:<anonymous@320>",
+              "id": "test/reservation-closure-shortage.test.ts:17128:<anonymous@354>",
               "kind": "ArrowFunction",
-              "line": 320,
-              "name": "<anonymous@320>",
+              "line": 354,
+              "name": "<anonymous@354>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -84451,20 +84451,20 @@
               "column": 62,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:12828:<anonymous@266>",
+              "id": "test/reservation-closure-shortage.test.ts:14828:<anonymous@300>",
               "kind": "ArrowFunction",
-              "line": 266,
-              "name": "<anonymous@266>",
+              "line": 300,
+              "name": "<anonymous@300>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:17709:<anonymous@370>",
+              "id": "test/reservation-closure-shortage.test.ts:19709:<anonymous@404>",
               "kind": "ArrowFunction",
-              "line": 370,
-              "name": "<anonymous@370>",
+              "line": 404,
+              "name": "<anonymous@404>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -84784,13 +84784,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -85548,7 +85548,7 @@
           "path": "src/facade.ts"
         },
         {
-          "occurrences": 2,
+          "occurrences": 1,
           "path": "src/historical-replay.ts"
         },
         {
@@ -85822,7 +85822,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 141,
+          "occurrences": 153,
           "path": "src/historical-replay.ts"
         },
         {
@@ -88080,7 +88080,7 @@
           "path": "src/fungibility.ts"
         },
         {
-          "occurrences": 3,
+          "occurrences": 4,
           "path": "src/historical-replay.ts"
         },
         {
@@ -93009,13 +93009,13 @@
               "name": "test/reservation-closure-shortage.test.ts"
             },
             {
-              "column": 79,
+              "column": 89,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:859:<anonymous@36>",
+              "id": "test/reservation-closure-shortage.test.ts:995:<anonymous@39>",
               "kind": "ArrowFunction",
-              "line": 36,
-              "name": "<anonymous@36>",
+              "line": 39,
+              "name": "<anonymous@39>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -94180,20 +94180,20 @@
               "column": 69,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:2100:<anonymous@66>",
+              "id": "test/allocation.test.ts:2119:<anonymous@67>",
               "kind": "ArrowFunction",
-              "line": 66,
-              "name": "<anonymous@66>",
+              "line": 67,
+              "name": "<anonymous@67>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 95,
               "file": "test/allocation.test.ts",
               "hasBody": true,
-              "id": "test/allocation.test.ts:37089:<anonymous@757>",
+              "id": "test/allocation.test.ts:37108:<anonymous@758>",
               "kind": "ArrowFunction",
-              "line": 757,
-              "name": "<anonymous@757>",
+              "line": 758,
+              "name": "<anonymous@758>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -94498,10 +94498,10 @@
               "column": 101,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:63164:<anonymous@979>",
+              "id": "test/scoped-stock-planning.test.ts:64842:<anonymous@1013>",
               "kind": "ArrowFunction",
-              "line": 979,
-              "name": "<anonymous@979>",
+              "line": 1013,
+              "name": "<anonymous@1013>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -97806,10 +97806,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:207408:<anonymous@3326>",
+              "id": "test/scoped-stock-planning.test.ts:209086:<anonymous@3360>",
               "kind": "ArrowFunction",
-              "line": 3326,
-              "name": "<anonymous@3326>",
+              "line": 3360,
+              "name": "<anonymous@3360>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -98146,10 +98146,10 @@
               "column": 92,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:207408:<anonymous@3326>",
+              "id": "test/scoped-stock-planning.test.ts:209086:<anonymous@3360>",
               "kind": "ArrowFunction",
-              "line": 3326,
-              "name": "<anonymous@3326>",
+              "line": 3360,
+              "name": "<anonymous@3360>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99222,10 +99222,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99372,10 +99372,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99554,10 +99554,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:218936:<anonymous@3504>",
+              "id": "test/scoped-stock-planning.test.ts:220614:<anonymous@3538>",
               "kind": "ArrowFunction",
-              "line": 3504,
-              "name": "<anonymous@3504>",
+              "line": 3538,
+              "name": "<anonymous@3538>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -99872,10 +99872,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -100054,10 +100054,10 @@
               "column": 82,
               "file": "test/scoped-stock-planning.test.ts",
               "hasBody": true,
-              "id": "test/scoped-stock-planning.test.ts:218936:<anonymous@3504>",
+              "id": "test/scoped-stock-planning.test.ts:220614:<anonymous@3538>",
               "kind": "ArrowFunction",
-              "line": 3504,
-              "name": "<anonymous@3504>",
+              "line": 3538,
+              "name": "<anonymous@3538>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -100200,10 +100200,10 @@
               "column": 81,
               "file": "test/reservation-closure-shortage.test.ts",
               "hasBody": true,
-              "id": "test/reservation-closure-shortage.test.ts:8799:<anonymous@167>",
+              "id": "test/reservation-closure-shortage.test.ts:10799:<anonymous@201>",
               "kind": "ArrowFunction",
-              "line": 167,
-              "name": "<anonymous@167>",
+              "line": 201,
+              "name": "<anonymous@201>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -101880,5 +101880,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "3ada0a9c19f63453456f80f6026e6ad70aaea117537e2881f855f4113ba93b41"
+  "surfaceSha256": "944b792693352b5c70f9ca8b86ae3e314511c8ba17bd6dc0ce726e77e353761b"
 }

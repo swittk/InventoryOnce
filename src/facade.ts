@@ -10512,7 +10512,7 @@ function buildIndexedWhereaboutsEventsProjection(
  * supports indexed event dependency queries and segmented position reads.
  */
 async function readExactInventoryWhereabouts<Result>(
-  storage: InventoryDurableStorage,
+  { storage, catalog }: Pick<InventoryOnceInternals, "storage" | "catalog">,
   whereaboutsIds: readonly string[],
   project: (projection: InventoryProjectionState) => Result
 ): Promise<Result | undefined> {
@@ -10604,6 +10604,7 @@ async function readExactInventoryWhereabouts<Result>(
     ) {
       continue;
     }
+    assertInventoryCatalogRetainsSnapshot(catalog, head.catalog);
     return project({
       ...eventsProjection,
       positions,
@@ -10669,7 +10670,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     if (input.whereaboutsIds !== undefined) {
       const internals = requireInventoryOnceInternals(this.owner);
       const indexed = await readExactInventoryWhereabouts(
-        internals.storage,
+        internals,
         input.whereaboutsIds,
         /** Filter exact-cohort unresolved lifecycles using existing semantics. */
         (projection) => findCurrentInventoryWhereaboutsLifecycles(projection, input)
@@ -10689,7 +10690,7 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     if (input.whereaboutsIds !== undefined) {
       const internals = requireInventoryOnceInternals(this.owner);
       const indexed = await readExactInventoryWhereabouts(
-        internals.storage,
+        internals,
         input.whereaboutsIds,
         /** Filter exact-cohort lifecycle history using existing semantics. */
         (projection) => findInventoryWhereaboutsHistory(projection, input)

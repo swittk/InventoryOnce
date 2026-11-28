@@ -4,6 +4,7 @@ import {
   MAXIMUM_EXACT_ALLOCATION_STATES,
   allocateInventory,
   compareInventoryAllocationCandidates,
+  compareQuantity,
   parseQuantity,
   type InventoryAllocationCandidate,
   type InventoryStockPositionKey,
@@ -843,15 +844,29 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       method: InventoryAllocationMethod.Fifo,
       amount: measuredStockAmount("10.000002", "kg", [{ axisId: "vol", value: "1", unit: "l" }]),
     });
-    const fromOut = transferred.event.stockEffects.filter(
-      /** Keep only outgoing source deductions in bin. */
-      (effect) => effect.position.placementNodeId === "bin",
-    );
-    expect(fromOut).toHaveLength(2);
-    expect(transferred.event.stockEffects.some(
-      /** Verify zero deficit was invented when a complete witness exists. */
-      (effect) => effect.position.lotId === undefined && effect.position.packagingRevisionId === undefined,
-    )).toBe(false);
+    expect(transferred.event.stockEffects).toHaveLength(4);
+    for (const [placement, sign] of [["bin", "-"], ["out", ""]] as const) {
+      const loose = transferred.event.stockEffects.find(
+        /** Identify the loose source debit or destination credit. */
+        ({ position }) => position.placementNodeId === placement && position.lotId === "loose-lot",
+      );
+      const drum = transferred.event.stockEffects.find(
+        /** Identify the matching whole-drum movement. */
+        ({ position }) => position.placementNodeId === placement && position.lotId === "drum-lot",
+      );
+      if (loose === undefined || drum === undefined) throw new Error(`Missing measured movement at '${placement}'.`);
+      const [volume] = drum.measurementsDelta.independent;
+      if (volume === undefined) throw new Error(`Missing drum volume at '${placement}'.`);
+      expect(loose.position.packagingRevisionId).toBeUndefined();
+      expect(loose.measurementsDelta.independent).toEqual([]);
+      expect(drum.position.packagingRevisionId).toBe(pkg3.revisionId);
+      expect(compareQuantity(loose.measurementsDelta.primary.quantity, parseQuantity(sign + "4", "kg"))).toBe(0);
+      expect(compareQuantity(drum.measurementsDelta.primary.quantity, parseQuantity(sign + "6.000002", "kg"))).toBe(0);
+      expect(drum.measurementsDelta.independent).toHaveLength(1);
+      expect(volume.axisId).toBe("vol");
+      expect(compareQuantity(volume.quantity, parseQuantity(sign + "1", "l"))).toBe(0);
+    }
+    expect(transferred.event.unwitnessedStockMovements).toBeUndefined();
   });
 
 });

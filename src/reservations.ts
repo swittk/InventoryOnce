@@ -1789,6 +1789,10 @@ function maximumReservationAssignmentWithIndivisibleGroups(
     }
     const group = groups[groupIndex];
     if (group === undefined) return;
+    /** Capacity after this group, used only when its picks decrease in one claim. */
+    const laterCapacity = group.eligibleReservationCount === 1
+      ? (wholeStockByGroup[groupIndex + 1]?.capacityMinor ?? 0n) + divisibleCapacity
+      : undefined;
     for (const assignedCounts of assignIndivisibleGroupCounts(group, remainingDemand, remainingEdgeCapacity)) {
       if (best === fulfillableUpperBound) return;
       const nextDemand = [...remainingDemand];
@@ -1811,6 +1815,8 @@ function maximumReservationAssignmentWithIndivisibleGroups(
         nextDemand[reservationIndex] = demand - assignedForReservation;
         groupAssignedMinor += assignedForReservation;
       }
+      // Every remaining pick from a single-claim group is smaller.
+      if (laterCapacity !== undefined && assignedMinor + groupAssignedMinor + laterCapacity <= best) return;
       yield {
         groupIndex: groupIndex + 1,
         remainingDemand: nextDemand,

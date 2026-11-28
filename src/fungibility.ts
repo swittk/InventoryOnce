@@ -641,7 +641,7 @@ function discardedCapacityImprovesFungibilityPlan({
     }
   }
   if (!earlierCapacityIncreased) return false;
-  const diagnostic = {
+  const diagnostic: Parameters<typeof allocateWorkingInventory>[0] = {
     requested, candidates: [...rawByPosition.values()], method, nowEpochMs: atEpochMs, allowExpired: true, assessIncrementBlockage: false,
     /** A diagnostic witness still needs storable physical movements and must preserve the same claims. */
     acceptAllocations: (trial: readonly InventoryAllocation[]): boolean => {

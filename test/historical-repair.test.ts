@@ -1963,6 +1963,89 @@ describe("late historical repair", () => {
     );
   });
 
+  it("replays a stock correction before an unanchored serial transfer that uses its stock", async () => {
+    const inventory = createTestInventory();
+    const serialId = "corrected-source-serial";
+    const source = loosePosition("B", { serialId });
+    const destination = loosePosition("C", { serialId });
+    const amount = stockAmount("1", "piece");
+    const receipt = await inventory.stock.receive({
+      operationId: "receive-serial-a", occurredAtEpochMs: time0,
+      to: loosePosition("A", { serialId }), amount,
+    });
+    await inventory.stock.correct({
+      operationId: "correct-serial-b", occurredAtEpochMs: time1, correctsEventId: receipt.event.eventId,
+      reason: "The serial was originally received at B.",
+      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: source, amount }),
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "repair-serial-c", occurredAtEpochMs: time2, reason: "The serial moved to C.",
+      assertions: [{
+        assertionId: "move-serial",
+        assert: (plans) => plans.transfer({ occurredAtEpochMs: time2, from: source, toPlacementNodeId: "C", amount }),
+      }],
+    });
+    await inventory.counts.start({
+      countId: "serial-count", operationId: "serial-count-start", startedAtEpochMs: time2,
+      selector: { itemId: "item-a", placementNodeIds: ["C"] },
+    });
+    await inventory.counts.observe({
+      countId: "serial-count", operationId: "serial-count-observe", observedAtEpochMs: time2,
+      observations: [{
+        position: { ...destination, itemRevisionId: "item-a-v2" },
+        measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    const result = await inventory.counts.reconcile({
+      countId: "serial-count", operationId: "serial-count-reconcile", completedAtEpochMs: time3,
+    });
+    expect(result.event).toBeUndefined();
+  });
+
+  it.each(["A", "B"])("keeps the superseded correction to %s when moving placement predecessors", async (firstParent) => {
+    const inventory = createTestInventory();
+    const origin = await inventory.placement.move({
+      operationId: "supersession-root", occurredAtEpochMs: time0 + 10, nodeId: "X", into: "A",
+    });
+    await inventory.stock.receive({
+      operationId: "supersession-observed-stock", occurredAtEpochMs: time0 + 10,
+      to: loosePosition("X"), amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "supersession-later-stock", occurredAtEpochMs: time0 + 40,
+      to: loosePosition("X", { lotId: "late" }), amount: stockAmount("1", "piece"),
+    });
+    for (const [time, parent] of [[25, firstParent], [20, "C"]] as const) {
+      await inventory.stock.correct({
+        operationId: "supersession-correct-" + parent, occurredAtEpochMs: time0 + time,
+        correctsEventId: origin.event.eventId, reason: "Correct the recorded parent.",
+        replaceWith: (plans) => plans.placement({ occurredAtEpochMs: time0 + 10, nodeId: "X", toParentNodeId: parent }),
+      });
+    }
+    await inventory.stock.recordHistorical({
+      operationId: "supersession-repair", occurredAtEpochMs: time0 + 30, reason: "X moved under D.",
+      assertions: [{
+        assertionId: "move-x-to-d",
+        assert: (plans) => plans.placement({ occurredAtEpochMs: time0 + 30, nodeId: "X", toParentNodeId: "D" }),
+      }],
+    });
+    await inventory.counts.start({
+      countId: "supersession-count", operationId: "supersession-count-start", startedAtEpochMs: time0 + 35,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["D"] },
+    });
+    await inventory.counts.observe({
+      countId: "supersession-count", operationId: "supersession-count-observe", observedAtEpochMs: time0 + 35,
+      observations: [{
+        position: { ...loosePosition("X"), itemRevisionId: "item-a-v2" },
+        measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    const result = await inventory.counts.reconcile({
+      countId: "supersession-count", operationId: "supersession-count-reconcile", completedAtEpochMs: time0 + 36,
+    });
+    expect(result.event).toBeUndefined();
+  });
+
   it("keeps an earlier placement correction ahead of a later unanchored placement repair during count replay", async () => {
     const inventory = createTestInventory();
     const initialMove = await inventory.placement.move({

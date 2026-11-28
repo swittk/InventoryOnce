@@ -3,6 +3,7 @@ import {
   createInventoryOnce,
   defineInventoryCatalog,
   defineScalarInventoryItem,
+  extendInventoryCatalog,
   InventoryAllocationMethod,
   InventoryCountStatus,
   InventoryEventKind,
@@ -75,6 +76,31 @@ async function quantityAt(
 }
 
 describe("detached and missing stock whereabouts", () => {
+  it("checks the published catalogue before returning exact whereabouts reads", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const earlier = createTestInventory(storage, catalog);
+    const extra = defineScalarInventoryItem({ itemId: "extra", revisionId: "extra-v1", axisId: "pieces", unit: "piece" });
+    const updated = createTestInventory(storage, extendInventoryCatalog({
+      catalog, itemRevisions: [extra], activeItemRevisionIds: { extra: extra.revisionId },
+    }));
+    await earlier.catalog.publish({ operationId: "publish-existing-catalogue", occurredAtEpochMs: time0 });
+    await updated.catalog.publish({ operationId: "publish-expanded-catalogue", occurredAtEpochMs: time1 });
+    const source = { itemId: extra.itemId, placementNodeId: "store" };
+    const amount = stockAmount("1", "piece");
+    await updated.stock.receive({ operationId: "receive-expanded-catalogue", occurredAtEpochMs: time1, to: source, amount });
+    await updated.stock.markMissing({ operationId: "mark-expanded-catalogue", occurredAtEpochMs: time2, from: source, amount });
+    const [cohort] = await updated.read.whereabouts();
+    if (cohort === undefined) throw new Error("Expected the new catalogue's missing cohort.");
+    const query = { whereaboutsIds: [cohort.whereaboutsId] };
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("unexpected full world read"));
+    await expect(earlier.read.whereabouts(query)).rejects.toThrow("Unknown inventory item revision 'extra-v1'");
+    await expect(earlier.read.whereaboutsHistory(query)).rejects.toThrow("Unknown inventory item revision 'extra-v1'");
+    expect(await updated.read.whereabouts(query)).toEqual([cohort]);
+    expect(await updated.read.whereaboutsHistory(query)).toEqual([cohort]);
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
   it("keeps unresolved lifecycle identity kernel-owned at stock intake", async () => {
     const inventory = createTestInventory();
     await expect(
