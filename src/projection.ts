@@ -385,8 +385,8 @@ function cloneInventoryProjectionForEventBatch(
 interface InventoryCountProjectionScope {
   /** Historical placement nodes that can affect membership in the counted subtrees. */
   readonly placementNodeIds: ReadonlySet<string>;
-  /** Stock that belongs to the counted item or contributes to needed ancestry. */
-  readonly includesPosition: (position: InventoryStockPositionKey) => boolean;
+  /** Stock selected by the count or needed to fund it at this sequence. */
+  readonly includesPosition: (position: InventoryStockPositionKey, recordSequence: number) => boolean;
   /** Complete structured transfers whose lines can contribute to the observed stock. */
   readonly transferIds: ReadonlySet<string>;
 }
@@ -1738,23 +1738,23 @@ function countScopedStockEvent(
   event: InventoryCommittedEvent,
   { includesPosition }: InventoryCountProjectionScope
 ): InventoryCommittedEvent {
-  const { positiveLayerProvenanceTransfers, positiveLayerProvenanceOverrides } = event;
+  const { positiveLayerProvenanceTransfers, positiveLayerProvenanceOverrides, recordSequence } = event;
   return {
     ...event,
     stockEffects: event.stockEffects.filter(
       /** Limit stock effects to the item's balances and any needed embodiment stock. */
-      ({ position }) => includesPosition(position)
+      ({ position }) => includesPosition(position, recordSequence)
     ),
     ...(positiveLayerProvenanceTransfers === undefined ? {} : {
       positiveLayerProvenanceTransfers: positiveLayerProvenanceTransfers.filter(
         /** A retained arrival needs its source layer, while an isolated debit does not need its destination. */
-        ({ to }) => includesPosition(to)
+        ({ to }) => includesPosition(to, recordSequence)
       ),
     }),
     ...(positiveLayerProvenanceOverrides === undefined ? {} : {
       positiveLayerProvenanceOverrides: positiveLayerProvenanceOverrides.filter(
         /** Apply FIFO overrides only to positions retained in the cut. */
-        ({ position }) => includesPosition(position)
+        ({ position }) => includesPosition(position, recordSequence)
       ),
     }),
   };
@@ -1790,13 +1790,9 @@ function prepareCountProjectionScope(
   const includesObservedPosition = (position: InventoryStockPositionKey): boolean =>
     position.serialId === undefined ? matchesObservedPosition(position) :
       serials.has(inventorySerialIdentity(position.itemId, position.serialId));
-  const { transferIds, positionIds } = countStockDependencies(events, includesObservedPosition);
   return {
     placementNodeIds: placement?.nodeIds ?? new Set(),
-    transferIds,
-    /** Replay ordinary receipts and movements that fund any retained transfer line. */
-    includesPosition: (position) => includesObservedPosition(position) ||
-      (positionIds.size !== 0 && positionIds.has(countTransferPositionIdentity(position))),
+    ...countStockDependencies(events, includesObservedPosition),
   };
 }
 
@@ -1812,23 +1808,23 @@ function countObservedPlacementNodes(
     placement.embodiedSerials.has(inventorySerialIdentity(position.itemId, position.serialId));
   /** A standalone topology needs only placement and correction facts. */
   const hasCarriers = placement.embodiedSerials.size !== 0;
-  const { transferIds, positionIds } = hasCarriers
-    ? countStockDependencies(events, includesCarrier)
-    : { transferIds: new Set<string>(), positionIds: new Set<string>() };
   const scope: InventoryCountProjectionScope = {
     placementNodeIds: placement.nodeIds,
-    transferIds,
-    /** Include stock funding the carrier's complete retained transfer lifecycle. */
-    includesPosition: (position) => includesCarrier(position) ||
-      (positionIds.size !== 0 && positionIds.has(countTransferPositionIdentity(position))),
+    ...(hasCarriers ? countStockDependencies(events, includesCarrier) :
+      { transferIds: new Set<string>(), includesPosition: includesCarrier }),
   };
   const retained = countPlacementReplayEvents(events, scope, hasCarriers);
+  const replayScope: InventoryCountProjectionScope = {
+    ...scope,
+    /** Funding bounds use the original cut sequence, even after the prepass compacts it. */
+    includesPosition: (position, sequence) => scope.includesPosition(position, retained[sequence - 1]!.recordSequence),
+  };
   let state = emptyInventoryProjectionState();
   for (const [index, fact] of retained.entries()) {
     // The retained facts form a contiguous private reducer input.
     const event = { ...fact, recordSequence: index + 1 };
     state = applyInventoryCommittedEventInternal(
-      { catalog, state, event, deficitPolicy }, true, false, true, "occurrence-cut", scope
+      { catalog, state, event, deficitPolicy }, true, false, true, "occurrence-cut", replayScope
     ).state;
   }
   const observed = new Set<string>();
@@ -1863,7 +1859,7 @@ function countPlacementReplayEvents(
         ) ||
         (hasCarriers && event.stockEffects.some(
           /** Keep stock effects supplying a carrier or its structured movement. */
-          ({ position }) => includesPosition(position)
+          ({ position }) => includesPosition(position, event.recordSequence)
         ))) {
       retainedIds.add(event.eventId);
     }
@@ -1889,60 +1885,97 @@ function countTransferPositionIdentity(position: InventoryStockPositionKey): str
     : inventorySerialIdentity(position.itemId, position.serialId);
 }
 
-/** Return the supplying stock routes and the full lifecycle of any connected structured transfer. */
+/** One recorded route that can supply a counted position. */
+type InventoryCountStockRoute =
+  | {
+    /** Sequence at which the destination needs the source balance. */
+    readonly sequence: number;
+    /** Ordinary movement's source position or serial. */
+    readonly source: string;
+  }
+  | {
+    /** Sequence at which the structured lifecycle touches a needed position. */
+    readonly sequence: number;
+    /** Structured lifecycle to replay as a complete unit. */
+    readonly transferId: string;
+  };
+
+/** Keep supplying rows through the use that needs them and preserve complete structured transfers. */
 function countStockDependencies(
   events: readonly InventoryCommittedEvent[],
   matchesPosition: (position: InventoryStockPositionKey) => boolean
-): {
-  /** Structured transfer identities whose full lifecycle must be replayed. */
-  readonly transferIds: ReadonlySet<string>;
-  /** Stock dependencies by exact row or serial identity. */
-  readonly positionIds: ReadonlySet<string>;
-} {
-  const positionsByTransfer = new Map<string, Set<string>>();
-  const transfersByPosition = new Map<string, Set<string>>();
+): Pick<InventoryCountProjectionScope, "transferIds" | "includesPosition"> {
   const transferIds = new Set<string>();
-  const positionIds = new Set<string>();
   if (!events.some(
     /** A count without stock routes has no additional funding dependencies. */
     (event) => event.transferLifecycle !== undefined || (event.positiveLayerProvenanceTransfers?.length ?? 0) > 0
-  )) return { transferIds, positionIds };
-  /** Conserved ordinary stock routes can supply a relevant position from an earlier transfer. */
-  const sourcesByDestination = new Map<string, Set<string>>();
+  )) return { transferIds, includesPosition: matchesPosition };
+  /** Last stage that needs each stock row in a structured lifecycle. */
+  const positionsByTransfer = new Map<string, Map<string, number>>();
+  /** Incoming dependencies per row, in increasing cut sequence. */
+  const routesByDestination = new Map<string, InventoryCountStockRoute[]>();
+  /** Latest sequence at which a needed stock row still contributes. */
+  const neededThrough = new Map<string, number>();
+  /** Visit a row again only when a longer required prefix exposes another route. */
+  const pending = new Set<string>();
+  /** Extend the part of a row's history that can contribute to the count. */
+  function need(identity: string, through: number): void {
+    if (through <= (neededThrough.get(identity) ?? 0)) return;
+    neededThrough.set(identity, through);
+    pending.add(identity);
+  }
+  /** Record each incoming dependency once where it can be traversed in sequence. */
+  function addRoute(destination: string, route: InventoryCountStockRoute): void {
+    const routes = routesByDestination.get(destination);
+    if (routes === undefined) routesByDestination.set(destination, [route]);
+    else routes.push(route);
+  }
   for (const event of events) {
+    const sequence = event.recordSequence;
     const transferId = event.transferLifecycle?.transferId;
     if (transferId === undefined) {
       for (const { from, to } of event.positiveLayerProvenanceTransfers ?? []) {
-        const source = countTransferPositionIdentity(from);
-        const destination = countTransferPositionIdentity(to);
-        const sources = sourcesByDestination.get(destination) ?? new Set<string>();
-        sources.add(source);
-        sourcesByDestination.set(destination, sources);
+        addRoute(countTransferPositionIdentity(to), { sequence, source: countTransferPositionIdentity(from) });
       }
     }
     for (const { position } of event.stockEffects) {
       const identity = countTransferPositionIdentity(position);
-      if (matchesPosition(position)) positionIds.add(identity);
+      if (matchesPosition(position)) need(identity, Infinity);
       if (transferId !== undefined) {
-        const positions = positionsByTransfer.get(transferId) ?? new Set<string>();
-        positions.add(identity);
+        const positions = positionsByTransfer.get(transferId) ?? new Map<string, number>();
+        positions.set(identity, sequence);
         positionsByTransfer.set(transferId, positions);
-        const transfers = transfersByPosition.get(identity) ?? new Set<string>();
-        transfers.add(transferId);
-        transfersByPosition.set(identity, transfers);
+        addRoute(identity, { sequence, transferId });
       }
     }
   }
-  // Each upstream position can introduce a structured transfer and every one of its lines.
-  for (const identity of positionIds) {
-    for (const source of sourcesByDestination.get(identity) ?? []) positionIds.add(source);
-    for (const transferId of transfersByPosition.get(identity) ?? []) {
-      if (transferIds.has(transferId)) continue;
-      transferIds.add(transferId);
-      for (const position of positionsByTransfer.get(transferId) ?? []) positionIds.add(position);
+  /** Each incoming route is examined at most once below its row's advancing bound. */
+  const nextRouteByPosition = new Map<string, number>();
+  for (const identity of pending) {
+    pending.delete(identity);
+    const routes = routesByDestination.get(identity);
+    if (routes === undefined) continue;
+    let index = nextRouteByPosition.get(identity) ?? 0;
+    const through = neededThrough.get(identity)!;
+    for (; index < routes.length; index += 1) {
+      const route = routes[index]!;
+      if (route.sequence > through) break;
+      if ("source" in route) {
+        need(route.source, route.sequence);
+      } else if (!transferIds.has(route.transferId)) {
+        // Keep the whole lifecycle and fund each line through its last retained stock effect.
+        transferIds.add(route.transferId);
+        for (const [position, lastStage] of positionsByTransfer.get(route.transferId) ?? []) need(position, lastStage);
+      }
     }
+    nextRouteByPosition.set(identity, index);
   }
-  return { transferIds, positionIds };
+  return {
+    transferIds,
+    /** Retain the counted row or the prefix required by a downstream movement. */
+    includesPosition: (position, sequence) => matchesPosition(position) ||
+      (neededThrough.size !== 0 && sequence <= (neededThrough.get(countTransferPositionIdentity(position)) ?? 0)),
+  };
 }
 
 /** Nodes and embodied stock needed to evaluate the ancestry of a count. */

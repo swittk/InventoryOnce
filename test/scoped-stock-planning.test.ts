@@ -3047,6 +3047,46 @@ describe("indexed stock planning and availability", () => {
     }
   );
 
+  it.each([false, true])("uses semantic precision for measured issue and transfer witnesses (canonical: %s)", async (canonical) => {
+    const catalog = measuredItemCatalog("pieces", InventoryMeasurementRequirement.Optional);
+    const from = { itemId: "measured", placementNodeId: "store", lotId: "witnessed" };
+    for (const verb of ["issue", "transfer"] as const) {
+      for (const [received, requested, witnessed, remainder] of [
+        ["2", "2", "1", "1"],
+        ["2.000", "2.000", "1", "1"],
+        ["2.125", "2.000", "1.999", "0.001"],
+      ] as const) {
+        const inventory = createTestInventory(policyPickingStorage(canonical), catalog, undefined, InventoryDeficitPolicy.Record);
+        await inventory.stock.receive({
+          operationId: "receive-witness", occurredAtEpochMs: time0, to: from, amount: stockAmount(received, "piece"),
+        });
+        const command = {
+          operationId: "reported-movement", occurredAtEpochMs: time1,
+          selector: { itemId: from.itemId, placementNodeIds: ["store"] },
+          amount: measuredStockAmount(requested, "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+          method: InventoryAllocationMethod.Fifo,
+        };
+        const result = verb === "issue" ? await inventory.stock.issueByPolicy(command) :
+          await inventory.stock.transferByPolicy({ ...command, toPlacementNodeId: "destination" });
+        const debit = result.event.stockEffects.find(
+          /** Inspect the known source separately from the unwitnessed posting. */
+          ({ position }) => position.lotId === from.lotId && position.placementNodeId === from.placementNodeId
+        );
+        if (debit === undefined) throw new Error("Expected a witnessed debit.");
+        expect(compareQuantity(debit.measurementsDelta.primary.quantity, parseQuantity(`-${witnessed}`, "piece"))).toBe(0);
+        const missing = verb === "transfer" ? result.event.unwitnessedStockMovements?.[0]?.measurements :
+          result.event.stockEffects.find(
+            /** The other issue posting carries the unsupported remainder. */
+            (effect) => effect !== debit
+          )?.measurementsDelta;
+        if (missing === undefined) throw new Error("Expected a measured remainder.");
+        const sign = verb === "issue" ? "-" : "";
+        expect(missing.independent).toEqual([{ axisId: "weight", quantity: parseQuantity(`${sign}1`, "kg") }]);
+        expect(compareQuantity(missing.primary.quantity, parseQuantity(`${sign}${remainder}`, "piece"))).toBe(0);
+      }
+    }
+  });
+
   it("keeps whole package counts when a witnessed and unwitnessed posting share an exact row", async () => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const packageId = "item-a-box-24-v1";
@@ -4088,6 +4128,36 @@ describe("indexed stock planning and availability", () => {
     expect(storage.readSegmentedStockPool(emptyRequest)).toEqual({ positions: [], reservations: [] });
     expect(storage.readSegmentedStockPool({ ...emptyRequest, exactHoldsOnly: false }).reservations)
       .toMatchObject([{ reservationId: "broad" }]);
+  });
+
+  it("returns exact holds for the requested revision in current and historical pool reads", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    for (const revision of ["item-a-v1", "item-a-v2"]) {
+      await inventory.stock.receive({
+        operationId: `stock-${revision}`, occurredAtEpochMs: time0, itemRevisionId: revision,
+        to: loosePosition("store", { lotId: revision }), amount: stockAmount("2", "piece"),
+      });
+      await inventory.reservations.reserve({
+        operationId: `claim-${revision}`, reservationId: revision, itemRevisionId: revision,
+        selector: { itemId: "item-a", placementNodeIds: ["store"], itemRevisionIds: [revision] },
+        requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+      });
+      await inventory.reservations.allocateByPolicy({
+        operationId: `allocate-${revision}`, reservationId: revision,
+        occurredAtEpochMs: time1, method: InventoryAllocationMethod.Fifo,
+      });
+    }
+    const request = {
+      selector: inventoryStockSelector("item-a", { placementNodeIds: ["store"] }),
+      itemRevisionId: "item-a-v2", exactHoldsOnly: true, reservationAtEpochMs: time1,
+    };
+    expect(storage.readSegmentedStockPool(request).reservations).toMatchObject([{ reservationId: "item-a-v2" }]);
+    await inventory.reservations.release({
+      operationId: "release-v2", reservationId: "item-a-v2", occurredAtEpochMs: time2,
+    });
+    expect(storage.readSegmentedStockPool(request).reservations).toMatchObject([{ reservationId: "item-a-v2" }]);
+    expect(storage.readSegmentedStockPool({ ...request, reservationAtEpochMs: time2 }).reservations).toEqual([]);
   });
 
   it("uses current broad leaders for a pre-epoch claim query after the last change", async () => {

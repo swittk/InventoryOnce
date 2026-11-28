@@ -1154,6 +1154,58 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     expect((await inventory.counts.replaceAbsolute(command)).replayed).toBe(true);
   });
 
+  it.each([
+    { canonical: false, structured: false }, { canonical: true, structured: false },
+    { canonical: false, structured: true }, { canonical: true, structured: true },
+  ])("bounds transfer funding to the last route that needs it (canonical: $canonical, structured: $structured)", async ({ canonical, structured }) => {
+    for (const policy of [InventoryDeficitPolicy.Record, InventoryDeficitPolicy.Reject]) {
+      const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+      const inventory = createTestInventory(storage, undefined, undefined, policy);
+      const source = loosePosition("funding-source", { lotId: "FUNDING" });
+      const relay = loosePosition("funding-relay", { lotId: "FUNDING" });
+      const maximum = Number.MAX_SAFE_INTEGER;
+      const full = stockAmount(String(maximum), "piece");
+      const one = stockAmount("1", "piece");
+      await inventory.stock.receive({ operationId: "funding-seed", occurredAtEpochMs: time0, to: source, amount: full });
+      if (structured) {
+        await inventory.transfers.prepare({
+          operationId: "funding-prepare", occurredAtEpochMs: time0 + 1, transferId: "funding-transfer",
+          transitPlacementNodeId: "funding-transit", destinationPlacementNodeId: "funding-counted",
+          lines: [{ lineId: "one", from: source, amount: one }],
+        });
+        await inventory.transfers.dispatch({
+          operationId: "funding-dispatch", occurredAtEpochMs: time0 + 2, transferId: "funding-transfer",
+        });
+        await inventory.transfers.receive({
+          operationId: "funding-receive", occurredAtEpochMs: time0 + 3, transferId: "funding-transfer",
+        });
+      } else {
+        await inventory.stock.transfer({
+          operationId: "funding-first", occurredAtEpochMs: time0 + 1,
+          from: source, toPlacementNodeId: "funding-relay", amount: one,
+        });
+        await inventory.stock.transfer({
+          operationId: "funding-second", occurredAtEpochMs: time0 + 2,
+          from: relay, toPlacementNodeId: "funding-counted", amount: one,
+        });
+      }
+      await inventory.stock.issue({
+        operationId: "funding-clear", occurredAtEpochMs: time3,
+        from: source, amount: stockAmount(String(maximum - 1), "piece"),
+      });
+      await inventory.stock.receive({ operationId: "funding-late", occurredAtEpochMs: time1, to: source, amount: full });
+      const result = await inventory.counts.replaceAbsolute({
+        countId: "funding-count", operationId: "funding-count", itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", placementNodeIds: ["funding-counted"] },
+        observedMeasurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+        occurredAtEpochMs: time2,
+      });
+      expect(result.event).toBeUndefined();
+      expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["funding-source"] }))
+        .toMatchObject([{ measurements: { primary: { quantity: parseQuantity(String(maximum), "piece") } } }]);
+    }
+  });
+
   it("retains correction supersession predecessors in occurrence-time count replay", async () => {
     const inventory = createTestInventory();
     const original = await inventory.stock.receive({

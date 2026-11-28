@@ -2192,3 +2192,9 @@ The R105 portable-current-input authority and final publication both continue to
 ## 2026-11-28 — subtree membership at observation
 
 - Subtree counts replay the placement and carrier facts needed to resolve ancestry at observation. Payload admission uses that resolved subtree. Correction predecessors and complete carrier lifecycles supply the shared reducer with the facts it needs.
+
+## 2026-11-28 — funding, history order, and measured witnesses
+
+- A count retains a supplying row through the last movement or transfer stage that needs it in the observation cut. Selected rows retain their history, and a connected structured transfer still replays its complete retained lifecycle.
+- An unanchored historical assertion can bring backdated predecessors forward ahead of a later fact using the same resources. Explicit anchors still constrain their assertions.
+- Measured allocation uses significant exact digits for its search grid and retains authored precision when emitting storable quantities. Current and historical exact-hold reads both restrict the result to the requested item revision.

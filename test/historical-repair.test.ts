@@ -7,6 +7,7 @@ import {
   inventoryCatalogSnapshot,
   parseQuantity,
   stockAmount,
+  type InventoryOnceHistoricalRepairInput,
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage, createInMemoryInventorySegmentedPositionStore } from "../src/storage-api.js";
 import { applyInventoryCommittedEvent, projectInventoryEvents } from "../src/projection.js";
@@ -1505,6 +1506,46 @@ describe("late historical repair", () => {
       valid: false,
       conflict: { code: "missing-anchor" },
     });
+  });
+
+  it.each([
+    { canonical: false, relayed: false }, { canonical: true, relayed: false },
+    { canonical: false, relayed: true }, { canonical: true, relayed: true },
+  ])("uses backdated receipts before an unanchored issue (canonical: $canonical, relayed: $relayed)", async ({ canonical, relayed }) => {
+    const storage = canonical
+      ? createInMemoryInventoryDurableStorage({ failpoint: () => undefined })
+      : createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const position = loosePosition("backdated-bin", { lotId: "BACKDATED" });
+    const one = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "later-receipt", occurredAtEpochMs: time2, to: position, amount: one });
+    const source = relayed ? loosePosition("backdated-source", { lotId: "BACKDATED" }) : position;
+    if (relayed) {
+      await inventory.stock.receive({ operationId: "later-source-receipt", occurredAtEpochMs: time2, to: source, amount: one });
+      await inventory.stock.transfer({
+        operationId: "backdated-transfer", occurredAtEpochMs: time0 + 1,
+        from: source, toPlacementNodeId: "backdated-bin", amount: one,
+      });
+    }
+    await inventory.stock.receive({ operationId: "earlier-receipt", occurredAtEpochMs: time0, to: source, amount: one });
+    const repair: InventoryOnceHistoricalRepairInput = {
+      operationId: "backdated-issue",
+      occurredAtEpochMs: time3,
+      reason: "The earlier receipt funded the missed issue.",
+      assertions: [{
+        assertionId: "missed-issue",
+        /** Record a physical issue without imposing an explicit anchor. */
+        assert: (plans) => plans.issue({ occurredAtEpochMs: time1, from: position, amount: one }),
+      }],
+    };
+    const planned = await inventory.stock.planHistorical(repair);
+    expect(planned.valid).toBe(true);
+    const recorded = await inventory.stock.recordHistorical(repair);
+    expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+    expect(await inventory.read.planAllocation({
+      selector: { itemId: position.itemId, placementNodeIds: ["backdated-bin"] },
+      amount: one, method: InventoryAllocationMethod.Fifo, atEpochMs: time3,
+    })).toMatchObject({ lines: [{ layerStartedAtEpochMs: time2 }] });
   });
 
   it("rejects generic correction of a historical repair envelope", async () => {

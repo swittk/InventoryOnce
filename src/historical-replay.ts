@@ -423,12 +423,7 @@ function effectiveInventoryHistoryEvents({
   }
   const pending = [...active.values()];
   pending.sort(comparePendingHistoricalAssertion);
-  const merged: Array<{
-    /** Effective assertion replayed into this temporary history. */
-    readonly event: InventoryEventDraft | InventoryCommittedEvent;
-    /** Durable time when the system learned this assertion. */
-    readonly recordedAtEpochMs: number;
-  }> = base.map(
+  const merged: InventoryHistoricalReplayEntry[] = base.map(
     /** Preserve each retained assertion's durable evidence time. */
     (event) => ({ event, recordedAtEpochMs: event.recordedAtEpochMs })
   );
@@ -481,14 +476,19 @@ function comparePendingHistoricalAssertion(
   );
 }
 
-/** Insert after an explicit anchor or before the first later event that uses the same resources. */
+/** A retained fact in the temporary effective history. */
+interface InventoryHistoricalReplayEntry {
+  /** Effective event replayed into this temporary history. */
+  readonly event: InventoryEventDraft | InventoryCommittedEvent;
+  /** Durable time when the system learned this event. */
+  readonly recordedAtEpochMs: number;
+  /** An explicit ordering constraint on a previously inserted assertion. */
+  readonly afterEventId?: string;
+}
+
+/** Insert after an explicit anchor or between the earlier and later facts using the same resources. */
 function insertHistoricalAssertion(
-  target: Array<{
-    /** Effective assertion already placed in temporary replay order. */
-    readonly event: InventoryEventDraft | InventoryCommittedEvent;
-    /** Durable time when the system learned this assertion. */
-    readonly recordedAtEpochMs: number;
-  }>,
+  target: InventoryHistoricalReplayEntry[],
   pending: InventoryPendingHistoricalAssertion
 ): void {
   const assertion = pending.assertion;
@@ -508,17 +508,20 @@ function insertHistoricalAssertion(
   } else {
     /** Only events using these resources can constrain this assertion's replay order. */
     const dependencies = new Set(inventoryEventDependencyKeys(assertion.event));
+    const occurredAt = assertion.event.occurredAtEpochMs;
     for (let index = 0; index < target.length; index += 1) {
       const event = target[index]!.event;
       // A retained count correction is an adjustment, not a physical ordering anchor.
       if (event.kind === InventoryEventKind.Correction) continue;
-      if (event.occurredAtEpochMs <= assertion.event.occurredAtEpochMs) {
+      if (event.occurredAtEpochMs <= occurredAt) {
         insertionIndex = index;
       } else if (inventoryEventDependencyKeys(event).some(
         /** A later event sharing a resource must see the assertion first. */
         (key) => dependencies.has(key)
       )) {
-        // A backdated event recorded after this dependency cannot move the assertion past it.
+        // First put any backdated predecessors ahead of this later fact.
+        const predecessors = bringForwardHistoricalPredecessors(target, index, occurredAt, dependencies);
+        if (predecessors > 0) insertionIndex = index + predecessors - 1;
         break;
       }
     }
@@ -526,7 +529,60 @@ function insertHistoricalAssertion(
   target.splice(insertionIndex + 1, 0, {
     event: assertion.event,
     recordedAtEpochMs: pending.recordedAtEpochMs,
+    ...(assertion.afterEventId === undefined ? {} : { afterEventId: assertion.afterEventId }),
   });
+}
+
+/** Move earlier related facts and their earlier predecessors ahead of the first later dependency. */
+function bringForwardHistoricalPredecessors(
+  target: InventoryHistoricalReplayEntry[],
+  firstLater: number,
+  occurredAt: number,
+  dependencies: ReadonlySet<string>
+): number {
+  /** Earlier facts can be connected through a route whose source was recorded last. */
+  const keysByIndex = new Map<number, readonly string[]>();
+  const indexesByKey = new Map<string, number[]>();
+  for (let index = firstLater + 1; index < target.length; index += 1) {
+    const entry = target[index]!;
+    const { event, afterEventId } = entry;
+    if (event.occurredAtEpochMs > occurredAt || event.kind === InventoryEventKind.Correction ||
+        afterEventId !== undefined) continue;
+    const keys = inventoryEventDependencyKeys(event);
+    keysByIndex.set(index, keys);
+    for (const key of keys) {
+      const indexes = indexesByKey.get(key);
+      if (indexes === undefined) indexesByKey.set(key, [index]);
+      else indexes.push(index);
+    }
+  }
+  /** Expand each reached resource once within the conflicting suffix. */
+  const reached = new Set(dependencies);
+  const predecessors = new Set<number>();
+  for (const key of reached) {
+    for (const index of indexesByKey.get(key) ?? []) {
+      if (predecessors.has(index)) continue;
+      predecessors.add(index);
+      for (const dependency of keysByIndex.get(index) ?? []) reached.add(dependency);
+    }
+  }
+  if (predecessors.size === 0) return 0;
+
+  const earlier: InventoryHistoricalReplayEntry[] = [];
+  const remaining: InventoryHistoricalReplayEntry[] = [];
+  for (let index = firstLater; index < target.length; index += 1) {
+    (predecessors.has(index) ? earlier : remaining).push(target[index]!);
+  }
+  // A retained earlier receipt can itself be durably out of order with its movement.
+  earlier.sort(
+    /** Keep the collected durable order for equal occurrences. */
+    (left, right) => left.event.occurredAtEpochMs - right.event.occurredAtEpochMs
+  );
+  // Keep unrelated facts in their original order and avoid a variable-size splice argument list.
+  let index = firstLater;
+  for (const entry of earlier) target[index++] = entry;
+  for (const entry of remaining) target[index++] = entry;
+  return earlier.length;
 }
 
 /** Reconcile graph-only later intents after corrected/late earlier history changes. */

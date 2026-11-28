@@ -93,6 +93,8 @@ export class InventoryStockClaimIndex {
     }
     for (const position of positions) {
       for (const [id, reservation] of this.exact.get(inventoryStockPositionIdentity(position.key)) ?? []) {
+        // The selector can reach positions from several revisions, but this claim read addresses one.
+        if (reservation.itemRevisionId !== revisionId) continue;
         reservations.set(id, reservation);
       }
     }

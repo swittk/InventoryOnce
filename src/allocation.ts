@@ -410,10 +410,28 @@ interface InventoryAllocationSearchBranch {
   readonly wholeRowsPicked: number;
 }
 
+/** Find the smallest scale that represents working digits exactly. */
+function allocationSemanticDecimals(quantity: InventoryWorkingQuantity): number {
+  let decimals = quantity.decimals;
+  let minor = BigInt(quantity.amountMinor);
+  while (decimals > 0 && minor % 10n === 0n) {
+    minor /= 10n;
+    decimals -= 1;
+  }
+  return decimals;
+}
+
+/** Convert to a grid proven to retain every significant digit in this input. */
+function allocationMinorOnGrid(quantity: InventoryWorkingQuantity, decimals: number): bigint {
+  if (decimals >= quantity.decimals) return workingQuantityAtDecimals(quantity, decimals);
+  return BigInt(quantity.amountMinor) / 10n ** BigInt(quantity.decimals - decimals);
+}
+
 /** Find the largest ordered assignment, keeping the original decimal grid if the search narrows its rows. */
 function searchInventoryAllocations(
   input: SearchInventoryAllocationsInput,
-  minimumDecimals = input.requested.decimals
+  minimumDecimals = 0,
+  minimumOutputDecimals = 0
 ): InventoryAllocationAssignment | undefined {
   const {
     requested, candidates: orderedCandidates, acceptAllocations: predicate, acceptPartial, requiresPositiveShortfall = false,
@@ -429,25 +447,37 @@ function searchInventoryAllocations(
         return false;
       }
     };
-  let decimals = minimumDecimals;
+  // A reported remainder must leave physical stock behind. Display precision cannot choose how much.
+  const semanticGrid = requiresPositiveShortfall || maximumWitnessPrimary !== undefined || fullWitnessPrimaryBudget !== undefined;
+  let decimals = Math.max(minimumDecimals, semanticGrid ? allocationSemanticDecimals(requested) : requested.decimals);
+  /** Retain authored precision in the emitted measurements where it fits. */
+  let outputDecimals = Math.max(minimumOutputDecimals, requested.decimals);
   for (const candidate of orderedCandidates) {
-    decimals = Math.max(decimals, candidate.available.decimals);
-    if (candidate.allocationIncrement !== undefined) {
-      decimals = Math.max(decimals, candidate.allocationIncrement.decimals);
+    const { available, allocationIncrement } = candidate;
+    decimals = Math.max(decimals, semanticGrid ? allocationSemanticDecimals(available) : available.decimals);
+    outputDecimals = Math.max(outputDecimals, available.decimals, allocationIncrement?.decimals ?? 0);
+    if (allocationIncrement !== undefined) {
+      decimals = Math.max(decimals, semanticGrid ? allocationSemanticDecimals(allocationIncrement) : allocationIncrement.decimals);
     }
   }
-  const requestedMinor = integerAtDecimals(requested, decimals);
+  const requestedMinor = allocationMinorOnGrid(requested, decimals);
+  outputDecimals = Math.max(outputDecimals, decimals);
+  const outputMultiplier = outputDecimals === decimals ? 1n : 10n ** BigInt(outputDecimals - decimals);
+  /** Emit a proven remainder at the original measurement precision when representable. */
+  const materializeShortfall = (remaining: bigint): Quantity | undefined => remaining === 0n
+    ? zeroQuantity(requested.unit, requested.decimals)
+    : inventoryAllocationQuantityIfStorable(remaining * outputMultiplier, outputDecimals, requested.unit);
   /** Working capacities and effective increments on the original shared scale. */
   const capacityMinor: bigint[] = [];
   const incrementMinor: bigint[] = [];
   /** Keep the original ordered array unless a row is forced to zero for this trial. */
   let selectableCandidates: InventoryWorkingAllocationCandidate[] | undefined;
   for (const candidate of orderedCandidates) {
-    const capacity = workingQuantityAtDecimals(candidate.available, decimals);
+    const capacity = allocationMinorOnGrid(candidate.available, decimals);
     const increment = candidate.allocationIncrement === undefined ||
       (ignoreIncrements && canRelaxAllocationIncrement(candidate, predicate))
       ? 1n
-      : workingQuantityAtDecimals(candidate.allocationIncrement, decimals);
+      : allocationMinorOnGrid(candidate.allocationIncrement, decimals);
     // A row whose first legal increment cannot fit has no branch other than zero in this search.
     if (capacity < increment || requestedMinor < increment) {
       selectableCandidates ??= orderedCandidates.slice(0, capacityMinor.length);
@@ -548,9 +578,7 @@ function searchInventoryAllocations(
     if (improveOnShortfall !== undefined && remaining >= integerAtDecimals(improveOnShortfall, decimals)) {
       return undefined;
     }
-    const shortfall = remaining === 0n
-      ? zeroQuantity(requested.unit, requested.decimals)
-      : inventoryAllocationQuantityIfStorable(remaining, decimals, requested.unit);
+    const shortfall = materializeShortfall(remaining);
     if (shortfall !== undefined) {
       const wholePicks = capacityMinor.map(
         /** Round each available balance down to its own legal increment. */
@@ -560,7 +588,7 @@ function searchInventoryAllocations(
         /** A private working row can have more digits than a published allocation. */
         (take) => storableQuantityScale(take, decimals) !== undefined
       )) {
-        const allocations = materializeExactAllocations(candidates, wholePicks, decimals);
+        const allocations = materializeExactAllocations(candidates, wholePicks, outputDecimals, outputMultiplier);
         if (acceptAllocations === undefined || acceptAllocations(allocations)) return { allocations, shortfall };
       }
     }
@@ -605,11 +633,9 @@ function searchInventoryAllocations(
       if (budget !== undefined) axisFreeRemaining = budget - take;
     }
     if (remaining === 0n) {
-      const shortfall = greedyShortfallMinor === 0n
-        ? zeroQuantity(requested.unit, requested.decimals)
-        : inventoryAllocationQuantityIfStorable(greedyShortfallMinor, decimals, requested.unit);
+      const shortfall = materializeShortfall(greedyShortfallMinor);
       if (shortfall !== undefined) {
-        const allocations = materializeExactAllocations(candidates, picks, decimals);
+        const allocations = materializeExactAllocations(candidates, picks, outputDecimals, outputMultiplier);
         if (acceptAllocations === undefined || acceptAllocations(allocations)) return { allocations, shortfall };
       }
     }
@@ -624,10 +650,10 @@ function searchInventoryAllocations(
     if (completeCandidates.length <= MAXIMUM_EXACT_ALLOCATION_DEPTH) {
       const complete = searchInventoryAllocations({
         ...input, candidates: completeCandidates, acceptPartial: false,
-      }, decimals);
+      }, decimals, outputDecimals);
       if (complete !== undefined || !acceptPartial) return complete;
       // The complete search proved that a partial witness is the best possible result.
-      return searchInventoryAllocations({ ...input, requiresPositiveShortfall: true }, decimals);
+      return searchInventoryAllocations({ ...input, requiresPositiveShortfall: true }, decimals, outputDecimals);
     }
   }
   /** When the remainder cannot fit even the smallest increment, only the current prefix can be accepted. */
@@ -665,11 +691,9 @@ function searchInventoryAllocations(
       if (complete || index >= candidates.length || selectableRemaining < smallestPick) {
         if (!complete && (!acceptPartial || remainingMinor >= bestRemainingMinor)) return false;
         // A trial can leave a shortfall that cannot be emitted, even though a later trial fits.
-        const shortfall = complete
-          ? zeroQuantity(requested.unit, requested.decimals)
-          : inventoryAllocationQuantityIfStorable(remainingMinor, decimals, requested.unit);
+        const shortfall = materializeShortfall(remainingMinor);
         if (shortfall === undefined) return false;
-        const allocations = materializeExactAllocations(candidates, chosenMinor, decimals);
+        const allocations = materializeExactAllocations(candidates, chosenMinor, outputDecimals, outputMultiplier);
         if (acceptAllocations !== undefined && !acceptAllocations(allocations)) return false;
         bestRemainingMinor = remainingMinor;
         bestAssignment = { allocations, shortfall };
@@ -1001,7 +1025,8 @@ function takeGreedyInventoryAllocation(
 function materializeExactAllocations(
   candidates: readonly InventoryWorkingAllocationCandidate[],
   chosenMinor: readonly bigint[],
-  decimals: number
+  outputDecimals: number,
+  outputMultiplier: bigint
 ): readonly InventoryAllocation[] {
   const allocations: InventoryAllocation[] = [];
   for (let index = 0; index < chosenMinor.length; index += 1) {
@@ -1011,7 +1036,7 @@ function materializeExactAllocations(
     allocations.push({
       position: candidate.position,
       quantity: inventoryAllocationQuantityAtStorableScale(
-        amountMinor, decimals, candidate.available.unit, "Exact allocation quantity"
+        amountMinor * outputMultiplier, outputDecimals, candidate.available.unit, "Exact allocation quantity"
       ),
     });
   }
