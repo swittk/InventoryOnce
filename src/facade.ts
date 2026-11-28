@@ -1,5 +1,6 @@
 import { createInventoryRecordedMovement, type InventoryUnwitnessedMovementLine } from "./recorded-movement.js";
 import { stampInventoryReportedTransferReplay } from "./reported-transfer-replay.js";
+import { historicalWhereaboutsId } from "./stock-age.js";
 import {
   inventoryScopedStockMatches,
   type InventoryScopedStockPool,
@@ -6193,11 +6194,18 @@ class InventoryOnceReplacementPlansImplementation
   private readonly catalog: InventoryCatalog;
   /** Synthetic stable operation identity used only inside the replacement assertion. */
   private readonly operationId: string;
+  /** Distinct whereabouts cohort override isolating historical repairs from ordinary commands. */
+  private readonly whereaboutsId: string | undefined;
 
   /** Bind correction replacement plans to one catalogue/correction operation. */
-  constructor(catalog: InventoryCatalog, operationId: string) {
+  constructor(
+    catalog: InventoryCatalog,
+    operationId: string,
+    whereaboutsId?: string
+  ) {
     this.catalog = catalog;
     this.operationId = operationId;
+    this.whereaboutsId = whereaboutsId;
   }
 
   /** Plan an append-only correction that removes the retained root from current truth. */
@@ -6266,6 +6274,9 @@ class InventoryOnceReplacementPlansImplementation
         ...input,
         catalog: this.catalog,
         operationId: this.operationId,
+        ...(this.whereaboutsId === undefined
+          ? {}
+          : { [historicalWhereaboutsId]: this.whereaboutsId }),
       })
     );
   }
@@ -6292,6 +6303,9 @@ class InventoryOnceReplacementPlansImplementation
         ...input,
         catalog: this.catalog,
         operationId: this.operationId,
+        ...(this.whereaboutsId === undefined
+          ? {}
+          : { [historicalWhereaboutsId]: this.whereaboutsId }),
       })
     );
   }
@@ -6675,9 +6689,10 @@ class InventoryOnceHistoricalAssertionPlansImplementation
   constructor(
     catalog: InventoryCatalog,
     operationId: string,
-    earlierAssertions: ReadonlyMap<string, InventoryEventDraft>
+    earlierAssertions: ReadonlyMap<string, InventoryEventDraft>,
+    whereaboutsId: string
   ) {
-    super(catalog, operationId);
+    super(catalog, operationId, whereaboutsId);
     this.earlierAssertions = earlierAssertions;
   }
 
@@ -6726,12 +6741,18 @@ class InventoryOnceHistoricalAssertionPlansImplementation
 }
 
 /** Build a disjoint, injectively encoded operation or event identity for one embedded historical assertion. */
+/** Isolate historical assertion operation, event, and cohort whereabouts identities from ordinary commands. */
 function inventoryHistoricalAssertionScopedId(
-  kind: "op" | "event",
+  kind: "op" | "event" | "whereabouts",
   repairOperationId: string,
   assertionId: string
 ): string {
-  return `inventory:historical-assertion:${kind}:${encodeURIComponent(repairOperationId)}:${encodeURIComponent(assertionId)}`;
+  const encodedRepair = encodeURIComponent(repairOperationId);
+  const encodedAssertion = encodeURIComponent(assertionId);
+  if (kind === "whereabouts") {
+    return `inventory:historical-whereabouts:${encodedRepair}:${encodedAssertion}`;
+  }
+  return `inventory:historical-assertion:${kind}:${encodedRepair}:${encodedAssertion}`;
 }
 
 /** Build stable ordinary assertion drafts from existing correction-plan verbs. */
@@ -6770,7 +6791,12 @@ function buildInventoryHistoricalAssertions(
         input.operationId,
         assertion.assertionId
       ),
-      earlierAssertions
+      earlierAssertions,
+      inventoryHistoricalAssertionScopedId(
+        "whereabouts",
+        input.operationId,
+        assertion.assertionId
+      )
     );
     const draft = readReplacementEventDraft(assertion.assert(plans));
     if (draft === undefined) {

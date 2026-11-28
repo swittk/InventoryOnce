@@ -12,11 +12,13 @@ import {
   createInventoryOnce,
   defineInventoryCatalog,
   defineInventoryItem,
+  defineInventoryPackaging,
   defineScalarInventoryFungibilityPool,
   defineScalarInventoryItem,
   defineScalarInventoryPackaging,
   extendInventoryCatalog,
   inventoryCatalogSnapshot,
+  inventoryMeasurementVector,
   inventoryStockSelector,
   measuredStockAmount,
   packageAmount,
@@ -2172,5 +2174,141 @@ describe("derived pool summaries and exact member movements", () => {
     expect(claimConstrained.shortfall.amountMinor).toBe(0);
     expect(claimConstrained.lines.map(({ position }) => position.lotId)).toEqual(["OLD-FREE"]);
     expect(claimConstrained.incrementBlockedStock).toBe(false);
+  });
+
+  it("skips older fixed-weight packs whose combined pick weight is unstorable both with and without claims", async () => {
+    const heavyItem = defineInventoryItem({
+      itemId: "heavy-measured",
+      revisionId: "heavy-measured-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        role: InventoryMeasurementAxisRole.Primary,
+        unit: unitCode("piece"),
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          role: InventoryMeasurementAxisRole.Independent,
+          unit: unitCode("kg"),
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+      ],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Optional,
+      },
+      qualifiedDimensions: [],
+    });
+    const heavyPack = defineInventoryPackaging(
+      {
+        revisionId: "heavy-pack-v1",
+        itemId: heavyItem.itemId,
+        itemRevisionId: heavyItem.revisionId,
+        packageUnit: unitCode("box"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+          [{ axisId: "weight", quantity: parseQuantity("0.9007199254740991", "kg") }]
+        ),
+      },
+      heavyItem
+    );
+    const newerLoose = defineScalarInventoryItem({
+      itemId: "newer-loose",
+      revisionId: "newer-loose-v1",
+      axisId: "pieces",
+      unit: "piece",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Optional,
+      },
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "heavy-measured-pool",
+      revisionId: "heavy-measured-pool-v1",
+      basisUnit: "equivalent",
+      members: [{ item: heavyItem }, { item: newerLoose }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [heavyItem, newerLoose],
+      activeItemRevisionIds: {
+        [heavyItem.itemId]: heavyItem.revisionId,
+        [newerLoose.itemId]: newerLoose.revisionId,
+      },
+      packagingRevisions: [heavyPack],
+      fungibilityRevisions: [pool],
+      activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({
+      catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+    });
+
+    await inventory.stock.receive({
+      operationId: "heavy-older-packs",
+      occurredAtEpochMs: time0,
+      to: {
+        itemId: heavyItem.itemId,
+        lotId: "OLDER-PACKS",
+        placementNodeId: "store",
+        packagingRevisionId: heavyPack.revisionId,
+      },
+      amount: packageAmount(10, heavyPack.revisionId),
+    });
+    await inventory.stock.receive({
+      operationId: "heavy-newer-loose",
+      occurredAtEpochMs: time1,
+      to: {
+        itemId: newerLoose.itemId,
+        lotId: "NEWER-LOOSE",
+        placementNodeId: "store",
+      },
+      amount: stockAmount("2", "piece"),
+    });
+
+    // Without claims: two older packs would exceed MAX_SAFE_INTEGER weight digits, so 2 eq takes 1 OLDER-PACKS + 1 NEWER-LOOSE while 1 eq still uses OLDER-PACKS.
+    const twoNoClaims = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("2", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+      atEpochMs: time2,
+    });
+    expect(twoNoClaims.shortfall.amountMinor).toBe(0);
+    expect(twoNoClaims.lines.map(({ position }) => position.lotId)).toEqual([
+      "OLDER-PACKS",
+      "NEWER-LOOSE",
+    ]);
+
+    const oneNoClaims = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("1", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+      atEpochMs: time2,
+    });
+    expect(oneNoClaims.shortfall.amountMinor).toBe(0);
+    expect(oneNoClaims.lines.map(({ position }) => position.lotId)).toEqual(["OLDER-PACKS"]);
+
+    // With an active claim on the same revision: both two-pack and mixed trials that yield unstorable claim deltas backtrack to NEWER-LOOSE.
+    await inventory.reservations.reserve({
+      reservationId: "heavy-claim-1",
+      operationId: "heavy-claim-reserve",
+      itemRevisionId: heavyItem.revisionId,
+      createdAtEpochMs: time2,
+      selector: { itemId: heavyItem.itemId, lotIds: ["OLDER-PACKS"], placementNodeIds: ["store"] },
+      requested: parseQuantity("1", "piece"),
+    });
+    const twoWithClaim = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("2", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+      atEpochMs: time2,
+    });
+    expect(twoWithClaim.shortfall.amountMinor).toBe(0);
+    expect(twoWithClaim.lines.map(({ position }) => position.lotId)).toEqual(["NEWER-LOOSE"]);
   });
 });

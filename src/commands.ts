@@ -16,6 +16,7 @@ import {
 } from "./catalog.js";
 import { inventoryMetadataFingerprint } from "./canonical.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { historicalWhereaboutsId } from "./stock-age.js";
 import {
   addInventoryMeasurementTotals,
   inventoryMeasurementTotalsCancel,
@@ -194,6 +195,8 @@ export interface CreateInventoryDetachInput extends InventoryCommandHeader {
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
+  /** Internal non-public cohort override used only by historical repair assertions. */
+  readonly [historicalWhereaboutsId]?: string;
 }
 
 /** Inputs for explicitly placing currently detached/missing stock. */
@@ -220,6 +223,8 @@ export interface CreateInventoryMarkMissingInput extends InventoryCommandHeader 
   readonly amount: InventoryAmount;
   /** Optional exact item revision; defaults to active/package revision. */
   readonly itemRevisionId?: string;
+  /** Internal non-public cohort override used only by historical repair assertions. */
+  readonly [historicalWhereaboutsId]?: string;
 }
 
 /** Optional placement-node role created while one fungible unit becomes unique. */
@@ -1909,7 +1914,9 @@ function inventoryDetachedCommandPosition(
   } = from;
   return {
     ...rest,
-    whereaboutsId: inventoryWhereaboutsIdForCommand(input.operationId),
+    whereaboutsId:
+      input[historicalWhereaboutsId] ??
+      inventoryWhereaboutsIdForCommand(input.operationId),
     whereaboutsState: InventoryStockWhereaboutsState.Detached,
     lastPlacementNodeId: placementNodeId,
     detachedAtEpochMs: input.occurredAtEpochMs,
@@ -1963,7 +1970,9 @@ function inventoryMissingCommandPosition(
     } = from;
     return {
       ...rest,
-      whereaboutsId: inventoryWhereaboutsIdForCommand(input.operationId),
+      whereaboutsId:
+        input[historicalWhereaboutsId] ??
+        inventoryWhereaboutsIdForCommand(input.operationId),
       whereaboutsState: InventoryStockWhereaboutsState.Missing,
       lastPlacementNodeId: placementNodeId,
       detachedAtEpochMs: input.occurredAtEpochMs,

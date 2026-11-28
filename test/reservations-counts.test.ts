@@ -2,15 +2,23 @@ import { describe, expect, it } from "vitest";
 import {
   createInventoryOnce,
   defineInventoryCatalog,
+  defineInventoryItem,
+  defineInventoryPackaging,
   defineScalarInventoryItem,
   InventoryCountStatus,
   InventoryDeficitPolicy,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
   InventoryOptionalIdentityConstraintKind,
   InventoryReservationFeasibilityStatus,
   InventoryReservationStatus,
   InventoryTrackingRequirement,
+  inventoryMeasurementVector,
+  measuredStockAmount,
+  packageAmount,
   parseQuantity,
   stockAmount,
+  unitCode,
 } from "../src/index.js";
 import {
   createInMemoryInventoryDurableStorage,
@@ -2570,5 +2578,211 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         createdAtEpochMs: time2,
       })
     ).rejects.toThrow("Inventory reservations cannot all be fulfilled simultaneously");
+
+    await inventory.transfers.dispatch({
+      operationId: "td-dispatch",
+      transferId: "td-transfer-1",
+      occurredAtEpochMs: time1 + 2,
+    });
+    await expect(
+      inventory.reservations.reserve({
+        reservationId: "td-reserve-5-in-transit",
+        operationId: "td-reserve-op-in-transit",
+        itemRevisionId: "item-a-v2",
+        selector: {
+          itemId: "item-a",
+          placementNodeIds: ["transfer-debt-src", "transfer-debt-transit"],
+        },
+        requested: parseQuantity("5", "piece"),
+        createdAtEpochMs: time2,
+      })
+    ).rejects.toThrow("Inventory reservations cannot all be fulfilled simultaneously");
+  });
+
+  it("tightens whole-pack slack bounds when required unused capacity is unreachable without hitting search limits", async () => {
+    const heavyItem = defineInventoryItem({
+      itemId: "heavy-slab",
+      revisionId: "heavy-slab-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        role: InventoryMeasurementAxisRole.Primary,
+        unit: unitCode("piece"),
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          role: InventoryMeasurementAxisRole.Independent,
+          unit: unitCode("kg"),
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+      ],
+      reservationAxisId: "weight",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Optional,
+      },
+      qualifiedDimensions: [],
+    });
+    const tenKgPack = defineInventoryPackaging(
+      {
+        revisionId: "heavy-slab-10kg",
+        itemId: heavyItem.itemId,
+        itemRevisionId: heavyItem.revisionId,
+        packageUnit: unitCode("pallet"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+          [{ axisId: "weight", quantity: parseQuantity("10", "kg") }]
+        ),
+      },
+      heavyItem
+    );
+    const fourKgPack = defineInventoryPackaging(
+      {
+        revisionId: "heavy-slab-4kg",
+        itemId: heavyItem.itemId,
+        itemRevisionId: heavyItem.revisionId,
+        packageUnit: unitCode("crate"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+          [{ axisId: "weight", quantity: parseQuantity("4", "kg") }]
+        ),
+      },
+      heavyItem
+    );
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [heavyItem],
+      activeItemRevisionIds: { [heavyItem.itemId]: heavyItem.revisionId },
+      packagingRevisions: [tenKgPack, fourKgPack],
+    });
+    const inventory = createInventoryOnce({
+      catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: { nowEpochMs: () => time3 },
+    });
+    await inventory.stock.receive({
+      operationId: "slab-rx-10",
+      occurredAtEpochMs: time0,
+      to: {
+        itemId: heavyItem.itemId,
+        lotId: "SLAB-10KG",
+        placementNodeId: "slab-store",
+        packagingRevisionId: tenKgPack.revisionId,
+      },
+      amount: packageAmount(600_001, tenKgPack.revisionId),
+    });
+    await inventory.stock.receive({
+      operationId: "slab-rx-4",
+      occurredAtEpochMs: time0,
+      to: {
+        itemId: heavyItem.itemId,
+        lotId: "SLAB-4KG",
+        placementNodeId: "slab-store",
+        packagingRevisionId: fourKgPack.revisionId,
+      },
+      amount: packageAmount(499_999, fourKgPack.revisionId),
+    });
+    await inventory.stock.receive({
+      operationId: "slab-rx-loose-2kg",
+      occurredAtEpochMs: time0,
+      to: {
+        itemId: heavyItem.itemId,
+        lotId: "SLAB-LOOSE",
+        placementNodeId: "slab-store",
+      },
+      amount: measuredStockAmount("1", "piece", [
+        { axisId: "weight", value: "2", unit: "kg" },
+      ]),
+    });
+    const claimWeight = parseQuantity("4000000", "kg");
+    await inventory.reservations.reserve({
+      reservationId: "slab-claim-1",
+      operationId: "slab-claim-op-1",
+      itemRevisionId: heavyItem.revisionId,
+      selector: { itemId: heavyItem.itemId, placementNodeIds: ["slab-store"] },
+      requested: claimWeight,
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      reservationId: "slab-claim-2",
+      operationId: "slab-claim-op-2",
+      itemRevisionId: heavyItem.revisionId,
+      selector: { itemId: heavyItem.itemId, placementNodeIds: ["slab-store"] },
+      requested: claimWeight,
+      createdAtEpochMs: time1,
+    });
+
+    // Divisible loose control: 2 kg loose stock closes the shortage completely.
+    const looseFeasibility = await inventory.read.reservationFeasibility();
+    expect(looseFeasibility.groups[0]).toMatchObject({
+      fulfillable: parseQuantity("8000000", "kg"),
+      shortage: parseQuantity("0", "kg"),
+    });
+
+    // After a count removes the loose stock, only 10 kg and 4 kg whole packs remain; 6 kg unused is unreachable (nearest >= 6 is 8 kg), reporting a 2 kg shortage.
+    await inventory.counts.replaceAbsolute({
+      countId: "slab-remove-loose-count",
+      operationId: "slab-remove-loose-op",
+      itemRevisionId: heavyItem.revisionId,
+      selector: { itemId: heavyItem.itemId, lotIds: ["SLAB-LOOSE"], placementNodeIds: ["slab-store"] },
+      occurredAtEpochMs: time2,
+    });
+    const wholeFeasibility = await inventory.read.reservationFeasibility();
+    expect(wholeFeasibility.groups[0]).toMatchObject({
+      fulfillable: parseQuantity("7999998", "kg"),
+      shortage: parseQuantity("2", "kg"),
+    });
+  });
+
+  it("rejects opening seeded worlds whose reservations omit retained lifecycle operations", async () => {
+    const seeded = createTestInventory();
+    await seeded.stock.receive({
+      operationId: "seed-rx",
+      occurredAtEpochMs: time0,
+      to: loosePosition("seed-bin"),
+      amount: stockAmount("2", "piece"),
+    });
+    await seeded.reservations.reserve({
+      reservationId: "seed-claim",
+      operationId: "seed-claim-op",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["seed-bin"] },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const world = await seeded.read.world();
+    expect(() =>
+      createInMemoryInventoryDurableStorage({
+        initialWorld: {
+          ...world,
+          reservations: {
+            reservations: world.reservations.reservations,
+            operations: {},
+          },
+        },
+      })
+    ).toThrow(/missing retained lifecycle history/u);
+
+    // Properly seeded history preserves earlier as-of holds after a later lifecycle operation advances the watermark.
+    const reopenedStorage = createInMemoryInventoryDurableStorage({ initialWorld: world });
+    const reopened = createInventoryOnce({
+      catalog: createTabletCatalog(),
+      storage: reopenedStorage,
+      clock: { nowEpochMs: () => time3 },
+    });
+    await reopened.reservations.reserve({
+      reservationId: "later-claim",
+      operationId: "later-claim-op",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["seed-bin"] },
+      requested: parseQuantity("1", "piece"),
+      createdAtEpochMs: time2,
+    });
+    const asOfPool = reopenedStorage.readSegmentedStockPool({
+      selector: { itemId: "item-a", placementNodeIds: ["seed-bin"] },
+      itemRevisionId: "item-a-v2",
+      reservationAtEpochMs: time1,
+    });
+    expect(asOfPool.reservations.map((row) => row.reservationId)).toEqual(["seed-claim"]);
   });
 });

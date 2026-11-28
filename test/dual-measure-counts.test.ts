@@ -129,6 +129,10 @@ describe("historical shortages on independently measured stock", () => {
     await inventory.stock.receive({
       operationId: "second-box", occurredAtEpochMs: occurredAtEpochMs + 2, to: position, amount: packageAmount(1, box.revisionId),
     });
+    const positions = await inventory.read.positions(selector);
+    expect(positions).toHaveLength(1);
+    expect(positions[0]?.key).toEqual(position);
+    expect(positions[0]?.measurements).toEqual(measuredVector("2", "6"));
     expect(await inventory.read.reservation("held")).toEqual(claimBeforeMerge);
     expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
       fulfillable: three, shortage: parseQuantity("0", "kg"),

@@ -1101,6 +1101,8 @@ export class InMemoryInventoryDurableStorage
         targetWorldRevision: nextWorld.revision,
       };
       const publishedWorld = freezeInventoryPublishedWorld(nextWorld);
+      validatePublishedInventoryWorld(publishedWorld);
+      const nextStockClaims = new InventoryStockClaimIndex(publishedWorld.reservations);
       this.world = publishedWorld;
       this.positionSegment = createInMemoryInventorySegmentedPositionStore({
         positions: Object.values(publishedWorld.projection.positions),
@@ -1115,7 +1117,7 @@ export class InMemoryInventoryDurableStorage
         revision: publishedWorld.revision,
       });
       this.placementReader = inventoryReadonlyPlacementReader(this.placementSegment);
-      this.stockClaims = new InventoryStockClaimIndex(publishedWorld.reservations);
+      this.stockClaims = nextStockClaims;
       this.refreshOpenCountScopes(publishedWorld);
       this.storeMigrationManifest(migrationId, published);
       await this.fire(

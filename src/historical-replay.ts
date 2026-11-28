@@ -667,15 +667,15 @@ function insertHistoricalAssertion(
             destinationSerialIds
           )
         ) {
-          bringForwardHistoricalPredecessors(
+          bringForwardHistoricalPredecessors({
             target,
-            index,
+            firstLater: index,
             occurredAt,
             dependencies,
             sourcePositionIds,
             destinationSerialIds,
-            assertion.afterEventId
-          );
+            requiredAnchorEventId: assertion.afterEventId,
+          });
           insertionIndex = target.findIndex(
             /** Re-locate the anchor after bringing it ahead of the strictly later resource conflict. */
             (entry) => entry.event.eventId === assertion.afterEventId
@@ -704,14 +704,14 @@ function insertHistoricalAssertion(
           destinationSerialIds
         )
       ) {
-        const predecessors = bringForwardHistoricalPredecessors(
+        const predecessors = bringForwardHistoricalPredecessors({
           target,
-          scanIndex,
+          firstLater: scanIndex,
           occurredAt,
           dependencies,
           sourcePositionIds,
-          destinationSerialIds
-        );
+          destinationSerialIds,
+        });
         if (predecessors > 0) insertionIndex = scanIndex + predecessors - 1;
         break;
       }
@@ -730,14 +730,14 @@ function insertHistoricalAssertion(
         insertionIndex = index;
       } else if (eventSharesHistoricalDependency(event, dependencies)) {
         // First put any backdated predecessors ahead of this later fact.
-        const predecessors = bringForwardHistoricalPredecessors(
+        const predecessors = bringForwardHistoricalPredecessors({
           target,
-          index,
+          firstLater: index,
           occurredAt,
           dependencies,
           sourcePositionIds,
-          destinationSerialIds
-        );
+          destinationSerialIds,
+        });
         if (predecessors > 0) insertionIndex = index + predecessors - 1;
         break;
       }
@@ -770,16 +770,34 @@ interface HistoricalSerialRemovalDemand {
   readonly dependentIndex?: number;
 }
 
+/** Inputs for moving eligible earlier related facts ahead of a later resource conflict. */
+interface BringForwardHistoricalPredecessorsInput {
+  /** Mutable replay entry sequence ordered up to the current effective point. */
+  readonly target: InventoryHistoricalReplayEntry[];
+  /** Index of the first strictly later conflicting event blocking direct insertion. */
+  readonly firstLater: number;
+  /** Physical occurrence cutoff for eligible earlier events being pulled forward. */
+  readonly occurredAt: number;
+  /** Normalized resource dependency keys shared with the assertion being inserted. */
+  readonly dependencies: ReadonlySet<string>;
+  /** Exact debited source position identities requiring earlier stock-supply corrections. */
+  readonly sourcePositionIds: ReadonlySet<string>;
+  /** Exact received serial identities requiring earlier serial-removal corrections. */
+  readonly destinationSerialIds: ReadonlySet<string>;
+  /** Explicit anchor event identity that must be included when moving left-side conflicts. */
+  readonly requiredAnchorEventId?: string;
+}
+
 /** Move earlier related facts and their earlier predecessors ahead of the first later dependency. */
-function bringForwardHistoricalPredecessors(
-  target: InventoryHistoricalReplayEntry[],
-  firstLater: number,
-  occurredAt: number,
-  dependencies: ReadonlySet<string>,
-  sourcePositionIds: ReadonlySet<string>,
-  destinationSerialIds: ReadonlySet<string>,
-  requiredAnchorEventId?: string
-): number {
+function bringForwardHistoricalPredecessors({
+  target,
+  firstLater,
+  occurredAt,
+  dependencies,
+  sourcePositionIds,
+  destinationSerialIds,
+  requiredAnchorEventId,
+}: BringForwardHistoricalPredecessorsInput): number {
   /** Events already ordered before the insertion slice satisfy anchor prerequisites immediately. */
   const priorEventIds = new Set<string>();
   for (let index = 0; index < firstLater; index += 1) {
@@ -1020,6 +1038,8 @@ function orderHistoricalPredecessors(
   fundingPredecessorsByEventId: ReadonlyMap<string, ReadonlySet<string>>
 ): readonly InventoryHistoricalReplayEntry[] {
   const indexByEventId = new Map<string, number>();
+  /** Prior supply indices in durable/effective slice order keyed by normalized position identity. */
+  const supplyIndicesByPosition = new Map<string, number[]>();
   for (let index = 0; index < earlier.length; index += 1) {
     indexByEventId.set(earlier[index]!.event.eventId, index);
   }
@@ -1030,20 +1050,48 @@ function orderHistoricalPredecessors(
   for (let index = 0; index < earlier.length; index += 1) {
     const { afterEventId, event } = earlier[index]!;
     const fundingIds = fundingPredecessorsByEventId.get(event.eventId);
-    const prerequisiteIds = [
+    const prerequisiteIds: Array<string | undefined> = [
       afterEventId,
       event.correction?.supersedesCorrectionEventId,
       ...(fundingIds === undefined ? [] : fundingIds),
     ];
+    // Preserve prior non-correction slice funding order when a later-in-slice debit drew from an earlier-in-slice supply at the same position.
+    if (event.kind !== InventoryEventKind.Correction) {
+      for (const effect of event.stockEffects) {
+        if (effect.measurementsDelta.primary.quantity.amountMinor >= 0) continue;
+        const priorSupplies = supplyIndicesByPosition.get(
+          inventoryStockPositionIdentity(effect.position)
+        );
+        if (priorSupplies === undefined) continue;
+        for (const priorIndex of priorSupplies) {
+          prerequisiteIds.push(earlier[priorIndex]!.event.eventId);
+        }
+      }
+    }
+    const seenPredecessors = new Set<number>();
     for (const predecessorId of prerequisiteIds) {
       if (predecessorId === undefined) continue;
       const predecessorIndex = indexByEventId.get(predecessorId);
-      if (predecessorIndex === undefined || predecessorIndex === index) continue;
+      if (
+        predecessorIndex === undefined ||
+        predecessorIndex === index ||
+        seenPredecessors.has(predecessorIndex)
+      ) {
+        continue;
+      }
+      seenPredecessors.add(predecessorIndex);
       hasOrderingConstraint = true;
       inDegree[index] = (inDegree[index] ?? 0) + 1;
       const dependents = dependentsByIndex.get(predecessorIndex);
       if (dependents === undefined) dependentsByIndex.set(predecessorIndex, [index]);
       else dependents.push(index);
+    }
+    for (const effect of event.stockEffects) {
+      if (effect.measurementsDelta.primary.quantity.amountMinor <= 0) continue;
+      const positionId = inventoryStockPositionIdentity(effect.position);
+      const supplies = supplyIndicesByPosition.get(positionId);
+      if (supplies === undefined) supplyIndicesByPosition.set(positionId, [index]);
+      else supplies.push(index);
     }
   }
   if (!hasOrderingConstraint) {

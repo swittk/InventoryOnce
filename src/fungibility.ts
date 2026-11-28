@@ -527,20 +527,37 @@ function planInventoryFungibilityAllocationWithHolds({
     earlierShortagesByRevisionSet.set(revisionSetKey, earlierShortages);
     return earlierShortages;
   };
+  /** Verify whether a candidate trial produces valid, storable movement amounts across all picked lines. */
+  const trialProducesStorableAmounts =
+    /** Reject any trial whose line amounts fail item/package resolution or decimal storage bounds. */
+    (allocations: readonly InventoryAllocation[]): boolean =>
+      fungibilityTrialProducesStorableAmounts({
+        catalog,
+        allocations,
+        evidenceByPosition,
+      });
   /** Build a claim-preservation predicate for legal plans or physical-increment counterfactuals. */
   const createAcceptAllocations = (allowMeasuredSplitForAdvisory: boolean) =>
-    /** Reject a trial that deepens a current claim shortage. */
-    (allocations: readonly InventoryAllocation[]): boolean =>
-      fungibilityAllocationsPreserveReservations({
-        catalog, world, reservationAtEpochMs, reservationEffect, allocations,
-        evidenceByPosition, claimsByRevision, readEarlierShortages,
-        allowMeasuredSplitForAdvisory,
-      });
-  /** Preserve the same claim constraints when testing an earlier physical witness. */
+    /** Reject a trial that deepens a current claim shortage or produces an unstorable movement amount. */
+    (allocations: readonly InventoryAllocation[]): boolean => {
+      try {
+        return (
+          (allowMeasuredSplitForAdvisory || trialProducesStorableAmounts(allocations)) &&
+          fungibilityAllocationsPreserveReservations({
+            catalog, world, reservationAtEpochMs, reservationEffect, allocations,
+            evidenceByPosition, claimsByRevision, readEarlierShortages,
+            allowMeasuredSplitForAdvisory,
+          })
+        );
+      } catch (error) {
+        if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
+        return false;
+      }
+    };
+  /** Preserve legal claim feasibility and storable movement amounts with or without active claims. */
   const acceptAllocations = !allowAllocatedStock && claimsByRevision.size > 0
     ? createAcceptAllocations(false)
-    : /** Keep the complete-plan requirement even without a claim trial. */
-      (): boolean => true;
+    : trialProducesStorableAmounts;
   /** Claim predicate for counterfactual physical-increment trials that relax unfixed measured splits. */
   const acceptAdvisoryAllocations = !allowAllocatedStock && claimsByRevision.size > 0
     ? createAcceptAllocations(true)
@@ -1011,6 +1028,48 @@ interface FungibilityReservationTrialMeasurementInput {
   readonly placement: InventoryPlacementState;
   /** Whether advisory increment counterfactuals may deduct primary quantity on unfixed measured splits when safe. */
   readonly allowMeasuredSplitForAdvisory: boolean;
+}
+
+/** Inputs verifying whether a complete candidate trial produces storable movement amounts. */
+interface FungibilityTrialStorableAmountsInput {
+  /** Frozen catalogue validating item and package measurement rules. */
+  readonly catalog: InventoryCatalog;
+  /** Candidate pool allocations returned by working-stock picking. */
+  readonly allocations: readonly InventoryAllocation[];
+  /** Member conversion/item evidence keyed by normalized source position identity. */
+  readonly evidenceByPosition: ReadonlyMap<string, InventoryFungibilityCandidateEvidence>;
+}
+
+/** Verify that every picked line builds a resolvable, storable movement amount. */
+function fungibilityTrialProducesStorableAmounts({
+  catalog,
+  allocations,
+  evidenceByPosition,
+}: FungibilityTrialStorableAmountsInput): boolean {
+  try {
+    for (const allocation of allocations) {
+      const evidence = evidenceByPosition.get(
+        inventoryStockPositionIdentity(allocation.position)
+      );
+      if (evidence === undefined) return false;
+      const memberQuantity = convertQuantityByReferenceExact(
+        allocation.quantity,
+        evidence.member.poolQuantity,
+        evidence.member.memberQuantity
+      );
+      const amount = inventoryAmountForPrimaryAllocation({
+        catalog,
+        itemRevisionId: evidence.item.revisionId,
+        position: evidence.position,
+        allocatedPrimary: memberQuantity,
+      });
+      resolveInventoryAmount(catalog, evidence.item, amount);
+    }
+    return true;
+  } catch (error) {
+    if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
+    return false;
+  }
 }
 
 /** Resolve trial movement measurements, preserving legal allocation rules outside safe advisory increment checks. */

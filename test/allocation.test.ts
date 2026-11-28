@@ -100,14 +100,18 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
         visit(0, [], 0, 0, 0);
         return best;
       };
-      const candidates = rows.map(([capacity, increment, first, second], index) => candidate({
-        lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
-        extra: {
-          available: parseQuantity(String(capacity), "piece"),
-          ...(increment === 1 ? {} : { allocationIncrement: parseQuantity(String(increment), "piece") }),
-        },
+      const candidateRows = rows.map(([capacity, increment, first, second], index) => ({
+        candidate: candidate({
+          lotId: String(index), receivedAtEpochMs: time0 + index, expiresAtEpochMs: time3,
+          extra: {
+            available: parseQuantity(String(capacity), "piece"),
+            ...(increment === 1 ? {} : { allocationIncrement: parseQuantity(String(increment), "piece") }),
+          },
+        }),
+        row: [capacity, increment, first, second] as const,
       }));
-      const rowsByPosition = new Map(candidates.map((entry, index) => [entry.position, rows[index]!]));
+      const candidates = candidateRows.map((entry) => entry.candidate);
+      const rowsByPosition = new Map(candidateRows.map((entry) => [entry.candidate.position, entry.row]));
       const input = {
         requested: parseQuantity(String(primary), "piece"), candidates,
         method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
@@ -132,11 +136,11 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
         const relaxed = enumerate(partial, true);
         const result = partial ? allocateInventoryUpTo(input) : allocateWorkingInventory(input);
         expect(result.allocations).toEqual(
-          (expected?.picks ?? []).flatMap((take, index) =>
-            take === 0
-              ? []
-              : [{ position: candidates[index]!.position, quantity: parseQuantity(String(take), "piece") }],
-          ),
+          (expected?.picks ?? []).flatMap((take, index) => {
+            const record = candidateRows[index];
+            if (take === 0 || record === undefined) return [];
+            return [{ position: record.candidate.position, quantity: parseQuantity(String(take), "piece") }];
+          }),
         );
         expect(result.shortfall).toEqual(parseQuantity(String(primary - (expected?.total ?? 0)), "piece"));
         const incrementBlocked = relaxed !== undefined && (partial && expected?.total !== primary

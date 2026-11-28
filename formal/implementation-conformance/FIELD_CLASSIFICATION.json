@@ -4,10 +4,10 @@
     "callableFields": 12,
     "callbackArgumentFields": 422,
     "callbackResultFields": 448,
-    "fields": 2876,
-    "inputFields": 2381,
+    "fields": 2878,
+    "inputFields": 2383,
     "nullableFields": 9,
-    "optionalFields": 1151,
+    "optionalFields": 1153,
     "outputFields": 1137,
     "recursiveTypeReferences": 5,
     "truncatedTypes": 0,
@@ -5520,6 +5520,29 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
+    "CreateInventoryDetachInput.__@historicalWhereaboutsId@5000": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
+    },
     "CreateInventoryDetachInput.actorId": {
       "allowsNull": false,
       "allowsUndefined": false,
@@ -7245,6 +7268,29 @@
       "gaps": [],
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
+    },
+    "CreateInventoryMarkMissingInput.__@historicalWhereaboutsId@5000": {
+      "allowsNull": false,
+      "allowsUndefined": false,
+      "callSignatures": [],
+      "callable": false,
+      "classification": "abstract-semantic",
+      "declaration": "src/commands.ts",
+      "directions": [
+        "input"
+      ],
+      "discoveredType": "string",
+      "executableEvidence": [
+        "test/formal-implementation-refinement.test.ts",
+        "test/formal-implementation-conformance.test.ts"
+      ],
+      "formalModels": [
+        "InventoryOperation",
+        "PublishedHeadCAS"
+      ],
+      "gaps": [],
+      "optional": true,
+      "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
     "CreateInventoryMarkMissingInput.actorId": {
       "allowsNull": false,
@@ -67639,7 +67685,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/commands.ts:418:35.axisId": {
+    "anonymous@src/commands.ts:423:35.axisId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67662,7 +67708,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/commands.ts:418:35.unit": {
+    "anonymous@src/commands.ts:423:35.unit": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67685,7 +67731,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/commands.ts:418:35.value": {
+    "anonymous@src/commands.ts:423:35.value": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68121,7 +68167,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:825:5.deficitPosition": {
+    "anonymous@src/facade.ts:826:5.deficitPosition": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68146,7 +68192,7 @@
       "optional": true,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/facade.ts:825:5.groupId": {
+    "anonymous@src/facade.ts:826:5.groupId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68170,7 +68216,7 @@
       "optional": true,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/facade.ts:825:5.requestId": {
+    "anonymous@src/facade.ts:826:5.requestId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68859,5 +68905,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "1673caed45d9e9e74cfebf54a4fcd60b550b52065736e78a37965ecde169fff4"
+  "surfaceSha256": "6c64dbdeb3e8e1c734158b69257511ec540d9aef343ec3febf84deb1574d2165"
 }

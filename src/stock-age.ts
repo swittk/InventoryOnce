@@ -7,6 +7,9 @@ export const replayEffectiveStockAge = Symbol("replayEffectiveStockAge");
 /** Internal scope for reconstructing a count baseline from committed history. */
 export const replayCountScope = Symbol("replayCountScope");
 
+/** Internal cohort-identity override separating historical detach/missing assertions from ordinary operations. */
+export const historicalWhereaboutsId = Symbol("historicalWhereaboutsId");
+
 /** The filtered view that owns the age reconstruction. */
 export type InventoryStockAgeReplay = "effective-history" | "occurrence-cut";
 

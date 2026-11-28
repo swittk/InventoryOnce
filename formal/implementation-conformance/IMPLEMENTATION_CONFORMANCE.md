@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `1673caed45d9e9e74cfebf54a4fcd60b550b52065736e78a37965ecde169fff4`
+Surface SHA-256: `6c64dbdeb3e8e1c734158b69257511ec540d9aef343ec3febf84deb1574d2165`
 
 ## Mechanically covered surface
 
@@ -17,13 +17,13 @@ Surface SHA-256: `1673caed45d9e9e74cfebf54a4fcd60b550b52065736e78a37965ecde169ff
 - Migration callable exports: 15
 - Kernel callable exports: 194
 - Reachable public data types: 482
-- Classified public fields: 2876
-- Input-reachable fields: 2381
+- Classified public fields: 2878
+- Input-reachable fields: 2383
 - Output-reachable fields: 1137
 - Callback-argument-reachable fields: 422
 - Callback-result-reachable fields: 448
 - Callable-field overload signatures: 12
-- Optional fields: 1151
+- Optional fields: 1153
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
 - Public call/construct overload signatures: 632
@@ -86,7 +86,7 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1402 |
+| abstract-semantic | 1404 |
 | application decoration | 13 |
 | identity/retry-semantic | 849 |
 | observational/audit-only | 595 |

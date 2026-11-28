@@ -1453,15 +1453,23 @@ function reservationGroupFeasibility(
       );
       if (flowBound < fulfillableBound) fulfillableBound = flowBound;
     }
-    if (
-      divisibleCapacity === 0n &&
-      eligibleIndivisibleCapacity > fulfillableBound &&
-      smallestEligiblePack > 0n &&
-      eligibleIndivisibleCapacity - smallestEligiblePack < fulfillableBound
-    ) {
-      fulfillableBound = eligibleIndivisibleCapacity - smallestEligiblePack;
-    }
     if (divisibleCapacity === 0n && stockIncrement > 1n) fulfillableBound -= fulfillableBound % stockIncrement;
+    if (divisibleCapacity === 0n && eligibleIndivisibleCapacity > fulfillableBound) {
+      const minimumUnused = eligibleIndivisibleCapacity - fulfillableBound;
+      const tightenedUnused = minimumReachableIndivisibleSlack({
+        indivisibleGroups,
+        eligibleIndivisibleCapacity,
+        minimumUnused,
+        stockIncrement,
+        smallestEligiblePack,
+      });
+      if (
+        tightenedUnused > minimumUnused &&
+        eligibleIndivisibleCapacity - tightenedUnused < fulfillableBound
+      ) {
+        fulfillableBound = eligibleIndivisibleCapacity - tightenedUnused;
+      }
+    }
   }
   return {
     decimals,
@@ -1476,6 +1484,83 @@ function reservationGroupFeasibility(
       fulfillableBound
     ),
   };
+}
+
+/** Maximum increment units checked for exact indivisible slack reachability before keeping coarse bounds. */
+const MAXIMUM_INDIVISIBLE_SLACK_DP_UNITS = 8_192n;
+
+/** Inputs for tightening the whole-pack bound when the required unused gap is unreachable. */
+interface MinimumReachableIndivisibleSlackInput {
+  /** Eligible whole-pack and serial groups available on this reservation axis. */
+  readonly indivisibleGroups: readonly ReservationIndivisibleGroup[];
+  /** Total stock capacity across eligible indivisible groups. */
+  readonly eligibleIndivisibleCapacity: bigint;
+  /** Minimum capacity that any bound-achieving whole assignment must leave unused. */
+  readonly minimumUnused: bigint;
+  /** Greatest common divisor of eligible indivisible increments. */
+  readonly stockIncrement: bigint;
+  /** Smallest single indivisible pack size among eligible groups. */
+  readonly smallestEligiblePack: bigint;
+}
+
+/** Return the smallest slack >= minimumUnused formable from eligible whole packs, or a safe lower bound. */
+function minimumReachableIndivisibleSlack({
+  indivisibleGroups,
+  eligibleIndivisibleCapacity,
+  minimumUnused,
+  stockIncrement,
+  smallestEligiblePack,
+}: MinimumReachableIndivisibleSlackInput): bigint {
+  if (minimumUnused <= 0n || stockIncrement <= 0n) return minimumUnused;
+  const minimumUnits = (minimumUnused + stockIncrement - 1n) / stockIncrement;
+  if (minimumUnits > MAXIMUM_INDIVISIBLE_SLACK_DP_UNITS) {
+    return smallestEligiblePack > minimumUnused ? smallestEligiblePack : minimumUnused;
+  }
+  const minimumUnitsNumber = Number(minimumUnits);
+  /** Best reachable unused unit count >= minimumUnits found so far. */
+  let bestUnits = eligibleIndivisibleCapacity / stockIncrement;
+  /** Aggregate bounded pack counts by increment multiple below minimumUnits. */
+  const countsBySmallWeight = new Map<number, number>();
+  for (const group of indivisibleGroups) {
+    if (group.count <= 0n) continue;
+    const weight = group.capacityMinor / stockIncrement;
+    if (weight >= minimumUnits) {
+      if (weight < bestUnits) bestUnits = weight;
+      continue;
+    }
+    const weightNumber = Number(weight);
+    const prior = countsBySmallWeight.get(weightNumber) ?? 0;
+    const add = group.count > minimumUnits ? minimumUnitsNumber : Number(group.count);
+    const combined = prior + add;
+    countsBySmallWeight.set(
+      weightNumber,
+      combined > minimumUnitsNumber ? minimumUnitsNumber : combined
+    );
+  }
+  if (countsBySmallWeight.size === 0) return bestUnits * stockIncrement;
+  const reachable = new Uint8Array(minimumUnitsNumber);
+  reachable[0] = 1;
+  const used = new Int32Array(minimumUnitsNumber);
+  for (const [weightNumber, availableCount] of countsBySmallWeight) {
+    used.fill(0);
+    for (let sum = 0; sum < minimumUnitsNumber; sum += 1) {
+      if (reachable[sum] === 1) {
+        used[sum] = 0;
+      } else if (
+        sum >= weightNumber &&
+        reachable[sum - weightNumber] === 1 &&
+        used[sum - weightNumber]! < availableCount
+      ) {
+        reachable[sum] = 1;
+        used[sum] = used[sum - weightNumber]! + 1;
+      }
+      if (reachable[sum] === 1 && used[sum]! < availableCount) {
+        const nextSum = BigInt(sum + weightNumber);
+        if (nextSum >= minimumUnits && nextSum < bestUnits) bestUnits = nextSum;
+      }
+    }
+  }
+  return bestUnits * stockIncrement;
 }
 
 /** Inputs for the sparse exact-allocation feasibility fast path. */
