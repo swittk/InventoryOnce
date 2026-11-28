@@ -486,6 +486,18 @@ interface InventoryHistoricalReplayEntry {
   readonly afterEventId?: string;
 }
 
+/** True when a retained correction edits a placement edge touched by these dependencies. */
+function isSharedPlacementCorrection(
+  event: InventoryEventDraft | InventoryCommittedEvent,
+  dependencies: ReadonlySet<string>
+): boolean {
+  if (event.kind !== InventoryEventKind.Correction) return false;
+  return (event.placementChanges ?? []).some(
+    /** Match only corrections modifying the same placement edge. */
+    (change) => dependencies.has("dep:placement-edge:" + change.nodeId)
+  );
+}
+
 /** Insert after an explicit anchor or between the earlier and later facts using the same resources. */
 function insertHistoricalAssertion(
   target: InventoryHistoricalReplayEntry[],
@@ -511,8 +523,10 @@ function insertHistoricalAssertion(
     const occurredAt = assertion.event.occurredAtEpochMs;
     for (let index = 0; index < target.length; index += 1) {
       const event = target[index]!.event;
-      // A retained count correction is an adjustment, not a physical ordering anchor.
-      if (event.kind === InventoryEventKind.Correction) continue;
+      // Retained count corrections are adjustments, whereas shared placement corrections set topology order.
+      if (event.kind === InventoryEventKind.Correction && !isSharedPlacementCorrection(event, dependencies)) {
+        continue;
+      }
       if (event.occurredAtEpochMs <= occurredAt) {
         insertionIndex = index;
       } else if (inventoryEventDependencyKeys(event).some(
@@ -549,7 +563,10 @@ function bringForwardHistoricalPredecessors(
   for (let index = firstLater + 1; index < target.length; index += 1) {
     const entry = target[index]!;
     const { event, afterEventId } = entry;
-    if (event.occurredAtEpochMs > occurredAt || event.kind === InventoryEventKind.Correction) {
+    if (
+      event.occurredAtEpochMs > occurredAt ||
+      (event.kind === InventoryEventKind.Correction && (event.placementChanges ?? []).length === 0)
+    ) {
       continue;
     }
     const keys = inventoryEventDependencyKeys(event);
@@ -631,16 +648,75 @@ function bringForwardHistoricalPredecessors(
   for (let index = firstLater; index < target.length; index += 1) {
     (predecessors.has(index) ? earlier : remaining).push(target[index]!);
   }
-  // A retained earlier receipt can itself be durably out of order with its movement.
-  earlier.sort(
-    /** Keep the collected durable/anchor order for equal occurrences. */
-    (left, right) => left.event.occurredAtEpochMs - right.event.occurredAtEpochMs
-  );
   // Keep unrelated facts in their original order and avoid a variable-size splice argument list.
+  const ordered = orderHistoricalPredecessors(earlier);
   let index = firstLater;
-  for (const entry of earlier) target[index++] = entry;
+  for (const entry of ordered) target[index++] = entry;
   for (const entry of remaining) target[index++] = entry;
-  return earlier.length;
+  return ordered.length;
+}
+
+/** Order moved predecessors by occurrence time while preserving explicit in-slice anchor constraints. */
+function orderHistoricalPredecessors(
+  earlier: readonly InventoryHistoricalReplayEntry[]
+): readonly InventoryHistoricalReplayEntry[] {
+  const indexByEventId = new Map<string, number>();
+  for (let index = 0; index < earlier.length; index += 1) {
+    indexByEventId.set(earlier[index]!.event.eventId, index);
+  }
+  const dependentsByIndex = new Map<number, number[]>();
+  const inDegree = new Array<number>(earlier.length).fill(0);
+  let hasAnchorConstraint = false;
+  for (let index = 0; index < earlier.length; index += 1) {
+    const afterEventId = earlier[index]!.afterEventId;
+    if (afterEventId === undefined) continue;
+    const anchorIndex = indexByEventId.get(afterEventId);
+    if (anchorIndex === undefined || anchorIndex === index) continue;
+    hasAnchorConstraint = true;
+    inDegree[index] = (inDegree[index] ?? 0) + 1;
+    const dependents = dependentsByIndex.get(anchorIndex);
+    if (dependents === undefined) dependentsByIndex.set(anchorIndex, [index]);
+    else dependents.push(index);
+  }
+  if (!hasAnchorConstraint) {
+    const sorted = [...earlier];
+    sorted.sort(
+      /** Keep the collected durable/anchor order for equal occurrences. */
+      (left, right) => left.event.occurredAtEpochMs - right.event.occurredAtEpochMs
+    );
+    return sorted;
+  }
+  const ready: number[] = [];
+  for (let index = 0; index < earlier.length; index += 1) {
+    if (inDegree[index] === 0) ready.push(index);
+  }
+  const ordered: InventoryHistoricalReplayEntry[] = [];
+  while (ready.length > 0) {
+    let bestPos = 0;
+    for (let pos = 1; pos < ready.length; pos += 1) {
+      const candidateIndex = ready[pos]!;
+      const bestIndex = ready[bestPos]!;
+      const timeDelta =
+        earlier[candidateIndex]!.event.occurredAtEpochMs -
+        earlier[bestIndex]!.event.occurredAtEpochMs;
+      if (timeDelta < 0 || (timeDelta === 0 && candidateIndex < bestIndex)) {
+        bestPos = pos;
+      }
+    }
+    const chosenIndex = ready.splice(bestPos, 1)[0]!;
+    ordered.push(earlier[chosenIndex]!);
+    for (const dependentIndex of dependentsByIndex.get(chosenIndex) ?? []) {
+      const nextDegree = (inDegree[dependentIndex] ?? 0) - 1;
+      inDegree[dependentIndex] = nextDegree;
+      if (nextDegree === 0) ready.push(dependentIndex);
+    }
+  }
+  if (ordered.length < earlier.length) {
+    for (let index = 0; index < earlier.length; index += 1) {
+      if ((inDegree[index] ?? 0) > 0) ordered.push(earlier[index]!);
+    }
+  }
+  return ordered;
 }
 
 /** Reconcile graph-only later intents after corrected/late earlier history changes. */

@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { inventoryEventDependencyKeys } from "../src/event-query.js";
+import { inventoryLotIdentity, inventoryStockPositionIdentity } from "../src/model.js";
 import {
   InventoryEventKind,
   InventoryEventQueryDirection,
@@ -371,6 +373,50 @@ describe("indexed retained event history", () => {
         occurredThroughEpochMs: time0,
       })
     ).rejects.toThrow("range is reversed");
+  });
+
+  it("includes query-mode dependency keys for positive-layer provenance override positions with zero stock delta", async () => {
+    const inventory = createTestInventory();
+    const to = loosePosition("store", { lotId: "LOT-OVERRIDE" });
+    const receipt = await inventory.stock.receive({
+      operationId: "override-key-receipt-1",
+      occurredAtEpochMs: time0,
+      to,
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "override-key-receipt-2",
+      occurredAtEpochMs: time1,
+      to,
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "override-key-issue",
+      occurredAtEpochMs: time3,
+      from: to,
+      amount: stockAmount("2", "piece"),
+    });
+    const correction = await inventory.stock.correct({
+      operationId: "override-key-correct",
+      occurredAtEpochMs: time3,
+      correctsEventId: receipt.event.eventId,
+      reason: "Move initial receipt occurrence without changing ending stock quantity.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time2,
+          to,
+          amount: stockAmount("2", "piece"),
+        }),
+    });
+    expect(correction.event.stockEffects).toEqual([]);
+    expect(correction.event.positiveLayerProvenanceOverrides).toHaveLength(1);
+    const overridePosition =
+      correction.event.positiveLayerProvenanceOverrides![0]!.position;
+    const keys = new Set(inventoryEventDependencyKeys(correction.event));
+    expect(keys.has("dep:position:" + inventoryStockPositionIdentity(overridePosition))).toBe(true);
+    expect(keys.has("dep:lot-stock:" + inventoryLotIdentity(to.itemId, "LOT-OVERRIDE"))).toBe(true);
+    expect(keys.has("dep:lot-definition:" + inventoryLotIdentity(to.itemId, "LOT-OVERRIDE"))).toBe(true);
+    expect(keys.has("dep:placement-definition:store")).toBe(true);
   });
 
 });

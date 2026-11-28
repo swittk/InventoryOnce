@@ -1963,4 +1963,76 @@ describe("late historical repair", () => {
     );
   });
 
+  it("keeps an earlier placement correction ahead of a later unanchored placement repair during count replay", async () => {
+    const inventory = createTestInventory();
+    const initialMove = await inventory.placement.move({
+      operationId: "correction-order-move-a",
+      occurredAtEpochMs: time0 + 10,
+      nodeId: "X",
+      into: "A",
+    });
+    await inventory.stock.receive({
+      operationId: "correction-order-stock",
+      occurredAtEpochMs: time0 + 10,
+      to: loosePosition("X"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.correct({
+      operationId: "correction-order-correct-b",
+      occurredAtEpochMs: time0 + 20,
+      correctsEventId: initialMove.event.eventId,
+      reason: "X was placed under B first.",
+      replaceWith: (plans) =>
+        plans.placement({
+          occurredAtEpochMs: time0 + 20,
+          nodeId: "X",
+          toParentNodeId: "B",
+        }),
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "correction-order-repair-c",
+      occurredAtEpochMs: time0 + 25,
+      reason: "X moved under C later.",
+      assertions: [
+        {
+          assertionId: "move-x-c",
+          assert: (plans) =>
+            plans.placement({
+              occurredAtEpochMs: time0 + 25,
+              nodeId: "X",
+              toParentNodeId: "C",
+            }),
+        },
+      ],
+    });
+    expect(await inventory.read.placementAncestry("X")).toEqual(["X", "C"]);
+    await inventory.counts.start({
+      countId: "correction-order-count",
+      operationId: "correction-order-count-start",
+      startedAtEpochMs: time0 + 30,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["C"] },
+    });
+    await inventory.counts.observe({
+      countId: "correction-order-count",
+      operationId: "correction-order-count-observe",
+      observedAtEpochMs: time0 + 30,
+      observations: [
+        {
+          position: { ...loosePosition("X"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "correction-order-count",
+      operationId: "correction-order-count-reconcile",
+      completedAtEpochMs: time0 + 31,
+    });
+    expect(reconciled.event).toBeUndefined();
+    expect(await inventory.read.placementAncestry("X")).toEqual(["X", "C"]);
+  });
+
 });

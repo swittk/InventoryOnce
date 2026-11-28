@@ -1434,6 +1434,17 @@ function reservationGroupFeasibility(
     if (scopedDemandBound < fulfillableBound) fulfillableBound = scopedDemandBound;
     if (sharedDemandBound < fulfillableBound) fulfillableBound = sharedDemandBound;
     if (sharedRowBound < fulfillableBound) fulfillableBound = sharedRowBound;
+    if (fulfillableBound > 0n) {
+      const flowBound = maximumBoundedReservationFulfillmentFlow(
+        positions,
+        requestedByReservation,
+        edgeCapacityByReservation,
+        wholeIncrementByReservation,
+        decimals,
+        fulfillableBound
+      );
+      if (flowBound < fulfillableBound) fulfillableBound = flowBound;
+    }
     if (divisibleCapacity === 0n && stockIncrement > 1n) fulfillableBound -= fulfillableBound % stockIncrement;
   }
   return {
@@ -1874,6 +1885,78 @@ function assignIndivisibleGroupCounts(
     assignedCounts[reservationIndex] = 0n;
   }
   return assignReservation(0, group.count);
+}
+
+/** Tight admissible fulfillment ceiling across all claims, whole increments, and capacities together. */
+function maximumBoundedReservationFulfillmentFlow(
+  positions: readonly ReservationFeasibilityPosition[],
+  requestedByReservation: readonly bigint[],
+  edgeCapacityByReservation: readonly (readonly bigint[])[],
+  wholeIncrementByReservation: readonly bigint[],
+  decimals: number,
+  target: bigint
+): bigint {
+  const source = 0;
+  const reservationCount = requestedByReservation.length;
+  const firstReservationNode = 1;
+  const firstWholeNode = firstReservationNode + reservationCount;
+  const firstPositionNode = firstWholeNode + reservationCount;
+  const sink = firstPositionNode + positions.length;
+  const network = new BigIntFlowNetwork();
+  const wholeCapacityByReservation = new Array<bigint>(reservationCount).fill(0n);
+  const wholeDemandByReservation = new Array<bigint>(reservationCount).fill(0n);
+  for (let reservationIndex = 0; reservationIndex < reservationCount; reservationIndex += 1) {
+    const requested = requestedByReservation[reservationIndex] ?? 0n;
+    const increment = wholeIncrementByReservation[reservationIndex] ?? 0n;
+    wholeDemandByReservation[reservationIndex] =
+      increment === 0n ? 0n : requested - (requested % increment);
+    network.addEdge(source, firstReservationNode + reservationIndex, requested);
+  }
+  for (let positionIndex = 0; positionIndex < positions.length; positionIndex += 1) {
+    const candidate = positions[positionIndex];
+    if (candidate === undefined) continue;
+    const capacityMinor = quantityAtDecimals(candidate.capacity, decimals);
+    const increment = candidate.indivisibleIncrement;
+    const incrementMinor =
+      increment === undefined ? undefined : quantityAtDecimals(increment, decimals);
+    for (let reservationIndex = 0; reservationIndex < reservationCount; reservationIndex += 1) {
+      const edgeCapacity = edgeCapacityByReservation[reservationIndex]?.[positionIndex] ?? 0n;
+      if (edgeCapacity <= 0n) continue;
+      const requested = requestedByReservation[reservationIndex] ?? 0n;
+      const capped = edgeCapacity < requested ? edgeCapacity : requested;
+      if (incrementMinor === undefined) {
+        network.addEdge(
+          firstReservationNode + reservationIndex,
+          firstPositionNode + positionIndex,
+          capped
+        );
+        continue;
+      }
+      const wholeEdge = capped - (capped % incrementMinor);
+      if (wholeEdge <= 0n) continue;
+      wholeCapacityByReservation[reservationIndex] =
+        (wholeCapacityByReservation[reservationIndex] ?? 0n) + wholeEdge;
+      network.addEdge(
+        firstWholeNode + reservationIndex,
+        firstPositionNode + positionIndex,
+        wholeEdge
+      );
+    }
+    network.addEdge(firstPositionNode + positionIndex, sink, capacityMinor);
+  }
+  for (let reservationIndex = 0; reservationIndex < reservationCount; reservationIndex += 1) {
+    const wholeDemand = wholeDemandByReservation[reservationIndex] ?? 0n;
+    const wholeAvailable = wholeCapacityByReservation[reservationIndex] ?? 0n;
+    const wholeCap = wholeDemand < wholeAvailable ? wholeDemand : wholeAvailable;
+    if (wholeCap > 0n) {
+      network.addEdge(
+        firstReservationNode + reservationIndex,
+        firstWholeNode + reservationIndex,
+        wholeCap
+      );
+    }
+  }
+  return network.maximumFlow(source, sink, target);
 }
 
 /** Run ordinary exact max-flow only across stock rows legal to divide on the reservation axis. */

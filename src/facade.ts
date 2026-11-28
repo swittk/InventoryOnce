@@ -10465,6 +10465,8 @@ function buildIndexedWhereaboutsEventsProjection(
   const eventSequencesByWhereaboutsId = createInventorySparseRecord<readonly number[]>();
   /** Track touched cohort ids per event so correction events inherit their root's cohorts. */
   const touchedWhereaboutsByEventId = new Map<string, readonly string[]>();
+  /** Locally owned mutable buckets avoid copying cohort sequence arrays on every push. */
+  const mutableSequencesByWhereaboutsId = new Map<string, number[]>();
   for (const event of orderedEvents) {
     setInventorySparseRecordValue(events, event.eventId, event);
     setInventorySparseRecordValue(eventIdsBySequence, String(event.recordSequence), event.eventId);
@@ -10483,14 +10485,17 @@ function buildIndexedWhereaboutsEventsProjection(
       const list = [...touchedIds];
       touchedWhereaboutsByEventId.set(event.eventId, list);
       for (const whereaboutsId of list) {
-        const existing = inventorySparseRecordValue(eventSequencesByWhereaboutsId, whereaboutsId);
-        setInventorySparseRecordValue(
-          eventSequencesByWhereaboutsId,
-          whereaboutsId,
-          existing === undefined ? [event.recordSequence] : [...existing, event.recordSequence]
-        );
+        const bucket = mutableSequencesByWhereaboutsId.get(whereaboutsId);
+        if (bucket === undefined) {
+          mutableSequencesByWhereaboutsId.set(whereaboutsId, [event.recordSequence]);
+        } else {
+          bucket.push(event.recordSequence);
+        }
       }
     }
+  }
+  for (const [whereaboutsId, sequences] of mutableSequencesByWhereaboutsId) {
+    setInventorySparseRecordValue(eventSequencesByWhereaboutsId, whereaboutsId, sequences);
   }
   const lastEvent = orderedEvents[orderedEvents.length - 1];
   return {
@@ -10517,13 +10522,7 @@ async function readExactInventoryWhereabouts<Result>(
   ) {
     return undefined;
   }
-  if (
-    whereaboutsIds.length === 0 ||
-    whereaboutsIds.some(
-      /** Let canonical validators report empty or malformed cohort identities unchanged. */
-      (id) => typeof id !== "string" || id.trim().length === 0 || id !== id.trim()
-    )
-  ) {
+  if (whereaboutsIds.length === 0) {
     return project(emptyInventoryProjectionState());
   }
   const whereaboutsIdSet = new Set(whereaboutsIds);
@@ -10568,6 +10567,7 @@ async function readExactInventoryWhereabouts<Result>(
 
     const positions = createInventorySparseRecord<InventoryStockPosition>();
     const positionIdsByWhereaboutsId = createInventorySparseRecord<readonly string[]>();
+    const mutablePositionIdsByWhereaboutsId = new Map<string, string[]>();
     if (touchedItemIds.size > 0) {
       const segment = await storage.readPositionSegment();
       if ((await segment.revision()) !== head.worldRevision) continue;
@@ -10583,15 +10583,18 @@ async function readExactInventoryWhereabouts<Result>(
           const positionId = inventoryStockPositionIdentity(position.key);
           if (inventorySparseRecordValue(positions, positionId) !== undefined) continue;
           setInventorySparseRecordValue(positions, positionId, position);
-          const existingIds = inventorySparseRecordValue(positionIdsByWhereaboutsId, whereaboutsId);
-          setInventorySparseRecordValue(
-            positionIdsByWhereaboutsId,
-            whereaboutsId,
-            existingIds === undefined ? [positionId] : [...existingIds, positionId]
-          );
+          const bucket = mutablePositionIdsByWhereaboutsId.get(whereaboutsId);
+          if (bucket === undefined) {
+            mutablePositionIdsByWhereaboutsId.set(whereaboutsId, [positionId]);
+          } else {
+            bucket.push(positionId);
+          }
         }
       }
       if ((await segment.revision()) !== head.worldRevision) continue;
+      for (const [whereaboutsId, ids] of mutablePositionIdsByWhereaboutsId) {
+        setInventorySparseRecordValue(positionIdsByWhereaboutsId, whereaboutsId, ids);
+      }
     }
 
     const headAfter = await storage.readSegmentedStockHead();

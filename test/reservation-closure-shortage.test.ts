@@ -581,4 +581,71 @@ describe("reservation closure through an existing shortage", () => {
       shortage: parseQuantity("62", "piece"),
     }]);
   });
+
+  it("caps multi-claim simultaneous indivisible shortage via flow bound before searching large lots", async () => {
+    const item = defineScalarInventoryItem({ itemId: "flow-pack", revisionId: "flow-pack-v1", axisId: "pieces", unit: "piece" });
+    const pair = defineScalarInventoryPackaging({ revisionId: "flow-pair", item, packageUnit: "box", contains: "2" });
+    const quad = defineScalarInventoryPackaging({ revisionId: "flow-quad", item, packageUnit: "case", contains: "4" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "flow-pack": item.revisionId }, packagingRevisions: [pair, quad],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "flow-bound-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "X1" }, amount: packageAmount(1, pair.revisionId) },
+        { to: { ...store, lotId: "X2" }, amount: packageAmount(1, pair.revisionId) },
+        { to: { ...store, lotId: "Z" }, amount: packageAmount(2, pair.revisionId) },
+        { to: { ...store, lotId: "Y" }, amount: packageAmount(100001, quad.revisionId) },
+      ],
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-a",
+      reservationId: "claim-a",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["X1", "X2"] },
+      requested: parseQuantity("2", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-b",
+      reservationId: "claim-b",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["Z"] },
+      requested: parseQuantity("2", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-c",
+      reservationId: "claim-c",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["Z"] },
+      requested: parseQuantity("2", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-d",
+      reservationId: "claim-d",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["Y"] },
+      requested: parseQuantity("400004", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.stock.issue({
+      operationId: "flow-bound-issue-z",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "Z", packagingRevisionId: pair.revisionId },
+      amount: packageAmount(1, pair.revisionId),
+    });
+
+    const report = await inventory.read.reservationFeasibility(time2);
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups).toMatchObject([{
+      requested: parseQuantity("400010", "piece"),
+      fulfillable: parseQuantity("400008", "piece"),
+      shortage: parseQuantity("2", "piece"),
+    }]);
+  });
 });

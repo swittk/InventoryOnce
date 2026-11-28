@@ -2205,3 +2205,10 @@ The R105 portable-current-input authority and final publication both continue to
 - Whole-stock reservation feasibility bounds cap each indivisible row by the minimum of its available capacity and the sum of rounded legal claim-edge demand ceilings, preserving per-claim loose bounds and exact integer limits.
 - Count subtree observation seeds one shared worklist with all selected roots and traverses placement children once with a single visited set.
 - Exact `whereaboutsIds` reads on `whereabouts` and `whereaboutsHistory` page the private `dep:whereabouts:<id>` dependency index (including `historicalImpact.whereaboutsIds` and provenance transfers/overrides) under a segmented head/revision fence and fetch only matching current position rows, falling back cleanly when capabilities are absent or concurrent writes interleave.
+
+## 2026-11-28 — override query keys, placement corrections, sibling subtrees, and flow bounds
+
+- Query-mode dependency keys emit the same position, pool/serial/lot, placement-definition, whereabouts, and transfer keys for zero-delta `positiveLayerProvenanceOverrides` positions as for `stockEffects`.
+- Unanchored historical placement repairs keep earlier retained placement `Correction` events on shared placement edges ahead of later repairs during occurrence-cut count replay while continuing to skip count corrections.
+- Count placement dependency discovery walks downward from selected roots to gather affected subtrees and upward through historical parents for cycle checks without pulling unrelated sibling subtrees through shared ancestors.
+- Indivisible-group reservation feasibility tightens its initial `fulfillableBound` with a multi-claim, multi-position `BigIntFlowNetwork` relaxation, and indexed whereabouts reads accumulate sequence/position buckets directly before publishing sparse records.

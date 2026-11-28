@@ -11,6 +11,7 @@ import {
   inventoryLotIdentity,
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
+  type InventoryStockPositionKey,
 } from "./model.js";
 import { cloneInventoryRetainedData } from "./sparse-record.js";
 import { inventoryTraceabilityRelationIdentity } from "./traceability.js";
@@ -602,54 +603,12 @@ function inventoryEventDependencyKeysForMode(
   }
   for (const assertion of inventoryEventEffectiveAssertions(event)) {
     for (const effect of assertion.stockEffects) {
-      const position = effect.position;
-      keys.add("dep:position:" + inventoryStockPositionIdentity(position));
-      if (position.serialId !== undefined) {
-        keys.add(
-          "dep:serial:" +
-            inventorySerialIdentity(position.itemId, position.serialId)
-        );
-      } else {
-        keys.add(
-          "dep:pool:" +
-            JSON.stringify([
-              effect.itemRevisionId,
-              position.placementNodeId ?? null,
-              position.whereaboutsId ?? null,
-            ])
-        );
-        if (position.lotId !== undefined) {
-          keys.add(
-            "dep:lot-stock:" +
-              inventoryLotIdentity(position.itemId, position.lotId)
-          );
-        }
-      }
-      if (position.placementNodeId !== undefined && mode === "index") {
-        keys.add("dep:placement-contents:" + position.placementNodeId);
-      }
-      if (mode === "query") {
-        if (position.lotId !== undefined) {
-          keys.add(
-            "dep:lot-definition:" +
-              inventoryLotIdentity(position.itemId, position.lotId)
-          );
-        }
-        if (position.placementNodeId !== undefined) {
-          keys.add("dep:placement-definition:" + position.placementNodeId);
-        }
-        if (position.lastPlacementNodeId !== undefined) {
-          keys.add(
-            "dep:placement-definition:" + position.lastPlacementNodeId
-          );
-        }
-      }
-      if (position.whereaboutsId !== undefined) {
-        keys.add("dep:whereabouts:" + position.whereaboutsId);
-      }
-      if (position.transferId !== undefined) {
-        keys.add("dep:transfer:" + position.transferId);
-      }
+      addInventoryStockPositionDependencyKeys(
+        keys,
+        effect.itemRevisionId,
+        effect.position,
+        mode
+      );
     }
     if (mode === "index") {
       for (const transfer of assertion.positiveLayerProvenanceTransfers ?? []) {
@@ -664,6 +623,15 @@ function inventoryEventDependencyKeysForMode(
         if (override.position.whereaboutsId !== undefined) {
           keys.add("dep:whereabouts:" + override.position.whereaboutsId);
         }
+      }
+    } else {
+      for (const override of assertion.positiveLayerProvenanceOverrides ?? []) {
+        addInventoryStockPositionDependencyKeys(
+          keys,
+          override.position.itemRevisionId,
+          override.position,
+          mode
+        );
       }
     }
     if (assertion.transferLifecycle !== undefined) {
@@ -725,6 +693,60 @@ function inventoryEventDependencyKeysForMode(
   const result = [...keys];
   result.sort(compareInventoryIdentityText);
   return result;
+}
+
+/** Add dependency keys shared by stock effects and positive-layer provenance overrides. */
+function addInventoryStockPositionDependencyKeys(
+  keys: Set<string>,
+  itemRevisionId: string,
+  position: InventoryStockPositionKey,
+  mode: "query" | "index"
+): void {
+  keys.add("dep:position:" + inventoryStockPositionIdentity(position));
+  if (position.serialId !== undefined) {
+    keys.add(
+      "dep:serial:" +
+        inventorySerialIdentity(position.itemId, position.serialId)
+    );
+  } else {
+    keys.add(
+      "dep:pool:" +
+        JSON.stringify([
+          itemRevisionId,
+          position.placementNodeId ?? null,
+          position.whereaboutsId ?? null,
+        ])
+    );
+    if (position.lotId !== undefined) {
+      keys.add(
+        "dep:lot-stock:" +
+          inventoryLotIdentity(position.itemId, position.lotId)
+      );
+    }
+  }
+  if (position.placementNodeId !== undefined && mode === "index") {
+    keys.add("dep:placement-contents:" + position.placementNodeId);
+  }
+  if (mode === "query") {
+    if (position.lotId !== undefined) {
+      keys.add(
+        "dep:lot-definition:" +
+          inventoryLotIdentity(position.itemId, position.lotId)
+      );
+    }
+    if (position.placementNodeId !== undefined) {
+      keys.add("dep:placement-definition:" + position.placementNodeId);
+    }
+    if (position.lastPlacementNodeId !== undefined) {
+      keys.add("dep:placement-definition:" + position.lastPlacementNodeId);
+    }
+  }
+  if (position.whereaboutsId !== undefined) {
+    keys.add("dep:whereabouts:" + position.whereaboutsId);
+  }
+  if (position.transferId !== undefined) {
+    keys.add("dep:transfer:" + position.transferId);
+  }
 }
 
 /** Build one item resource-index key. */

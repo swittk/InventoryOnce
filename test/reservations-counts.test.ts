@@ -1020,11 +1020,28 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       replaceWith: (plans) => plans.placement({ occurredAtEpochMs: time0, nodeId: "child", toParentNodeId: "root" }),
     });
     expect(correction.event.correction?.supersedesCorrectionEventId).toBe(earlier.event.eventId);
-    const result = await inventory.counts.replaceAbsolute({
-      countId: "count", operationId: "count", itemRevisionId: "item-a-v2",
-      selector: { itemId: "item-a", withinPlacementNodeIds: ["root"] },
-      observedMeasurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
-      occurredAtEpochMs: time2,
+    const selector = { itemId: "item-a", withinPlacementNodeIds: ["root"] };
+    await inventory.counts.start({
+      countId: "count",
+      operationId: "count-start",
+      startedAtEpochMs: time2,
+      selector,
+    });
+    await inventory.counts.observe({
+      countId: "count",
+      operationId: "count-observe",
+      observedAtEpochMs: time2,
+      observations: [
+        {
+          position: { ...loosePosition("child"), itemRevisionId: "item-a-v2" },
+          measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+        },
+      ],
+    });
+    const result = await inventory.counts.reconcile({
+      countId: "count",
+      operationId: "count",
+      completedAtEpochMs: time2,
     });
     expect(result.event?.stockEffects).toMatchObject([
       { position: loosePosition("child"), measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } } },
@@ -1596,5 +1613,76 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } },
       },
     ]);
+  });
+
+  it("excludes unrelated sibling-subtree placement cycles during scoped count prepass", async () => {
+    const inventory = createTestInventory();
+    await inventory.placement.move({
+      operationId: "sibling-move-a-w",
+      occurredAtEpochMs: time0,
+      nodeId: "A",
+      into: "W",
+    });
+    await inventory.placement.move({
+      operationId: "sibling-move-s-w",
+      occurredAtEpochMs: time0,
+      nodeId: "S",
+      into: "W",
+    });
+    await inventory.placement.move({
+      operationId: "sibling-move-x-s",
+      occurredAtEpochMs: time0,
+      nodeId: "X",
+      into: "S",
+    });
+    await inventory.placement.move({
+      operationId: "sibling-move-b-x",
+      occurredAtEpochMs: time0,
+      nodeId: "B",
+      into: "X",
+    });
+    await inventory.stock.receive({
+      operationId: "sibling-stock-a",
+      occurredAtEpochMs: time0,
+      to: loosePosition("A"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.unplace({
+      operationId: "sibling-unplace-b",
+      occurredAtEpochMs: time2,
+      nodeId: "B",
+    });
+    await inventory.placement.moveContents({
+      operationId: "sibling-move-contents-s-b",
+      occurredAtEpochMs: time1,
+      nodeId: "S",
+      into: "B",
+    });
+    await inventory.counts.start({
+      countId: "sibling-scoped-count",
+      operationId: "sibling-scoped-count-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["A"] },
+    });
+    await inventory.counts.observe({
+      countId: "sibling-scoped-count",
+      operationId: "sibling-scoped-count-observe",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: { ...loosePosition("A"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "sibling-scoped-count",
+      operationId: "sibling-scoped-count-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(reconciled.event).toBeUndefined();
   });
 });

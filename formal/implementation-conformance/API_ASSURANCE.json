@@ -3,15 +3,15 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4521,
-    "compilerCallGraphEdges": 13237,
+    "compilerCallGraphCallables": 4532,
+    "compilerCallGraphEdges": 13297,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
-    "directExecutableApis": 272,
+    "directExecutableApis": 273,
     "explicitGapApis": 4,
     "facadeMethods": 137,
-    "indirectCallChainApis": 356,
+    "indirectCallChainApis": 355,
     "kernelCallables": 194,
     "maximumTypeDepth": 12,
     "migrationCallables": 15,
@@ -12461,20 +12461,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -12491,9 +12491,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -12674,9 +12674,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:409017:whereabouts",
+              "id": "src/facade.ts:409300:whereabouts",
               "kind": "MethodDeclaration",
-              "line": 10663,
+              "line": 10666,
               "name": "whereabouts",
               "reason": "interface-to-implementation"
             },
@@ -12684,9 +12684,9 @@
               "column": 1,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:402848:readExactInventoryWhereabouts",
+              "id": "src/facade.ts:403142:readExactInventoryWhereabouts",
               "kind": "FunctionDeclaration",
-              "line": 10509,
+              "line": 10514,
               "name": "readExactInventoryWhereabouts",
               "reason": "resolved-call"
             },
@@ -15676,7 +15676,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 133,
+          "occurrences": 141,
           "path": "src/historical-replay.ts"
         },
         {
@@ -16499,20 +16499,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -16529,9 +16529,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -17287,7 +17287,7 @@
           "path": "src/placement.ts"
         },
         {
-          "occurrences": 4,
+          "occurrences": 3,
           "path": "src/projection.ts"
         },
         {
@@ -19761,7 +19761,7 @@
           "path": "src/deficits.ts"
         },
         {
-          "occurrences": 46,
+          "occurrences": 48,
           "path": "src/event-query.ts"
         },
         {
@@ -25191,9 +25191,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:85234:projectInventoryEvents",
+              "id": "src/projection.ts:85735:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 2073,
+              "line": 2083,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -25201,9 +25201,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:87077:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:87578:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 2118,
+              "line": 2128,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             },
@@ -25211,9 +25211,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:96495:compareCommittedEventSequence",
+              "id": "src/projection.ts:96996:compareCommittedEventSequence",
               "kind": "FunctionDeclaration",
-              "line": 2381,
+              "line": 2391,
               "name": "compareCommittedEventSequence",
               "reason": "external-callback-dispatch"
             }
@@ -25222,9 +25222,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:96495:compareCommittedEventSequence",
+            "id": "src/projection.ts:96996:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 2381,
+            "line": 2391,
             "name": "compareCommittedEventSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -25247,9 +25247,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:96495:compareCommittedEventSequence",
+          "id": "src/projection.ts:96996:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 2381,
+          "line": 2391,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -26993,20 +26993,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -27023,9 +27023,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -27033,9 +27033,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:13499:queryInventoryProjectionEvents",
+              "id": "src/event-query.ts:13533:queryInventoryProjectionEvents",
               "kind": "FunctionDeclaration",
-              "line": 360,
+              "line": 361,
               "name": "queryInventoryProjectionEvents",
               "reason": "resolved-call"
             },
@@ -27043,9 +27043,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:12614:createInventoryEventPage",
+              "id": "src/event-query.ts:12648:createInventoryEventPage",
               "kind": "FunctionDeclaration",
-              "line": 334,
+              "line": 335,
               "name": "createInventoryEventPage",
               "reason": "resolved-call"
             }
@@ -27054,9 +27054,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:12614:createInventoryEventPage",
+            "id": "src/event-query.ts:12648:createInventoryEventPage",
             "kind": "FunctionDeclaration",
-            "line": 334,
+            "line": 335,
             "name": "createInventoryEventPage"
           },
           "test": "test/event-query.test.ts"
@@ -27077,9 +27077,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:12614:createInventoryEventPage",
+          "id": "src/event-query.ts:12648:createInventoryEventPage",
           "kind": "FunctionDeclaration",
-          "line": 334,
+          "line": 335,
           "name": "createInventoryEventPage"
         }
       ],
@@ -34349,9 +34349,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:87555:findInventoryPositions",
+              "id": "src/projection.ts:88056:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 2134,
+              "line": 2144,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             }
@@ -34360,9 +34360,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:87555:findInventoryPositions",
+            "id": "src/projection.ts:88056:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 2134,
+            "line": 2144,
             "name": "findInventoryPositions"
           },
           "test": "test/projection-index-scale.test.ts"
@@ -34389,9 +34389,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:87555:findInventoryPositions",
+          "id": "src/projection.ts:88056:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 2134,
+          "line": 2144,
           "name": "findInventoryPositions"
         }
       ],
@@ -35128,9 +35128,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -35138,9 +35138,9 @@
               "column": 43,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:28768:inventoryAssertionEventKey",
+              "id": "src/event-query.ts:29223:inventoryAssertionEventKey",
               "kind": "ArrowFunction",
-              "line": 743,
+              "line": 765,
               "name": "inventoryAssertionEventKey",
               "reason": "resolved-call"
             }
@@ -35149,9 +35149,9 @@
             "column": 43,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:28768:inventoryAssertionEventKey",
+            "id": "src/event-query.ts:29223:inventoryAssertionEventKey",
             "kind": "ArrowFunction",
-            "line": 743,
+            "line": 765,
             "name": "inventoryAssertionEventKey"
           },
           "test": "test/segmented-journal.test.ts"
@@ -35172,9 +35172,9 @@
           "column": 43,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:28768:inventoryAssertionEventKey",
+          "id": "src/event-query.ts:29223:inventoryAssertionEventKey",
           "kind": "ArrowFunction",
-          "line": 743,
+          "line": 765,
           "name": "inventoryAssertionEventKey"
         }
       ],
@@ -35918,9 +35918,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:22422:inventoryEventDependencyIndexKeys",
+              "id": "src/event-query.ts:22456:inventoryEventDependencyIndexKeys",
               "kind": "FunctionDeclaration",
-              "line": 580,
+              "line": 581,
               "name": "inventoryEventDependencyIndexKeys",
               "reason": "resolved-call"
             }
@@ -35929,9 +35929,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:22422:inventoryEventDependencyIndexKeys",
+            "id": "src/event-query.ts:22456:inventoryEventDependencyIndexKeys",
             "kind": "FunctionDeclaration",
-            "line": 580,
+            "line": 581,
             "name": "inventoryEventDependencyIndexKeys"
           },
           "test": "test/segmented-journal.test.ts"
@@ -35956,9 +35956,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:22422:inventoryEventDependencyIndexKeys",
+          "id": "src/event-query.ts:22456:inventoryEventDependencyIndexKeys",
           "kind": "FunctionDeclaration",
-          "line": 580,
+          "line": 581,
           "name": "inventoryEventDependencyIndexKeys"
         }
       ],
@@ -36020,60 +36020,40 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/historical-repair-scale.test.ts",
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test-root:test/historical-repair-scale.test.ts",
+              "id": "test-root:test/event-query.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/historical-repair-scale.test.ts"
+              "name": "test/event-query.test.ts"
             },
             {
-              "column": 64,
-              "file": "test/historical-repair-scale.test.ts",
+              "column": 44,
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair-scale.test.ts:8992:<anonymous@276>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 276,
-              "name": "<anonymous@276>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 100,
-              "file": "test/historical-repair-scale.test.ts",
+              "column": 116,
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/historical-repair-scale.test.ts:9198:<anonymous@278>",
+              "id": "test/event-query.test.ts:13153:<anonymous@378>",
               "kind": "ArrowFunction",
-              "line": 278,
-              "name": "<anonymous@278>",
+              "line": 378,
+              "name": "<anonymous@378>",
               "reason": "external-callback-dispatch"
-            },
-            {
-              "column": 1,
-              "file": "src/historical-replay.ts",
-              "hasBody": true,
-              "id": "src/historical-replay.ts:5609:replayInventoryHistoricalScenario",
-              "kind": "FunctionDeclaration",
-              "line": 134,
-              "name": "replayInventoryHistoricalScenario",
-              "reason": "resolved-call"
-            },
-            {
-              "column": 1,
-              "file": "src/historical-replay.ts",
-              "hasBody": true,
-              "id": "src/historical-replay.ts:38054:inventoryAffectedHistoricalEventIds",
-              "kind": "FunctionDeclaration",
-              "line": 986,
-              "name": "inventoryAffectedHistoricalEventIds",
-              "reason": "resolved-call"
             },
             {
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:22194:inventoryEventDependencyKeys",
+              "id": "src/event-query.ts:22228:inventoryEventDependencyKeys",
               "kind": "FunctionDeclaration",
-              "line": 573,
+              "line": 574,
               "name": "inventoryEventDependencyKeys",
               "reason": "resolved-call"
             }
@@ -36082,17 +36062,21 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:22194:inventoryEventDependencyKeys",
+            "id": "src/event-query.ts:22228:inventoryEventDependencyKeys",
             "kind": "FunctionDeclaration",
-            "line": 573,
+            "line": 574,
             "name": "inventoryEventDependencyKeys"
           },
-          "test": "test/historical-repair-scale.test.ts"
+          "test": "test/event-query.test.ts"
         }
       ],
-      "directExecutableEntrypoints": [],
-      "directExecutableEvidence": [],
-      "evidenceMode": "indirect-call-chain",
+      "directExecutableEntrypoints": [
+        "test/event-query.test.ts"
+      ],
+      "directExecutableEvidence": [
+        "test/event-query.test.ts"
+      ],
+      "evidenceMode": "direct-executable",
       "executableEvidence": [
         "test/formal-implementation-refinement.test.ts",
         "test/event-query.test.ts",
@@ -36105,9 +36089,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:22194:inventoryEventDependencyKeys",
+          "id": "src/event-query.ts:22228:inventoryEventDependencyKeys",
           "kind": "FunctionDeclaration",
-          "line": 573,
+          "line": 574,
           "name": "inventoryEventDependencyKeys"
         }
       ],
@@ -36220,9 +36204,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:18515:inventoryEventEffectiveKinds",
+              "id": "src/event-query.ts:18549:inventoryEventEffectiveKinds",
               "kind": "FunctionDeclaration",
-              "line": 485,
+              "line": 486,
               "name": "inventoryEventEffectiveKinds",
               "reason": "resolved-call"
             }
@@ -36231,9 +36215,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:18515:inventoryEventEffectiveKinds",
+            "id": "src/event-query.ts:18549:inventoryEventEffectiveKinds",
             "kind": "FunctionDeclaration",
-            "line": 485,
+            "line": 486,
             "name": "inventoryEventEffectiveKinds"
           },
           "test": "test/segmented-journal.test.ts"
@@ -36254,9 +36238,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:18515:inventoryEventEffectiveKinds",
+          "id": "src/event-query.ts:18549:inventoryEventEffectiveKinds",
           "kind": "FunctionDeclaration",
-          "line": 485,
+          "line": 486,
           "name": "inventoryEventEffectiveKinds"
         }
       ],
@@ -36619,20 +36603,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -36649,9 +36633,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -36659,9 +36643,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:13499:queryInventoryProjectionEvents",
+              "id": "src/event-query.ts:13533:queryInventoryProjectionEvents",
               "kind": "FunctionDeclaration",
-              "line": 360,
+              "line": 361,
               "name": "queryInventoryProjectionEvents",
               "reason": "resolved-call"
             },
@@ -36669,9 +36653,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:14772:inventoryEventMatchesQuery",
+              "id": "src/event-query.ts:14806:inventoryEventMatchesQuery",
               "kind": "FunctionDeclaration",
-              "line": 399,
+              "line": 400,
               "name": "inventoryEventMatchesQuery",
               "reason": "resolved-call"
             }
@@ -36680,9 +36664,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:14772:inventoryEventMatchesQuery",
+            "id": "src/event-query.ts:14806:inventoryEventMatchesQuery",
             "kind": "FunctionDeclaration",
-            "line": 399,
+            "line": 400,
             "name": "inventoryEventMatchesQuery"
           },
           "test": "test/event-query.test.ts"
@@ -36703,9 +36687,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:14772:inventoryEventMatchesQuery",
+          "id": "src/event-query.ts:14806:inventoryEventMatchesQuery",
           "kind": "FunctionDeclaration",
-          "line": 399,
+          "line": 400,
           "name": "inventoryEventMatchesQuery"
         }
       ],
@@ -36783,20 +36767,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -36813,9 +36797,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -36853,9 +36837,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17048:inventoryEventQueryResourceKeyGroups",
+              "id": "src/event-query.ts:17082:inventoryEventQueryResourceKeyGroups",
               "kind": "FunctionDeclaration",
-              "line": 452,
+              "line": 453,
               "name": "inventoryEventQueryResourceKeyGroups",
               "reason": "resolved-call"
             }
@@ -36864,9 +36848,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:17048:inventoryEventQueryResourceKeyGroups",
+            "id": "src/event-query.ts:17082:inventoryEventQueryResourceKeyGroups",
             "kind": "FunctionDeclaration",
-            "line": 452,
+            "line": 453,
             "name": "inventoryEventQueryResourceKeyGroups"
           },
           "test": "test/event-query.test.ts"
@@ -36887,9 +36871,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:17048:inventoryEventQueryResourceKeyGroups",
+          "id": "src/event-query.ts:17082:inventoryEventQueryResourceKeyGroups",
           "kind": "FunctionDeclaration",
-          "line": 452,
+          "line": 453,
           "name": "inventoryEventQueryResourceKeyGroups"
         }
       ],
@@ -36958,20 +36942,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -36988,9 +36972,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -36998,9 +36982,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:13499:queryInventoryProjectionEvents",
+              "id": "src/event-query.ts:13533:queryInventoryProjectionEvents",
               "kind": "FunctionDeclaration",
-              "line": 360,
+              "line": 361,
               "name": "queryInventoryProjectionEvents",
               "reason": "resolved-call"
             },
@@ -37008,9 +36992,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:11278:inventoryEventQuerySequenceWindow",
+              "id": "src/event-query.ts:11312:inventoryEventQuerySequenceWindow",
               "kind": "FunctionDeclaration",
-              "line": 295,
+              "line": 296,
               "name": "inventoryEventQuerySequenceWindow",
               "reason": "resolved-call"
             }
@@ -37019,9 +37003,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:11278:inventoryEventQuerySequenceWindow",
+            "id": "src/event-query.ts:11312:inventoryEventQuerySequenceWindow",
             "kind": "FunctionDeclaration",
-            "line": 295,
+            "line": 296,
             "name": "inventoryEventQuerySequenceWindow"
           },
           "test": "test/event-query.test.ts"
@@ -37042,9 +37026,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:11278:inventoryEventQuerySequenceWindow",
+          "id": "src/event-query.ts:11312:inventoryEventQuerySequenceWindow",
           "kind": "FunctionDeclaration",
-          "line": 295,
+          "line": 296,
           "name": "inventoryEventQuerySequenceWindow"
         }
       ],
@@ -37142,9 +37126,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             }
@@ -37153,9 +37137,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+            "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
             "kind": "FunctionDeclaration",
-            "line": 466,
+            "line": 467,
             "name": "inventoryEventResourceKeys"
           },
           "test": "test/segmented-journal.test.ts"
@@ -37180,9 +37164,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+          "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
           "kind": "FunctionDeclaration",
-          "line": 466,
+          "line": 467,
           "name": "inventoryEventResourceKeys"
         }
       ],
@@ -37275,9 +37259,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:85234:projectInventoryEvents",
+              "id": "src/projection.ts:85735:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 2073,
+              "line": 2083,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             },
@@ -37285,9 +37269,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:87077:inventoryEventsInRecordSequence",
+              "id": "src/projection.ts:87578:inventoryEventsInRecordSequence",
               "kind": "FunctionDeclaration",
-              "line": 2118,
+              "line": 2128,
               "name": "inventoryEventsInRecordSequence",
               "reason": "resolved-call"
             }
@@ -37296,9 +37280,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:87077:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:87578:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 2118,
+            "line": 2128,
             "name": "inventoryEventsInRecordSequence"
           },
           "test": "test/catalog-publication.test.ts"
@@ -37321,9 +37305,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:87077:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:87578:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 2118,
+          "line": 2128,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -37919,9 +37903,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -37929,9 +37913,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:19462:collectOneEventResourceKeys",
+              "id": "src/event-query.ts:19496:collectOneEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 513,
+              "line": 514,
               "name": "collectOneEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -37939,9 +37923,9 @@
               "column": 38,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:27908:inventoryItemEventKey",
+              "id": "src/event-query.ts:28363:inventoryItemEventKey",
               "kind": "ArrowFunction",
-              "line": 731,
+              "line": 753,
               "name": "inventoryItemEventKey",
               "reason": "resolved-call"
             }
@@ -37950,9 +37934,9 @@
             "column": 38,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:27908:inventoryItemEventKey",
+            "id": "src/event-query.ts:28363:inventoryItemEventKey",
             "kind": "ArrowFunction",
-            "line": 731,
+            "line": 753,
             "name": "inventoryItemEventKey"
           },
           "test": "test/segmented-journal.test.ts"
@@ -37973,9 +37957,9 @@
           "column": 38,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:27908:inventoryItemEventKey",
+          "id": "src/event-query.ts:28363:inventoryItemEventKey",
           "kind": "ArrowFunction",
-          "line": 731,
+          "line": 753,
           "name": "inventoryItemEventKey"
         }
       ],
@@ -38275,9 +38259,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -38285,9 +38269,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:19462:collectOneEventResourceKeys",
+              "id": "src/event-query.ts:19496:collectOneEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 513,
+              "line": 514,
               "name": "collectOneEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -38295,9 +38279,9 @@
               "column": 37,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:28322:inventoryLotEventKey",
+              "id": "src/event-query.ts:28777:inventoryLotEventKey",
               "kind": "ArrowFunction",
-              "line": 737,
+              "line": 759,
               "name": "inventoryLotEventKey",
               "reason": "resolved-call"
             }
@@ -38306,9 +38290,9 @@
             "column": 37,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:28322:inventoryLotEventKey",
+            "id": "src/event-query.ts:28777:inventoryLotEventKey",
             "kind": "ArrowFunction",
-            "line": 737,
+            "line": 759,
             "name": "inventoryLotEventKey"
           },
           "test": "test/segmented-journal.test.ts"
@@ -38329,9 +38313,9 @@
           "column": 37,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:28322:inventoryLotEventKey",
+          "id": "src/event-query.ts:28777:inventoryLotEventKey",
           "kind": "ArrowFunction",
-          "line": 737,
+          "line": 759,
           "name": "inventoryLotEventKey"
         }
       ],
@@ -38388,31 +38372,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/lots.test.ts",
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test-root:test/lots.test.ts",
+              "id": "test-root:test/event-query.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/lots.test.ts"
+              "name": "test/event-query.test.ts"
             },
             {
               "column": 44,
-              "file": "test/lots.test.ts",
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/lots.test.ts:1369:<anonymous@48>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 48,
-              "name": "<anonymous@48>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 94,
-              "file": "test/lots.test.ts",
+              "column": 116,
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/lots.test.ts:1470:<anonymous@49>",
+              "id": "test/event-query.test.ts:13153:<anonymous@378>",
               "kind": "ArrowFunction",
-              "line": 49,
-              "name": "<anonymous@49>",
+              "line": 378,
+              "name": "<anonymous@378>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -38435,14 +38419,14 @@
             "line": 148,
             "name": "inventoryLotIdentity"
           },
-          "test": "test/lots.test.ts"
+          "test": "test/event-query.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/lots.test.ts"
+        "test/event-query.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/lots.test.ts"
+        "test/event-query.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -40000,9 +39984,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:418329:placementAncestry",
+              "id": "src/facade.ts:418612:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10882,
+              "line": 10885,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             },
@@ -40153,9 +40137,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -40163,9 +40147,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:19462:collectOneEventResourceKeys",
+              "id": "src/event-query.ts:19496:collectOneEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 513,
+              "line": 514,
               "name": "collectOneEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -40173,9 +40157,9 @@
               "column": 43,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:28459:inventoryPlacementEventKey",
+              "id": "src/event-query.ts:28914:inventoryPlacementEventKey",
               "kind": "ArrowFunction",
-              "line": 739,
+              "line": 761,
               "name": "inventoryPlacementEventKey",
               "reason": "resolved-call"
             }
@@ -40184,9 +40168,9 @@
             "column": 43,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:28459:inventoryPlacementEventKey",
+            "id": "src/event-query.ts:28914:inventoryPlacementEventKey",
             "kind": "ArrowFunction",
-            "line": 739,
+            "line": 761,
             "name": "inventoryPlacementEventKey"
           },
           "test": "test/segmented-journal.test.ts"
@@ -40207,9 +40191,9 @@
           "column": 43,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:28459:inventoryPlacementEventKey",
+          "id": "src/event-query.ts:28914:inventoryPlacementEventKey",
           "kind": "ArrowFunction",
-          "line": 739,
+          "line": 761,
           "name": "inventoryPlacementEventKey"
         }
       ],
@@ -40448,9 +40432,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:87555:findInventoryPositions",
+              "id": "src/projection.ts:88056:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 2134,
+              "line": 2144,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -40636,9 +40620,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:416642:placementParent",
+              "id": "src/facade.ts:416925:placementParent",
               "kind": "MethodDeclaration",
-              "line": 10838,
+              "line": 10841,
               "name": "placementParent",
               "reason": "interface-to-implementation"
             },
@@ -41617,9 +41601,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -41627,9 +41611,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:19462:collectOneEventResourceKeys",
+              "id": "src/event-query.ts:19496:collectOneEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 513,
+              "line": 514,
               "name": "collectOneEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -41637,9 +41621,9 @@
               "column": 42,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:28044:inventoryRevisionEventKey",
+              "id": "src/event-query.ts:28499:inventoryRevisionEventKey",
               "kind": "ArrowFunction",
-              "line": 733,
+              "line": 755,
               "name": "inventoryRevisionEventKey",
               "reason": "resolved-call"
             }
@@ -41648,9 +41632,9 @@
             "column": 42,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:28044:inventoryRevisionEventKey",
+            "id": "src/event-query.ts:28499:inventoryRevisionEventKey",
             "kind": "ArrowFunction",
-            "line": 733,
+            "line": 755,
             "name": "inventoryRevisionEventKey"
           },
           "test": "test/segmented-journal.test.ts"
@@ -41671,9 +41655,9 @@
           "column": 42,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:28044:inventoryRevisionEventKey",
+          "id": "src/event-query.ts:28499:inventoryRevisionEventKey",
           "kind": "ArrowFunction",
-          "line": 733,
+          "line": 755,
           "name": "inventoryRevisionEventKey"
         }
       ],
@@ -41762,9 +41746,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -41772,9 +41756,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:19462:collectOneEventResourceKeys",
+              "id": "src/event-query.ts:19496:collectOneEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 513,
+              "line": 514,
               "name": "collectOneEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -41782,9 +41766,9 @@
               "column": 40,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:28187:inventorySerialEventKey",
+              "id": "src/event-query.ts:28642:inventorySerialEventKey",
               "kind": "ArrowFunction",
-              "line": 735,
+              "line": 757,
               "name": "inventorySerialEventKey",
               "reason": "resolved-call"
             }
@@ -41793,9 +41777,9 @@
             "column": 40,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:28187:inventorySerialEventKey",
+            "id": "src/event-query.ts:28642:inventorySerialEventKey",
             "kind": "ArrowFunction",
-            "line": 735,
+            "line": 757,
             "name": "inventorySerialEventKey"
           },
           "test": "test/segmented-journal.test.ts"
@@ -41816,9 +41800,9 @@
           "column": 40,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:28187:inventorySerialEventKey",
+          "id": "src/event-query.ts:28642:inventorySerialEventKey",
           "kind": "ArrowFunction",
-          "line": 735,
+          "line": 757,
           "name": "inventorySerialEventKey"
         }
       ],
@@ -42028,31 +42012,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/projection-index-scale.test.ts",
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test-root:test/projection-index-scale.test.ts",
+              "id": "test-root:test/event-query.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/projection-index-scale.test.ts"
+              "name": "test/event-query.test.ts"
             },
             {
-              "column": 65,
-              "file": "test/projection-index-scale.test.ts",
+              "column": 44,
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28488:<anonymous@769>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 769,
-              "name": "<anonymous@769>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 94,
-              "file": "test/projection-index-scale.test.ts",
+              "column": 116,
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/projection-index-scale.test.ts:28589:<anonymous@770>",
+              "id": "test/event-query.test.ts:13153:<anonymous@378>",
               "kind": "ArrowFunction",
-              "line": 770,
-              "name": "<anonymous@770>",
+              "line": 378,
+              "name": "<anonymous@378>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -42075,14 +42059,14 @@
             "line": 361,
             "name": "inventoryStockPositionIdentity"
           },
-          "test": "test/projection-index-scale.test.ts"
+          "test": "test/event-query.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/projection-index-scale.test.ts"
+        "test/event-query.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/projection-index-scale.test.ts"
+        "test/event-query.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -42291,9 +42275,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:87555:findInventoryPositions",
+              "id": "src/projection.ts:88056:findInventoryPositions",
               "kind": "FunctionDeclaration",
-              "line": 2134,
+              "line": 2144,
               "name": "findInventoryPositions",
               "reason": "resolved-call"
             },
@@ -43519,9 +43503,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:17788:inventoryEventResourceKeys",
+              "id": "src/event-query.ts:17822:inventoryEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 466,
+              "line": 467,
               "name": "inventoryEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -43529,9 +43513,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:19462:collectOneEventResourceKeys",
+              "id": "src/event-query.ts:19496:collectOneEventResourceKeys",
               "kind": "FunctionDeclaration",
-              "line": 513,
+              "line": 514,
               "name": "collectOneEventResourceKeys",
               "reason": "resolved-call"
             },
@@ -43539,9 +43523,9 @@
               "column": 45,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:28608:inventoryWhereaboutsEventKey",
+              "id": "src/event-query.ts:29063:inventoryWhereaboutsEventKey",
               "kind": "ArrowFunction",
-              "line": 741,
+              "line": 763,
               "name": "inventoryWhereaboutsEventKey",
               "reason": "resolved-call"
             }
@@ -43550,9 +43534,9 @@
             "column": 45,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:28608:inventoryWhereaboutsEventKey",
+            "id": "src/event-query.ts:29063:inventoryWhereaboutsEventKey",
             "kind": "ArrowFunction",
-            "line": 741,
+            "line": 763,
             "name": "inventoryWhereaboutsEventKey"
           },
           "test": "test/segmented-journal.test.ts"
@@ -43573,9 +43557,9 @@
           "column": 45,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:28608:inventoryWhereaboutsEventKey",
+          "id": "src/event-query.ts:29063:inventoryWhereaboutsEventKey",
           "kind": "ArrowFunction",
-          "line": 741,
+          "line": 763,
           "name": "inventoryWhereaboutsEventKey"
         }
       ],
@@ -43799,9 +43783,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:415459:packagingRevisions",
+              "id": "src/facade.ts:415742:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10805,
+              "line": 10808,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             },
@@ -45087,20 +45071,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -45117,9 +45101,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -45127,9 +45111,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:13499:queryInventoryProjectionEvents",
+              "id": "src/event-query.ts:13533:queryInventoryProjectionEvents",
               "kind": "FunctionDeclaration",
-              "line": 360,
+              "line": 361,
               "name": "queryInventoryProjectionEvents",
               "reason": "resolved-call"
             },
@@ -45137,9 +45121,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:6580:normalizeInventoryEventQuery",
+              "id": "src/event-query.ts:6614:normalizeInventoryEventQuery",
               "kind": "FunctionDeclaration",
-              "line": 151,
+              "line": 152,
               "name": "normalizeInventoryEventQuery",
               "reason": "resolved-call"
             }
@@ -45148,9 +45132,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:6580:normalizeInventoryEventQuery",
+            "id": "src/event-query.ts:6614:normalizeInventoryEventQuery",
             "kind": "FunctionDeclaration",
-            "line": 151,
+            "line": 152,
             "name": "normalizeInventoryEventQuery"
           },
           "test": "test/event-query.test.ts"
@@ -45171,9 +45155,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:6580:normalizeInventoryEventQuery",
+          "id": "src/event-query.ts:6614:normalizeInventoryEventQuery",
           "kind": "FunctionDeclaration",
-          "line": 151,
+          "line": 152,
           "name": "normalizeInventoryEventQuery"
         }
       ],
@@ -46958,9 +46942,9 @@
               "column": 1,
               "file": "src/projection.ts",
               "hasBody": true,
-              "id": "src/projection.ts:85234:projectInventoryEvents",
+              "id": "src/projection.ts:85735:projectInventoryEvents",
               "kind": "FunctionDeclaration",
-              "line": 2073,
+              "line": 2083,
               "name": "projectInventoryEvents",
               "reason": "resolved-call"
             }
@@ -46969,9 +46953,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:85234:projectInventoryEvents",
+            "id": "src/projection.ts:85735:projectInventoryEvents",
             "kind": "FunctionDeclaration",
-            "line": 2073,
+            "line": 2083,
             "name": "projectInventoryEvents"
           },
           "test": "test/catalog-publication.test.ts"
@@ -46998,9 +46982,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:85234:projectInventoryEvents",
+          "id": "src/projection.ts:85735:projectInventoryEvents",
           "kind": "FunctionDeclaration",
-          "line": 2073,
+          "line": 2083,
           "name": "projectInventoryEvents"
         }
       ],
@@ -48074,20 +48058,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -48104,9 +48088,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -48114,9 +48098,9 @@
               "column": 1,
               "file": "src/event-query.ts",
               "hasBody": true,
-              "id": "src/event-query.ts:13499:queryInventoryProjectionEvents",
+              "id": "src/event-query.ts:13533:queryInventoryProjectionEvents",
               "kind": "FunctionDeclaration",
-              "line": 360,
+              "line": 361,
               "name": "queryInventoryProjectionEvents",
               "reason": "resolved-call"
             }
@@ -48125,9 +48109,9 @@
             "column": 1,
             "file": "src/event-query.ts",
             "hasBody": true,
-            "id": "src/event-query.ts:13499:queryInventoryProjectionEvents",
+            "id": "src/event-query.ts:13533:queryInventoryProjectionEvents",
             "kind": "FunctionDeclaration",
-            "line": 360,
+            "line": 361,
             "name": "queryInventoryProjectionEvents"
           },
           "test": "test/event-query.test.ts"
@@ -48148,9 +48132,9 @@
           "column": 1,
           "file": "src/event-query.ts",
           "hasBody": true,
-          "id": "src/event-query.ts:13499:queryInventoryProjectionEvents",
+          "id": "src/event-query.ts:13533:queryInventoryProjectionEvents",
           "kind": "FunctionDeclaration",
-          "line": 360,
+          "line": 361,
           "name": "queryInventoryProjectionEvents"
         }
       ],
@@ -50068,9 +50052,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411027:summary",
+              "id": "src/facade.ts:411310:summary",
               "kind": "MethodDeclaration",
-              "line": 10709,
+              "line": 10712,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -59923,31 +59907,31 @@
           "chain": [
             {
               "column": 1,
-              "file": "test/lots.test.ts",
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test-root:test/lots.test.ts",
+              "id": "test-root:test/event-query.test.ts",
               "kind": "TestRoot",
               "line": 1,
-              "name": "test/lots.test.ts"
+              "name": "test/event-query.test.ts"
             },
             {
               "column": 44,
-              "file": "test/lots.test.ts",
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/lots.test.ts:1369:<anonymous@48>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 48,
-              "name": "<anonymous@48>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
-              "column": 94,
-              "file": "test/lots.test.ts",
+              "column": 116,
+              "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/lots.test.ts:1470:<anonymous@49>",
+              "id": "test/event-query.test.ts:13153:<anonymous@378>",
               "kind": "ArrowFunction",
-              "line": 49,
-              "name": "<anonymous@49>",
+              "line": 378,
+              "name": "<anonymous@378>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -59970,14 +59954,14 @@
             "line": 148,
             "name": "inventoryLotIdentity"
           },
-          "test": "test/lots.test.ts"
+          "test": "test/event-query.test.ts"
         }
       ],
       "directExecutableEntrypoints": [
-        "test/lots.test.ts"
+        "test/event-query.test.ts"
       ],
       "directExecutableEvidence": [
-        "test/lots.test.ts"
+        "test/event-query.test.ts"
       ],
       "evidenceMode": "direct-executable",
       "executableEvidence": [
@@ -62278,9 +62262,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:415459:packagingRevisions",
+              "id": "src/facade.ts:415742:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10805,
+              "line": 10808,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             },
@@ -67353,9 +67337,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411027:summary",
+              "id": "src/facade.ts:411310:summary",
               "kind": "MethodDeclaration",
-              "line": 10709,
+              "line": 10712,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -71549,20 +71533,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -71579,9 +71563,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             },
@@ -71735,9 +71719,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:418329:placementAncestry",
+              "id": "src/facade.ts:418612:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10882,
+              "line": 10885,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             },
@@ -71887,9 +71871,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408213:positions",
+              "id": "src/facade.ts:408496:positions",
               "kind": "MethodDeclaration",
-              "line": 10644,
+              "line": 10647,
               "name": "positions",
               "reason": "interface-to-implementation"
             },
@@ -72221,9 +72205,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411027:summary",
+              "id": "src/facade.ts:411310:summary",
               "kind": "MethodDeclaration",
-              "line": 10709,
+              "line": 10712,
               "name": "summary",
               "reason": "interface-to-implementation"
             },
@@ -72962,9 +72946,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408213:positions",
+              "id": "src/facade.ts:408496:positions",
               "kind": "MethodDeclaration",
-              "line": 10644,
+              "line": 10647,
               "name": "positions",
               "reason": "interface-to-implementation"
             },
@@ -79487,9 +79471,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:412335:availability",
+              "id": "src/facade.ts:412618:availability",
               "kind": "MethodDeclaration",
-              "line": 10735,
+              "line": 10738,
               "name": "availability",
               "reason": "interface-to-implementation"
             }
@@ -79498,9 +79482,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412335:availability",
+            "id": "src/facade.ts:412618:availability",
             "kind": "MethodDeclaration",
-            "line": 10735,
+            "line": 10738,
             "name": "availability"
           },
           "test": "test/availability.test.ts"
@@ -79523,9 +79507,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412335:availability",
+          "id": "src/facade.ts:412618:availability",
           "kind": "MethodDeclaration",
-          "line": 10735,
+          "line": 10738,
           "name": "availability"
         }
       ],
@@ -79671,10 +79655,10 @@
               "column": 82,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:64023:<anonymous@1388>",
+              "id": "test/reservations-counts.test.ts:64413:<anonymous@1405>",
               "kind": "ArrowFunction",
-              "line": 1388,
-              "name": "<anonymous@1388>",
+              "line": 1405,
+              "name": "<anonymous@1405>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -79691,9 +79675,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:420258:count",
+              "id": "src/facade.ts:420541:count",
               "kind": "MethodDeclaration",
-              "line": 10935,
+              "line": 10938,
               "name": "count",
               "reason": "interface-to-implementation"
             }
@@ -79702,9 +79686,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420258:count",
+            "id": "src/facade.ts:420541:count",
             "kind": "MethodDeclaration",
-            "line": 10935,
+            "line": 10938,
             "name": "count"
           },
           "test": "test/reservations-counts.test.ts"
@@ -79727,9 +79711,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420258:count",
+          "id": "src/facade.ts:420541:count",
           "kind": "MethodDeclaration",
-          "line": 10935,
+          "line": 10938,
           "name": "count"
         }
       ],
@@ -79957,9 +79941,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:419732:event",
+              "id": "src/facade.ts:420015:event",
               "kind": "MethodDeclaration",
-              "line": 10921,
+              "line": 10924,
               "name": "event",
               "reason": "interface-to-implementation"
             }
@@ -79968,9 +79952,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:419732:event",
+            "id": "src/facade.ts:420015:event",
             "kind": "MethodDeclaration",
-            "line": 10921,
+            "line": 10924,
             "name": "event"
           },
           "test": "test/formal-public-surface-completion.test.ts"
@@ -79993,9 +79977,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:419732:event",
+          "id": "src/facade.ts:420015:event",
           "kind": "MethodDeclaration",
-          "line": 10921,
+          "line": 10924,
           "name": "event"
         }
       ],
@@ -80058,7 +80042,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 133,
+          "occurrences": 141,
           "path": "src/historical-replay.ts"
         },
         {
@@ -80234,20 +80218,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -80264,9 +80248,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:410566:events",
+              "id": "src/facade.ts:410849:events",
               "kind": "MethodDeclaration",
-              "line": 10700,
+              "line": 10703,
               "name": "events",
               "reason": "interface-to-implementation"
             }
@@ -80275,9 +80259,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:410566:events",
+            "id": "src/facade.ts:410849:events",
             "kind": "MethodDeclaration",
-            "line": 10700,
+            "line": 10703,
             "name": "events"
           },
           "test": "test/event-query.test.ts"
@@ -80298,9 +80282,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:410566:events",
+          "id": "src/facade.ts:410849:events",
           "kind": "MethodDeclaration",
-          "line": 10700,
+          "line": 10703,
           "name": "events"
         }
       ],
@@ -80544,9 +80528,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:419213:lot",
+              "id": "src/facade.ts:419496:lot",
               "kind": "MethodDeclaration",
-              "line": 10905,
+              "line": 10908,
               "name": "lot",
               "reason": "interface-to-implementation"
             }
@@ -80555,9 +80539,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:419213:lot",
+            "id": "src/facade.ts:419496:lot",
             "kind": "MethodDeclaration",
-            "line": 10905,
+            "line": 10908,
             "name": "lot"
           },
           "test": "test/catalog-stock.test.ts"
@@ -80580,9 +80564,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:419213:lot",
+          "id": "src/facade.ts:419496:lot",
           "kind": "MethodDeclaration",
-          "line": 10905,
+          "line": 10908,
           "name": "lot"
         }
       ],
@@ -80812,9 +80796,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:419511:lots",
+              "id": "src/facade.ts:419794:lots",
               "kind": "MethodDeclaration",
-              "line": 10914,
+              "line": 10917,
               "name": "lots",
               "reason": "interface-to-implementation"
             }
@@ -80823,9 +80807,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:419511:lots",
+            "id": "src/facade.ts:419794:lots",
             "kind": "MethodDeclaration",
-            "line": 10914,
+            "line": 10917,
             "name": "lots"
           },
           "test": "test/lots.test.ts"
@@ -80848,9 +80832,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:419511:lots",
+          "id": "src/facade.ts:419794:lots",
           "kind": "MethodDeclaration",
-          "line": 10914,
+          "line": 10917,
           "name": "lots"
         }
       ],
@@ -81014,9 +80998,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:415459:packagingRevisions",
+              "id": "src/facade.ts:415742:packagingRevisions",
               "kind": "MethodDeclaration",
-              "line": 10805,
+              "line": 10808,
               "name": "packagingRevisions",
               "reason": "interface-to-implementation"
             }
@@ -81025,9 +81009,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:415459:packagingRevisions",
+            "id": "src/facade.ts:415742:packagingRevisions",
             "kind": "MethodDeclaration",
-            "line": 10805,
+            "line": 10808,
             "name": "packagingRevisions"
           },
           "test": "test/catalog-publication.test.ts"
@@ -81050,9 +81034,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:415459:packagingRevisions",
+          "id": "src/facade.ts:415742:packagingRevisions",
           "kind": "MethodDeclaration",
-          "line": 10805,
+          "line": 10808,
           "name": "packagingRevisions"
         }
       ],
@@ -81178,9 +81162,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:418329:placementAncestry",
+              "id": "src/facade.ts:418612:placementAncestry",
               "kind": "MethodDeclaration",
-              "line": 10882,
+              "line": 10885,
               "name": "placementAncestry",
               "reason": "interface-to-implementation"
             }
@@ -81189,9 +81173,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:418329:placementAncestry",
+            "id": "src/facade.ts:418612:placementAncestry",
             "kind": "MethodDeclaration",
-            "line": 10882,
+            "line": 10885,
             "name": "placementAncestry"
           },
           "test": "test/containers.test.ts"
@@ -81214,9 +81198,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:418329:placementAncestry",
+          "id": "src/facade.ts:418612:placementAncestry",
           "kind": "MethodDeclaration",
-          "line": 10882,
+          "line": 10885,
           "name": "placementAncestry"
         }
       ],
@@ -81336,9 +81320,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:417375:placementChildren",
+              "id": "src/facade.ts:417658:placementChildren",
               "kind": "MethodDeclaration",
-              "line": 10856,
+              "line": 10859,
               "name": "placementChildren",
               "reason": "interface-to-implementation"
             }
@@ -81347,9 +81331,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:417375:placementChildren",
+            "id": "src/facade.ts:417658:placementChildren",
             "kind": "MethodDeclaration",
-            "line": 10856,
+            "line": 10859,
             "name": "placementChildren"
           },
           "test": "test/containers.test.ts"
@@ -81372,9 +81356,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:417375:placementChildren",
+          "id": "src/facade.ts:417658:placementChildren",
           "kind": "MethodDeclaration",
-          "line": 10856,
+          "line": 10859,
           "name": "placementChildren"
         }
       ],
@@ -81494,9 +81478,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:415948:placementNode",
+              "id": "src/facade.ts:416231:placementNode",
               "kind": "MethodDeclaration",
-              "line": 10817,
+              "line": 10820,
               "name": "placementNode",
               "reason": "interface-to-implementation"
             }
@@ -81505,9 +81489,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:415948:placementNode",
+            "id": "src/facade.ts:416231:placementNode",
             "kind": "MethodDeclaration",
-            "line": 10817,
+            "line": 10820,
             "name": "placementNode"
           },
           "test": "test/containers.test.ts"
@@ -81530,9 +81514,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:415948:placementNode",
+          "id": "src/facade.ts:416231:placementNode",
           "kind": "MethodDeclaration",
-          "line": 10817,
+          "line": 10820,
           "name": "placementNode"
         }
       ],
@@ -81672,9 +81656,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:416309:placementNodes",
+              "id": "src/facade.ts:416592:placementNodes",
               "kind": "MethodDeclaration",
-              "line": 10828,
+              "line": 10831,
               "name": "placementNodes",
               "reason": "interface-to-implementation"
             }
@@ -81683,9 +81667,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:416309:placementNodes",
+            "id": "src/facade.ts:416592:placementNodes",
             "kind": "MethodDeclaration",
-            "line": 10828,
+            "line": 10831,
             "name": "placementNodes"
           },
           "test": "test/containers.test.ts"
@@ -81708,9 +81692,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:416309:placementNodes",
+          "id": "src/facade.ts:416592:placementNodes",
           "kind": "MethodDeclaration",
-          "line": 10828,
+          "line": 10831,
           "name": "placementNodes"
         }
       ],
@@ -81846,9 +81830,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:416642:placementParent",
+              "id": "src/facade.ts:416925:placementParent",
               "kind": "MethodDeclaration",
-              "line": 10838,
+              "line": 10841,
               "name": "placementParent",
               "reason": "interface-to-implementation"
             }
@@ -81857,9 +81841,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:416642:placementParent",
+            "id": "src/facade.ts:416925:placementParent",
             "kind": "MethodDeclaration",
-            "line": 10838,
+            "line": 10841,
             "name": "placementParent"
           },
           "test": "test/containers.test.ts"
@@ -81882,9 +81866,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:416642:placementParent",
+          "id": "src/facade.ts:416925:placementParent",
           "kind": "MethodDeclaration",
-          "line": 10838,
+          "line": 10841,
           "name": "placementParent"
         }
       ],
@@ -82004,9 +81988,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:412934:planAllocation",
+              "id": "src/facade.ts:413217:planAllocation",
               "kind": "MethodDeclaration",
-              "line": 10751,
+              "line": 10754,
               "name": "planAllocation",
               "reason": "interface-to-implementation"
             }
@@ -82015,9 +81999,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412934:planAllocation",
+            "id": "src/facade.ts:413217:planAllocation",
             "kind": "MethodDeclaration",
-            "line": 10751,
+            "line": 10754,
             "name": "planAllocation"
           },
           "test": "test/containers.test.ts"
@@ -82040,9 +82024,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412934:planAllocation",
+          "id": "src/facade.ts:413217:planAllocation",
           "kind": "MethodDeclaration",
-          "line": 10751,
+          "line": 10754,
           "name": "planAllocation"
         }
       ],
@@ -82152,9 +82136,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:408213:positions",
+              "id": "src/facade.ts:408496:positions",
               "kind": "MethodDeclaration",
-              "line": 10644,
+              "line": 10647,
               "name": "positions",
               "reason": "interface-to-implementation"
             }
@@ -82163,9 +82147,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:408213:positions",
+            "id": "src/facade.ts:408496:positions",
             "kind": "MethodDeclaration",
-            "line": 10644,
+            "line": 10647,
             "name": "positions"
           },
           "test": "test/containers.test.ts"
@@ -82188,9 +82172,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:408213:positions",
+          "id": "src/facade.ts:408496:positions",
           "kind": "MethodDeclaration",
-          "line": 10644,
+          "line": 10647,
           "name": "positions"
         }
       ],
@@ -82269,7 +82253,7 @@
           "path": "src/read-model.ts"
         },
         {
-          "occurrences": 36,
+          "occurrences": 41,
           "path": "src/reservations.ts"
         },
         {
@@ -82408,9 +82392,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:419978:reservation",
+              "id": "src/facade.ts:420261:reservation",
               "kind": "MethodDeclaration",
-              "line": 10927,
+              "line": 10930,
               "name": "reservation",
               "reason": "interface-to-implementation"
             }
@@ -82419,9 +82403,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:419978:reservation",
+            "id": "src/facade.ts:420261:reservation",
             "kind": "MethodDeclaration",
-            "line": 10927,
+            "line": 10930,
             "name": "reservation"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -82444,9 +82428,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:419978:reservation",
+          "id": "src/facade.ts:420261:reservation",
           "kind": "MethodDeclaration",
-          "line": 10927,
+          "line": 10930,
           "name": "reservation"
         }
       ],
@@ -82616,9 +82600,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:420538:reservationFeasibility",
+              "id": "src/facade.ts:420821:reservationFeasibility",
               "kind": "MethodDeclaration",
-              "line": 10940,
+              "line": 10943,
               "name": "reservationFeasibility",
               "reason": "interface-to-implementation"
             }
@@ -82627,9 +82611,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420538:reservationFeasibility",
+            "id": "src/facade.ts:420821:reservationFeasibility",
             "kind": "MethodDeclaration",
-            "line": 10940,
+            "line": 10943,
             "name": "reservationFeasibility"
           },
           "test": "test/reservation-closure-shortage.test.ts"
@@ -82652,9 +82636,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420538:reservationFeasibility",
+          "id": "src/facade.ts:420821:reservationFeasibility",
           "kind": "MethodDeclaration",
-          "line": 10940,
+          "line": 10943,
           "name": "reservationFeasibility"
         }
       ],
@@ -82749,20 +82733,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -82779,9 +82763,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:407387:snapshot",
+              "id": "src/facade.ts:407670:snapshot",
               "kind": "MethodDeclaration",
-              "line": 10624,
+              "line": 10627,
               "name": "snapshot",
               "reason": "interface-to-implementation"
             }
@@ -82790,9 +82774,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:407387:snapshot",
+            "id": "src/facade.ts:407670:snapshot",
             "kind": "MethodDeclaration",
-            "line": 10624,
+            "line": 10627,
             "name": "snapshot"
           },
           "test": "test/event-query.test.ts"
@@ -82815,9 +82799,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:407387:snapshot",
+          "id": "src/facade.ts:407670:snapshot",
           "kind": "MethodDeclaration",
-          "line": 10624,
+          "line": 10627,
           "name": "snapshot"
         }
       ],
@@ -82980,9 +82964,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:411027:summary",
+              "id": "src/facade.ts:411310:summary",
               "kind": "MethodDeclaration",
-              "line": 10709,
+              "line": 10712,
               "name": "summary",
               "reason": "interface-to-implementation"
             }
@@ -82991,9 +82975,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:411027:summary",
+            "id": "src/facade.ts:411310:summary",
             "kind": "MethodDeclaration",
-            "line": 10709,
+            "line": 10712,
             "name": "summary"
           },
           "test": "test/catalog-publication.test.ts"
@@ -83016,9 +83000,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:411027:summary",
+          "id": "src/facade.ts:411310:summary",
           "kind": "MethodDeclaration",
-          "line": 10709,
+          "line": 10712,
           "name": "summary"
         }
       ],
@@ -83154,9 +83138,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:409017:whereabouts",
+              "id": "src/facade.ts:409300:whereabouts",
               "kind": "MethodDeclaration",
-              "line": 10663,
+              "line": 10666,
               "name": "whereabouts",
               "reason": "interface-to-implementation"
             }
@@ -83165,9 +83149,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:409017:whereabouts",
+            "id": "src/facade.ts:409300:whereabouts",
             "kind": "MethodDeclaration",
-            "line": 10663,
+            "line": 10666,
             "name": "whereabouts"
           },
           "test": "test/availability.test.ts"
@@ -83190,9 +83174,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:409017:whereabouts",
+          "id": "src/facade.ts:409300:whereabouts",
           "kind": "MethodDeclaration",
-          "line": 10663,
+          "line": 10666,
           "name": "whereabouts"
         }
       ],
@@ -83364,9 +83348,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:409800:whereaboutsHistory",
+              "id": "src/facade.ts:410083:whereaboutsHistory",
               "kind": "MethodDeclaration",
-              "line": 10683,
+              "line": 10686,
               "name": "whereaboutsHistory",
               "reason": "interface-to-implementation"
             }
@@ -83375,9 +83359,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:409800:whereaboutsHistory",
+            "id": "src/facade.ts:410083:whereaboutsHistory",
             "kind": "MethodDeclaration",
-            "line": 10683,
+            "line": 10686,
             "name": "whereaboutsHistory"
           },
           "test": "test/composition.test.ts"
@@ -83400,9 +83384,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:409800:whereaboutsHistory",
+          "id": "src/facade.ts:410083:whereaboutsHistory",
           "kind": "MethodDeclaration",
-          "line": 10683,
+          "line": 10686,
           "name": "whereaboutsHistory"
         }
       ],
@@ -83512,9 +83496,9 @@
               "column": 3,
               "file": "src/facade.ts",
               "hasBody": true,
-              "id": "src/facade.ts:407884:world",
+              "id": "src/facade.ts:408167:world",
               "kind": "MethodDeclaration",
-              "line": 10636,
+              "line": 10639,
               "name": "world",
               "reason": "interface-to-implementation"
             }
@@ -83523,9 +83507,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:407884:world",
+            "id": "src/facade.ts:408167:world",
             "kind": "MethodDeclaration",
-            "line": 10636,
+            "line": 10639,
             "name": "world"
           },
           "test": "test/containers.test.ts"
@@ -83548,9 +83532,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:407884:world",
+          "id": "src/facade.ts:408167:world",
           "kind": "MethodDeclaration",
-          "line": 10636,
+          "line": 10639,
           "name": "world"
         }
       ],
@@ -85868,7 +85852,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 133,
+          "occurrences": 141,
           "path": "src/historical-replay.ts"
         },
         {
@@ -86031,20 +86015,20 @@
               "column": 44,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:392:<anonymous@17>",
+              "id": "test/event-query.test.ts:550:<anonymous@19>",
               "kind": "ArrowFunction",
-              "line": 17,
-              "name": "<anonymous@17>",
+              "line": 19,
+              "name": "<anonymous@19>",
               "reason": "external-callback-dispatch"
             },
             {
               "column": 91,
               "file": "test/event-query.test.ts",
               "hasBody": true,
-              "id": "test/event-query.test.ts:490:<anonymous@18>",
+              "id": "test/event-query.test.ts:648:<anonymous@20>",
               "kind": "ArrowFunction",
-              "line": 18,
-              "name": "<anonymous@18>",
+              "line": 20,
+              "name": "<anonymous@20>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -88150,7 +88134,7 @@
           "path": "src/read-model.ts"
         },
         {
-          "occurrences": 36,
+          "occurrences": 41,
           "path": "src/reservations.ts"
         },
         {
@@ -95446,10 +95430,10 @@
               "column": 114,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:54954:<anonymous@1160>",
+              "id": "test/reservations-counts.test.ts:55344:<anonymous@1177>",
               "kind": "ArrowFunction",
-              "line": 1160,
-              "name": "<anonymous@1160>",
+              "line": 1177,
+              "name": "<anonymous@1177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -95691,6 +95675,10 @@
         {
           "occurrences": 1,
           "path": "src/picking.ts"
+        },
+        {
+          "occurrences": 1,
+          "path": "src/projection.ts"
         },
         {
           "occurrences": 1,
@@ -95962,10 +95950,10 @@
               "column": 114,
               "file": "test/reservations-counts.test.ts",
               "hasBody": true,
-              "id": "test/reservations-counts.test.ts:54954:<anonymous@1160>",
+              "id": "test/reservations-counts.test.ts:55344:<anonymous@1177>",
               "kind": "ArrowFunction",
-              "line": 1160,
-              "name": "<anonymous@1160>",
+              "line": 1177,
+              "name": "<anonymous@1177>",
               "reason": "external-callback-dispatch"
             },
             {
@@ -101922,5 +101910,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "721290a981dd1b55e4ad1239ce532f0a265b77f44d82354835b35f6e702817ca"
+  "surfaceSha256": "a8675073cb74ced21b0942de4cf1bcb1a941ca6f23bea7ea10fcd380b00d47cc"
 }

@@ -2012,19 +2012,21 @@ function countPlacementDependencies(
   events: readonly InventoryCommittedEvent[],
   roots: readonly string[]
 ): InventoryCountPlacementDependencies {
-  /** Treat a retained edge either way so prior parents and their ancestry remain available to replay. */
-  const neighbors = new Map<string, Set<string>>();
+  /** Directed parent-to-child edges find all nodes ever placed inside requested subtrees. */
+  const childrenByParent = new Map<string, Set<string>>();
+  /** Directed child-to-parent edges walk upward for cycle validation without pulling sibling subtrees. */
+  const parentsByChild = new Map<string, Set<string>>();
   /** Embodied node identities by the resource whose stock drives their placement. */
   const nodesBySerial = new Map<string, Set<string>>();
-  /** Link both ends of a possible historical placement edge. */
+  /** Record one directed historical parent/child placement edge. */
   function link(nodeId: string, parentNodeId: string | undefined): void {
     if (parentNodeId === undefined) return;
-    const nodeNeighbors = neighbors.get(nodeId) ?? new Set<string>();
-    const parentNeighbors = neighbors.get(parentNodeId) ?? new Set<string>();
-    nodeNeighbors.add(parentNodeId);
-    parentNeighbors.add(nodeId);
-    neighbors.set(nodeId, nodeNeighbors);
-    neighbors.set(parentNodeId, parentNeighbors);
+    const children = childrenByParent.get(parentNodeId) ?? new Set<string>();
+    children.add(nodeId);
+    childrenByParent.set(parentNodeId, children);
+    const parents = parentsByChild.get(nodeId) ?? new Set<string>();
+    parents.add(parentNodeId);
+    parentsByChild.set(nodeId, parents);
   }
   for (const event of events) {
     for (const { nodeId, fromParentNodeId, toParentNodeId } of event.placementChanges ?? []) {
@@ -2048,14 +2050,22 @@ function countPlacementDependencies(
       }
     }
   }
-  /** Follow the union of possible edges. The shared reducer still validates each actual edge in time order. */
+  /** Collect all nodes ever placed under roots, then walk upward only for cycle checks. */
   const nodeIds = new Set(roots);
-  const pending = [...nodeIds];
-  for (let nodeId = pending.pop(); nodeId !== undefined; nodeId = pending.pop()) {
-    for (const neighbor of neighbors.get(nodeId) ?? []) {
-      if (nodeIds.has(neighbor)) continue;
-      nodeIds.add(neighbor);
-      pending.push(neighbor);
+  const pendingDescendants = [...nodeIds];
+  for (let nodeId = pendingDescendants.pop(); nodeId !== undefined; nodeId = pendingDescendants.pop()) {
+    for (const childId of childrenByParent.get(nodeId) ?? []) {
+      if (nodeIds.has(childId)) continue;
+      nodeIds.add(childId);
+      pendingDescendants.push(childId);
+    }
+  }
+  const pendingAncestors = [...nodeIds];
+  for (let nodeId = pendingAncestors.pop(); nodeId !== undefined; nodeId = pendingAncestors.pop()) {
+    for (const parentId of parentsByChild.get(nodeId) ?? []) {
+      if (nodeIds.has(parentId)) continue;
+      nodeIds.add(parentId);
+      pendingAncestors.push(parentId);
     }
   }
   const embodiedSerials = new Set<string>();
