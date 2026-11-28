@@ -2273,3 +2273,7 @@ Fungibility checks selected movement and the exact remaining balance during allo
 ## 2026-11-28 — count replay dependencies and independent claim bounds
 
 An anchored count replay keeps eligible stock, serial, and placement corrections ahead of the assertion they support. A carrier binding removed by a replacement definition keeps the old serial only through that definition change. Indexed cohort history uses the same membership test as the projection and journal, while private dependency keys still locate candidate events. Loose stock in a disjoint claim component cannot relax the whole-package slack bound of another component.
+
+## 2026-11-28 — exact package count witnesses for reservation splits
+
+A fixed-axis package claim must be issuable as one exact movement and leave a storable remainder on every fixed axis. The same count rule serves exact binding and the bounded whole-stock search. Ordinary rows retain sparse exact-claim aggregation. For exceptional rows, decimal divisibility skips impossible package counts and the existing state budget covers restricted choices. Mixed stock bounds cap each disjoint loose component by its own stock, so an unrelated loose shortage cannot hide unreachable whole-package slack.

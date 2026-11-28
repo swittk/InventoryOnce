@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4751,
-    "edges": 14123,
+    "callables": 4765,
+    "edges": 14184,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -2095,9 +2095,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:9086:createInventoryReservation",
+                "id": "src/reservations.ts:9183:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 227,
+                "line": 229,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -4709,9 +4709,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:9086:createInventoryReservation",
+                "id": "src/reservations.ts:9183:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 227,
+                "line": 229,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -6624,20 +6624,20 @@
                 "column": 75,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:18054:<anonymous@500>",
+                "id": "test/reservations-counts.test.ts:28147:<anonymous@687>",
                 "kind": "ArrowFunction",
-                "line": 500,
-                "name": "<anonymous@500>",
+                "line": 687,
+                "name": "<anonymous@687>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 76,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:111589:<anonymous@2750>",
+                "id": "test/reservations-counts.test.ts:122262:<anonymous@2947>",
                 "kind": "ArrowFunction",
-                "line": 2750,
-                "name": "<anonymous@2750>",
+                "line": 2947,
+                "name": "<anonymous@2947>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -10391,9 +10391,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:22274:allocateInventoryReservation",
+          "id": "src/reservations.ts:22371:allocateInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 588,
+          "line": 590,
           "name": "allocateInventoryReservation"
         }
       ],
@@ -10404,9 +10404,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:22274:allocateInventoryReservation",
+            "id": "src/reservations.ts:22371:allocateInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 588,
+            "line": 590,
             "name": "allocateInventoryReservation"
           },
           "witness": {
@@ -10444,9 +10444,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:22274:allocateInventoryReservation",
+                "id": "src/reservations.ts:22371:allocateInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 588,
+                "line": 590,
                 "name": "allocateInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -11192,9 +11192,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:12701:assertInventoryReservationsFeasible",
+          "id": "src/reservations.ts:12798:assertInventoryReservationsFeasible",
           "kind": "FunctionDeclaration",
-          "line": 331,
+          "line": 333,
           "name": "assertInventoryReservationsFeasible"
         }
       ],
@@ -11205,9 +11205,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:12701:assertInventoryReservationsFeasible",
+            "id": "src/reservations.ts:12798:assertInventoryReservationsFeasible",
             "kind": "FunctionDeclaration",
-            "line": 331,
+            "line": 333,
             "name": "assertInventoryReservationsFeasible"
           },
           "witness": {
@@ -11245,9 +11245,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:9086:createInventoryReservation",
+                "id": "src/reservations.ts:9183:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 227,
+                "line": 229,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -11255,9 +11255,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:12701:assertInventoryReservationsFeasible",
+                "id": "src/reservations.ts:12798:assertInventoryReservationsFeasible",
                 "kind": "FunctionDeclaration",
-                "line": 331,
+                "line": 333,
                 "name": "assertInventoryReservationsFeasible",
                 "reason": "resolved-call"
               }
@@ -11407,9 +11407,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19554:refineInventoryReservation",
+                "id": "src/reservations.ts:19651:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 501,
+                "line": 503,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -13533,20 +13533,20 @@
                 "column": 75,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:18054:<anonymous@500>",
+                "id": "test/reservations-counts.test.ts:28147:<anonymous@687>",
                 "kind": "ArrowFunction",
-                "line": 500,
-                "name": "<anonymous@500>",
+                "line": 687,
+                "name": "<anonymous@687>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 103,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:80412:<anonymous@1892>",
+                "id": "test/reservations-counts.test.ts:90505:<anonymous@2079>",
                 "kind": "ArrowFunction",
-                "line": 1892,
-                "name": "<anonymous@1892>",
+                "line": 2079,
+                "name": "<anonymous@2079>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -14138,9 +14138,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:9086:createInventoryReservation",
+          "id": "src/reservations.ts:9183:createInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 227,
+          "line": 229,
           "name": "createInventoryReservation"
         }
       ],
@@ -14151,9 +14151,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:9086:createInventoryReservation",
+            "id": "src/reservations.ts:9183:createInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 227,
+            "line": 229,
             "name": "createInventoryReservation"
           },
           "witness": {
@@ -14191,9 +14191,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:9086:createInventoryReservation",
+                "id": "src/reservations.ts:9183:createInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 227,
+                "line": 229,
                 "name": "createInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -16206,9 +16206,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:8803:emptyInventoryReservationBook",
+          "id": "src/reservations.ts:8900:emptyInventoryReservationBook",
           "kind": "FunctionDeclaration",
-          "line": 219,
+          "line": 221,
           "name": "emptyInventoryReservationBook"
         }
       ],
@@ -16219,9 +16219,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:8803:emptyInventoryReservationBook",
+            "id": "src/reservations.ts:8900:emptyInventoryReservationBook",
             "kind": "FunctionDeclaration",
-            "line": 219,
+            "line": 221,
             "name": "emptyInventoryReservationBook"
           },
           "witness": {
@@ -16259,9 +16259,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:8803:emptyInventoryReservationBook",
+                "id": "src/reservations.ts:8900:emptyInventoryReservationBook",
                 "kind": "FunctionDeclaration",
-                "line": 219,
+                "line": 221,
                 "name": "emptyInventoryReservationBook",
                 "reason": "resolved-call"
               }
@@ -16419,9 +16419,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:25742:expireInventoryReservation",
+          "id": "src/reservations.ts:25839:expireInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 697,
+          "line": 699,
           "name": "expireInventoryReservation"
         }
       ],
@@ -16432,9 +16432,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:25742:expireInventoryReservation",
+            "id": "src/reservations.ts:25839:expireInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 697,
+            "line": 699,
             "name": "expireInventoryReservation"
           },
           "witness": {
@@ -16492,9 +16492,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:25742:expireInventoryReservation",
+                "id": "src/reservations.ts:25839:expireInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 697,
+                "line": 699,
                 "name": "expireInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -16723,9 +16723,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+          "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
           "kind": "FunctionDeclaration",
-          "line": 358,
+          "line": 360,
           "name": "inspectInventoryReservationFeasibility"
         }
       ],
@@ -16736,9 +16736,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+            "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
             "kind": "FunctionDeclaration",
-            "line": 358,
+            "line": 360,
             "name": "inspectInventoryReservationFeasibility"
           },
           "witness": {
@@ -16776,9 +16776,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               }
@@ -17414,9 +17414,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -17424,9 +17424,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -17434,9 +17434,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -18719,9 +18719,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -18729,9 +18729,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -18739,9 +18739,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -20207,9 +20207,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -20217,9 +20217,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -20227,9 +20227,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -20318,9 +20318,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -20328,9 +20328,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -20338,9 +20338,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -20366,9 +20366,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:17746:inventoryReservationIsActiveAt",
+          "id": "src/reservations.ts:17843:inventoryReservationIsActiveAt",
           "kind": "FunctionDeclaration",
-          "line": 466,
+          "line": 468,
           "name": "inventoryReservationIsActiveAt"
         }
       ],
@@ -20379,9 +20379,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:17746:inventoryReservationIsActiveAt",
+            "id": "src/reservations.ts:17843:inventoryReservationIsActiveAt",
             "kind": "FunctionDeclaration",
-            "line": 466,
+            "line": 468,
             "name": "inventoryReservationIsActiveAt"
           },
           "witness": {
@@ -20429,9 +20429,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:17746:inventoryReservationIsActiveAt",
+                "id": "src/reservations.ts:17843:inventoryReservationIsActiveAt",
                 "kind": "FunctionDeclaration",
-                "line": 466,
+                "line": 468,
                 "name": "inventoryReservationIsActiveAt",
                 "reason": "resolved-call"
               }
@@ -20447,9 +20447,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:15930:inventoryReservationsAt",
+          "id": "src/reservations.ts:16027:inventoryReservationsAt",
           "kind": "FunctionDeclaration",
-          "line": 419,
+          "line": 421,
           "name": "inventoryReservationsAt"
         }
       ],
@@ -20460,9 +20460,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:15930:inventoryReservationsAt",
+            "id": "src/reservations.ts:16027:inventoryReservationsAt",
             "kind": "FunctionDeclaration",
-            "line": 419,
+            "line": 421,
             "name": "inventoryReservationsAt"
           },
           "witness": {
@@ -20480,29 +20480,29 @@
                 "column": 51,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:1315:<anonymous@46>",
+                "id": "test/reservations-counts.test.ts:3708:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 46,
-                "name": "<anonymous@46>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 69,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:1391:<anonymous@47>",
+                "id": "test/reservations-counts.test.ts:11484:<anonymous@234>",
                 "kind": "ArrowFunction",
-                "line": 47,
-                "name": "<anonymous@47>",
+                "line": 234,
+                "name": "<anonymous@234>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:15930:inventoryReservationsAt",
+                "id": "src/reservations.ts:16027:inventoryReservationsAt",
                 "kind": "FunctionDeclaration",
-                "line": 419,
+                "line": 421,
                 "name": "inventoryReservationsAt",
                 "reason": "resolved-call"
               }
@@ -20986,9 +20986,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19554:refineInventoryReservation",
+                "id": "src/reservations.ts:19651:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 501,
+                "line": 503,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -21209,9 +21209,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19554:refineInventoryReservation",
+                "id": "src/reservations.ts:19651:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 501,
+                "line": 503,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               },
@@ -21693,9 +21693,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:28111:markInventoryReservationConsumed",
+          "id": "src/reservations.ts:28208:markInventoryReservationConsumed",
           "kind": "FunctionDeclaration",
-          "line": 759,
+          "line": 761,
           "name": "markInventoryReservationConsumed"
         }
       ],
@@ -21706,9 +21706,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:28111:markInventoryReservationConsumed",
+            "id": "src/reservations.ts:28208:markInventoryReservationConsumed",
             "kind": "FunctionDeclaration",
-            "line": 759,
+            "line": 761,
             "name": "markInventoryReservationConsumed"
           },
           "witness": {
@@ -21746,9 +21746,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:28111:markInventoryReservationConsumed",
+                "id": "src/reservations.ts:28208:markInventoryReservationConsumed",
                 "kind": "FunctionDeclaration",
-                "line": 759,
+                "line": 761,
                 "name": "markInventoryReservationConsumed",
                 "reason": "resolved-call"
               }
@@ -23891,9 +23891,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:19554:refineInventoryReservation",
+          "id": "src/reservations.ts:19651:refineInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 501,
+          "line": 503,
           "name": "refineInventoryReservation"
         }
       ],
@@ -23904,9 +23904,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:19554:refineInventoryReservation",
+            "id": "src/reservations.ts:19651:refineInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 501,
+            "line": 503,
             "name": "refineInventoryReservation"
           },
           "witness": {
@@ -23944,9 +23944,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:19554:refineInventoryReservation",
+                "id": "src/reservations.ts:19651:refineInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 501,
+                "line": 503,
                 "name": "refineInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -23962,9 +23962,9 @@
           "column": 1,
           "file": "src/reservations.ts",
           "hasBody": true,
-          "id": "src/reservations.ts:24462:releaseInventoryReservation",
+          "id": "src/reservations.ts:24559:releaseInventoryReservation",
           "kind": "FunctionDeclaration",
-          "line": 657,
+          "line": 659,
           "name": "releaseInventoryReservation"
         }
       ],
@@ -23975,9 +23975,9 @@
             "column": 1,
             "file": "src/reservations.ts",
             "hasBody": true,
-            "id": "src/reservations.ts:24462:releaseInventoryReservation",
+            "id": "src/reservations.ts:24559:releaseInventoryReservation",
             "kind": "FunctionDeclaration",
-            "line": 657,
+            "line": 659,
             "name": "releaseInventoryReservation"
           },
           "witness": {
@@ -24015,9 +24015,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:24462:releaseInventoryReservation",
+                "id": "src/reservations.ts:24559:releaseInventoryReservation",
                 "kind": "FunctionDeclaration",
-                "line": 657,
+                "line": 659,
                 "name": "releaseInventoryReservation",
                 "reason": "resolved-call"
               }
@@ -29722,9 +29722,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -29732,9 +29732,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -29742,9 +29742,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -29944,9 +29944,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -29954,9 +29954,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -29964,9 +29964,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -30825,9 +30825,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -30835,9 +30835,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -30845,9 +30845,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -30936,9 +30936,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:13562:inspectInventoryReservationFeasibility",
+                "id": "src/reservations.ts:13659:inspectInventoryReservationFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 358,
+                "line": 360,
                 "name": "inspectInventoryReservationFeasibility",
                 "reason": "resolved-call"
               },
@@ -30946,9 +30946,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
+                "id": "src/reservations.ts:45055:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
-                "line": 1058,
+                "line": 1190,
                 "name": "reservationGroupFeasibility",
                 "reason": "resolved-call"
               },
@@ -30956,9 +30956,9 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38113:reservationPositionEligible",
+                "id": "src/reservations.ts:44305:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
-                "line": 1032,
+                "line": 1164,
                 "name": "reservationPositionEligible",
                 "reason": "resolved-call"
               },
@@ -38057,20 +38057,20 @@
                 "column": 51,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:1315:<anonymous@46>",
+                "id": "test/reservations-counts.test.ts:3708:<anonymous@95>",
                 "kind": "ArrowFunction",
-                "line": 46,
-                "name": "<anonymous@46>",
+                "line": 95,
+                "name": "<anonymous@95>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 101,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:12911:<anonymous@367>",
+                "id": "test/reservations-counts.test.ts:23004:<anonymous@554>",
                 "kind": "ArrowFunction",
-                "line": 367,
-                "name": "<anonymous@367>",
+                "line": 554,
+                "name": "<anonymous@554>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -39941,20 +39941,20 @@
                 "column": 75,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:18054:<anonymous@500>",
+                "id": "test/reservations-counts.test.ts:28147:<anonymous@687>",
                 "kind": "ArrowFunction",
-                "line": 500,
-                "name": "<anonymous@500>",
+                "line": 687,
+                "name": "<anonymous@687>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:64613:<anonymous@1413>",
+                "id": "test/reservations-counts.test.ts:74706:<anonymous@1600>",
                 "kind": "ArrowFunction",
-                "line": 1413,
-                "name": "<anonymous@1413>",
+                "line": 1600,
+                "name": "<anonymous@1600>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -45671,20 +45671,20 @@
                 "column": 75,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:18054:<anonymous@500>",
+                "id": "test/reservations-counts.test.ts:28147:<anonymous@687>",
                 "kind": "ArrowFunction",
-                "line": 500,
-                "name": "<anonymous@500>",
+                "line": 687,
+                "name": "<anonymous@687>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 103,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:80412:<anonymous@1892>",
+                "id": "test/reservations-counts.test.ts:90505:<anonymous@2079>",
                 "kind": "ArrowFunction",
-                "line": 1892,
-                "name": "<anonymous@1892>",
+                "line": 2079,
+                "name": "<anonymous@2079>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47261,20 +47261,20 @@
                 "column": 75,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:18054:<anonymous@500>",
+                "id": "test/reservations-counts.test.ts:28147:<anonymous@687>",
                 "kind": "ArrowFunction",
-                "line": 500,
-                "name": "<anonymous@500>",
+                "line": 687,
+                "name": "<anonymous@687>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 114,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:55544:<anonymous@1185>",
+                "id": "test/reservations-counts.test.ts:65637:<anonymous@1372>",
                 "kind": "ArrowFunction",
-                "line": 1185,
-                "name": "<anonymous@1185>",
+                "line": 1372,
+                "name": "<anonymous@1372>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -47504,20 +47504,20 @@
                 "column": 75,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:18054:<anonymous@500>",
+                "id": "test/reservations-counts.test.ts:28147:<anonymous@687>",
                 "kind": "ArrowFunction",
-                "line": 500,
-                "name": "<anonymous@500>",
+                "line": 687,
+                "name": "<anonymous@687>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 114,
                 "file": "test/reservations-counts.test.ts",
                 "hasBody": true,
-                "id": "test/reservations-counts.test.ts:55544:<anonymous@1185>",
+                "id": "test/reservations-counts.test.ts:65637:<anonymous@1372>",
                 "kind": "ArrowFunction",
-                "line": 1185,
-                "name": "<anonymous@1185>",
+                "line": 1372,
+                "name": "<anonymous@1372>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49543,5 +49543,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "de3475976f295a718949cfad7b97a261a8a413484a886cb2c1113540307b958d"
+  "surfaceSha256": "5a2f3d0bd939de0b0c4806a591aa4b16041954060a42029df2e6fe0a784e9038"
 }

@@ -2285,12 +2285,24 @@ describe("derived pool summaries and exact member movements", () => {
     });
 
     if (withClaim) {
+      // The intended hold needs its own legal fulfillment while this pick tests the old row.
+      await inventory.stock.receive({
+        operationId: "heavy-pack-backing-claim",
+        occurredAtEpochMs: time0,
+        to: {
+          itemId: heavyItem.itemId,
+          lotId: "CLAIM-PACK",
+          placementNodeId: "hold-store",
+          packagingRevisionId: heavyPack.revisionId,
+        },
+        amount: packageAmount(1, heavyPack.revisionId),
+      });
       await inventory.reservations.reserve({
         reservationId: "heavy-claim-1",
         operationId: "heavy-claim-reserve",
         itemRevisionId: heavyItem.revisionId,
         createdAtEpochMs: time2,
-        selector: { itemId: heavyItem.itemId, lotIds: ["OLDER-PACKS"], placementNodeIds: ["store"] },
+        selector: { itemId: heavyItem.itemId, placementNodeIds: ["store", "hold-store"] },
         requested: parseQuantity("1", "piece"),
       });
     }
@@ -2311,7 +2323,9 @@ describe("derived pool summaries and exact member movements", () => {
       operationId: "heavy-pool-issue",
     });
     expect(issued.event.stockEffects.map(({ position }) => position.lotId)).toEqual(["NEWER-LOOSE"]);
-    expect((await inventory.read.positions({ itemId: heavyItem.itemId }))[0]?.measurements.primary.quantity)
+    expect((await inventory.read.positions({
+      itemId: heavyItem.itemId, placementNodeIds: ["store"],
+    }))[0]?.measurements.primary.quantity)
       .toEqual(parseQuantity("10", "piece"));
     const remainingLoose = await inventory.read.positions({ itemId: newerLoose.itemId });
     expect(remainingLoose[0]?.measurements.primary.quantity.amountMinor ?? 0).toBe(2 - requestedPieces);

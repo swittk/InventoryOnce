@@ -43,7 +43,194 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-RESERVATION-EXACT-ISSUE-SCRAP",
 ] as const;
 
+/** Create inventory where four intact boxes can split into two and two, but not one and three. */
+function createExactPackageReservationFixture(canonical: boolean) {
+  const item = defineInventoryItem({
+    ...defineScalarInventoryItem({ itemId: "precision", revisionId: "precision-v1", axisId: "pieces", unit: "piece" }),
+    reservationAxisId: "weight",
+    independentAxes: [
+      {
+        axisId: "weight", role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("kg"), requirement: InventoryMeasurementRequirement.Required,
+      },
+      {
+        axisId: "volume", role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("L"), requirement: InventoryMeasurementRequirement.Required,
+      },
+    ],
+  });
+  const packaging = defineInventoryPackaging({
+    itemId: item.itemId, itemRevisionId: item.revisionId, revisionId: "precision-box",
+    packageUnit: unitCode("box"),
+    fixedContents: inventoryMeasurementVector({ axisId: "pieces", quantity: parseQuantity("1", "piece") }, [
+      { axisId: "weight", quantity: parseQuantity("3", "kg") },
+      { axisId: "volume", quantity: parseQuantity("4.000000000000005", "L") },
+    ]),
+  }, item);
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item],
+    activeItemRevisionIds: { [item.itemId]: item.revisionId },
+    packagingRevisions: [packaging],
+  });
+  const backing = createInMemoryInventoryDurableStorage();
+  const storage = canonical ? new Proxy(backing, {
+    /** Exercise the same operations with a canonical adapter lacking optional native capabilities. */
+    get(target, property) {
+      if (property === "commitSegmentedStockEvent" || property === "queryInventoryEventsByResourceKeys") {
+        return undefined;
+      }
+      const member = Reflect.get(target, property);
+      return typeof member === "function" ? member.bind(target) : member;
+    },
+  }) : backing;
+  const inventory = createInventoryOnce({
+    catalog, storage, clock: { nowEpochMs: () => time3 }, deficitPolicy: InventoryDeficitPolicy.Record,
+  });
+  const loosePosition = { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store" };
+  const boxPosition = { ...loosePosition, packagingRevisionId: packaging.revisionId };
+  const selector = { itemId: item.itemId, placementNodeIds: ["store"] };
+  return { inventory, item, packaging, boxPosition, loosePosition, selector };
+}
+
 describe("broad reservations and physical truth", () => {
+  it.each([false, true])("requires storable package movement and remainder across claim operations (canonical: %s)", async (canonical) => {
+    for (const boxes of [1, 2, 3, 4]) {
+      const { inventory, item, packaging, boxPosition, loosePosition, selector } =
+        createExactPackageReservationFixture(canonical);
+      await inventory.stock.receive({
+        operationId: "receive-boxes", occurredAtEpochMs: time0, to: boxPosition,
+        amount: packageAmount(4, packaging.revisionId),
+      });
+      const requested = parseQuantity(String(boxes * 3), "kg");
+      const reserve = {
+        operationId: "reserve", reservationId: "claim", itemRevisionId: item.revisionId,
+        selector, requested, createdAtEpochMs: time1,
+      };
+      const allocate = {
+        operationId: "allocate", reservationId: "claim", occurredAtEpochMs: time2,
+        allocations: [{ position: boxPosition, quantity: requested }],
+      };
+      const fulfillment = [{ from: boxPosition, amount: packageAmount(boxes, packaging.revisionId) }];
+      if (boxes % 2 !== 0) {
+        const before = (await inventory.read.world()).revision;
+        await expect(inventory.reservations.reserve(reserve)).rejects.toThrow("cannot all be fulfilled simultaneously");
+        expect((await inventory.read.world()).revision).toBe(before);
+        // Loose stock admitting the broad claim still cannot make an invalid exact package line legal.
+        const loose = measuredStockAmount("1", "piece", [
+          { axisId: "weight", unit: "kg", value: "3" },
+          { axisId: "volume", unit: "L", value: "1" },
+        ]);
+        await inventory.stock.receive({
+          operationId: "receive-loose", occurredAtEpochMs: time0 + 1, to: loosePosition, amount: loose,
+        });
+        await inventory.reservations.reserve(reserve);
+        const beforeBind = (await inventory.read.world()).revision;
+        await expect(inventory.reservations.allocate(allocate)).rejects.toThrow("exact movement and remaining balance");
+        expect((await inventory.read.world()).revision).toBe(beforeBind);
+        const looseAllocation = { position: loosePosition, quantity: parseQuantity("3", "kg") };
+        const looseFulfillment = { from: loosePosition, amount: loose };
+        const allocations = [looseAllocation];
+        const alternative = [looseFulfillment];
+        if (boxes === 3) {
+          allocations.push({ position: boxPosition, quantity: parseQuantity("6", "kg") });
+        }
+        await inventory.reservations.allocate({ ...allocate, allocations });
+        const result = await inventory.reservations.consume({
+          operationId: "consume", reservationId: "claim", occurredAtEpochMs: time3,
+          fulfillment: boxes === 3
+            ? [...alternative, { from: boxPosition, amount: packageAmount(2, packaging.revisionId) }]
+            : alternative,
+        });
+        expect(result.reservation.status).toBe(InventoryReservationStatus.Consumed);
+        continue;
+      }
+      await inventory.reservations.reserve(reserve);
+      await inventory.reservations.allocate(allocate);
+      const consume = { operationId: "consume", reservationId: "claim", occurredAtEpochMs: time3, fulfillment };
+      expect((await inventory.reservations.consume(consume)).reservation.status).toBe(InventoryReservationStatus.Consumed);
+      expect((await inventory.reservations.consume(consume)).replayed).toBe(true);
+    }
+  });
+
+  it.each([false, true])("reassesses frozen package claims after a lawful receipt (canonical: %s)", async (canonical) => {
+    const { inventory, item, packaging, boxPosition, selector } = createExactPackageReservationFixture(canonical);
+    await inventory.stock.receive({
+      operationId: "initial-boxes", occurredAtEpochMs: time0, to: boxPosition,
+      amount: packageAmount(2, packaging.revisionId),
+    });
+    const requested = parseQuantity("3", "kg");
+    await inventory.reservations.reserve({
+      operationId: "reserve", reservationId: "claim", itemRevisionId: item.revisionId,
+      selector, requested, createdAtEpochMs: time1,
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate", reservationId: "claim", occurredAtEpochMs: time1 + 1,
+      allocations: [{ position: boxPosition, quantity: requested }],
+    });
+    await inventory.stock.receive({
+      operationId: "more-boxes", occurredAtEpochMs: time2, to: boxPosition,
+      amount: packageAmount(2, packaging.revisionId),
+    });
+    const shortages = await inventory.read.reservationFeasibility();
+    expect(shortages.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(shortages.groups[0]?.shortage).toEqual(requested);
+    expect((await inventory.read.reservation("claim"))?.allocations).toHaveLength(1);
+    await inventory.stock.issue({
+      operationId: "remove-two-boxes", occurredAtEpochMs: time2 + 1, from: boxPosition,
+      amount: packageAmount(2, packaging.revisionId),
+    });
+    expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+    const consumed = await inventory.reservations.consume({
+      operationId: "consume", reservationId: "claim", occurredAtEpochMs: time3,
+      fulfillment: [{ from: boxPosition, amount: packageAmount(1, packaging.revisionId) }],
+    });
+    expect(consumed.reservation.status).toBe(InventoryReservationStatus.Consumed);
+  });
+
+  it.each([false, true])("keeps competing storable package claims consumable (canonical: %s)", async (canonical) => {
+    const { inventory, item, packaging, boxPosition, loosePosition, selector } = createExactPackageReservationFixture(canonical);
+    const amount = packageAmount(2, packaging.revisionId);
+    const requested = parseQuantity("6", "kg");
+    await inventory.stock.receive({
+      operationId: "receive", occurredAtEpochMs: time0, to: boxPosition,
+      amount: packageAmount(4, packaging.revisionId),
+    });
+    for (const id of ["earlier", "later"]) {
+      await inventory.reservations.reserve({
+        operationId: `reserve-${id}`, reservationId: id, itemRevisionId: item.revisionId,
+        selector, requested, createdAtEpochMs: time1,
+      });
+      await inventory.reservations.allocate({
+        operationId: `allocate-${id}`, reservationId: id, occurredAtEpochMs: time2,
+        allocations: [{ position: boxPosition, quantity: requested }],
+      });
+    }
+    const deficitPosition = { ...loosePosition, lotId: "MISSING" };
+    const deficit = measuredStockAmount("1", "piece", [
+      { axisId: "weight", unit: "kg", value: "3" },
+      { axisId: "volume", unit: "L", value: "1" },
+    ]);
+    // Debt reserves one nominal box's capacity, leaving room for only one legal two-box issue.
+    await inventory.stock.issue({
+      operationId: "record-deficit", occurredAtEpochMs: time2 + 1, from: deficitPosition, amount: deficit,
+    });
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
+      fulfillable: requested,
+      shortage: requested,
+    });
+    await inventory.stock.receive({
+      operationId: "settle-deficit", occurredAtEpochMs: time2 + 2, to: deficitPosition, amount: deficit,
+    });
+    // Reverse the binding order and check that consuming one claim leaves the other fulfillable.
+    for (const id of ["later", "earlier"]) {
+      expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+      expect((await inventory.reservations.consume({
+        operationId: `consume-${id}`, reservationId: id, occurredAtEpochMs: time3,
+        fulfillment: [{ from: boxPosition, amount }],
+      })).reservation.status).toBe(InventoryReservationStatus.Consumed);
+    }
+  });
+
   it("uses current claim rows without replaying lifecycle history", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
@@ -2599,7 +2786,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ).rejects.toThrow("Inventory reservations cannot all be fulfilled simultaneously");
   });
 
-  it.each([false, true])("reports unreachable whole-pack slack even with disjoint loose claims (%s)", async (disjointLoose) => {
+  it.each(["none", "feasible", "short"] as const)("reports unreachable whole-pack slack with %s disjoint loose claims", async (disjointLoose) => {
     const heavyItem = defineInventoryItem({
       itemId: "heavy-slab",
       revisionId: "heavy-slab-v1",
@@ -2694,17 +2881,19 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         { axisId: "weight", value: "2", unit: "kg" },
       ]),
     });
-    const extra = disjointLoose ? 1 : 0;
-    if (disjointLoose) {
+    const extra = disjointLoose === "none" ? 0 : 1;
+    const otherDemand = disjointLoose === "short" ? 5 : extra;
+    const otherPosition = { itemId: heavyItem.itemId, placementNodeId: "other-store" };
+    if (otherDemand > 0) {
       await inventory.stock.receive({
         operationId: "slab-other-loose", occurredAtEpochMs: time0,
-        to: { itemId: heavyItem.itemId, placementNodeId: "other-store" },
-        amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+        to: otherPosition,
+        amount: measuredStockAmount(String(otherDemand), "piece", [{ axisId: "weight", value: String(otherDemand), unit: "kg" }]),
       });
       await inventory.reservations.reserve({
         reservationId: "slab-other-claim", operationId: "slab-other-reserve", itemRevisionId: heavyItem.revisionId,
         selector: { itemId: heavyItem.itemId, placementNodeIds: ["other-store"] },
-        requested: parseQuantity("1", "kg"), createdAtEpochMs: time1,
+        requested: parseQuantity(String(otherDemand), "kg"), createdAtEpochMs: time1,
       });
     }
     const claimWeight = parseQuantity("4000000", "kg");
@@ -2728,7 +2917,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     // Divisible loose control: 2 kg loose stock closes the shortage completely.
     const looseFeasibility = await inventory.read.reservationFeasibility();
     expect(looseFeasibility.groups[0]).toMatchObject({
-      fulfillable: parseQuantity(String(8_000_000 + extra), "kg"),
+      fulfillable: parseQuantity(String(8_000_000 + otherDemand), "kg"),
       shortage: parseQuantity("0", "kg"),
     });
 
@@ -2740,10 +2929,18 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       selector: { itemId: heavyItem.itemId, lotIds: ["SLAB-LOOSE"], placementNodeIds: ["slab-store"] },
       occurredAtEpochMs: time2,
     });
+    if (disjointLoose === "short") {
+      // Ordinary stock movement can leave an unrelated loose claim short.
+      await inventory.stock.issue({
+        operationId: "slab-other-issue", occurredAtEpochMs: time2 + 1,
+        from: otherPosition,
+        amount: measuredStockAmount("4", "piece", [{ axisId: "weight", value: "4", unit: "kg" }]),
+      });
+    }
     const wholeFeasibility = await inventory.read.reservationFeasibility();
     expect(wholeFeasibility.groups[0]).toMatchObject({
       fulfillable: parseQuantity(String(7_999_998 + extra), "kg"),
-      shortage: parseQuantity("2", "kg"),
+      shortage: parseQuantity(String(2 + otherDemand - extra), "kg"),
     });
   });
 
