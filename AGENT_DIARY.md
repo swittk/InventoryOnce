@@ -2212,3 +2212,9 @@ The R105 portable-current-input authority and final publication both continue to
 - Unanchored historical placement repairs keep earlier retained placement `Correction` events on shared placement edges ahead of later repairs during occurrence-cut count replay while continuing to skip count corrections.
 - Count placement dependency discovery walks downward from selected roots to gather affected subtrees and upward through historical parents for cycle checks without pulling unrelated sibling subtrees through shared ancestors.
 - Indivisible-group reservation feasibility tightens its initial `fulfillableBound` with a multi-claim, multi-position `BigIntFlowNetwork` relaxation, and indexed whereabouts reads accumulate sequence/position buckets directly before publishing sparse records.
+
+## 2026-11-28 — suffix whole sums, indexed override keys, heap predecessor order, and shared edge matrix
+
+- Exact single-axis measured suffix whole-sum tracking enumerates legal multiples within an indivisible candidate row up to the suffix-sum cap (`64`) before falling back to divisor bounds, avoiding false state-budget exhaustion when rows hold several packages.
+- Dependency indexing (`mode === "index"`) publishes the same stock-position keys for `positiveLayerProvenanceOverrides` as query mode so indexed historical dependency loads seeded from later events retain age-only provenance overrides.
+- Constrained predecessor ordering pops ready entries through a binary min-heap on physical occurrence time and slice index instead of scanning and splicing an array, while indivisible reservation branch iteration reads a shared `remainingEdgeCapacity` matrix without per-branch cloning.

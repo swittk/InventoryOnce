@@ -146,7 +146,7 @@ export interface InventoryPolicyAllocationPlan {
   readonly incrementBlockedStock: boolean;
   /** True when an exact physical assignment was rejected by a whole-plan acceptance rule. */
   readonly allocationConstraintBlockedStock: boolean;
-  /** True when this revision has active broad claims without exact positions. */
+  /** True when this revision has other active broad claims (excluding any supplied reservationId) without exact positions. */
   readonly unallocatedReservationsPresent: boolean;
 }
 

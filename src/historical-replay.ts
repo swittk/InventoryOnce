@@ -656,6 +656,66 @@ function bringForwardHistoricalPredecessors(
   return ordered.length;
 }
 
+/** True when ready entry `left` precedes `right` by physical time, then original slice order. */
+function isEarlierHistoricalReadyIndex(
+  earlier: readonly InventoryHistoricalReplayEntry[],
+  left: number,
+  right: number
+): boolean {
+  const timeDelta =
+    earlier[left]!.event.occurredAtEpochMs -
+    earlier[right]!.event.occurredAtEpochMs;
+  return timeDelta < 0 || (timeDelta === 0 && left < right);
+}
+
+/** Insert one unblocked predecessor index into the min-heap. */
+function pushHistoricalReadyIndex(
+  heap: number[],
+  earlier: readonly InventoryHistoricalReplayEntry[],
+  index: number
+): void {
+  heap.push(index);
+  let child = heap.length - 1;
+  while (child > 0) {
+    const parent = (child - 1) >> 1;
+    if (isEarlierHistoricalReadyIndex(earlier, heap[parent]!, heap[child]!)) break;
+    const swap = heap[parent]!;
+    heap[parent] = heap[child]!;
+    heap[child] = swap;
+    child = parent;
+  }
+}
+
+/** Pop the earliest unblocked predecessor index from the min-heap. */
+function popHistoricalReadyIndex(
+  heap: number[],
+  earlier: readonly InventoryHistoricalReplayEntry[]
+): number | undefined {
+  if (heap.length === 0) return undefined;
+  const root = heap[0]!;
+  const last = heap.pop()!;
+  if (heap.length > 0) {
+    heap[0] = last;
+    let parent = 0;
+    while (true) {
+      const left = parent * 2 + 1;
+      if (left >= heap.length) break;
+      const right = left + 1;
+      const smaller =
+        right < heap.length &&
+        isEarlierHistoricalReadyIndex(earlier, heap[right]!, heap[left]!)
+          ? right
+          : left;
+      if (isEarlierHistoricalReadyIndex(earlier, heap[parent]!, heap[smaller]!)) break;
+      const swap = heap[parent]!;
+      heap[parent] = heap[smaller]!;
+      heap[smaller] = swap;
+      parent = smaller;
+    }
+  }
+  return root;
+}
+
 /** Order moved predecessors by occurrence time while preserving explicit in-slice anchor constraints. */
 function orderHistoricalPredecessors(
   earlier: readonly InventoryHistoricalReplayEntry[]
@@ -686,29 +746,21 @@ function orderHistoricalPredecessors(
     );
     return sorted;
   }
-  const ready: number[] = [];
+  const readyHeap: number[] = [];
   for (let index = 0; index < earlier.length; index += 1) {
-    if (inDegree[index] === 0) ready.push(index);
+    if (inDegree[index] === 0) pushHistoricalReadyIndex(readyHeap, earlier, index);
   }
   const ordered: InventoryHistoricalReplayEntry[] = [];
-  while (ready.length > 0) {
-    let bestPos = 0;
-    for (let pos = 1; pos < ready.length; pos += 1) {
-      const candidateIndex = ready[pos]!;
-      const bestIndex = ready[bestPos]!;
-      const timeDelta =
-        earlier[candidateIndex]!.event.occurredAtEpochMs -
-        earlier[bestIndex]!.event.occurredAtEpochMs;
-      if (timeDelta < 0 || (timeDelta === 0 && candidateIndex < bestIndex)) {
-        bestPos = pos;
-      }
-    }
-    const chosenIndex = ready.splice(bestPos, 1)[0]!;
+  for (
+    let chosenIndex = popHistoricalReadyIndex(readyHeap, earlier);
+    chosenIndex !== undefined;
+    chosenIndex = popHistoricalReadyIndex(readyHeap, earlier)
+  ) {
     ordered.push(earlier[chosenIndex]!);
     for (const dependentIndex of dependentsByIndex.get(chosenIndex) ?? []) {
       const nextDegree = (inDegree[dependentIndex] ?? 0) - 1;
       inDegree[dependentIndex] = nextDegree;
-      if (nextDegree === 0) ready.push(dependentIndex);
+      if (nextDegree === 0) pushHistoricalReadyIndex(readyHeap, earlier, dependentIndex);
     }
   }
   if (ordered.length < earlier.length) {

@@ -146,8 +146,24 @@ export class InventoryExactAllocationLimitError extends Error {}
 /** Maximum nested positive choices in an exact search before callers must narrow the candidate set. */
 const MAXIMUM_EXACT_ALLOCATION_DEPTH = 5_000;
 
-/** Enumerate subsets of up to three whole-only rows at the end of the candidate list. */
-const MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS = 8;
+/** Bound suffix whole-pick sum enumeration before falling back to divisor and capacity bounds. */
+const MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS = 64;
+
+/** Combine whole suffix sums with all legal multiples in one indivisible row up to the sum cap. */
+function extendExactWholeSuffixSums(
+  wholeSums: readonly bigint[],
+  increment: bigint,
+  selectable: bigint
+): readonly bigint[] | undefined {
+  const nextSums = new Set<bigint>();
+  for (let picked = 0n; picked <= selectable; picked += increment) {
+    for (const sum of wholeSums) {
+      nextSums.add(sum + picked);
+      if (nextSums.size > MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS) return undefined;
+    }
+  }
+  return [...nextSums];
+}
 
 /** Pick FIFO/FEFO stock, requiring a full assignment when a whole-plan predicate is supplied. */
 export function allocateInventory(input: AllocateInventoryInput): InventoryAllocationResult {
@@ -521,12 +537,7 @@ function searchInventoryAllocations(
       if (increment === 1n) {
         wholeDivisibleCapacity += selectable;
       } else {
-        wholeSums = selectable === increment && wholeSums.length < MAXIMUM_EXACT_WHOLE_SUFFIX_SUMS
-          ? [...wholeSums, ...wholeSums.map(
-              /** Include each sum that takes this whole row. */
-              (sum) => sum + selectable
-            )]
-          : undefined;
+        wholeSums = extendExactWholeSuffixSums(wholeSums, increment, selectable);
       }
     }
     if (measuredSums !== undefined) {

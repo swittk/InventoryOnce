@@ -8,6 +8,23 @@ import {
   type InventoryAllocationCandidate,
   type InventoryStockPositionKey,
 } from "../src/kernel.js";
+import {
+  InventoryDeficitPolicy,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
+  InventoryTrackingRequirement,
+  createInventoryOnce,
+  defineInventoryCatalog,
+  defineInventoryItem,
+  defineInventoryPackaging,
+  inventoryMeasurementVector,
+  inventoryStockSelector,
+  measuredStockAmount,
+  packageAmount,
+  stockAmount,
+  unitCode,
+} from "../src/index.js";
+import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import { allocateInventoryUpTo, allocateWorkingInventory, type InventoryAllocation } from "../src/allocation.js";
 import { quantityWholeMultipleCount } from "../src/quantity.js";
 import { time0, time1, time2, time3 } from "./test-fixtures.js";
@@ -735,6 +752,106 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
         (allocation) => allocation.position.lotId !== "rejected-first",
       ),
     })).toThrow("safe search bound");
+  });
+
+  it("retains multi-increment whole-row suffix sums for single-axis measured witness search", async () => {
+    const item = defineInventoryItem({
+      itemId: "measured-liquid",
+      revisionId: "measured-liquid-v1",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+      qualifiedDimensions: [],
+      reservationAxisId: "mass",
+      primaryAxis: {
+        axisId: "mass",
+        role: InventoryMeasurementAxisRole.Primary,
+        unit: unitCode("kg"),
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "vol",
+          role: InventoryMeasurementAxisRole.Independent,
+          unit: unitCode("l"),
+          requirement: InventoryMeasurementRequirement.Optional,
+        },
+      ],
+    });
+    const pkg2 = defineInventoryPackaging(
+      {
+        revisionId: "pkg-2kg",
+        itemId: "measured-liquid",
+        itemRevisionId: "measured-liquid-v1",
+        packageUnit: unitCode("jug"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "mass", quantity: parseQuantity("2", "kg") },
+          [{ axisId: "vol", quantity: parseQuantity("0.5", "l") }],
+        ),
+      },
+      item,
+    );
+    const pkg3 = defineInventoryPackaging(
+      {
+        revisionId: "pkg-3kg",
+        itemId: "measured-liquid",
+        itemRevisionId: "measured-liquid-v1",
+        packageUnit: unitCode("drum"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "mass", quantity: parseQuantity("3.000001", "kg") },
+          [{ axisId: "vol", quantity: parseQuantity("0.5", "l") }],
+        ),
+      },
+      item,
+    );
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item],
+      activeItemRevisionIds: { "measured-liquid": item.revisionId },
+      packagingRevisions: [pkg2, pkg3],
+    });
+    const inventory = createInventoryOnce({
+      catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      deficitPolicy: InventoryDeficitPolicy.Record,
+      clock: { nowEpochMs: () => time3 },
+    });
+    const bin = { itemId: "measured-liquid", placementNodeId: "bin" };
+    await inventory.stock.receive({
+      operationId: "suffix-multi-r1",
+      occurredAtEpochMs: time0,
+      to: { ...bin, lotId: "loose-lot" },
+      amount: stockAmount("5", "kg"),
+    });
+    await inventory.stock.receive({
+      operationId: "suffix-multi-r2",
+      occurredAtEpochMs: time1,
+      to: { ...bin, lotId: "jug-lot" },
+      amount: packageAmount(2, "pkg-2kg"),
+    });
+    await inventory.stock.receive({
+      operationId: "suffix-multi-r3",
+      occurredAtEpochMs: time2,
+      to: { ...bin, lotId: "drum-lot" },
+      amount: packageAmount(2, "pkg-3kg"),
+    });
+    const transferred = await inventory.stock.transferByPolicy({
+      operationId: "suffix-multi-transfer",
+      occurredAtEpochMs: time3,
+      selector: inventoryStockSelector("measured-liquid", { placementNodeIds: ["bin"] }),
+      toPlacementNodeId: "out",
+      method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("10.000002", "kg", [{ axisId: "vol", value: "1", unit: "l" }]),
+    });
+    const fromOut = transferred.event.stockEffects.filter(
+      /** Keep only outgoing source deductions in bin. */
+      (effect) => effect.position.placementNodeId === "bin",
+    );
+    expect(fromOut).toHaveLength(2);
+    expect(transferred.event.stockEffects.some(
+      /** Verify zero deficit was invented when a complete witness exists. */
+      (effect) => effect.position.lotId === undefined && effect.position.packagingRevisionId === undefined,
+    )).toBe(false);
   });
 
 });

@@ -619,20 +619,14 @@ function inventoryEventDependencyKeysForMode(
           keys.add("dep:whereabouts:" + transfer.to.whereaboutsId);
         }
       }
-      for (const override of assertion.positiveLayerProvenanceOverrides ?? []) {
-        if (override.position.whereaboutsId !== undefined) {
-          keys.add("dep:whereabouts:" + override.position.whereaboutsId);
-        }
-      }
-    } else {
-      for (const override of assertion.positiveLayerProvenanceOverrides ?? []) {
-        addInventoryStockPositionDependencyKeys(
-          keys,
-          override.position.itemRevisionId,
-          override.position,
-          mode
-        );
-      }
+    }
+    for (const override of assertion.positiveLayerProvenanceOverrides ?? []) {
+      addInventoryStockPositionDependencyKeys(
+        keys,
+        override.position.itemRevisionId,
+        override.position,
+        mode
+      );
     }
     if (assertion.transferLifecycle !== undefined) {
       keys.add("dep:transfer:" + assertion.transferLifecycle.transferId);
