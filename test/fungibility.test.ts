@@ -1992,4 +1992,138 @@ describe("derived pool summaries and exact member movements", () => {
     ).toBe(1);
     expect(await inventory.read.positions({ itemId: "new-brand" })).toEqual([]);
   });
+
+  it("does not report incrementBlockedStock when an earlier free lot fills a complete FIFO pick", async () => {
+    const base = defineScalarInventoryItem({
+      itemId: "weighed-item",
+      revisionId: "weighed-item-v1",
+      axisId: "pieces",
+      unit: "piece",
+    });
+    const weighedItem = defineInventoryItem({
+      ...base,
+      independentAxes: [
+        {
+          axisId: "weight",
+          role: InventoryMeasurementAxisRole.Independent,
+          unit: unitCode("kg"),
+          requirement: InventoryMeasurementRequirement.Optional,
+        },
+      ],
+    });
+    const otherItem = defineScalarInventoryItem({
+      itemId: "weighed-other",
+      revisionId: "weighed-other-v1",
+      axisId: "pieces",
+      unit: "piece",
+    });
+    const pool = defineScalarInventoryFungibilityPool({
+      poolId: "weighed-pool",
+      revisionId: "weighed-pool-v1",
+      basisUnit: "equivalent",
+      members: [{ item: weighedItem }, { item: otherItem }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [weighedItem, otherItem],
+      activeItemRevisionIds: {
+        [weighedItem.itemId]: weighedItem.revisionId,
+        [otherItem.itemId]: otherItem.revisionId,
+      },
+      fungibilityRevisions: [pool],
+      activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
+    });
+    const inventory = createInventoryOnce({
+      catalog,
+      storage: createInMemoryInventoryDurableStorage(),
+      clock: clockAt(time3),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-old-free",
+      occurredAtEpochMs: time0,
+      to: { itemId: weighedItem.itemId, lotId: "OLD-FREE", placementNodeId: "store" },
+      amount: stockAmount("1", "piece"),
+    });
+    const laterWeighed = {
+      itemId: weighedItem.itemId,
+      lotId: "LATER-WEIGHED",
+      placementNodeId: "store",
+    };
+    await inventory.stock.receive({
+      operationId: "receive-later-weighed",
+      occurredAtEpochMs: time1,
+      to: laterWeighed,
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]),
+    });
+    const [laterPos] = await inventory.read.positions({
+      itemId: weighedItem.itemId,
+      lotIds: ["LATER-WEIGHED"],
+    });
+    if (laterPos === undefined) throw new Error("Expected later weighed position.");
+    await inventory.reservations.reserve({
+      reservationId: "later-weighed-hold",
+      operationId: "reserve-later-weighed",
+      itemRevisionId: weighedItem.revisionId,
+      createdAtEpochMs: time1,
+      selector: { itemId: weighedItem.itemId, lotIds: ["LATER-WEIGHED"] },
+      requested: parseQuantity("1", "piece"),
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate-later-weighed",
+      reservationId: "later-weighed-hold",
+      occurredAtEpochMs: time1,
+      allocations: [{ position: laterPos.key, quantity: parseQuantity("1", "piece") }],
+    });
+    const planned = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("1", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+      atEpochMs: time2,
+    });
+    expect(planned.shortfall.amountMinor).toBe(0);
+    expect(planned.lines.map(({ position }) => position.lotId)).toEqual(["OLD-FREE"]);
+    expect(planned.incrementBlockedStock).toBe(false);
+
+    // Contrasting positive control: when an earlier partly-held measured lot displaces FIFO to a later free lot, report incrementBlockedStock.
+    const earlierHeld = {
+      itemId: weighedItem.itemId,
+      lotId: "EARLIEST-WEIGHED",
+      placementNodeId: "store",
+    };
+    await inventory.stock.receive({
+      operationId: "receive-earliest-weighed",
+      occurredAtEpochMs: time0 - 10,
+      to: earlierHeld,
+      amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]),
+    });
+    const [earliestPos] = await inventory.read.positions({
+      itemId: weighedItem.itemId,
+      lotIds: ["EARLIEST-WEIGHED"],
+    });
+    if (earliestPos === undefined) throw new Error("Expected earliest weighed position.");
+    await inventory.reservations.reserve({
+      reservationId: "earliest-weighed-hold",
+      operationId: "reserve-earliest-weighed",
+      itemRevisionId: weighedItem.revisionId,
+      createdAtEpochMs: time1,
+      selector: { itemId: weighedItem.itemId, lotIds: ["EARLIEST-WEIGHED"] },
+      requested: parseQuantity("1", "piece"),
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate-earliest-weighed",
+      reservationId: "earliest-weighed-hold",
+      occurredAtEpochMs: time1,
+      allocations: [{ position: earliestPos.key, quantity: parseQuantity("1", "piece") }],
+    });
+    const displaced = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("1", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+      atEpochMs: time2,
+    });
+    expect(displaced.shortfall.amountMinor).toBe(0);
+    expect(displaced.lines.map(({ position }) => position.lotId)).toEqual(["OLD-FREE"]);
+    expect(displaced.incrementBlockedStock).toBe(true);
+  });
 });

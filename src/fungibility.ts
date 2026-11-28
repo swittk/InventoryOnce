@@ -567,13 +567,20 @@ function planInventoryFungibilityAllocationWithHolds({
         : { expiresAtEpochMs: evidence.source.expiresAtEpochMs }),
     });
   }
-  const incrementEvidence = incrementBlockedStock || allocated.incrementBlockedStock;
+  const completedDiagnostic = {
+    catalog, requested, method, atEpochMs, memberStock, candidates,
+    allocations: allocated.allocations, evidenceByPosition, acceptAllocations,
+    unallocatedReservationsPresent,
+  };
   const incrementBlockage = allocated.shortfall.amountMinor === 0
-    ? incrementEvidence || (discardedIncrementCapacity && discardedCapacityImprovesFungibilityPlan({
-        catalog, requested, method, atEpochMs, memberStock, candidates,
-        allocations: allocated.allocations, evidenceByPosition, acceptAllocations,
+    ? allocated.incrementBlockedStock ||
+      (discardedIncrementCapacity && discardedCapacityImprovesFungibilityPlan(completedDiagnostic)) ||
+      (incrementBlockedStock && discardedCapacityImprovesFungibilityPlan({
+        ...completedDiagnostic,
+        checkPhysicalIncrements: true,
       }))
-    : (incrementEvidence || discardedIncrementCapacity) && !allocated.allocationConstraintBlockedStock &&
+    : (incrementBlockedStock || allocated.incrementBlockedStock || discardedIncrementCapacity) &&
+      !allocated.allocationConstraintBlockedStock &&
       fungibilityRawCapacityCoversRequest(requested, memberStock);
   return {
     definition,
@@ -617,11 +624,16 @@ interface FungibilityIncrementDiagnosticInput {
   readonly evidenceByPosition: ReadonlyMap<string, InventoryFungibilityCandidateEvidence>;
   /** The original claim-preservation condition. */
   readonly acceptAllocations: (allocations: readonly InventoryAllocation[]) => boolean;
+  /** Whether any unallocated broad claim requires running the full claim predicate during diagnostic trials. */
+  readonly unallocatedReservationsPresent: boolean;
+  /** Whether to also test relaxing row-local indivisible remainders when earlier rows were blocked. */
+  readonly checkPhysicalIncrements?: boolean;
 }
 
-/** Prove that a discarded fraction admits an earlier complete plan with physical increments intact. */
+/** Prove that a discarded fraction admits an earlier complete plan in policy order. */
 function discardedCapacityImprovesFungibilityPlan({
   catalog, requested, method, atEpochMs, memberStock, candidates, allocations, evidenceByPosition, acceptAllocations,
+  unallocatedReservationsPresent, checkPhysicalIncrements = false,
 }: FungibilityIncrementDiagnosticInput): boolean {
   const last = allocations.at(-1);
   if (last === undefined) return false;
@@ -632,7 +644,7 @@ function discardedCapacityImprovesFungibilityPlan({
   let earlierCapacityIncreased = false;
   for (const { member, candidates: sources } of memberStock) {
     for (const source of sources) {
-      const raw = representableFungibilityDiagnosticCandidate(source, member);
+      const raw = representableFungibilityDiagnosticCandidate(source, member, checkPhysicalIncrements);
       if (raw === undefined) continue;
       const legal = rawByPosition.get(source.position);
       rawByPosition.set(source.position, raw);
@@ -641,25 +653,31 @@ function discardedCapacityImprovesFungibilityPlan({
     }
   }
   if (!earlierCapacityIncreased) return false;
+  // Exact holds are already subtracted from source capacities; only broad claims or conversion checks need a predicate.
+  const diagnosticAccept = checkPhysicalIncrements && !unallocatedReservationsPresent
+    ? undefined
+    : /** Preserve physical conversion increments and broad claim feasibility during diagnostic trials. */
+      (trial: readonly InventoryAllocation[]): boolean => {
+        try {
+          if (!checkPhysicalIncrements) {
+            for (const { position, quantity: picked } of trial) {
+              const evidence = evidenceByPosition.get(inventoryStockPositionIdentity(position));
+              if (evidence === undefined) return false;
+              inventoryAmountForPrimaryAllocation({
+                catalog, itemRevisionId: evidence.item.revisionId, position: evidence.position,
+                allocatedPrimary: convertQuantityByReferenceExact(picked, evidence.member.poolQuantity, evidence.member.memberQuantity),
+              });
+            }
+          }
+          return acceptAllocations(trial);
+        } catch (error) {
+          if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
+          return false;
+        }
+      };
   const diagnostic: Parameters<typeof allocateWorkingInventory>[0] = {
     requested, candidates: [...rawByPosition.values()], method, nowEpochMs: atEpochMs, allowExpired: true, assessIncrementBlockage: false,
-    /** A diagnostic witness still needs storable physical movements and must preserve the same claims. */
-    acceptAllocations: (trial: readonly InventoryAllocation[]): boolean => {
-      try {
-        for (const { position, quantity: picked } of trial) {
-          const evidence = evidenceByPosition.get(inventoryStockPositionIdentity(position));
-          if (evidence === undefined) return false;
-          inventoryAmountForPrimaryAllocation({
-            catalog, itemRevisionId: evidence.item.revisionId, position: evidence.position,
-            allocatedPrimary: convertQuantityByReferenceExact(picked, evidence.member.poolQuantity, evidence.member.memberQuantity),
-          });
-        }
-        return acceptAllocations(trial);
-      } catch (error) {
-        if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
-        return false;
-      }
-    },
+    ...(diagnosticAccept === undefined ? {} : { acceptAllocations: diagnosticAccept }),
   };
   try {
     const alternate = allocateWorkingInventory(diagnostic);
@@ -686,22 +704,25 @@ function discardedCapacityImprovesFungibilityPlan({
   }
 }
 
-/** Enumerate exactly convertible picks without assuming that a whole row converts to a decimal. */
+/** Enumerate exactly convertible picks with or without enforcing physical indivisible row increments. */
 function representableFungibilityDiagnosticCandidate(
   source: InventoryWorkingAllocationCandidate,
-  { memberQuantity, poolQuantity }: InventoryFungibilityMemberDefinition
+  { memberQuantity, poolQuantity }: InventoryFungibilityMemberDefinition,
+  relaxPhysicalIncrements: boolean
 ): InventoryWorkingAllocationCandidate | undefined {
   const decimals = Math.max(MAXIMUM_QUANTITY_DECIMALS, source.allocationIncrement?.decimals ?? 0);
   const memberReference = integerAtDecimals(memberQuantity, decimals);
   const poolReference = integerAtDecimals(poolQuantity, decimals);
   const divisor = quantityGreatestCommonDivisor(memberReference, poolReference);
   const memberStep = memberReference / divisor;
-  const physicalStep = source.allocationIncrement === undefined
+  const physicalStep = relaxPhysicalIncrements || source.allocationIncrement === undefined
     ? 1n : workingQuantityAtDecimals(source.allocationIncrement, decimals);
-  // A native pick must be a multiple of both its physical increment and the conversion grid.
+  // A native pick must be a multiple of the conversion grid (and its physical increment unless testing increment blockage).
   const nativeStep = (memberStep / quantityGreatestCommonDivisor(memberStep, physicalStep)) * physicalStep;
-  const capacity = inventoryAllocationCandidateCapacity(source).quantity;
-  const availableSteps = integerAtDecimals(capacity, decimals) / nativeStep;
+  const capacity = relaxPhysicalIncrements
+    ? source.available
+    : inventoryAllocationCandidateCapacity(source).quantity;
+  const availableSteps = workingQuantityAtDecimals(capacity, decimals) / nativeStep;
   if (availableSteps === 0n) return undefined;
   const poolStep = (nativeStep / memberStep) * (poolReference / divisor);
   return {

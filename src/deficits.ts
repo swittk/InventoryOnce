@@ -138,26 +138,69 @@ export function applyInventoryRecordedDeficitBurden({
 }: ApplyInventoryRecordedDeficitBurdenInput): InventoryWorkingDeficitBurden {
   return applyInventoryWorkingDeficitBurdenToPositions({
     ...input,
-    positions: inventoryDeficitRevisionRows(projection, input.itemRevisionId),
+    positions: inventoryDeficitRevisionRows(
+      projection,
+      input.itemRevisionId,
+      input.placementNodeIds
+    ),
   });
 }
 
-/** Read signed rows for one exact revision through the canonical projection index. */
+/** Read signed rows for one exact revision through the canonical indexes, intersecting placements when scoped. */
 function* inventoryDeficitRevisionRows(
   projection: InventoryProjectionState,
-  itemRevisionId: ItemRevisionId
+  itemRevisionId: ItemRevisionId,
+  placementNodeIds: readonly string[]
 ): Iterable<InventoryStockPosition> {
-  for (const positionIdentity of inventorySparseRecordValue(
-    projection.positionIdsByItemRevisionId,
-    itemRevisionId
-  ) ?? []) {
+  const revisionPositionIds =
+    inventorySparseRecordValue(
+      projection.positionIdsByItemRevisionId,
+      itemRevisionId
+    ) ?? [];
+  if (placementNodeIds.length > 0) {
+    const selectedNodes = [...new Set(placementNodeIds)];
+    let placementPositionCount = 0;
+    for (const nodeId of selectedNodes) {
+      placementPositionCount +=
+        inventorySparseRecordValue(
+          projection.positionIdsByPlacementNodeId,
+          nodeId
+        )?.length ?? 0;
+    }
+    if (placementPositionCount < revisionPositionIds.length) {
+      for (const nodeId of selectedNodes) {
+        for (const positionIdentity of inventorySparseRecordValue(
+          projection.positionIdsByPlacementNodeId,
+          nodeId
+        ) ?? []) {
+          const position = projection.positions[positionIdentity];
+          if (position === undefined) {
+            throw new Error(
+              `Inventory deficit placement index references missing position '${positionIdentity}'.`
+            );
+          }
+          if (position.key.itemRevisionId === itemRevisionId) yield position;
+        }
+      }
+      return;
+    }
+  }
+  const placementFilter =
+    placementNodeIds.length === 0 ? undefined : new Set(placementNodeIds);
+  for (const positionIdentity of revisionPositionIds) {
     const position = projection.positions[positionIdentity];
     if (position === undefined) {
       throw new Error(
         `Inventory deficit item-revision index references missing position '${positionIdentity}'.`
       );
     }
-    yield position;
+    if (
+      placementFilter === undefined ||
+      (position.key.placementNodeId !== undefined &&
+        placementFilter.has(position.key.placementNodeId))
+    ) {
+      yield position;
+    }
   }
 }
 

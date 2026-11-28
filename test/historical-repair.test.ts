@@ -2822,4 +2822,90 @@ describe("late historical repair", () => {
     },
   );
 
+  it.each([false, true])(
+    "brings earlier serial-removal corrections forward during count replay when a later event stops scan (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const posS = loosePosition("serial-prepass-bin", { serialId: "SN-STOP-SCAN" });
+      const posOther = loosePosition("serial-prepass-bin", { serialId: "SN-LATER-STOP" });
+      const firstReceipt = await inventory.stock.receive({
+        operationId: "serial-prepass-r1",
+        occurredAtEpochMs: time0,
+        to: posS,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "serial-prepass-r2",
+        occurredAtEpochMs: time3,
+        to: posOther,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.correct({
+        operationId: "serial-prepass-omit-r1",
+        occurredAtEpochMs: time1,
+        correctsEventId: firstReceipt.event.eventId,
+        reason: "First serial receipt never happened.",
+        replaceWith: (plans) => plans.omit(),
+      });
+      await inventory.stock.recordHistorical({
+        operationId: "serial-prepass-repair",
+        occurredAtEpochMs: time3,
+        reason: "Serial arrived at intermediate time.",
+        assertions: [
+          {
+            assertionId: "serial-s-arrived",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time2,
+                to: posS,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      await inventory.counts.start({
+        countId: "serial-prepass-count",
+        operationId: "serial-prepass-start",
+        startedAtEpochMs: time2 + 10,
+        selector: { itemId: "item-a", placementNodeIds: ["serial-prepass-bin"] },
+      });
+      await inventory.counts.observe({
+        countId: "serial-prepass-count",
+        operationId: "serial-prepass-observe",
+        observedAtEpochMs: time2 + 10,
+        observations: [
+          {
+            position: { ...posS, itemRevisionId: "item-a-v2" },
+            measurements: {
+              primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+              independent: [],
+            },
+          },
+        ],
+      });
+      const reconciled = await inventory.counts.reconcile({
+        countId: "serial-prepass-count",
+        operationId: "serial-prepass-reconcile",
+        completedAtEpochMs: time2 + 20,
+      });
+      expect(reconciled.event).toBeUndefined();
+    },
+  );
+
 });

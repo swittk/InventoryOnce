@@ -29,9 +29,12 @@ import {
 import {
   createInMemoryInventoryDurableStorage,
   readInventoryScopedStockAvailability,
+  type InventoryDurableStorage,
+  type InventorySegmentedStockEventCommitCapability,
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
 import { InventoryExactAllocationLimitError } from "../src/allocation.js";
+import { applyInventoryRecordedDeficitBurden } from "../src/deficits.js";
 import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
 import { inventoryStockPositionIdentity } from "../src/model.js";
 import { projectInventoryEvents } from "../src/projection.js";
@@ -104,18 +107,36 @@ function measuredItemCatalog(
   });
 }
 
-/** Prepare either segmented storage or a canonical-only adapter. */
-function policyPickingStorage(canonical: boolean) {
+/** Build a strongly typed canonical storage forwarder without segmented planning or commit methods. */
+function canonicalForwardingStorage(
+  backing: InventoryDurableStorage
+): InventoryDurableStorage {
+  return {
+    guarantee: backing.guarantee,
+    readWorld: () => backing.readWorld(),
+    readOperation: (operationId) => backing.readOperation(operationId),
+    listApplyingOperations: (input) => backing.listApplyingOperations(input),
+    listApplyingMigrationManifests: (input) => backing.listApplyingMigrationManifests(input),
+    begin: (input) => backing.begin(input),
+    readMigrationManifest: (migrationId) => backing.readMigrationManifest(migrationId),
+    beginMigrationManifest: (input) => backing.beginMigrationManifest(input),
+    writeMigrationWorld: (migrationId) => backing.writeMigrationWorld(migrationId),
+    completeMigrationManifest: (migrationId) => backing.completeMigrationManifest(migrationId),
+    abortMigrationManifest: (migrationId) => backing.abortMigrationManifest(migrationId),
+    writeEvent: (operationId) => backing.writeEvent(operationId),
+    writeProjection: (operationId) => backing.writeProjection(operationId),
+    writeReservations: (operationId) => backing.writeReservations(operationId),
+    writeCounts: (operationId) => backing.writeCounts(operationId),
+    writeReceipt: (operationId) => backing.writeReceipt(operationId),
+    complete: (operationId) => backing.complete(operationId),
+    abort: (operationId) => backing.abort(operationId),
+  };
+}
+
+/** Prepare either segmented storage or a strongly typed canonical-only adapter. */
+function policyPickingStorage(canonical: boolean): InventoryDurableStorage {
   const backing = createInMemoryInventoryDurableStorage();
-  return canonical ? new Proxy(backing, {
-    /** Force both planning and publication through the canonical coordinator. */
-    get(target, property) {
-      if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool" ||
-          property === "commitSegmentedStockEvent") return undefined;
-      const member = Reflect.get(target, property);
-      return typeof member === "function" ? member.bind(target) : member;
-    },
-  }) : backing;
+  return canonical ? canonicalForwardingStorage(backing) : backing;
 }
 
 /** Prepare measured picking on either the segmented or canonical adapter. */
@@ -155,7 +176,7 @@ describe("indexed stock planning and availability", () => {
     const ordered = await readInventoryScopedStockAvailability(scope);
     const readPool = storage.readSegmentedStockPool.bind(storage);
     vi.spyOn(storage, "readSegmentedStockPool").mockImplementation(
-      /** Return the same complete pool in a different valid adapter order. */
+      /** Exercise reducer determinism against a deliberately misordered mock pool; conformant adapters still sort positions. */
       (input) => {
         const pool = readPool(input);
         return { ...pool, positions: [...pool.positions].reverse() };
@@ -2888,7 +2909,7 @@ describe("indexed stock planning and availability", () => {
     expect(atHold.lines).toMatchObject([{ position: { lotId: "young" }, allocatedPrimary: parseQuantity("1", "piece") }]);
   });
 
-  it.each(["0", "1"])("treats an absent optional axis as zero for a report of $weight kg", async (weight) => {
+  it.each(["0", "1"])("treats an absent optional axis as zero for a report of %s kg", async (weight) => {
     const base = measuredItemCatalog("pieces").activeItem("measured");
     const item = defineInventoryItem({
       ...base,
@@ -2919,7 +2940,7 @@ describe("indexed stock planning and availability", () => {
     }
   });
 
-  it.each(["1", "2"])("keeps effect metadata only when it describes all $reported transferred pieces", async (reported) => {
+  it.each(["1", "2"])("keeps effect metadata only when it describes all %s transferred pieces", async (reported) => {
     const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
     const from = loosePosition("store");
     await inventory.stock.receive({
@@ -3455,14 +3476,12 @@ describe("indexed stock planning and availability", () => {
   });
 
   it.each(["single", "many"])("publishes a Reject-mode %s exact transfer through a commit-only adapter", async (form) => {
-    /** Expose the native event commit through an adapter without the optional planning reads. */
-    const commitOnly = (storage: ReturnType<typeof createInMemoryInventoryDurableStorage>) => new Proxy(storage, {
-      /** Keep bound adapter methods while omitting the planning capability. */
-      get(target, property) {
-        if (property === "readSegmentedStockHead" || property === "readSegmentedStockPool") return undefined;
-        const member = Reflect.get(target, property);
-        return typeof member === "function" ? member.bind(target) : member;
-      },
+    /** Expose the native event commit through a typed adapter without optional planning reads. */
+    const commitOnly = (
+      storage: ReturnType<typeof createInMemoryInventoryDurableStorage>
+    ): InventoryDurableStorage & InventorySegmentedStockEventCommitCapability => ({
+      ...canonicalForwardingStorage(storage),
+      commitSegmentedStockEvent: (input) => storage.commitSegmentedStockEvent(input),
     });
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(commitOnly(storage));
@@ -4489,5 +4508,175 @@ describe("indexed stock planning and availability", () => {
       }),
     ).rejects.toThrow("Accepted allocation cannot store its measured lines.");
     expect(await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["out"] })).toEqual([]);
+  });
+
+  it("caps complete-witness suffix capacity on two unmeasured lots followed by measured witnesses", async () => {
+    const base = defineScalarInventoryItem({
+      itemId: "measured",
+      revisionId: "measured-v1",
+      axisId: "weight",
+      unit: "kg",
+    });
+    const item = defineInventoryItem({
+      ...base,
+      independentAxes: [{
+        axisId: "volume",
+        role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("L"),
+        requirement: InventoryMeasurementRequirement.Optional,
+      }],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item],
+      activeItemRevisionIds: { [item.itemId]: item.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const lots: readonly [string, ReturnType<typeof stockAmount>][] = [
+      ["dry-1", stockAmount("5", "kg")],
+      ["dry-2", stockAmount("5", "kg")],
+      ["m-3", measuredStockAmount("1", "kg", [{ axisId: "volume", value: "0.2", unit: "L" }])],
+      ["m-4", measuredStockAmount("2", "kg", [{ axisId: "volume", value: "0.3", unit: "L" }])],
+    ];
+    for (const [index, [lotId, received]] of lots.entries()) {
+      await inventory.stock.receive({
+        operationId: `budget-suffix-rx-${index}`,
+        occurredAtEpochMs: time0 + index,
+        to: { itemId: item.itemId, placementNodeId: "store", lotId },
+        amount: received,
+      });
+    }
+    const moved = await inventory.stock.transferByPolicy({
+      operationId: "budget-suffix-transfer",
+      occurredAtEpochMs: time2,
+      toPlacementNodeId: "room",
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      method: InventoryAllocationMethod.Fifo,
+      amount: measuredStockAmount("5.000001", "kg", [{ axisId: "volume", value: "0.3", unit: "L" }]),
+    });
+    expect(moved.event.unwitnessedStockMovements).toBeUndefined();
+    expect(
+      moved.event.stockEffects
+        .filter(({ position }) => position.placementNodeId === "store")
+        .map(({ position, measurementsDelta }) => [position.lotId, measurementsDelta.primary.quantity])
+    ).toEqual([
+      ["dry-1", parseQuantity("-3.000001", "kg")],
+      ["m-4", parseQuantity("-2.000000", "kg")],
+    ]);
+  });
+
+  it("intersects item revision and placement indexes when computing single-bin deficit burden", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    for (let index = 0; index < 40; index += 1) {
+      await inventory.stock.receive({
+        operationId: `deficit-idx-rx-${index}`,
+        occurredAtEpochMs: time0,
+        to: loosePosition(`bin-${index}`),
+        amount: stockAmount("5", "piece"),
+      });
+    }
+    await inventory.stock.issue({
+      operationId: "deficit-idx-issue-0",
+      occurredAtEpochMs: time1,
+      from: loosePosition("bin-0", { lotId: "DEFICIT-0" }),
+      amount: stockAmount("2", "piece"),
+    });
+    const world = await inventory.read.world();
+    let positionReads = 0;
+    const countingPositions: Record<string, typeof world.projection.positions[string]> =
+      Object.create(null);
+    for (const [key, value] of Object.entries(world.projection.positions)) {
+      Object.defineProperty(countingPositions, key, {
+        enumerable: true,
+        get() {
+          positionReads += 1;
+          return value;
+        },
+      });
+    }
+    const bin0Key = { ...loosePosition("bin-0"), itemRevisionId: "item-a-v2" };
+    const scopedBurden = applyInventoryRecordedDeficitBurden({
+      projection: { ...world.projection, positions: countingPositions },
+      itemRevisionId: "item-a-v2",
+      axisId: "pieces",
+      unit: unitCode("piece"),
+      placementNodeIds: ["bin-0"],
+      lines: [{ position: bin0Key, capacity: { amountMinor: 5n, decimals: 0, unit: unitCode("piece") } }],
+    });
+    expect(scopedBurden.recordedDeficit).toEqual({ amountMinor: 2n, decimals: 0, unit: unitCode("piece") });
+    expect(scopedBurden.capacityByPositionIdentity.get(inventoryStockPositionIdentity(bin0Key)))
+      .toEqual({ amountMinor: 3n, decimals: 0, unit: unitCode("piece") });
+    expect(positionReads).toBeLessThan(10);
+  });
+
+  it("leaves unreserved fixed packages available on the primary axis when another box holds an independent-axis claim", async () => {
+    const base = defineScalarInventoryItem({
+      itemId: "boxed-held",
+      revisionId: "boxed-held-v1",
+      axisId: "pieces",
+      unit: "piece",
+    });
+    const item = defineInventoryItem({
+      ...base,
+      independentAxes: [{
+        axisId: "weight",
+        role: InventoryMeasurementAxisRole.Independent,
+        unit: unitCode("kg"),
+        requirement: InventoryMeasurementRequirement.Optional,
+      }],
+      reservationAxisId: "weight",
+    });
+    const pack = defineInventoryPackaging(
+      {
+        revisionId: "boxed-held-pack",
+        itemId: item.itemId,
+        itemRevisionId: item.revisionId,
+        packageUnit: unitCode("box"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+          [{ axisId: "weight", quantity: parseQuantity("3", "kg") }],
+        ),
+      },
+      item,
+    );
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item],
+      activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [pack],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const boxed = { itemId: item.itemId, placementNodeId: "store", packagingRevisionId: pack.revisionId };
+    await inventory.stock.receive({
+      operationId: "boxed-held-rx",
+      occurredAtEpochMs: time0,
+      to: boxed,
+      amount: packageAmount(2, pack.revisionId),
+    });
+    const [boxedPos] = await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["store"] });
+    if (boxedPos === undefined) throw new Error("Expected boxed position.");
+    await inventory.reservations.reserve({
+      reservationId: "boxed-held-claim",
+      operationId: "boxed-held-reserve",
+      itemRevisionId: item.revisionId,
+      createdAtEpochMs: time1,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("3", "kg"),
+    });
+    await inventory.reservations.allocate({
+      operationId: "boxed-held-allocate",
+      reservationId: "boxed-held-claim",
+      occurredAtEpochMs: time1,
+      allocations: [{ position: boxedPos.key, quantity: parseQuantity("3", "kg") }],
+    });
+    const preview = await inventory.read.planAllocation({
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      method: InventoryAllocationMethod.Fifo,
+      amount: stockAmount("1", "piece"),
+      atEpochMs: time2,
+    });
+    expect(preview.shortfall).toEqual(parseQuantity("0", "piece"));
+    expect(preview.lines).toMatchObject([{
+      position: boxed,
+      allocatedPrimary: parseQuantity("1", "piece"),
+    }]);
   });
 });

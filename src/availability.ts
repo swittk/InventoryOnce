@@ -424,71 +424,80 @@ export function summarizeInventoryPhysicalAvailability({
     });
   }
 
-  /** Exact usable capacity in the entire direct-placement pool before narrowing the read. */
-  const positiveCapacityLines: InventoryWorkingDeficitCapacityLine[] = [];
-  for (const position of poolPositions) {
-    if (inventoryPositionIsDeficit(position)) continue;
-    if (
-      position.key.transferId !== undefined ||
-      position.key.placementNodeId === undefined
-    ) {
-      continue;
-    }
-    const id = inventoryStockPositionIdentity(position.key);
-    const expiry = useBy.get(id);
-    if (expiry !== undefined && expiry <= atEpochMs) continue;
-    const physicalCapacity = inventoryMeasurementAt(
-      position.measurements,
-      reservationAxis.axisId,
-      reservationAxis.unit
-    );
-    if (
-      compareQuantity(
+  /** Attribute deficits only when at least one negative balance is present in the signed pool. */
+  let burdenCapacityByPositionIdentity:
+    | ReadonlyMap<string, InventoryWorkingQuantity>
+    | undefined;
+  let deficit = zero;
+  let usableDeficit = zero;
+  if (hasRecordedDeficit) {
+    /** Exact usable capacity in the entire direct-placement pool before narrowing the read. */
+    const positiveCapacityLines: InventoryWorkingDeficitCapacityLine[] = [];
+    for (const position of poolPositions) {
+      if (inventoryPositionIsDeficit(position)) continue;
+      if (
+        position.key.transferId !== undefined ||
+        position.key.placementNodeId === undefined
+      ) {
+        continue;
+      }
+      const id = inventoryStockPositionIdentity(position.key);
+      const expiry = useBy.get(id);
+      if (expiry !== undefined && expiry <= atEpochMs) continue;
+      const physicalCapacity = inventoryMeasurementAt(
+        position.measurements,
+        reservationAxis.axisId,
+        reservationAxis.unit
+      );
+      if (
+        compareQuantity(
+          physicalCapacity,
+          zeroQuantity(reservationAxis.unit, physicalCapacity.decimals)
+        ) <= 0
+      ) {
+        continue;
+      }
+      const exactAllocations =
+        exactHolds.get(id) ?? {
+          quantity: zeroQuantity(reservationAxis.unit),
+          reservationIds: [],
+        };
+      const rawUnallocated = unheldWorkingCapacity(
         physicalCapacity,
-        zeroQuantity(reservationAxis.unit, physicalCapacity.decimals)
-      ) <= 0
-    ) {
-      continue;
+        exactAllocations.quantity
+      );
+      if (rawUnallocated.amountMinor <= 0n) continue;
+      positiveCapacityLines.push({
+        position: position.key,
+        capacity: rawUnallocated,
+      });
     }
-    const exactAllocations =
-      exactHolds.get(id) ?? {
-        quantity: zeroQuantity(reservationAxis.unit),
-        reservationIds: [],
-      };
-    const rawUnallocated = unheldWorkingCapacity(
-      physicalCapacity,
-      exactAllocations.quantity
-    );
-    if (rawUnallocated.amountMinor <= 0n) continue;
-    positiveCapacityLines.push({
-      position: position.key,
-      capacity: rawUnallocated,
+    const burden = applyInventoryWorkingDeficitBurdenToPositions({
+      positions: poolPositions,
+      itemRevisionId: revisionId,
+      axisId: reservationAxis.axisId,
+      unit: reservationAxis.unit,
+      placementNodeIds: [],
+      lines: positiveCapacityLines,
+    });
+    burdenCapacityByPositionIdentity = burden.capacityByPositionIdentity;
+    deficit = availabilitySelectedDeficitBurdenMeasurements({
+      useBy,
+      item,
+      poolPositions,
+      selectedPositions: positions,
+      atEpochMs,
+      usableOnly: false,
+    });
+    usableDeficit = availabilitySelectedDeficitBurdenMeasurements({
+      useBy,
+      item,
+      poolPositions,
+      selectedPositions: positions,
+      atEpochMs,
+      usableOnly: true,
     });
   }
-  const burden = applyInventoryWorkingDeficitBurdenToPositions({
-    positions: poolPositions,
-    itemRevisionId: revisionId,
-    axisId: reservationAxis.axisId,
-    unit: reservationAxis.unit,
-    placementNodeIds: [],
-    lines: positiveCapacityLines,
-  });
-  const deficit = availabilitySelectedDeficitBurdenMeasurements({
-    useBy,
-    item,
-    poolPositions,
-    selectedPositions: positions,
-    atEpochMs,
-    usableOnly: false,
-  });
-  const usableDeficit = availabilitySelectedDeficitBurdenMeasurements({
-    useBy,
-    item,
-    poolPositions,
-    selectedPositions: positions,
-    atEpochMs,
-    usableOnly: true,
-  });
   const primaryAxisId = item.primaryAxis.axisId;
   const physicalOnHand = materializeInventoryMeasurementTotals(physicalTotals, primaryAxisId);
   const usablePhysicalOnHand = materializeInventoryMeasurementTotals(usableTotals, primaryAxisId);
@@ -502,12 +511,15 @@ export function summarizeInventoryPhysicalAvailability({
   const positionSummaries: InventoryPositionAvailability[] = [];
   for (const pending of pendingPositions) {
     const identity = inventoryStockPositionIdentity(pending.position.key);
-    const capacity =
-      burden.capacityByPositionIdentity.get(identity) ??
-      zeroQuantity(
-        reservationAxis.unit,
-        pending.rawUnallocatedUsablePhysical.decimals
-      );
+    const capacity = burdenCapacityByPositionIdentity === undefined
+      ? (pending.rawUnallocatedUsablePhysical.amountMinor <= 0n
+          ? zeroQuantity(reservationAxis.unit, pending.rawUnallocatedUsablePhysical.decimals)
+          : pending.rawUnallocatedUsablePhysical)
+      : (burdenCapacityByPositionIdentity.get(identity) ??
+          zeroQuantity(
+            reservationAxis.unit,
+            pending.rawUnallocatedUsablePhysical.decimals
+          ));
     const adjusted = materializeInventoryWorkingQuantity(capacity, "Inventory available quantity");
     addExactQuantityDigits(unallocatedUsablePhysical, BigInt(adjusted.amountMinor), adjusted.decimals);
     const { rawUnallocatedUsablePhysical: _raw, ...publicPosition } = pending;

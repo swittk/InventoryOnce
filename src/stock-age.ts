@@ -62,7 +62,8 @@ export function inventoryConservedArrivalCanSettleDeficit(event: InventoryCommit
     case InventoryEventKind.Unpack:
       return true;
     case InventoryEventKind.Placement:
-      // Placement of a serialized resource needs a live destination for its stock and edge.
+      // Intentional live and replay rule: loose contents moves may settle destination debt with zero remaining age,
+      // whereas serialized placement still requires a live positive destination for both stock and edge.
       return serialId === undefined;
     default:
       return false;

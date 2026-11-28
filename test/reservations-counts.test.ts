@@ -2320,4 +2320,65 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     expect(leavingCount.event).toBeUndefined();
   });
+
+  it("excludes out-of-scope embodied carrier moves when an unrelated backdated transfer moves X into former child B", async () => {
+    const inventory = createTestInventory();
+    await inventory.stock.receive({
+      operationId: "carrier-cycle-rx",
+      occurredAtEpochMs: time0,
+      to: loosePosition("R"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "carrier-cycle-embody",
+      occurredAtEpochMs: time0,
+      from: loosePosition("R"),
+      amount: stockAmount("1", "piece"),
+      serialId: "X-CARRIER",
+      asPlacementNode: { acceptsPlacement: true },
+    });
+    await inventory.placement.move({
+      operationId: "carrier-cycle-place-b",
+      occurredAtEpochMs: time0,
+      nodeId: "B",
+      into: "X-CARRIER",
+    });
+    await inventory.stock.transfer({
+      operationId: "carrier-cycle-leave-r",
+      occurredAtEpochMs: time1,
+      from: loosePosition("R", { serialId: "X-CARRIER" }),
+      toPlacementNodeId: "OUTSIDE",
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.unplace({
+      operationId: "carrier-cycle-unplace-b",
+      occurredAtEpochMs: time3,
+      nodeId: "B",
+    });
+    await inventory.stock.transfer({
+      operationId: "carrier-cycle-backdated-reparent",
+      occurredAtEpochMs: time2,
+      from: loosePosition("OUTSIDE", { serialId: "X-CARRIER" }),
+      toPlacementNodeId: "B",
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.counts.start({
+      countId: "carrier-cycle-count",
+      operationId: "carrier-cycle-start",
+      startedAtEpochMs: time2 + 10,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await inventory.counts.observe({
+      countId: "carrier-cycle-count",
+      operationId: "carrier-cycle-observe",
+      observedAtEpochMs: time2 + 10,
+      observations: [],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "carrier-cycle-count",
+      operationId: "carrier-cycle-reconcile",
+      completedAtEpochMs: time2 + 20,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
 });

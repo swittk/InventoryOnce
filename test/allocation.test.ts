@@ -631,20 +631,21 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
     { increment: "0.000008", picked: "1.000000", missing: "9007199254740990" },
     { increment: "0.000003", picked: undefined, missing: "9007199254740991" },
   ])("skips terminal picks with unstorable shortfalls at increment $increment", ({ increment, picked, missing }) => {
+    const fracCandidate = candidate({
+      lotId: "fractional", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
+      extra: {
+        available: parseQuantity("1.999999", "kg"),
+        ...(increment === undefined ? {} : { allocationIncrement: parseQuantity(increment, "kg") }),
+      },
+    });
     const result = allocateInventoryUpTo({
       requested: parseQuantity("9007199254740991", "kg"),
-      candidates: [candidate({
-        lotId: "fractional", receivedAtEpochMs: time0, expiresAtEpochMs: time3,
-        extra: {
-          available: parseQuantity("1.999999", "kg"),
-          ...(increment === undefined ? {} : { allocationIncrement: parseQuantity(increment, "kg") }),
-        },
-      })],
+      candidates: [fracCandidate],
       method: InventoryAllocationMethod.Fifo,
       nowEpochMs: time2,
     });
-    expect(result.allocations.map((line) => line.quantity)).toEqual(
-      picked === undefined ? [] : [parseQuantity(picked, "kg")],
+    expect(result.allocations).toEqual(
+      picked === undefined ? [] : [{ position: fracCandidate.position, quantity: parseQuantity(picked, "kg") }],
     );
     expect(result.shortfall).toEqual(parseQuantity(missing, "kg"));
   });
@@ -892,7 +893,11 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       method: InventoryAllocationMethod.Fifo,
       nowEpochMs: time2,
     });
-    expect(defaultResult.allocations.length).toBeGreaterThan(0);
+    expect(defaultResult.allocations).toEqual([
+      { position: greedyPool[0]!.position, quantity: parseQuantity("1998", "piece") },
+      { position: greedyPool[1]!.position, quantity: parseQuantity("1998", "piece") },
+      { position: greedyPool[2]!.position, quantity: parseQuantity("1002", "piece") },
+    ]);
     expect(defaultResult.shortfall).toEqual(parseQuantity("2", "piece"));
     expect(defaultResult.incrementBlockedStock).toBe(true);
 

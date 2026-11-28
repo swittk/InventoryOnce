@@ -68,6 +68,7 @@ import {
   positiveQuantity,
   quantity,
   quantityEq,
+  quantityIsWholeMultipleOf,
   quantityToDecimalString,
   quantityWholeMultipleCount,
   zeroQuantity,
@@ -1321,6 +1322,7 @@ function createPolicyAllocationCandidates({
   }
   const candidates: InventoryWorkingAllocationCandidate[] = [];
   const reservationSummary = createExactPrimaryReservationSummary({
+    catalog,
     reservations: pool.reservations,
     positions: rowsById,
     item,
@@ -1413,6 +1415,8 @@ interface ExactPrimaryReservationSummary {
 
 /** Inputs for one linear pass over reservation evidence before candidate iteration. */
 interface CreateExactPrimaryReservationSummaryInput {
+  /** Retained catalogue used to resolve fixed package contents on independent reservation axes. */
+  readonly catalog: InventoryCatalog;
   /** Reservation rows reconstructed at the claim-book authority time. */
   readonly reservations: readonly InventoryReservation[];
   /** Exact signed rows of this selected pool, keyed by position. */
@@ -1442,8 +1446,58 @@ export function assertInventoryPolicyCanPickAroundIndependentHold(selectedIndepe
   }
 }
 
+/** Convert an independent-axis allocation to exact primary quantity when packaging fixes both axes. */
+function convertedIndependentPackagePrimaryQuantity(
+  catalog: InventoryCatalog,
+  item: InventoryItemDefinitionRevision,
+  packagingRevisionId: string | undefined,
+  allocationQuantity: Quantity
+): InventoryWorkingQuantity | undefined {
+  if (packagingRevisionId === undefined) return undefined;
+  const reservationAxis = catalog.measurementAxis(item, item.reservationAxisId);
+  const packaging = catalog.packagingRevision(packagingRevisionId);
+  const fixedReservation = inventoryMeasurementAt(
+    packaging.fixedContents,
+    reservationAxis.axisId,
+    reservationAxis.unit
+  );
+  const fixedPrimary = inventoryMeasurementAt(
+    packaging.fixedContents,
+    item.primaryAxis.axisId,
+    item.primaryAxis.unit
+  );
+  if (fixedReservation.amountMinor <= 0 || fixedPrimary.amountMinor <= 0) return undefined;
+  if (!quantityIsWholeMultipleOf(allocationQuantity, fixedReservation)) return undefined;
+  const packageCount = quantityWholeMultipleCount(allocationQuantity, fixedReservation);
+  return {
+    amountMinor: BigInt(packageCount) * BigInt(fixedPrimary.amountMinor),
+    decimals: fixedPrimary.decimals,
+    unit: fixedPrimary.unit,
+  };
+}
+
+/** Accumulate exact primary-axis reservation pressure for one bound stock position. */
+function addReservedPrimaryQuantity(
+  reservedByPosition: Map<string, InventoryWorkingQuantity>,
+  positionIdentity: string,
+  addition: InventoryWorkingQuantity
+): void {
+  const existing = reservedByPosition.get(positionIdentity);
+  if (existing === undefined) {
+    reservedByPosition.set(positionIdentity, addition);
+    return;
+  }
+  const reserved = { minor: BigInt(existing.amountMinor), decimals: existing.decimals };
+  addExactQuantityDigits(reserved, BigInt(addition.amountMinor), addition.decimals);
+  reservedByPosition.set(
+    positionIdentity,
+    { amountMinor: reserved.minor, decimals: reserved.decimals, unit: existing.unit }
+  );
+}
+
 /** Sum every active exact binding once so candidate planning stays O(reservations + allocations + candidates). */
 function createExactPrimaryReservationSummary({
+  catalog,
   reservations,
   positions,
   item,
@@ -1456,6 +1510,8 @@ function createExactPrimaryReservationSummary({
 }: CreateExactPrimaryReservationSummaryInput): ExactPrimaryReservationSummary {
   // Exact primary-axis pressure accumulated once per bound stock position.
   const reservedPrimaryByPositionIdentity = new Map<string, InventoryWorkingQuantity>();
+  // Track rows already wholly withheld by an unconvertible independent-axis hold.
+  const whollyWithheldPositions = new Set<string>();
   // Remember whether any active broad claim still needs global feasibility protection.
   let unallocatedReservationsPresent = false;
   /** Defer the explicit-lines error until unheld stock fails to fill a preview. */
@@ -1474,6 +1530,7 @@ function createExactPrimaryReservationSummary({
       const positionIdentity = inventoryStockPositionIdentity(allocation.position);
       const row = positions.get(positionIdentity);
       if (row === undefined) continue;
+      if (whollyWithheldPositions.has(positionIdentity)) continue;
       if (item.reservationAxisId !== item.primaryAxis.axisId) {
         // The picker will remove expired capacity before applying deficit burden.
         if (!allowExpiredLots && row.effectiveUseByEpochMs !== undefined &&
@@ -1481,22 +1538,23 @@ function createExactPrimaryReservationSummary({
         const onHand = inventoryPolicyPositionMeasurement(row.position, item.primaryAxis.axisId, item.primaryAxis.unit);
         // A stranded hold remains a claim, but its depleted row cannot supply a pick.
         if (onHand.amountMinor <= 0n) continue;
+        const packagePrimary = convertedIndependentPackagePrimaryQuantity(
+          catalog,
+          item,
+          allocation.position.packagingRevisionId,
+          allocation.quantity
+        );
+        if (packagePrimary !== undefined) {
+          addReservedPrimaryQuantity(reservedPrimaryByPositionIdentity, positionIdentity, packagePrimary);
+          continue;
+        }
         // A binding on a different axis gives no exact primary quantity. Withhold the entire row.
+        whollyWithheldPositions.add(positionIdentity);
         reservedPrimaryByPositionIdentity.set(positionIdentity, onHand);
         selectedIndependentHold ||= inventoryStockPositionMatchesNormalizedSelector(row.position.key, stockSelector);
         continue;
       }
-      const existing = reservedPrimaryByPositionIdentity.get(positionIdentity);
-      if (existing === undefined) {
-        reservedPrimaryByPositionIdentity.set(positionIdentity, allocation.quantity);
-        continue;
-      }
-      const reserved = { minor: BigInt(existing.amountMinor), decimals: existing.decimals };
-      addExactQuantityDigits(reserved, BigInt(allocation.quantity.amountMinor), allocation.quantity.decimals);
-      reservedPrimaryByPositionIdentity.set(
-        positionIdentity,
-        { amountMinor: reserved.minor, decimals: reserved.decimals, unit: existing.unit }
-      );
+      addReservedPrimaryQuantity(reservedPrimaryByPositionIdentity, positionIdentity, allocation.quantity);
     }
   }
   return {

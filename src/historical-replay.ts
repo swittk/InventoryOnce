@@ -611,7 +611,14 @@ function insertHistoricalAssertion(
         (key) => dependencies.has(key)
       )) {
         // First put any backdated predecessors ahead of this later fact.
-        const predecessors = bringForwardHistoricalPredecessors(target, index, occurredAt, dependencies, sourcePositionIds);
+        const predecessors = bringForwardHistoricalPredecessors(
+          target,
+          index,
+          occurredAt,
+          dependencies,
+          sourcePositionIds,
+          destinationSerialIds
+        );
         if (predecessors > 0) insertionIndex = index + predecessors - 1;
         break;
       }
@@ -630,7 +637,8 @@ function bringForwardHistoricalPredecessors(
   firstLater: number,
   occurredAt: number,
   dependencies: ReadonlySet<string>,
-  sourcePositionIds: ReadonlySet<string>
+  sourcePositionIds: ReadonlySet<string>,
+  destinationSerialIds: ReadonlySet<string>
 ): number {
   /** Events already ordered before the insertion slice satisfy anchor prerequisites immediately. */
   const priorEventIds = new Set<string>();
@@ -653,7 +661,8 @@ function bringForwardHistoricalPredecessors(
       index === firstLater ||
       event.occurredAtEpochMs > occurredAt ||
       (event.kind === InventoryEventKind.Correction && (event.placementChanges ?? []).length === 0 &&
-        !isHistoricalStockSupplyCorrection(event, sourcePositionIds))
+        !isHistoricalStockSupplyCorrection(event, sourcePositionIds) &&
+        !isHistoricalSerialRemovalCorrection(event, destinationSerialIds))
     ) {
       continue;
     }

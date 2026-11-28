@@ -388,6 +388,8 @@ interface InventoryCountProjectionScope {
   readonly placementNodeIds: ReadonlySet<string>;
   /** Placement-changing events that can affect membership or ancestry in the counted subtrees. */
   readonly placementEventIds?: ReadonlySet<string>;
+  /** Exact (eventId, nodeId) edges authorized in the counted placement subgraph. */
+  readonly retainedPlacementEdgeKeys?: ReadonlySet<string>;
   /** Event/node pairs that leave the tracked subgraph and must replay as unplacements. */
   readonly detachedPlacementEdgeKeys?: ReadonlySet<string>;
   /** Stock selected by the count or needed to fund it at this sequence. */
@@ -1238,6 +1240,7 @@ function applyInventoryCommittedEventInternal(
       ? {}
       : { omittedHistoricalAssertionIds: normalizedEvent.historicalRepair.omittedAssertionIds }),
     retainedEvents: state.events,
+    ...(countScope === undefined ? {} : { countScope }),
   });
   for (const definition of placementNodeDefinitions) {
     if (definition.acceptsPlacement !== false) continue;
@@ -1388,6 +1391,8 @@ interface ReconcileInventoryPlacementEmbodimentsInput {
   readonly omittedHistoricalAssertionIds?: readonly string[];
   /** Previously published events used to authenticate a retrospective omission. */
   readonly retainedEvents: Readonly<Record<string, InventoryCommittedEvent>>;
+  /** Count topology scope when replaying embodied carrier edges inside a scoped count cut. */
+  readonly countScope?: InventoryCountProjectionScope;
 }
 
 /** Allow revival only when the exact retained repair's serialized retirement is omitted. */
@@ -1430,7 +1435,7 @@ function historicalRepairOmitsEmbodiedRetirement({
   return false;
 }
 
-/** Keep embodied node parent/lifetime derived from its one live serial resource. */
+/** Reconcile embodied node placement state within the shared reducer and active count scope. */
 function reconcileInventoryPlacementEmbodiments({
   previousPlacementNodes,
   previousPlacementNodeById,
@@ -1447,6 +1452,7 @@ function reconcileInventoryPlacementEmbodiments({
   supersedesCorrectionEventId,
   omittedHistoricalAssertionIds,
   retainedEvents,
+  countScope,
 }: ReconcileInventoryPlacementEmbodimentsInput): InventoryPlacementState {
   let nextPlacement = placement;
   // An initial copy-on-write transition creates the private batch forest;
@@ -1534,16 +1540,25 @@ function reconcileInventoryPlacementEmbodiments({
         nodeId
       );
       if (currentParentNodeId !== undefined) {
-        nextPlacement = applyInventoryPlacementChanges({
-          state: nextPlacement,
-          eventId,
-          changes: [{ nodeId, fromParentNodeId: currentParentNodeId }],
-          mutatePrivateBatch: ownsPlacement,
-          acceptsPlacement:
-            /** Removing an edge while retiring a node never adds a new parent. */
-            () => true,
-        });
-        ownsPlacement = true;
+        const retireChange: InventoryPlacementChange = {
+          nodeId,
+          fromParentNodeId: currentParentNodeId,
+        };
+        const scopedRetire = countScope === undefined
+          ? [retireChange]
+          : filterScopedPlacementChanges(eventId, [retireChange], countScope);
+        if (scopedRetire.length > 0) {
+          nextPlacement = applyInventoryPlacementChanges({
+            state: nextPlacement,
+            eventId,
+            changes: scopedRetire,
+            mutatePrivateBatch: ownsPlacement,
+            acceptsPlacement:
+              /** Removing an edge while retiring a node never adds a new parent. */
+              () => true,
+          });
+          ownsPlacement = true;
+        }
       }
       setInventorySparseRecordValue(placementNodes, nodeId, {
         ...projected,
@@ -1557,7 +1572,27 @@ function reconcileInventoryPlacementEmbodiments({
         `Embodied serial index ${serialIdentity} references missing stock.`
       );
     }
-    const desiredParentNodeId = position.key.placementNodeId;
+    const currentParentNodeId = inventoryPlacementParentNodeId(
+      nextPlacement,
+      nodeId
+    );
+    const rawChange: InventoryPlacementChange = {
+      nodeId,
+      ...(currentParentNodeId === undefined
+        ? {}
+        : { fromParentNodeId: currentParentNodeId }),
+      ...(position.key.placementNodeId === undefined
+        ? {}
+        : { toParentNodeId: position.key.placementNodeId }),
+    };
+    const scopedChanges = countScope === undefined
+      ? [rawChange]
+      : filterScopedPlacementChanges(eventId, [rawChange], countScope);
+    const scopedChange = scopedChanges[0];
+    if (scopedChange === undefined || scopedChange.fromParentNodeId === scopedChange.toParentNodeId) {
+      continue;
+    }
+    const desiredParentNodeId = scopedChange.toParentNodeId;
     if (desiredParentNodeId !== undefined) {
       const desiredParent = inventorySparseRecordValue(
         placementNodes,
@@ -1569,25 +1604,10 @@ function reconcileInventoryPlacementEmbodiments({
         );
       }
     }
-    const currentParentNodeId = inventoryPlacementParentNodeId(
-      nextPlacement,
-      nodeId
-    );
-    if (currentParentNodeId === desiredParentNodeId) continue;
     nextPlacement = applyInventoryPlacementChanges({
       state: nextPlacement,
       eventId,
-      changes: [
-        {
-          nodeId,
-          ...(currentParentNodeId === undefined
-            ? {}
-            : { fromParentNodeId: currentParentNodeId }),
-          ...(desiredParentNodeId === undefined
-            ? {}
-            : { toParentNodeId: desiredParentNodeId }),
-        },
-      ],
+      changes: [scopedChange],
       mutatePrivateBatch: ownsPlacement,
       acceptsPlacement:
         /** Resolve one derived embodied parent against current active node policy. */
@@ -1764,8 +1784,8 @@ function countScopedStockEvent(
   };
 }
 
-/** Build the canonical key identifying an edge detached when leaving a counted subtree. */
-function placementDetachedEdgeKey(eventId: string, nodeId: string): string {
+/** Build the canonical key identifying an (eventId, nodeId) transition inside a scoped placement cut. */
+function placementScopedEdgeKey(eventId: string, nodeId: string): string {
   return JSON.stringify([eventId, nodeId]);
 }
 
@@ -1775,6 +1795,7 @@ function filterScopedPlacementChanges(
   changes: readonly InventoryPlacementChange[],
   countScope: InventoryCountProjectionScope
 ): readonly InventoryPlacementChange[] {
+  const retainedEdges = countScope.retainedPlacementEdgeKeys;
   const detachedKeys = countScope.detachedPlacementEdgeKeys;
   const checkDetached = detachedKeys !== undefined && detachedKeys.size > 0;
   const result: InventoryPlacementChange[] = [];
@@ -1783,7 +1804,11 @@ function filterScopedPlacementChanges(
     if (countScope.placementEventIds !== undefined && !countScope.placementEventIds.has(eventId)) {
       continue;
     }
-    if (checkDetached && detachedKeys.has(placementDetachedEdgeKey(eventId, change.nodeId))) {
+    const edgeKey = retainedEdges !== undefined || checkDetached
+      ? placementScopedEdgeKey(eventId, change.nodeId)
+      : undefined;
+    if (retainedEdges !== undefined && !retainedEdges.has(edgeKey!)) continue;
+    if (checkDetached && detachedKeys.has(edgeKey!)) {
       const { toParentNodeId: _outsideParent, ...detached } = change;
       result.push(detached);
       continue;
@@ -1829,6 +1854,7 @@ function prepareCountProjectionScope(
       ? {}
       : {
           placementEventIds: placement.placementEventIds,
+          retainedPlacementEdgeKeys: placement.retainedPlacementEdgeKeys,
           detachedPlacementEdgeKeys: placement.detachedPlacementEdgeKeys,
         }),
     ...countStockDependencies(events, includesObservedPosition),
@@ -1850,6 +1876,7 @@ function countObservedPlacementNodes(
   const scope: InventoryCountProjectionScope = {
     placementNodeIds: placement.nodeIds,
     placementEventIds: placement.placementEventIds,
+    retainedPlacementEdgeKeys: placement.retainedPlacementEdgeKeys,
     detachedPlacementEdgeKeys: placement.detachedPlacementEdgeKeys,
     ...(hasCarriers ? countStockDependencies(events, includesCarrier) :
       { transferIds: new Set<string>(), includesPosition: includesCarrier }),
@@ -2047,6 +2074,8 @@ interface InventoryCountPlacementDependencies {
   readonly nodeIds: ReadonlySet<string>;
   /** Placement-changing events that affect membership or ancestry in the counted subtrees. */
   readonly placementEventIds: ReadonlySet<string>;
+  /** Exact (eventId, nodeId) transitions authorized inside the counted placement subgraph. */
+  readonly retainedPlacementEdgeKeys: ReadonlySet<string>;
   /** Event/node pairs leaving the tracked subgraph that must replay as unplacements. */
   readonly detachedPlacementEdgeKeys: ReadonlySet<string>;
   /** Serialized stock that can move one of the retained nodes. */
@@ -2080,6 +2109,7 @@ function countPlacementDependencies(
   const rootsSet = new Set(roots);
   const nodeIds = new Set(roots);
   const placementEventIds = new Set<string>();
+  const retainedPlacementEdgeKeys = new Set<string>();
   const detachedPlacementEdgeKeys = new Set<string>();
   /** Nodes currently attached to a retained parent inside the scoped subgraph. */
   const retainedAttachedNodes = new Set<string>();
@@ -2125,8 +2155,10 @@ function countPlacementDependencies(
     nodeIds.add(targetNodeId);
     const edgeEventId = lastEdgeEventIdByNode.get(targetNodeId);
     if (edgeEventId !== undefined) {
+      const edgeKey = placementScopedEdgeKey(edgeEventId, targetNodeId);
       placementEventIds.add(edgeEventId);
-      detachedPlacementEdgeKeys.delete(placementDetachedEdgeKey(edgeEventId, targetNodeId));
+      retainedPlacementEdgeKeys.add(edgeKey);
+      detachedPlacementEdgeKeys.delete(edgeKey);
       if (parentByNode.has(targetNodeId)) retainedAttachedNodes.add(targetNodeId);
     }
   }
@@ -2162,7 +2194,9 @@ function countPlacementDependencies(
     const toUnderRoot = toParentNodeId !== undefined && isUnderRoot(toParentNodeId);
     const touchesAncestor = currentRootAncestors().has(nodeId);
     if (wasUnderRoot || toUnderRoot || touchesAncestor || retainedAttachedNodes.has(nodeId)) {
+      const edgeKey = placementScopedEdgeKey(eventId, nodeId);
       placementEventIds.add(eventId);
+      retainedPlacementEdgeKeys.add(edgeKey);
       nodeIds.add(nodeId);
       if (!wasUnderRoot && toUnderRoot) retainDescendants(nodeId);
       if (toParentNodeId !== undefined && (toUnderRoot || touchesAncestor)) {
@@ -2171,7 +2205,7 @@ function countPlacementDependencies(
       } else {
         // Leaving a retained parent for outside/unplaced detaches in the scoped graph without linking outside subtrees.
         if (toParentNodeId !== undefined) {
-          detachedPlacementEdgeKeys.add(placementDetachedEdgeKey(eventId, nodeId));
+          detachedPlacementEdgeKeys.add(edgeKey);
         }
         retainedAttachedNodes.delete(nodeId);
       }
@@ -2262,7 +2296,14 @@ function countPlacementDependencies(
       break;
     }
   }
-  return { roots, nodeIds, placementEventIds, detachedPlacementEdgeKeys, embodiedSerials };
+  return {
+    roots,
+    nodeIds,
+    placementEventIds,
+    retainedPlacementEdgeKeys,
+    detachedPlacementEdgeKeys,
+    embodiedSerials,
+  };
 }
 
 /** Replay committed history through the same reducer used for live commits. */
