@@ -11,6 +11,7 @@ import {
   inventoryLotIdentity,
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
+  type InventoryStockPositionKey,
 } from "./model.js";
 import { cloneInventoryRetainedData } from "./sparse-record.js";
 import { inventoryTraceabilityRelationIdentity } from "./traceability.js";
@@ -473,6 +474,9 @@ export function inventoryEventResourceKeys(
   for (const assertionId of event.historicalRepair?.omittedAssertionIds ?? []) {
     keys.add(inventoryAssertionEventKey(assertionId));
   }
+  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
+    keys.add(inventoryWhereaboutsEventKey(whereaboutsId));
+  }
   for (const assertion of inventoryEventEffectiveAssertions(event)) {
     collectOneEventResourceKeys(assertion, keys);
   }
@@ -509,26 +513,41 @@ function inventoryEventEffectiveAssertions(
   ];
 }
 
+/** Add public resource-index keys for one stock position. */
+function collectPositionResourceKeys(
+  position: InventoryStockPositionKey,
+  itemRevisionId: string,
+  keys: Set<string>
+): void {
+  keys.add(inventoryItemEventKey(position.itemId));
+  keys.add(inventoryRevisionEventKey(itemRevisionId));
+  keys.add("position:" + inventoryStockPositionIdentity(position));
+  if (position.serialId !== undefined) {
+    keys.add(inventorySerialEventKey(inventorySerialIdentity(position.itemId, position.serialId)));
+  }
+  if (position.lotId !== undefined) {
+    keys.add(inventoryLotEventKey(inventoryLotIdentity(position.itemId, position.lotId)));
+  }
+  if (position.placementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.placementNodeId));
+  if (position.lastPlacementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.lastPlacementNodeId));
+  if (position.whereaboutsId !== undefined) keys.add(inventoryWhereaboutsEventKey(position.whereaboutsId));
+  if (position.transferId !== undefined) keys.add("transfer:" + position.transferId);
+}
+
 /** Collect one ordinary/envelope event's directly named resource identities. */
 function collectOneEventResourceKeys(
   event: InventoryEventDraft,
   keys: Set<string>
 ): void {
   for (const effect of event.stockEffects) {
-    const position = effect.position;
-    keys.add(inventoryItemEventKey(position.itemId));
-    keys.add(inventoryRevisionEventKey(effect.itemRevisionId));
-    keys.add("position:" + inventoryStockPositionIdentity(position));
-    if (position.serialId !== undefined) {
-      keys.add(inventorySerialEventKey(inventorySerialIdentity(position.itemId, position.serialId)));
-    }
-    if (position.lotId !== undefined) {
-      keys.add(inventoryLotEventKey(inventoryLotIdentity(position.itemId, position.lotId)));
-    }
-    if (position.placementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.placementNodeId));
-    if (position.lastPlacementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.lastPlacementNodeId));
-    if (position.whereaboutsId !== undefined) keys.add(inventoryWhereaboutsEventKey(position.whereaboutsId));
-    if (position.transferId !== undefined) keys.add("transfer:" + position.transferId);
+    collectPositionResourceKeys(effect.position, effect.itemRevisionId, keys);
+  }
+  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
+    collectPositionResourceKeys(
+      override.position,
+      override.position.itemRevisionId,
+      keys
+    );
   }
   if (event.transferLifecycle !== undefined) {
     keys.add("transfer:" + event.transferLifecycle.transferId);
@@ -589,62 +608,58 @@ function inventoryEventDependencyKeysForMode(
   mode: "query" | "index"
 ): readonly string[] {
   const keys = new Set<string>(["dep:event:" + event.eventId]);
+  if (
+    mode === "index" &&
+    event.correctionReplacement !== undefined &&
+    event.correctionReplacement !== null
+  ) {
+    keys.add("dep:event:" + event.correctionReplacement.eventId);
+  }
   for (const assertion of event.historicalRepair?.assertions ?? []) {
     keys.add("dep:assertion:" + assertion.assertionId);
+    if (mode === "index") {
+      keys.add("dep:event:" + assertion.event.eventId);
+    }
+    if (assertion.afterEventId !== undefined) {
+      // Consumers query the provider directly without indexing all siblings under dep:event:<anchor>,
+      // while anchor deletions/omissions query dep:anchored-to:<anchor> explicitly.
+      keys.add((mode === "index" ? "dep:anchored-to:" : "dep:event:") + assertion.afterEventId);
+    }
   }
   for (const assertionId of event.historicalRepair?.omittedAssertionIds ?? []) {
     keys.add("dep:assertion:" + assertionId);
   }
+  if (mode === "index") {
+    for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
+      keys.add("dep:whereabouts:" + whereaboutsId);
+    }
+  }
   for (const assertion of inventoryEventEffectiveAssertions(event)) {
     for (const effect of assertion.stockEffects) {
-      const position = effect.position;
-      keys.add("dep:position:" + inventoryStockPositionIdentity(position));
-      if (position.serialId !== undefined) {
-        keys.add(
-          "dep:serial:" +
-            inventorySerialIdentity(position.itemId, position.serialId)
-        );
-      } else {
-        keys.add(
-          "dep:pool:" +
-            JSON.stringify([
-              effect.itemRevisionId,
-              position.placementNodeId ?? null,
-              position.whereaboutsId ?? null,
-            ])
-        );
-        if (position.lotId !== undefined) {
-          keys.add(
-            "dep:lot-stock:" +
-              inventoryLotIdentity(position.itemId, position.lotId)
-          );
+      addInventoryStockPositionDependencyKeys(
+        keys,
+        effect.itemRevisionId,
+        effect.position,
+        mode
+      );
+    }
+    if (mode === "index") {
+      for (const transfer of assertion.positiveLayerProvenanceTransfers ?? []) {
+        if (transfer.from.whereaboutsId !== undefined) {
+          keys.add("dep:whereabouts:" + transfer.from.whereaboutsId);
+        }
+        if (transfer.to.whereaboutsId !== undefined) {
+          keys.add("dep:whereabouts:" + transfer.to.whereaboutsId);
         }
       }
-      if (position.placementNodeId !== undefined && mode === "index") {
-        keys.add("dep:placement-contents:" + position.placementNodeId);
-      }
-      if (mode === "query") {
-        if (position.lotId !== undefined) {
-          keys.add(
-            "dep:lot-definition:" +
-              inventoryLotIdentity(position.itemId, position.lotId)
-          );
-        }
-        if (position.placementNodeId !== undefined) {
-          keys.add("dep:placement-definition:" + position.placementNodeId);
-        }
-        if (position.lastPlacementNodeId !== undefined) {
-          keys.add(
-            "dep:placement-definition:" + position.lastPlacementNodeId
-          );
-        }
-      }
-      if (position.whereaboutsId !== undefined) {
-        keys.add("dep:whereabouts:" + position.whereaboutsId);
-      }
-      if (position.transferId !== undefined) {
-        keys.add("dep:transfer:" + position.transferId);
-      }
+    }
+    for (const override of assertion.positiveLayerProvenanceOverrides ?? []) {
+      addInventoryStockPositionDependencyKeys(
+        keys,
+        override.position.itemRevisionId,
+        override.position,
+        mode
+      );
     }
     if (assertion.transferLifecycle !== undefined) {
       keys.add("dep:transfer:" + assertion.transferLifecycle.transferId);
@@ -705,6 +720,60 @@ function inventoryEventDependencyKeysForMode(
   const result = [...keys];
   result.sort(compareInventoryIdentityText);
   return result;
+}
+
+/** Add dependency keys shared by stock effects and positive-layer provenance overrides. */
+function addInventoryStockPositionDependencyKeys(
+  keys: Set<string>,
+  itemRevisionId: string,
+  position: InventoryStockPositionKey,
+  mode: "query" | "index"
+): void {
+  keys.add("dep:position:" + inventoryStockPositionIdentity(position));
+  if (position.serialId !== undefined) {
+    keys.add(
+      "dep:serial:" +
+        inventorySerialIdentity(position.itemId, position.serialId)
+    );
+  } else {
+    keys.add(
+      "dep:pool:" +
+        JSON.stringify([
+          itemRevisionId,
+          position.placementNodeId ?? null,
+          position.whereaboutsId ?? null,
+        ])
+    );
+    if (position.lotId !== undefined) {
+      keys.add(
+        "dep:lot-stock:" +
+          inventoryLotIdentity(position.itemId, position.lotId)
+      );
+    }
+  }
+  if (position.placementNodeId !== undefined && mode === "index") {
+    keys.add("dep:placement-contents:" + position.placementNodeId);
+  }
+  if (mode === "query") {
+    if (position.lotId !== undefined) {
+      keys.add(
+        "dep:lot-definition:" +
+          inventoryLotIdentity(position.itemId, position.lotId)
+      );
+    }
+    if (position.placementNodeId !== undefined) {
+      keys.add("dep:placement-definition:" + position.placementNodeId);
+    }
+    if (position.lastPlacementNodeId !== undefined) {
+      keys.add("dep:placement-definition:" + position.lastPlacementNodeId);
+    }
+  }
+  if (position.whereaboutsId !== undefined) {
+    keys.add("dep:whereabouts:" + position.whereaboutsId);
+  }
+  if (position.transferId !== undefined) {
+    keys.add("dep:transfer:" + position.transferId);
+  }
 }
 
 /** Build one item resource-index key. */

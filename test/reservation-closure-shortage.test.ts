@@ -1,9 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   InventoryDeficitPolicy,
   InventoryReservationFeasibilityStatus,
   InventoryReservationStatus,
+  defineInventoryCatalog,
+  defineScalarInventoryItem,
+  defineScalarInventoryPackaging,
+  packageAmount,
   parseQuantity,
   stockAmount,
   type InventoryOnce,
@@ -15,6 +19,7 @@ import {
 import {
   commitInventoryOperation,
   createInMemoryInventoryDurableStorage,
+  InventoryWorldRevisionConflictError,
   type InMemoryInventoryDurableStorage,
 } from "../src/storage-api.js";
 import {
@@ -28,6 +33,163 @@ import {
   time3,
 } from "./test-fixtures.js";
 
+it.each([
+  { requested: 400001, triples: 1, fulfillable: 400000 },
+  { requested: 400002, triples: 2, fulfillable: 400002 },
+])("prunes smaller single-claim picks only when later packs cannot improve $requested", async ({
+  requested, triples, fulfillable,
+}) => {
+  const item = defineScalarInventoryItem({ itemId: "packed", revisionId: "packed-v1", axisId: "pieces", unit: "piece" });
+  const quad = defineScalarInventoryPackaging({ revisionId: "quad", item, packageUnit: "box", contains: "4" });
+  const triple = defineScalarInventoryPackaging({ revisionId: "triple", item, packageUnit: "box", contains: "3" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { packed: item.revisionId }, packagingRevisions: [quad, triple],
+  });
+  const inventory = createTestInventory(undefined, catalog);
+  const position = { itemId: item.itemId, placementNodeId: "store" };
+  const loose = { ...position, lotId: "loose" };
+  await inventory.stock.receiveMany({ operationId: "single-claim-stock", occurredAtEpochMs: time0, lines: [
+    { to: { ...position, lotId: "quad" }, amount: packageAmount(100001, quad.revisionId) },
+    { to: { ...position, lotId: "triple" }, amount: packageAmount(triples, triple.revisionId) },
+    { to: loose, amount: stockAmount("1", "piece") },
+  ] });
+  await inventory.reservations.reserve({
+    reservationId: "single-claim", operationId: "single-claim-reserve", itemRevisionId: item.revisionId,
+    selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+    requested: parseQuantity(String(requested), "piece"), createdAtEpochMs: time1,
+  });
+  await inventory.stock.issue({
+    operationId: "single-claim-issue", occurredAtEpochMs: time2, from: loose, amount: stockAmount("1", "piece"),
+  });
+  expect((await inventory.read.reservationFeasibility()).groups).toMatchObject([{
+    fulfillable: parseQuantity(String(fulfillable), "piece"),
+    shortage: parseQuantity(String(requested - fulfillable), "piece"),
+  }]);
+});
+
+it("keeps a large supported whole-stock assignment within the runtime stack", async () => {
+  const item = defineScalarInventoryItem({ itemId: "packed", revisionId: "packed-v1", axisId: "pieces", unit: "piece" });
+  const pack = defineScalarInventoryPackaging({ revisionId: "single", item, packageUnit: "box", contains: "1" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { packed: item.revisionId }, packagingRevisions: [pack],
+  });
+  const inventory = createTestInventory(undefined, catalog);
+  const position = { itemId: item.itemId, placementNodeId: "store" };
+  const selector = { itemId: item.itemId, placementNodeIds: ["store"] };
+  await inventory.stock.receive({ operationId: "loose", occurredAtEpochMs: time0, to: position, amount: stockAmount("64", "piece") });
+  for (let index = 0; index < 64; index += 1) {
+    const reservationId = `claim-${index}`;
+    await inventory.reservations.reserve({
+      operationId: reservationId, reservationId, itemRevisionId: item.revisionId, selector,
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+  }
+  await inventory.stock.receiveMany({
+    operationId: "whole-stock", occurredAtEpochMs: time1,
+    lines: Array.from({ length: 120 }, (_, index) => ({
+      to: { ...position, lotId: `pack-${index}` }, amount: packageAmount(1, pack.revisionId),
+    })),
+  });
+  await inventory.stock.issue({ operationId: "issue-loose", occurredAtEpochMs: time2, from: position, amount: stockAmount("64", "piece") });
+  const report = await inventory.read.reservationFeasibility();
+  expect(report.groups[0]?.fulfillable).toEqual(parseQuantity("64", "piece"));
+  expect(report.groups[0]?.shortage).toEqual(parseQuantity("0", "piece"));
+});
+
+it.each([false, true])("reports each broad claim's whole-piece shortfall after loose stock is issued (canonical: %s)", async (canonical) => {
+  const item = defineScalarInventoryItem({ itemId: "paired", revisionId: "paired-v1", axisId: "pieces", unit: "piece" });
+  const pair = defineScalarInventoryPackaging({ revisionId: "pair", item, packageUnit: "box", contains: "2" });
+  const triple = defineScalarInventoryPackaging({ revisionId: "triple", item, packageUnit: "box", contains: "3" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { paired: item.revisionId }, packagingRevisions: [pair, triple],
+  });
+  const store = { itemId: item.itemId, placementNodeId: "store" };
+  for (const { rows, claims, losses } of [
+    { rows: [{ lot: "even", packaging: pair, packs: 4, loose: "2" }], claims: [["even", 3], ["even", 3]], losses: [["even", 1], ["even", 2]] },
+    { rows: [{ lot: "even", packaging: pair, packs: 100_004, loose: "2" }], claims: [["even", 100_003], ["even", 100_003]],
+      losses: [["even", 1], ["even", 2]] },
+    { rows: [{ lot: "even", packaging: pair, packs: 50_002, loose: "1" }, { lot: "three", packaging: triple, packs: 50_002, loose: "1" }],
+      claims: [["even", 100_003], ["three", 150_004]], losses: [["even", 1], ["three", 2]] },
+    { rows: [{ lot: "even", packaging: pair, packs: 100_004, loose: "1" }, { lot: "spare", packaging: pair, packs: 0, loose: "2" }],
+      claims: [["even", 100_003], ["spare", 1]], losses: [["even", 1]] },
+  ] as const) {
+    // A failpoint routes reference writes through the canonical staged coordinator.
+    const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+    const inventory = createTestInventory(storage, catalog);
+    await inventory.stock.receiveMany({
+      operationId: "receive-pairs-and-loose", occurredAtEpochMs: time0,
+      lines: rows.flatMap(({ lot, packaging, packs, loose }) => [
+        ...(packs > 0 ? [{ to: { ...store, lotId: lot }, amount: packageAmount(packs, packaging.revisionId) }] : []),
+        { to: { ...store, lotId: `${lot}-loose` }, amount: stockAmount(loose, "piece") },
+      ]),
+    });
+    let totalRequested = 0;
+    for (const [index, [lot, demand]] of claims.entries()) {
+      totalRequested += demand;
+      const selector = { itemId: item.itemId, placementNodeIds: ["store"], lotIds: [lot, `${lot}-loose`] };
+      await inventory.reservations.reserve({
+        operationId: `reserve-${index}`, reservationId: `hold-${index}`, itemRevisionId: item.revisionId,
+        selector, requested: parseQuantity(String(demand), "piece"), createdAtEpochMs: time1,
+      });
+    }
+    expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+    for (const [lot, shortage] of losses) {
+      await inventory.stock.issue({
+        operationId: `issue-loose-${shortage}`, occurredAtEpochMs: time2,
+        from: { ...store, lotId: `${lot}-loose` }, amount: stockAmount("1", "piece"),
+      });
+      expect(await inventory.read.reservationFeasibility()).toMatchObject({
+        status: InventoryReservationFeasibilityStatus.Shortage,
+        groups: [{
+          requested: parseQuantity(String(totalRequested), "piece"),
+          fulfillable: parseQuantity(String(totalRequested - shortage), "piece"),
+          shortage: parseQuantity(String(shortage), "piece"),
+        }],
+      });
+    }
+  }
+});
+
+it.each([false, true])("bounds mixed whole increments after loose stock is issued (canonical: %s)", async (canonical) => {
+  const item = defineScalarInventoryItem({ itemId: "mixed", revisionId: "mixed-v1", axisId: "pieces", unit: "piece" });
+  const four = defineScalarInventoryPackaging({ revisionId: "four", item, packageUnit: "box", contains: "4" });
+  const seven = defineScalarInventoryPackaging({ revisionId: "seven", item, packageUnit: "box", contains: "7" });
+  const catalog = defineInventoryCatalog({
+    itemRevisions: [item], activeItemRevisionIds: { mixed: item.revisionId }, packagingRevisions: [four, seven],
+  });
+  const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+  const inventory = createTestInventory(storage, catalog);
+  const store = { itemId: item.itemId, placementNodeId: "store" };
+  const loose = { ...store, lotId: "loose" };
+  await inventory.stock.receiveMany({
+    operationId: "receive-mixed-increments", occurredAtEpochMs: time0,
+    lines: [
+      { to: { ...store, lotId: "four" }, amount: packageAmount(200_000, four.revisionId) },
+      { to: { ...store, lotId: "seven" }, amount: packageAmount(1, seven.revisionId) },
+      { to: loose, amount: stockAmount("3", "piece") },
+    ],
+  });
+  const requested = parseQuantity("800002", "piece");
+  await inventory.reservations.reserve({
+    operationId: "reserve-mixed-increments", reservationId: "hold", itemRevisionId: item.revisionId,
+    selector: { itemId: item.itemId, placementNodeIds: ["store"] }, requested, createdAtEpochMs: time1,
+  });
+  expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+
+  // Taking the seven-piece package leaves a worse remainder than skipping it.
+  for (const shortage of [0, 1, 2]) {
+    await inventory.stock.issue({
+      operationId: `issue-mixed-loose-${shortage}`, occurredAtEpochMs: time2,
+      from: loose, amount: stockAmount("1", "piece"),
+    });
+    expect((await inventory.read.reservationFeasibility()).groups).toMatchObject([{
+      requested, fulfillable: parseQuantity(String(800_002 - shortage), "piece"),
+      shortage: parseQuantity(String(shortage), "piece"),
+    }]);
+  }
+  expect(await inventory.read.reservation("hold")).toMatchObject({ requested, status: InventoryReservationStatus.Active });
+});
+
 /** Runtime and durable adapter after physical loss leaves only claim c1 short. */
 interface ReservationShortageFixture {
   /** Real application-facing InventoryOnce facade. */
@@ -35,6 +197,41 @@ interface ReservationShortageFixture {
   /** Reference durable adapter used to inspect frozen operation and event truth. */
   readonly storage: InMemoryInventoryDurableStorage;
 }
+
+it("replays the matching operation after the last canonical revision conflict", async () => {
+  const catalog = createTabletCatalog();
+  const storage = createInMemoryInventoryDurableStorage();
+  const inventory = createTestInventory(storage, catalog);
+  const amount = stockAmount("1", "piece");
+  await inventory.stock.receive({ operationId: "canonical-race-stock", occurredAtEpochMs: time0,
+    to: loosePosition("store"), amount });
+  const operationId = "canonical-final-replay";
+  const event = createInventoryTransferEvent({
+    catalog, operationId, occurredAtEpochMs: time1, from: loosePosition("store"), toPlacementNodeId: "destination", amount,
+  });
+  const input = { catalog, storage, operationId, intentFingerprint: "same-transfer", clock: clockAt(time3),
+    deficitPolicy: InventoryDeficitPolicy.Reject, maxRevisionRetries: 1,
+    /** Plan the same physical operation in both contenders. */
+    plan: () => ({ event }) };
+  const begin = storage.begin.bind(storage);
+  const before = (await storage.readWorld()).revision;
+  let won: Awaited<ReturnType<typeof commitInventoryOperation>> | undefined;
+  vi.spyOn(storage, "begin").mockImplementationOnce(async (request) => {
+    await inventory.stock.receive({ operationId: "canonical-intervening-stock", occurredAtEpochMs: time1,
+      to: loosePosition("elsewhere"), amount });
+    try {
+      return await begin(request);
+    } catch (error) {
+      if (!(error instanceof InventoryWorldRevisionConflictError)) throw error;
+      won = await commitInventoryOperation(input);
+      throw error;
+    }
+  });
+  const replay = await commitInventoryOperation(input);
+  expect(won?.replayed).toBe(false);
+  expect(replay).toEqual({ ...won, replayed: true });
+  expect(replay.world.revision).toBe(before + 2);
+});
 
 /** Build the exact ReservationScope release counterexample through public calls. */
 async function createReservationShortageFixture(
@@ -204,18 +401,18 @@ describe("reservation closure through an existing shortage", () => {
     expect(await inventory.read.world()).toEqual(latestWorld);
   });
 
-  it("keeps receive, reserve, refine, and issue protection active during shortage", async () => {
+  it("publishes physical changes during shortage and keeps new and refined claims protected", async () => {
     const { inventory } = await createReservationShortageFixture();
     const before = await inventory.read.world();
 
-    await expect(
-      inventory.stock.receive({
-        operationId: "closure:unrelated-receive",
-        occurredAtEpochMs: time2,
-        to: loosePosition("u2"),
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled");
+    await inventory.stock.receive({
+      operationId: "closure:unrelated-receive",
+      occurredAtEpochMs: time2,
+      to: loosePosition("u2"),
+      amount: stockAmount("1", "piece"),
+    });
+    const selector = { itemId: "item-a", placementNodeIds: ["u2"] };
+    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: parseQuantity("2", "piece") } } }]);
     await expect(
       inventory.reservations.reserve({
         reservationId: "c3",
@@ -234,15 +431,40 @@ describe("reservation closure through an existing shortage", () => {
         occurredAtEpochMs: time2,
       })
     ).rejects.toThrow("cannot all be fulfilled");
-    await expect(
-      inventory.stock.issue({
-        operationId: "closure:unrelated-issue",
-        occurredAtEpochMs: time2,
-        from: loosePosition("u2"),
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled");
-    expect(await inventory.read.world()).toEqual(before);
+    await inventory.stock.issue({
+      operationId: "closure:unrelated-issue",
+      occurredAtEpochMs: time2,
+      from: loosePosition("u2"),
+      amount: stockAmount("1", "piece"),
+    });
+    expect(await inventory.read.positions(selector)).toMatchObject([{ measurements: { primary: { quantity: parseQuantity("1", "piece") } } }]);
+    const after = await inventory.read.world();
+    expect(after.revision).toBe(before.revision + 2);
+    expect(after.reservations).toEqual(before.reservations);
+  });
+
+  it("reports a disjoint placement shortfall without adding deficits outside either filter", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({ operationId: "intersection-receipt", occurredAtEpochMs: time0,
+      to: loosePosition("bin"), amount: stockAmount("1", "piece") });
+    await inventory.placement.move({ operationId: "place-bin-in-scope", occurredAtEpochMs: time0, nodeId: "bin", into: "scope" });
+    await inventory.reservations.reserve({
+      operationId: "reserve-intersection", reservationId: "intersection", itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["bin"], withinPlacementNodeIds: ["scope"] },
+      requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+    await inventory.placement.move({ operationId: "place-bin-elsewhere", occurredAtEpochMs: time2, nodeId: "bin", into: "outside" });
+    for (const nodeId of ["unrelated-a", "unrelated-b"]) {
+      await inventory.stock.issue({ operationId: `deficit-${nodeId}`, occurredAtEpochMs: time2,
+        from: loosePosition(nodeId), amount: stockAmount(String(Number.MAX_SAFE_INTEGER), "piece") });
+      expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: [nodeId] })).toMatchObject([{
+        key: { placementNodeId: nodeId },
+        measurements: { primary: { quantity: parseQuantity(String(-Number.MAX_SAFE_INTEGER), "piece") } },
+      }]);
+    }
+    expect((await inventory.read.reservationFeasibility(time2)).groups).toMatchObject([{
+      reservationIds: ["intersection"], shortage: parseQuantity("1", "piece"),
+    }]);
   });
 
   it("rejects a forged release plan that changes an unrelated reservation row", async () => {
@@ -329,5 +551,237 @@ describe("reservation closure through an existing shortage", () => {
     expect(
       await storage.readOperation("closure:release-with-transfer")
     ).toBeUndefined();
+  });
+
+  it("caps fulfillableBound per shared indivisible row so exact shortages do not exhaust the state limit", async () => {
+    const item = defineScalarInventoryItem({ itemId: "shared-pack", revisionId: "shared-pack-v1", axisId: "pieces", unit: "piece" });
+    const pair = defineScalarInventoryPackaging({ revisionId: "shared-pair", item, packageUnit: "box", contains: "2" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "shared-pack": item.revisionId }, packagingRevisions: [pair],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "shared-row-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "shared-a" }, amount: packageAmount(25, pair.revisionId) },
+        { to: { ...store, lotId: "shared-b" }, amount: packageAmount(25, pair.revisionId) },
+        { to: { ...store, lotId: "spare" }, amount: packageAmount(100, pair.revisionId) },
+        { to: { ...store, lotId: "loose" }, amount: stockAmount("1", "piece") },
+      ],
+    });
+    // Start feasible with 50 pieces in each shared lot, while 5 broad claims each request 10.
+    for (const lotId of ["shared-a", "shared-b"]) {
+      for (let index = 0; index < 5; index += 1) {
+        const reservationId = `${lotId}-claim-${index}`;
+        await inventory.reservations.reserve({
+          operationId: `reserve-${reservationId}`,
+          reservationId,
+          itemRevisionId: item.revisionId,
+          selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: [lotId] },
+          requested: parseQuantity("10", "piece"),
+          createdAtEpochMs: time1,
+        });
+      }
+    }
+    await inventory.reservations.reserve({
+      operationId: "reserve-spare-claim",
+      reservationId: "spare-claim",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["spare", "loose"] },
+      requested: parseQuantity("21", "piece"),
+      createdAtEpochMs: time1,
+    });
+    // Reduce shared-a to 18 pieces and shared-b to 20 pieces so both shared rows enter an exact shortage.
+    await inventory.stock.issue({
+      operationId: "issue-shared-a-packs",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "shared-a", packagingRevisionId: pair.revisionId },
+      amount: packageAmount(16, pair.revisionId),
+    });
+    await inventory.stock.issue({
+      operationId: "issue-shared-b-packs",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "shared-b", packagingRevisionId: pair.revisionId },
+      amount: packageAmount(15, pair.revisionId),
+    });
+
+    const report = await inventory.read.reservationFeasibility(time2);
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups).toMatchObject([{
+      requested: parseQuantity("121", "piece"),
+      fulfillable: parseQuantity("59", "piece"),
+      shortage: parseQuantity("62", "piece"),
+    }]);
+  });
+
+  it("caps multi-claim simultaneous indivisible shortage via flow bound before searching large lots", async () => {
+    const item = defineScalarInventoryItem({ itemId: "flow-pack", revisionId: "flow-pack-v1", axisId: "pieces", unit: "piece" });
+    const pair = defineScalarInventoryPackaging({ revisionId: "flow-pair", item, packageUnit: "box", contains: "2" });
+    const quad = defineScalarInventoryPackaging({ revisionId: "flow-quad", item, packageUnit: "case", contains: "4" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "flow-pack": item.revisionId }, packagingRevisions: [pair, quad],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "flow-bound-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "X1" }, amount: packageAmount(1, pair.revisionId) },
+        { to: { ...store, lotId: "X2" }, amount: packageAmount(1, pair.revisionId) },
+        { to: { ...store, lotId: "Z" }, amount: packageAmount(2, pair.revisionId) },
+        { to: { ...store, lotId: "Y" }, amount: packageAmount(100001, quad.revisionId) },
+      ],
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-a",
+      reservationId: "claim-a",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["X1", "X2"] },
+      requested: parseQuantity("2", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-b",
+      reservationId: "claim-b",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["Z"] },
+      requested: parseQuantity("2", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-c",
+      reservationId: "claim-c",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["Z"] },
+      requested: parseQuantity("2", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "flow-reserve-d",
+      reservationId: "claim-d",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["Y"] },
+      requested: parseQuantity("400004", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.stock.issue({
+      operationId: "flow-bound-issue-z",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "Z", packagingRevisionId: pair.revisionId },
+      amount: packageAmount(1, pair.revisionId),
+    });
+
+    const report = await inventory.read.reservationFeasibility(time2);
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups).toMatchObject([{
+      requested: parseQuantity("400010", "piece"),
+      fulfillable: parseQuantity("400008", "piece"),
+      shortage: parseQuantity("2", "piece"),
+    }]);
+  });
+
+  it("prunes competing large single-claim indivisible choices across shared positions", async () => {
+    const item = defineScalarInventoryItem({ itemId: "prune-pack", revisionId: "prune-pack-v1", axisId: "pieces", unit: "piece" });
+    const tri = defineScalarInventoryPackaging({ revisionId: "prune-tri", item, packageUnit: "tri", contains: "3" });
+    const quad = defineScalarInventoryPackaging({ revisionId: "prune-quad", item, packageUnit: "quad", contains: "4" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "prune-pack": item.revisionId }, packagingRevisions: [tri, quad],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "prune-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "X" }, amount: packageAmount(1, tri.revisionId) },
+        { to: { ...store, lotId: "Y" }, amount: packageAmount(200000, quad.revisionId) },
+        { to: { ...store, lotId: "Z" }, amount: stockAmount("2", "piece") },
+      ],
+    });
+    await inventory.reservations.reserve({
+      operationId: "prune-c1",
+      reservationId: "claim-1",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("400001", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "prune-c2",
+      reservationId: "claim-2",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("400001", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.stock.issue({
+      operationId: "prune-issue-z",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "Z" },
+      amount: stockAmount("2", "piece"),
+    });
+
+    const report = await inventory.read.reservationFeasibility(time2);
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups).toMatchObject([{
+      requested: parseQuantity("800002", "piece"),
+      fulfillable: parseQuantity("800000", "piece"),
+      shortage: parseQuantity("2", "piece"),
+    }]);
+  });
+
+  it("tightens indivisible bound by minimum unused pack when whole capacity narrowly exceeds demand", async () => {
+    const item = defineScalarInventoryItem({ itemId: "min-unused-pack", revisionId: "min-unused-pack-v1", axisId: "pieces", unit: "piece" });
+    const six = defineScalarInventoryPackaging({ revisionId: "min-six", item, packageUnit: "six", contains: "6" });
+    const four = defineScalarInventoryPackaging({ revisionId: "min-four", item, packageUnit: "four", contains: "4" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "min-unused-pack": item.revisionId }, packagingRevisions: [six, four],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "min-unused-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "S" }, amount: packageAmount(266667, six.revisionId) },
+        { to: { ...store, lotId: "F" }, amount: packageAmount(200000, four.revisionId) },
+        { to: { ...store, lotId: "L" }, amount: stockAmount("2", "piece") },
+      ],
+    });
+    await inventory.reservations.reserve({
+      operationId: "min-unused-c1",
+      reservationId: "claim-1",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("1200000", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "min-unused-c2",
+      reservationId: "claim-2",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("1200000", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const fullReport = await inventory.read.reservationFeasibility(time1);
+    expect(fullReport.status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+
+    await inventory.stock.issue({
+      operationId: "min-unused-issue-l",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "L" },
+      amount: stockAmount("2", "piece"),
+    });
+    const shortReport = await inventory.read.reservationFeasibility(time2);
+    expect(shortReport.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(shortReport.groups).toMatchObject([{
+      requested: parseQuantity("2400000", "piece"),
+      fulfillable: parseQuantity("2399998", "piece"),
+      shortage: parseQuantity("2", "piece"),
+    }]);
   });
 });

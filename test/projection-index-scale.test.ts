@@ -31,6 +31,7 @@ import {
   projectInventoryEvents,
 } from "../src/projection.js";
 import { parseQuantity } from "../src/quantity.js";
+import { candidateSubtreePositionIds } from "../src/stock-scope.js";
 import {
   createInventoryReservation,
   emptyInventoryReservationBook,
@@ -684,7 +685,7 @@ describe("projection index real-world scale", () => {
     );
     const candidateStart = projection.indexOf("function candidatePositionIds");
     const candidateEnd = projection.indexOf(
-      "\nfunction captureConservedPositiveLayerStarts(",
+      "\nfunction recordIndexedIdentityMutation(",
       candidateStart
     );
     expect(candidateStart).toBeGreaterThanOrEqual(0);
@@ -714,8 +715,8 @@ describe("projection index real-world scale", () => {
     expect(picking).toContain("reservedPrimaryByPositionIdentity.get(");
     expect(picking).not.toContain("exactPrimaryReservedAtPosition(");
     expect(picking).not.toContain("Object.values(world.projection.events)");
-    expect(availability).toContain("indexAvailabilityReservations({");
-    expect(availability).toContain("exactAllocationsByPositionIdentity.get(");
+    expect(availability).toContain("indexScopedAvailabilityHolds(pool, useBy,");
+    expect(availability).toContain("exactHolds.get(id)");
     expect(availability).not.toContain("exactAllocationsAtPosition(");
     expect(reservations).toContain("if (broadReservations.length === 0)");
     expect(reservations).toContain("exactReservationGroupFeasibility({");
@@ -740,10 +741,10 @@ describe("projection index real-world scale", () => {
       "inventoryCommittedEventsInSequence(world.projection)"
     );
     expect(facade).not.toContain("Object.values(world.projection.events)");
-    expect(facade).toContain(
-      "const planningPositions: Record<string, InventoryStockPosition>"
-    );
-    expect(facade).toContain("applyPolicyAllocationToPlanningPositions(");
+    expect(facade).toContain("const changed = new Map<string, InventoryPolicyWorkingPosition>()");
+    expect(facade).toContain("policyPoolAfterPriorRequests(");
+    expect(facade).not.toContain("...world.projection.positions");
+    expect(facade).not.toMatch(/Object\.entries\(\s*world\.projection\.positionIdsByItemRevisionId/);
     expect(facade).not.toContain("inventoryWorldAfterPolicyAllocation(");
     expect(facade).toContain(
       "inventorySparseRecordValue(projection.lotIdentitiesByItemId, itemId)"
@@ -932,6 +933,30 @@ describe("canonical projection exact-placement index locality", () => {
     expect(feasibility.status).toBe(InventoryReservationFeasibilityStatus.Feasible);
     expect(feasibility.groups[0]?.fulfillable.amountMinor).toBe(1);
     expect(descendantIndexProbes).toBeLessThan(40);
+  });
+
+  it("checks the child budget before consuming queued sibling postings", () => {
+    const children = Array.from({ length: 70 }, (_, index) => `empty-${index}`);
+    const rootChildren = [...children, "branch"];
+    const branchChildren = children.map((nodeId) => `branch-${nodeId}`);
+    let visitedChildPostings = 0;
+    const candidates = candidateSubtreePositionIds({
+      positionIds: () => ({ size: 0, ids: [] }),
+      childNodeIds: (nodeId) => {
+        const postings = nodeId === "root" ? rootChildren : nodeId === "branch" ? branchChildren : [];
+        return {
+          size: postings.length,
+          ids: (function* () {
+            for (const posting of postings) {
+              visitedChildPostings += 1;
+              yield posting;
+            }
+          })(),
+        };
+      },
+    }, ["root"], 128);
+    expect(candidates).toBeUndefined();
+    expect(visitedChildPostings).toBe(rootChildren.length);
   });
 
   it("falls back to the item index before traversing 100,000 irrelevant placement nodes", () => {

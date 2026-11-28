@@ -22,11 +22,35 @@ export * from "./measurements.js";
 /** Exact finite-decimal quantity values/helpers. */
 export * from "./quantity.js";
 /** Generic revision-safe physical summaries and exact package-revision listing helpers. */
-export * from "./read-model.js";
+export {
+  findInventoryEventByOperationId,
+  listInventoryPackagingRevisions,
+  summarizeInventoryStock,
+  type InventoryQualifiedDimensionSummary,
+  type InventoryStockDimensionBucket,
+  type InventoryStockRevisionSummary,
+  type InventoryStockSummary,
+  type ListInventoryPackagingRevisionsInput,
+  type SummarizeInventoryStockInput,
+} from "./read-model.js";
 /** Truthful physical/use-by/reservation availability summaries. */
-export * from "./availability.js";
+export {
+  summarizeInventoryAvailability,
+  type InventoryAvailabilityRevisionSummary,
+  type InventoryAvailabilitySummary,
+  type InventoryPositionAvailability,
+  type SummarizeInventoryAvailabilityInput,
+} from "./availability.js";
 /** Native revision-safe FIFO/FEFO planning values and pure preview helper. */
-export * from "./picking.js";
+export {
+  inventoryAmountForPrimaryAllocation,
+  planInventoryAllocation,
+  type InventoryAllocationPolicyRequest,
+  type InventoryPolicyAllocationLine,
+  type InventoryPolicyAllocationPlan,
+  type PlanInventoryAllocationInput,
+  type InventoryAmountForPrimaryAllocationInput,
+} from "./picking.js";
 /** Safe heterogeneous-composition placement/source values; event builders stay on `/kernel`. */
 export type {
   InventoryCompositionOutputPlacement,
@@ -41,7 +65,21 @@ export type {
   InventoryCollectionSummary,
 } from "./collections.js";
 /** Revision-frozen mutual-fungibility summaries and exact allocation planning. */
-export * from "./fungibility.js";
+export {
+  InventoryFungibilityReservationEffectKind,
+  inventoryFungibilityScopeIdentity,
+  normalizeInventoryFungibilityScope,
+  planInventoryFungibilityAllocation,
+  summarizeInventoryFungibility,
+  type InventoryFungibilityAllocationLine,
+  type InventoryFungibilityAllocationPlan,
+  type InventoryFungibilityMemberSummary,
+  type InventoryFungibilityReservationEffect,
+  type InventoryFungibilityScope,
+  type InventoryFungibilitySummary,
+  type PlanInventoryFungibilityAllocationInput,
+  type SummarizeInventoryFungibilityInput,
+} from "./fungibility.js";
 /** Shared lot/placement-ancestry expiry and effective-use-by helpers. */
 export * from "./usability.js";
 /** Durable current/resolved whereabouts lifecycle and provenance reads. */
@@ -89,6 +127,7 @@ export type {
   InventoryHistoricalDeficitInterval,
   InventoryHistoricalImpact,
   InventoryMeasurementEvidence,
+  InventoryUnwitnessedStockMovement,
   InventoryRevisionTransitionEvidence,
   InventoryTraceabilityRelationChange,
 } from "./events.js";

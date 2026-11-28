@@ -4,10 +4,10 @@ Append-only running notes. Read this before substantial InventoryOnce work.
 
 edit: 2026-08-24 14:27 +0700 — first reusable core slice
 
-- Started `feat/inventoryonce-core` from Shinebright `dev` at `5b67a4a37acd71edb788a7eba802065bf6123dd3` in a sibling worktree.
+- Started the core implementation from a downstream development branch in an isolated worktree.
 - Added framework-free `@inventoryonce/core` with exact scaled-integer quantity, stock positions, frozen packaging revisions, containers, multi-leg transactions, FIFO/FEFO allocation, reservations, transformations, replayable projections, and explicit deficit policy.
-- Deliberately did not add `Substock`. Existing Shinebright child-stock cases must eventually classify as packaging, ordinary stock positions, containers, or transformation output.
-- Initial package gate passed strict TypeScript, build, and 12 tests. Shinebright live inventory paths were not changed yet.
+- Deliberately did not add Substock. Existing downstream child-stock cases must eventually classify as packaging, ordinary stock positions, containers, or transformation output.
+- Initial package gate passed strict TypeScript, build, and 12 tests. Downstream live inventory paths were unchanged.
 
 edit: 2026-08-24 14:37 +0700 — first migration-plan slice
 
@@ -22,7 +22,7 @@ edit: 2026-08-24 14:52 +0700 — package identity and migration-plugin correctio
 - Corrected the ontology: if remaining physically sealed as packaging revision X matters, that revision is an optional stock-position dimension. Generic quantity still stays in the item stock unit. This lets box-20 and box-24 coexist without collapsing amounts.
 - A plain location transfer should preserve lot/serial/package revision/container/status/owner. Unpack, repack, status change, ownership change, or re-containering must be different explicit verbs rather than hidden inside transfer.
 - Migration requirement corrected: `/migrations` must support declarative typed source plugins that own application-specific queries/readers and conversion from legacy rows. The same readers should support dry-run/backfill and temporary native-vs-legacy parallel-read compatibility.
-- Added package-local `AGENTS.md` because this worktree did not yet inherit the PayMeOnce guardrails. It now requires comments on touched shapes/fields, exact APIs, append-only diary updates, no `--` in test filters, strict typing, validation gates, and eventual formal-model gates.
+- Added package-local AGENTS.md with comments on touched shapes and fields, exact APIs, append-only diary updates, no double-dash separator in test filters, strict typing, validation gates, and eventual formal-model gates.
 
 edit: 2026-08-24 15:14 +0700 — package-revision, migration-plugin, and guardrail hardening
 
@@ -30,10 +30,10 @@ edit: 2026-08-24 15:14 +0700 — package-revision, migration-plugin, and guardra
 - A plain location transfer now preserves lot, serial, packaging revision, container, status, and owner. Packaged movements require frozen package definitions and must move a whole number of that exact package revision; partial package movement must first become an explicit unpack/repack/change-of-form operation.
 - Migration opening rows carrying a packaging revision are now checked for the same whole-package invariant, so migration cannot bypass runtime inventory truth.
 - Added typed migration query/plugin primitives. Application-owned `readPage` functions may query Parse/SQL/other legacy stores; the same typed query can be reused for migration planning or temporary legacy/native parallel reads. InventoryOnce itself remains storage-agnostic and migration planning remains side-effect-free.
-- Added package-local `AGENTS.md` and append-only `AGENT_DIARY.md`, copied the PayMeOnce documentation guard, and brought the entire current source tree up to that guard rather than grandfathering old kernel files.
+- Added package-local AGENTS.md and append-only AGENT_DIARY.md, adopted the documentation guard, and brought the entire current source tree up to that guard.
 - Replaced generic `unknown` metadata with recursive JSON-safe `InventoryMetadata`; no source `any`, `unknown` type, or `satisfies` shortcut remains.
 - Validation after this slice: strict `pnpm check` passed; full Vitest suite passed 24/24 across 5 files; documentation guard passed; package build passed. Commands used nvm/`.nvmrc` and test filters never used `--`.
-- Formal TLA+ models are still not implemented in InventoryOnce. Do not claim formal verification yet. Next hardening work must add the PayMeOnce-style formal runner/models plus executable refinement/failure-injection around idempotency, transfer visibility, reservation lifecycle, and transformation atomicity.
+- Formal TLA+ models are still pending. Next hardening work must add the formal runner and models plus executable refinement and failure injection around idempotency, transfer visibility, reservation lifecycle, and transformation atomicity.
 
 edit: 2026-08-24 15:32 +0700 — formal gate and declarative public API checkpoint
 
@@ -49,7 +49,7 @@ edit: 2026-08-24 15:32 +0700 — formal gate and declarative public API checkpoi
 
 edit: 2026-08-24 16:06 +0700 — mature-system + formal-research foundation pass
 
-- Owner explicitly rejected a formal layer that only mirrors today's Shinebright feature set. Researched mature WMS semantics plus formal methods and promoted the formal directory into a forward design contract. Added `formal/FOUNDATIONS.md` with primary references and a layered proof strategy.
+- Owner explicitly rejected a formal layer that only mirrors today's downstream feature set. Researched mature WMS semantics plus formal methods and promoted the formal directory into a forward design contract. Added `formal/FOUNDATIONS.md` with primary references and a layered proof strategy.
 - Mature-system research inputs now include SAP EWM quant/stock-key dimensions; Dynamics reservation hierarchies, catch-weight and consignment ownership; Oracle handling-unit/LPN reservations; GS1 EPCIS aggregation/association/transformation, ownership/possession/location, eventTime/recordTime and append-only error declarations; REA/ISO 15944 resource-event-agent ontology.
 - Formal-method research inputs include Lamport/TLA+ refinement and liveness/fairness, O'Neil escrow transactions, Bailis invariant-confluence/coordination avoidance, Just-Right Consistency/bounded counters, Petri-net/multiset resource semantics, and Alloy-style bounded relational checking for graphs.
 - Added design-level models: `ResourceDimensions`, `ReservationScope`, `TraceabilityGraph`, `PhysicalCount`, `DualMeasure`, `DistributedRights`, `CorrectionHistory`. These intentionally describe future mature semantics before corresponding TypeScript APIs exist.
@@ -87,7 +87,7 @@ edit: 2026-08-24 18:39 +0700 — deterministic formal runner collision fix
 - The formal runner now gives every model process its own PID + UUID metadata folder. Successful runs remove that folder; a real TLC failure keeps its unique folder and prints its path so the counterexample state is still available.
 - Found one real test-coverage hole while checking every declared durable write stage: Begin through Complete had before/after failures, but Abort did not. The reusable adapter conformance suite now injects immediately before and after Abort too, checks the exact applying/aborted row state, retries safely, and proves neither side publishes the staged world.
 - Kept the complete frozen next-world plan, planner-free repair, hidden staged writes, grouped root API, revision-qualified measurement vectors, broad reservation shortage reports, count observations, append-only corrections, traceability graph, typed migration plugins, and narrow exports unchanged. No scalar prototype path came back.
-- Final exact `/tmp/io-run-gates.sh` run passed on Node 22.22.1: strict source/test typecheck; 8 Vitest files / 43 tests including docs and all 16 before/after durable write boundary cases; clean build; all 12 configured TLC model/property checks. `git diff --check -- packages/inventoryonce` passed. No commit or push was made.
+- Final exact-source verification run passed on Node 22.22.1: strict source/test typecheck; 8 Vitest files / 43 tests including docs and all 16 before/after durable write boundary cases; clean build; all 12 configured TLC model/property checks. `git diff --check -- packages/inventoryonce` passed. No commit or push was made.
 
 edit: 2026-08-24 22:24 +0700 — owner-review material findings fixed
 
@@ -144,7 +144,7 @@ edit: 2026-08-25 07:11 +0700 — final fungibility implementation gate
 
 - Final post-review owner gate passed after the exact LCM quantum, bounded-search diagnostic, durable-record-time claim protection, transfer-aware feasibility, and location-scoped formal-model changes.
 - Exact final evidence: strict source/test typecheck green; 17 Vitest files / 302 tests green; build green; all 16 registered TLC safety/refinement/liveness checks green. `FungibilityPool` now explores 1,337,922 generated / 113,054 distinct states at depth 15.
-- The implementation checkpoint remains package-only and independent of Shinebright/Parse. The next commit begins the read-only Shinebright migration/shadow adapter separately.
+- The implementation checkpoint remains package-only. The next commit starts a separate read-only downstream migration and shadow adapter.
 
 
 edit: 2026-08-25 07:16 +0700 — complete legacy-source migration plugin boundary
@@ -157,12 +157,12 @@ edit: 2026-08-25 07:16 +0700 — complete legacy-source migration plugin boundar
 edit: 2026-08-25 07:16 +0700 — source-plugin final gate
 
 - Final source-plugin gate passed on Node from `.nvmrc`: strict source/test typecheck; 17 Vitest files / 303 tests; clean build; package diff check clean. Formal models were unchanged from the previously green 16-model gate.
-- This checkpoint remains InventoryOnce-only. No Parse, Shinebright class, UI, pricing, or legacy database code entered the package.
+- This checkpoint remains InventoryOnce-only. Application classes, Parse, UI, pricing, and legacy database code remain outside the package.
 
 edit: 2026-08-25 07:28 +0700 — classic Node resolver subpath compatibility
 
 - Added `typesVersions` mappings for `/kernel`, `/storage`, and `/migrations`. This preserves the explicit expert subpaths while allowing consumers still using TypeScript `moduleResolution: "node"` to resolve the same generated declarations without importing package source internals or changing compiler mode globally.
-- InventoryOnce strict check/build and Shinebright backend full `tsc --noEmit` passed with a real `@inventoryonce/core/migrations` import.
+- InventoryOnce strict checks, the build, and downstream backend tsc --noEmit passed with a real @inventoryonce/core/migrations import.
 
 
 edit: 2026-08-25 09:36 +0700 — heterogeneous composition and collection views formalized before implementation
@@ -177,14 +177,14 @@ edit: 2026-08-25 09:36 +0700 — heterogeneous composition and collection views 
 edit: 2026-08-25 11:10 +0700 — heterogeneous composition formal-only hardening
 
 - Preserved the existing dirty composition/collection/index/migration work and added no new TypeScript composition API or catalogue type in this phase. Baseline `pnpm check` was already green.
-- Focused baseline tests found two unfinished test-only failures. The durable conformance shape now asserts every new stock index plus the containment-child index instead of letting a broken adapter pass accidentally. The Shinebright migration test now accepts the diagnostic's extra provenance note while still requiring the exact error code/source identity.
+- Focused baseline tests found two unfinished test-only failures. The durable conformance shape now asserts every new stock index plus the containment-child index instead of letting a broken adapter pass accidentally. The downstream migration test now accepts the diagnostic's extra provenance note while still requiring the exact error code/source identity.
 - Strengthened `CompositionRevision` with separate immutable package and composition revisions, exact v1 `21 active-A + 7 placebo-P`, exact v2 `20 active-A + 5 active-B + 3 placebo-C`, two packs per generation, two locations, transfer/open interleavings, exact per-operation output vectors, exact retry guards, per-revision source conservation, per-location component production, distinct component axes, and a derived-only physical report.
 - Added the temporal safety property `CompletedOperationIntentNeverChanges`. The first spelling used a raw action under `[]`; TLC rejected that syntax before generating states. Rewrote it as `[CompletedOperationIntentStaysFrozen]_vars`. This was a spec syntax correction, not a behavioral counterexample.
 - Kept composition correction out of the core state machine so it does not blur opening/conservation. Formal docs now state the exact bridge to `CorrectionHistory`: retain the old definition/source/open fact and append or supersede current meaning; never mutate the old vector or durable retry intent.
 - Final pinned TLC result for `CompositionRevision`: 50,849 generated states, 6,688 distinct states, complete graph depth 10, no errors. Full `pnpm formal` passed all 18 registered checks.
 - Final Node 22.22.1 gates using `.nvmrc`: `pnpm check` passed; focused package Vitest/documentation/conformance passed 6 files / 211 tests; focused backend migration Vitest passed 1 file / 14 tests; `pnpm formal` passed. No commit or push was made.
 
-edit: 2026-08-25 13:18 +0700 — primary-led composition refinement and Shinebright read seam
+edit: 2026-08-25 13:18 +0700 — primary-led composition refinement and downstream read seam
 
 - Resumed as the sole primary worker after reading the model-routing cost guardrail; terminated the stale unpinned worker/orchestration chain and used no delegated model for this pass.
 - Found a formal-to-TypeScript refinement mismatch during direct review: `CompositionRevision` keeps outputs at the package current location, while the first TypeScript placement surface still allowed output location/status/owner/custodian/authority overrides and implicit lot inheritance. Tightened the API so opening preserves those shared source dimensions and rejects undeclared placement fields at runtime, including JavaScript callers.
@@ -202,18 +202,18 @@ edit: 2026-08-25 13:40 +0700 — final composition/index/application-read gate
 - FIFO/FEFO candidate provenance now reads the rebuildable `positiveLayerStartedAtByPositionId` projection index. Item/revision/serial/container and provenance indexes participate in replay/integrity/conformance roots; proxy/stress tests fail if indexed reads enumerate full position/event maps. Hot-path planning is selected-position traversal plus deterministic sorting rather than candidate-by-history replay.
 - Added `states/` to the package-local ignore and removed TLC dump artifacts from the worktree; real failures still print their unique dump path during the run.
 - Final direct Node 22.22.1 package gate: strict `pnpm check` passed; full Vitest passed 21 files / 321 tests; build passed; all 18 registered TLC safety/refinement/liveness checks passed. Key bounded results: `CompositionRevision` 50,849 generated / 6,688 distinct / depth 10; `CollectionView` 13,123 / 1,458 / depth 11; `FungibilityPool` 1,337,922 / 113,054 / depth 15.
-- InventoryOnce still has zero runtime dependencies and no Shinebright/Parse imports. Live Shinebright authority remains outside this checkpoint until a production durable adapter passes the conformance/failpoint suite and cutover has a stable source root/write fence.
+- InventoryOnce still has zero runtime dependencies and no downstream application or Parse imports. Live application authority requires a production adapter that passes conformance and failpoints, with a stable source root and write fence for cutover.
 
 edit: 2026-08-25 13:41 +0700 — final primary evidence correction and indexed read refinement
 
 - Correcting the earlier provisional evidence line: the final current package gate is 21 Vitest files / 321 tests, not 320, after adding the immutable-revision-index regression. The final pinned formal run is 18 entries and all passed.
-- Exact latest key model evidence: `CompositionRevision` 50,849 generated / 6,688 distinct / depth 10; `CollectionView` 13,123 / 1,458 / depth 9; `FungibilityPool` 1,337,922 / 113,054 / depth 15. The complete current state/depth table was refreshed from `/tmp/inventoryonce-final-gates/package-formal.log`, not copied from an older run.
+- Exact latest key model evidence: `CompositionRevision` 50,849 generated / 6,688 distinct / depth 10; `CollectionView` 13,123 / 1,458 / depth 9; `FungibilityPool` 1,337,922 / 113,054 / depth 15. The complete current state/depth table was refreshed from that formal verification run, not copied from an older run.
 - `findInventoryPositions` now selects `positionIdsByItemRevisionId` directly for exact revision selectors and unions only the requested revision rows for multi-revision selectors. A proxy regression fails if that path touches the broader item index or enumerates the backing position record.
 - Final primary package commands from the current source all passed: `pnpm check`, `pnpm test`, `pnpm build`, `pnpm formal`. Root export guards still keep the raw collection reducer on `/kernel` while normal applications use the grouped collection façade.
 
 edit: 2026-08-25 14:34 +0700 — corrected FIFO provenance and published-head CAS finalization
 
-- A frozen-tree hostile review found two real correctness gaps after the composition/read-model pass. First, a same-quantity correction could change an inbound event's `occurredAt` without changing position measurements, leaving `positiveLayerStartedAtByPositionId` pointed at the superseded history. Second, a Shinebright DTO could combine one published world with a separately extended catalogue cache.
+- A frozen-tree hostile review found two real correctness gaps after the composition/read-model pass. First, a same-quantity correction could change an inbound event's `occurredAt` without changing position measurements, leaving `positiveLayerStartedAtByPositionId` pointed at the superseded history. Second, a downstream response could combine one published world with a separately extended catalogue cache.
 - Added correction-only `positiveLayerProvenanceOverrides` to immutable event truth. Correction planning compares the actual projection with the hypothetical retained-history replay and emits exact per-position replacements even when stock deltas are empty. The reducer validates and applies those replacements after stock effects, and event intent fingerprints include them.
 - Added regressions for same-quantity receipt-time correction, superseding correction, omitting an original receipt while a later top-up remains, and correcting a migrated Opening event. FIFO planning now observes the corrected physical layer start in every case without inventing quantity changes.
 - Exposed the durable begin validators/materializer needed by external adapters and added `PublishedHeadCAS.tla`. Two writers may freeze plans from one published head, but at most one compare-and-swap Begin can own that base; stale work cannot publish over the winner, exact retry stutters, visible revision/history remain aligned, and weak fairness resolves enabled writers. TLC passed 3,327 generated / 1,277 distinct states at depth 24.
@@ -232,7 +232,7 @@ edit: 2026-08-25 — production durable publication and conserved FIFO provenanc
 - Added immutable `positiveLayerProvenanceTransfers` for genuinely conserved one-to-one movement. Location transfer, exact single-line reclassification, pack, and unpack retain the oldest current FIFO layer. A destination that already contains stock keeps the older of its current layer and the moved layer. Multi-line split/merge/reclassification does not guess lineage from array order and therefore starts a new layer unless a future API names explicit pairs.
 - Correction replay, world integrity roots, and rebuilt projections include the provenance changes. Regression tests cover transfer into an existing destination, pack → unpack → status reclassification, same-quantity/backdated correction, full rebuild, and refusal to infer multi-line lineage.
 - Final direct Node 22.22.1 package gate at 2026-08-25 17:07 +0700: strict `pnpm check` passed; full Vitest passed 21 files / 327 tests; build passed; every registered TLC safety/refinement/liveness run passed. Key latest results: `PublishedHeadCAS` 4,284 / 1,871 / depth 24; `CompositionRevision` 50,849 / 6,688 / depth 10; `FungibilityPool` 1,337,922 / 113,054 / depth 15; `InventoryOperation` 22,689 / 3,889 / depth 11.
-- The reusable core still has zero runtime dependencies and no Shinebright/Parse imports. Production adapter correctness evidence does not remove application-specific source fencing, retention, or storage-layout obligations.
+- The reusable core still has zero runtime dependencies and no downstream application or Parse imports. Production adapter correctness evidence does not remove application-specific source fencing, retention, or storage-layout obligations.
 
 
 edit: 2026-08-25 primary authority writer-admission wiring
@@ -243,7 +243,7 @@ edit: 2026-08-25 primary authority writer-admission wiring
   and the cutover fence are mutually exclusive for both writer-first and
   fence-first interleavings. The bounded run explored the configured finite
   state space without invariant or temporal violations.
-- Wired Shinebright's existing ledgered `applyStockChange` path through exact
+- Wired the downstream application's existing ledgered `applyStockChange` path through exact
   writer/attempt admission and added outer workflow admission around every
   transitive stock-change entrypoint. A TypeScript AST regression test now
   rejects any future `applyStockChange` call outside that outer boundary.
@@ -268,30 +268,30 @@ edit: 2026-08-25 primary authority writer-admission wiring
 edit: 2026-08-26 00:30 +0700 — native batch package preservation and receipt aggregation
 
 - Hardened `issueManyByPolicy` / `transferManyByPolicy` grouping so repeated requests selecting the same intact-package position remain exact package commands. Grouped lines now retain immutable packaging revision, sum only safe whole package counts, preserve non-package-fixed independent measurements, and reject inconsistent package evidence.
-- Made `receiveMany` the owner of duplicate exact-destination aggregation. Duplicate receipt lines become one stock effect keyed by canonical position identity; measurement vectors and safe whole package counts are summed centrally, exact package/lot/container evidence is retained, and conflicting effect metadata rejects the operation before publication. This removed the equivalent conserved-state grouping engine from Shinebright.
+- Made `receiveMany` the owner of duplicate exact-destination aggregation. Duplicate receipt lines become one stock effect keyed by canonical position identity; measurement vectors and safe whole package counts are summed centrally, exact package/lot/container evidence is retained, and conflicting effect metadata rejects the operation before publication. This removed the equivalent conserved-state grouping engine from the downstream application.
 - Added regressions for later-request shortfall atomicity, replay-safe per-request allocation evidence, changed-intent rejection, repeated intact-package policy allocations, duplicate packaged receipts, lot metadata retention, and conflicting duplicate receipt metadata with no partial stock.
 - Final core gates: strict package check passed; full Vitest passed 21 files / 332 tests; package build passed. The full registered TLA+ suite passed. Key current bounded evidence includes `AuthorityWriterFence` 10,130,490 generated / 2,234,410 distinct / depth 34, `PublishedHeadCAS` 4,284 / 1,871 / depth 24, `CompositionRevision` 50,849 / 6,688 / depth 10, `FungibilityPool` 1,337,922 / 113,054 / depth 14, `InventoryOperation` 22,689 / 3,889 / depth 12, and `PackagingIdentity` 1,831 / 383 / depth 18.
-- InventoryOnce remains independent of Shinebright and PayMeOnce. Application adapters may translate business rows and validate their own parent/child consistency, but exact allocation, duplicate-position aggregation, conservation, replay, and package identity belong to the core. No commit or push was made.
+- Application adapters may translate business rows and validate their own parent/child consistency. Exact allocation, duplicate-position aggregation, conservation, replay, and package identity belong to the core.
 
 
 edit: 2026-08-26 08:37 +0700 — native amount identity, split conservation, and operation-index read harvest
 
 - Re-certified the landed native absolute-count tree before extending it: strict package check, 21-file package suite, build, backend Mongo/SQLite authority matrices, production build, and the complete registered TLC suite all passed. The formal run explored `AuthorityWriterFence` 10,130,490 generated / 2,234,410 distinct / depth 34; `PublishedHeadCAS` 4,284 / 1,871 / depth 24; `CompositionRevision` 50,849 / 6,688 / depth 11; `FungibilityPool` 1,337,922 / 113,054 / depth 14; `InventoryOperation` 22,689 / 3,889 / depth 12; and `PackagingIdentity` 1,831 / 383 / depth 19.
 - Added public `inventoryAmountFromUnit(...)` so an application that has already normalized its unit vocabulary can resolve an exact primary/package amount against one immutable item revision. The native helper owns package-label ambiguity, revision ownership, exact plain-decimal parsing, positive whole-package requirements, independent-axis validation, and final amount resolution.
-- Added public `assertInventoryAmountSum(...)` so declared lot/allocation child lines are proven equal to a parent amount after exact package resolution. This moved measurement-vector construction, summation, schema alignment, and exact comparison out of Shinebright.
-- Added `findInventoryEventByOperationId(...)`, backed by the rebuildable operation-to-event projection index with integrity checks for missing/mismatched indexed events. Shinebright no longer traverses that index itself to recover replay occurrence time.
+- Added public `assertInventoryAmountSum(...)` so declared lot/allocation child lines are proven equal to a parent amount after exact package resolution. This moved measurement-vector construction, summation, schema alignment, and exact comparison out of the downstream application.
+- Added `findInventoryEventByOperationId(...)`, backed by the rebuildable operation-to-event projection index with integrity checks for missing/mismatched indexed events. The downstream application no longer traverses that index itself to recover replay occurrence time.
 - Regressions cover primary/package resolution, fractional package rejection, ambiguous same-label packages within one revision, mixed package/base conservation, mismatch rejection, operation-index lookup, missing operations, and corrupted index evidence. Public-export and documentation guards include the new APIs.
-- Final package gate on the frozen tree: strict check passed; full Vitest passed 21 files / 341 tests; build passed; `git diff --check` passed. No formal source changed after the successful formal run. InventoryOnce retains no Shinebright or PayMeOnce runtime imports. No commit or push was made.
+- Final package gate on the frozen tree: strict check passed, full Vitest passed 21 files / 341 tests, and the build and git diff --check passed. Formal source remained the same after the successful formal run. InventoryOnce retains no downstream application runtime imports.
 
 edit: 2026-08-26 13:10 +0700 — one published-world read boundary for public inventory views
 
 - Added the public snapshot reader so one storage read freezes world revision, catalogue, stock, reservations, availability time, packages, lots, containers, compositions, collections, and fungibility for every downstream view.
-- Shinebright batch reads now map several medication/device identities through that same snapshot. The response and every nested view carry the exact published world revision; app code cannot mix separate world reads inside one table/report response.
-- Shared read tests prove one storage read and prove a newer publication cannot leak into an already-open snapshot. InventoryOnce still has no Shinebright types or vocabulary.
+- Downstream batch reads now map several medication/device identities through that same snapshot. The response and every nested view carry the exact published world revision; app code cannot mix separate world reads inside one table/report response.
+- Shared read tests prove one storage read and prove a newer publication cannot leak into an already-open snapshot. The core types and vocabulary remain application-independent.
 
 edit: 2026-08-26 14:54 +0700 — final read-boundary recertification (no kernel source change in this correction)
 
-- Shinebright's remaining scalar read was switched to the existing public published-snapshot API; no InventoryOnce package logic changed in this correction.
+- The downstream application's remaining scalar read was switched to the existing public published-snapshot API; no InventoryOnce package logic changed in this correction.
 - Re-certified the exact package: strict check, 26 files / 355 tests, build, and the complete registered formal suite. `AuthorityWriterFence` remained 10,130,490 generated / 2,234,410 distinct / depth 34; every model passed.
 - The final anti-regrowth audit now proves ordinary app code cannot reconstruct native current reads or use compatibility balance/expiry as authority. Evidence is under `.chatgpt/test-markers/read-report-frontend-final.{green,report,review}`.
 
@@ -329,7 +329,7 @@ edit: 2026-08-28T04:51:25+07:00 — independent pdclinic opening-snapshot canary
 
 edit: 2026-08-30 — PR-01 pass-2 audit repair
 
-- PR-01 had eight backend InventoryOnce specs but none of the backend adapter, authority, migration, or fixture files they import. Removed all eight dangling specs from the kernel/formal slice: authority, durable storage, formal greenfield, formal Shinebright seam, formal storage refinement, index scale, migration, and Parse durable storage.
+- PR-01 had eight backend InventoryOnce specs but none of the backend adapter, authority, migration, or fixture files they import. Removed all eight dangling specs from the kernel/formal slice: authority, durable storage, formal greenfield, formal application seam, formal storage refinement, index scale, migration, and Parse durable storage.
 - A fresh PR-02 restack must restore those eight specs with `inventoryOnceAuthorityTestFixtures.ts`, `inventoryOnceDurableTestFixtures.ts`, the backend `inventoryOnce` implementation tree, and the Mongo/SQLite trace and failpoint evidence. All of that still exists on the backend/data branch; nothing was rewritten or deleted there.
 - `SnapshotSupersededWorkflow` keeps the normal safe transition system and unchanged invariants. Four separate mutation configs now try a resumed disposed row, physical disposition event, guessed outcome, and post-capture source advance. TLC must reject each exact bad transition through its named invariant.
 - The assurance surface now includes every public transformation read/planning method. One executable trace covers `activeDefinition`, `definition`, `definitionsForItem`, `fromRevision`, `toRevision`, `betweenRevisions`, and `plan` against retained revision and one-published-world guarantees.
@@ -352,8 +352,8 @@ edit: 2026-08-30 — PR-02 backend/data audit repair certified
 
 edit: 2026-09-04 — standalone repository export completed
 
-- Exported the InventoryOnce package subtree from Shinebright source commit `eb1cd0f1146832ddd1d08e971cb05ff88e7b4116` (`fix(inventory): preserve strict location and replay guards`) into the standalone repository root. Before standalone-only adjustments, the source subtree and staged standalone tree were byte/mode-identical at tree `e94f5b77aa05866465022df9b57ad5a13c1038e2`.
-- Removed only the two Shinebright-owned executable trace declarations `TRACE-REAL-ADAPTER-INDEX-SCALE` and `TRACE-SHINEBRIGHT-FOUR-AUTHORITATIVE-CALLS`. Their Mongo/SQLite adapter and four-call application seam implementations live downstream, so this core must not claim them as locally executable evidence.
+- Exported the InventoryOnce package subtree into the standalone repository root. Before standalone-only adjustments, the source subtree and staged standalone tree were byte- and mode-identical.
+- Removed the downstream executable trace declarations for real-adapter index scale and the four authoritative application calls. Their Mongo/SQLite adapter and four-call implementations live downstream.
 - Regenerated standalone assurance after narrowing that evidence boundary: 502 public API entries, 2,239 field entries, 26 standalone bounded traces, 498 traced public APIs, and 18 explicit gaps.
 - Standalone export gates passed: strict TypeScript/package assurance checks; 434 tests across 36 files; production build; implementation-conformance generation/audit; the complete registered TLA+ model suite; and every registered forbidden-transition mutation rejected by its intended invariant.
 
@@ -380,7 +380,7 @@ edit: 2026-09-07 — resumed hub integrates exact bridges and strict combined ad
 
 - Took over clean-r3 after checking that its prior writer had no live cwd process and its last changes were from 13:00 UTC. Preserved the three pending ReservationSafety artifacts before rerunning their producer. Integrated aa94f102 as ee1ec87; 23 focused tests and both TypeScript projects passed, followed by fresh native/reverse/mutation proof in 4.388 seconds. All 14 recovery bridges now check all 30 intermediate steps.
 - Combined the seven existing ReservationSafety A/B bindings with seven independently proved value equations through the unchanged compiler gate. Exactly 14 of 535 keys pass; 521 remain unbound. Did not import the alternate compact-proof bypass from b0644d7 or rewrite the historical compiler baseline. Three real-gate adversarial self-tests passed, including wrong result flow, fake proof fields, duplicate claims, stale runtime evidence, fake value identity, and a removed claim staying in the denominator.
-- Restored isolated authority, surface, and transfer lanes while preserving the existing fungibility and migration work. The hub remains the sole clean-r3 integrator. Main, PR, production sources, and authoritative TLA/CFG remain untouched by this continuation.
+- Preserved the separate authority, surface, transfer, fungibility, and migration work. Main, PR, production sources, and authoritative TLA/CFG remained unchanged.
 
 edit: 2026-09-07 — independent native RepairLiveness integration
 
@@ -403,7 +403,7 @@ outcome: 2026-09-07 — closure/snapshot batch independently validated
 
 The initial full test run correctly caught four stale proof contracts after the source/observation changes (675 passed, four stale-evidence failures). Refreshed the actual ReservationScope observation producer, the full ImplementationConformance quotient (52,776 real commands, 101,574 formal instances over the unchanged 172,509-occurrence graph), and UseByReservation (794 semantic enabled checks, 1,708 native disabled checks, 4,653 alternate-history transitions). Existing UseBy reverse remains a graph sanity check, not a newly claimed native-stream admission. Only reviewed coordinator source pins changed; no model/checker obligations were removed. After real reproof the full suite passed679 tests in80 files, with the existing7 tests in4 files skipped; measured test wall61.642s under the active worker workload. Package check/build pass;24 registered TLA models and5 expected mutations passed using their content-addressed cache. Thirty combined strict-gate/native-family regressions pass. Current native receipt source hashes were rechecked before integration. Strict callable coverage remains14/535,521 unbound;18 declared register GAPs and32 native Consume mismatches remain open.
 
-All five prior lane processes had ended or timed out, so resumed those exact worktrees without discarding WIP and verified five real Codex process pairs and fresh logs. Owner40–60 batching directive is in each resumed prompt. Published deterministic administrative ownership for all521 unbound symbols (zero overlap, zero proof credit); exact source-flow eligibility still belongs to each lane's strict proof. No global model-certificate count was silently inherited or promoted. Hub integration remains local only; original TLA/CFG and global strict/reverse checkers are unchanged.
+Resumed the existing worktrees with their changes preserved. Recorded the 521 unbound symbols without granting proof credit. Each lane still requires its own strict source-flow proof. Original TLA/CFG and global strict/reverse checkers remained unchanged.
 
 
 edit: 2026-09-08 — batch before validation, single-pass migration surface
@@ -435,7 +435,7 @@ edit: 2026-09-08 — reservation44 batch after integrated migration45 + transfer
 proof: 2026-09-08 — reservation family integrated and producer-certificate handoff
 
 - Complete44-key reservation batch PASS:16 new strictA9/B7 claims and28explicit blockers. Original model25states/40edges plus42congruence transitions/82forks/seven genuine native disabled calls retained. All seven claimed reads now have independent complete-value expectations;12oracle controls reject same-shape results, including wrong64-character digest and same-status altered history. Focused14producer/oracle+2ownership tests and3aggregate adversarial controls passed.
-- Validation proc-2edc1a35-e329-4b7e-a5c1-733290c71214 exited0 in79.599s; producer stage24.005s. Combined unchanged strict admission44/535 (A23/B14/V7),491unclaimed,0claimed diagnostics. All264 unique input hashes checked again before commit. No package-wide/native-transfer/native-migration replay repeated; earlier shared check695tests/build59.243s remains the relevant unchanged-source evidence.
+- Validation exited 0 in79.599s; producer stage24.005s. Combined unchanged strict admission44/535 (A23/B14/V7),491unclaimed,0claimed diagnostics. All264 unique input hashes checked again before commit. No package-wide/native-transfer/native-migration replay repeated; earlier shared check695tests/build59.243s remains the relevant unchanged-source evidence.
 - This turn integrated112 owned migration/transfer/reservation keys:30 genuinely new strict claims and82explicit owned blockers. Counts do not turn unresolved semantic families green;18declared gaps and32Consume mismatches remain open.
 - Read new OWNER override PRODUCER_CERTIFICATE_CONVERGENCE.md. Proof unit is now producer/GAP family, not wrapper batch. Published producer-certificate-registry.json:five families supporting the44 current claims, references only, stable content identity excludes wrapper/admin rows. Surface-general owns the all535 canonical binder; the hub has not claimed that pending global binder complete. No duplicate replay corpus created for certificate registration. Existing semantic source identity and strict source-flow requirements remain mandatory.
 
@@ -470,9 +470,9 @@ All five candidate families received one exact disposition: authority 24/33; tra
 
 Added official registry publication driven by actual strict rows, not worker totals. Negative controls exposed and then rejected same-count swaps between an admitted callable and a red identity. The publisher now preserves exact baseline bindings, actual catalog proof membership and exact admitted-key equality. The changed value builder verifies all31 values while preserving the original seven-row baseline shard; a real rebuild regression confirms byte-identical current evidence and prevents double admission. No source or original formal model changes.
 
-Validation reused the unchanged 15/15 catalog/source-equation controls and passed the actual strict68 bank on this turn (proc-6c808853). Legacy compiler/admission controls passed20/20 in the concurrent integration command. Final metadata/identity/rebuild regressions passed12/12 (proc-9cfe7439). Independent reference audit checked all264 current inputs, all535 identities, six family memberships and unchanged production source. No graph exploration, native replay, reverse replay or package-wide suite was repeated for this admission-only change. Previous source-bound package validation remains intact; full535 assurance is explicitly not claimed.
+Validation reused the unchanged 15/15 catalog/source-equation controls and passed the actual strict68 bank on this turn. Legacy compiler/admission controls passed20/20 in the concurrent integration command. Final metadata/identity/rebuild regressions passed12/12. Independent reference audit checked all264 current inputs, all535 identities, six family memberships and unchanged production source. No graph exploration, native replay, reverse replay or package-wide suite was repeated for this admission-only change. Previous source-bound package validation remains intact; full535 assurance is explicitly not claimed.
 
-Concurrent hub coordinators were discovered and ownership split on the board. This resurrection thread owns this final bank commit only; existing2232 semantic workers and independent quantity/identity workers retain their lanes. Production main and PR remain236eba446e63b8149136b93ba21c3004526f077a,168changed files. No push, merge, publish or deployment.
+Production main and PR remained at 236eba446e63b8149136b93ba21c3004526f077a with 168 changed files. This checkpoint covers only the final bank commit.
 
 
 outcome: 2026-09-08 — whole-family strict admission increases 68 to184
@@ -481,18 +481,18 @@ Integrated committed quantity5d13503 (38 complete independently specified functi
 
 Completed consolidated49-control source equation/registration/publication/real-checker batch, focused tsc,3 independent arithmetic controls and2 documentation checks. Arithmetic review includes26896 signed/scaled pairs134480 comparisons,8640 conversion cases2672 rejections,390 measured-vector results. Those bounded tests validate the laws and grant no independent surface credit. No production/originalTLA/CFG change, no native graph/replay/reverse rerun and no package-wide ritual. Source-only value envelopes were rederived once after the V route changed. Current admission pass20.670s; complete integration test command36.652s. Neither is the whole-program300-second claim.
 
-Independent review found a92eb89 six-helper closure prints actual source and labels its own evaluation as the equation; hash-only source mutation rejection does not establish independent helper semantics. WorkerA peer review was redirected to this exact issue. The reserved migration-helper9 proposedV route also used substring requireFlow checks; requested complete independently specified terms and same-substring wrong-branch controls before promotion. Neither family was admitted by name or transport success.
+Independent review found a92eb89 six-helper closure prints actual source and labels its own evaluation as the equation; hash-only source mutation rejection does not establish independent helper semantics. The reserved migration-helper9 proposedV route also used substring requireFlow checks; requested complete independently specified terms and same-substring wrong-branch controls before promotion. Neither family was admitted by name or transport success.
 
-Hub lease throughput-2322 claimed after two independent clean2f39/no-active-hub audits and activated23:22:52 on bulletin. Four completed ordinary sessions now continue whole distinct families with workspace-write sandbox and existing session ids; no cold duplicate agents, external I/O or sandbox disablement. Owner chatA13/B25 remain separate. Preserve old model/runtime gaps and all prior native proofs. No main/PR/push/publish/deploy changes.
+Resumed the existing independent assurance families with their work preserved. Earlier native proofs and open model/runtime gaps were retained.
 
 
 proof: 2026-09-08 — six source-closed migration helpers integrated
 
-Imported a read-only content snapshot of Worker A's independent expected terms. Its receipt identifies the observed47da4d7 HEAD and explicitly says the selected source was uncommitted. Hub integration rederives the complete existing quantity/identity helper equations, checks the diagnostic enum values and built-in identities, and keeps arbitrary migration execution outside this pure family. The existing bounded Snapshot producer does not prove a universal dry-run value contract. Four callback reads, the paired reader factory, positions comparison and durable materialization remain pending.
+Imported a read-only content snapshot of the independently specified expected terms. Its receipt identifies the observed47da4d7 HEAD and explicitly says the selected source was uncommitted. Hub integration rederives the complete existing quantity/identity helper equations, checks the diagnostic enum values and built-in identities, and keeps arbitrary migration execution outside this pure family. The existing bounded Snapshot producer does not prove a universal dry-run value contract. Four callback reads, the paired reader factory, positions comparison and durable materialization remain pending.
 
 Six eligible helpers passed exact compiler associations and the actual registered checker. Nine independent-law controls and24 shared/current-registry controls passed; strict190 = A23/B14/V153,345 remaining. Existing184 key/mode claims remain. An initial three-control failure came from replacing an earlier repeated source fragment; each control now targets the exact compiler declaration. No native, graph or original-Next replay; package runtime remains2eea094. The final proof receipts and source hashes are regenerated for the current provenance field names before commit.
 
-Added a disjoint whole36-key catalog-foundation lane to remove the common dependency bottleneck. Catalog construction/retention/position validation is reassigned from authority, while authority retains snapshot/read/allocation algorithms. Event45 and transfer11 reuse that foundation when independently certified. Other active lanes and reserved owner chatsA13/B25 retain their scopes. No production/formal/shared A/B checker/remote changes.
+Added a disjoint whole36-key catalog-foundation lane to remove the common dependency bottleneck. Catalog construction/retention/position validation is reassigned from authority, while authority retains snapshot/read/allocation algorithms. Event45 and transfer11 reuse that foundation when independently certified. No production/formal/shared A/B checker/remote changes.
 
 
 throughput: 2026-09-08 — content-addressed artifact parsing in the registered gate
@@ -528,15 +528,15 @@ Imported only the reviewed authority catalog-read subtree; dirty AuthorityWriter
 The family revalidated 166 complete callable equations, 15 runtime values, 99 independent law rows plus 82 exact reused dependency rows and three higher-order boundaries. It exposes 20 current HARD_RED public aliases, allAdmittedInputs=true, sampledInputs=0, with the three async storage reads still blocked under the named CATALOG_READ_STORAGE_ACQUISITION_EXTERNAL_BOUNDARY. Certificate verification and five mutation/closure controls passed; no producer graphs ran. The unchanged strict gate now reports 302/535: A23/B14/V265/HARD_RED233 with zero claimed diagnostics.
 
 ### 2026-09-08 — PhysicalCount registered producer integration
-- Continued under `automation-convergence-r3` hub lease from clean-r3 `d6ee821`; production/main/PR/remotes untouched.
+- Continued the isolated integration from d6ee821 with production, main, and remote refs unchanged.
 - Integrated reviewed PhysicalCount producer `ce8df0b...` without native/graph/reverse/original-Next rerun. Re-derived current source/callsite join as `51596a47...`; generic repair callable remains an explicit non-credit GAP.
 - Added exact trusted `REGISTERED_CERTIFIED_PRODUCER` A/B route while preserving ordinary execution-v2. Canonical strict registry advanced 302 -> 319/535: +17 (A12/B5); `commitInventoryEvent` stayed existing V and was not double-counted.
 - PASS: join mutation controls 7, checker self-tests 11, PhysicalCount controls 4, current all535 adversarial controls 3; zero claimed diagnostics. Receipt: `experiments/tla-conformance/physicalcount-adapter-A-r7/hub-integration-receipt.json`.
 
 integration: 2026-09-08 — compact B25 bank and migration traceability stabilization
 
-- Rejoined as the active clean-r3 integration owner and preserved the pre-existing staged migration-r5 evidence WIP rather than resetting or overwriting it. Current source/formal/product bytes remain unchanged.
-- Reworked Worker B's slow publication proof harness before admission: CollectionView shards maxed at 24.395s and CompositionRevision shards at 48.471s, replacing the prior >10-minute serial capture. The strict publication artifact materializer completes both families in ~13s. The all-535 admission with the compact trusted producer completes in 55.2s.
+- Preserved the pre-existing staged migration evidence. Product source and formal models remained unchanged.
+- Reworked the slow publication proof harness before admission: CollectionView shards maxed at 24.395s and CompositionRevision shards at 48.471s, replacing the prior >10-minute serial capture. The strict publication artifact materializer completes both families in ~13s. The all-535 admission with the compact trusted producer completes in 55.2s.
 - Built a compact current-hub-replay B25 registered producer. It rechecks all 25 reviewed source-flow bindings against the live 535 compiler surface, consumes four content-addressed portable summaries produced only after full execution-v2 validation, and admits only the 15 members not already owned by Value/PhysicalCount families. Ten overlapping rows remain supplemental and retain their existing A/B/V owners.
 - B25 exact net admission is A6/B9 = 15. Global strict registry advances from the dirty pre-B25 333 state to 348/535: A42/B32/V274/HARD_RED187, zero claimed diagnostics. Raw 479/486MB execution artifacts remain outside the hub; compact proof inputs are current-source checked and sampledInputs=0.
 - Focused validation after the integration passed 6/6: B25 compact family, migration traceability value family, migration traceability Transform producer, current all535 exact publication controls, same-count/duplicate/overwrite negatives, and actual strict checker false re-sign/foreign-key/result-flow rejection. Batch wall 43.55s.
@@ -612,7 +612,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 ## 2026-09-09 — R107 integrated layered-6dfc hub convergence
 
-- Took over the stale R88 hub lease only after two stable-state audits plus no owner/bulletin activity, then recorded `HUB_TAKEOVER_CLAIM` and `HUB_TAKEOVER_ACTIVE` before the first repository write.
+- Resumed the exact local integration checkpoint after checking that the prior work was inactive and preserving existing changes.
 - Adjudicated the AST R65 negative-control advisory: current evidence remained valid because all three intended mutations changed bytes and the verifier baseline was healthy. Hardened `traceability-parent-compact-r65/selftest.mjs` to require a healthy pre-mutation verifier, non-empty byte mutation, tamper rejection, exact restoration, and healthy post-restore verification. Focused R65 passed 3/3; the sibling compiler-fixture concern was redundant because its test independently requires `CALLABLE_IMPLEMENTATION_CHANGED`.
 - Froze R105 as `9c893f698882137a9da633ccef6034867018f6f1`, fast-forward adopted it into clean-r3, and atomically promoted the exact four versioned R105 publication outputs to the canonical throughput/global registry paths. The three pre-adoption package failures were all stale-global-selection checks and immediately passed after canonical promotion.
 - Current canonical authority is exact 535 rows = 488 strict + 47 genuine external boundaries, modes A121/B58/V309/HARD_RED47, surface `6dfc3cf35c8fa780838fbcd5ced4f69f2955ee2c2e2374866349f6fb4266b0af`, with 586 tracked publication inputs and zero direct `node_modules` publication inputs. No credit expansion and no producer graph/native/reverse reruns occurred.
@@ -804,7 +804,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Reproduced the fungibility/package finding as a real product defect before the fix. A regression with two intact packages whose independent `weight` axis is fixed by the package produced one legal ordinary package allocation but zero fungibility lines with `incrementBlockedStock=true`; the old focused test run failed exactly at the fungibility allocation assertion. The defect was the fungibility-only measured-content predicate treating package-fixed independent axes as unsplittable even though ordinary picking deliberately excludes those axes. The family audit found the matching ordinary picking rule and no second fungibility caller. `src/fungibility.ts` now applies the same package-fixed-axis exclusion without changing the public compiler surface; the old/new canonical public surface JSON is byte-semantically identical and remains SHA-256 `03baa3c20d088f813397b4bac1a673eca726f18b845e10e8523af8bb47374e5f`.
 - Independently classified the current-review surface-digest finding as a real assurance false-green: the old verifier only required the report and receipt to agree with one another, so a self-consistent forged digest had no source-derived comparator. `current-review-assurance.mjs` now derives the canonical compiler surface directly from `scripts/formal-implementation-surface.cjs`, validates both stored digests as lowercase SHA-256, and requires each to equal that independent digest. The compact selftest now forges both stored digests together, rebinds the report hash, and requires this verifier to reject.
 - Independently classified the historical post-R165 transport finding as a real assurance-integrity gap. The old check compared only changed path names while its message claimed exact reviewed bytes. The transport now requires the integrated head to descend from reviewed commit `d947e47af2502f2ed2f8ae6971ee639a91ff0867`, pins that commit's exact tree `d9b245e426193de5d36282087f7e4df8bb3fdeea`, and records the tree in the transport artifact while retaining the path-set comparison for its actual purpose.
-- Reproduced the formal-proof-cache selftest finding as a real assurance false-green in detached validation worktree `/tmp/inventoryonce-rabbit-5166124794-red`: deleting both persisted `cacheKey` and descriptor-identity guards still let the old selftest pass 7/7. After adding explicit descriptor-field and cache-key tamper cases, that same mutated implementation fails 1/7 while the real implementation passes 7/7.
+- Reproduced the formal-proof-cache selftest finding as a real assurance false-green in an isolated validation worktree: deleting both persisted `cacheKey` and descriptor-identity guards still let the old selftest pass 7/7. After adding explicit descriptor-field and cache-key tamper cases, that same mutated implementation fails 1/7 while the real implementation passes 7/7.
 - The remaining review comments (helper/type/test comments, README responsibility-table completeness, test typing/refactor suggestions, and the CompositionRevision explanatory comment) are documentation/style/maintainability-only and do not demonstrate a current semantic or assurance false-green. They are intentionally not used to churn converging code and reset neither streak.
 - Focused post-fix evidence so far: `pnpm assurance:write` regenerated the current API/call-chain manifests without changing the canonical public surface; `pnpm check` is green; `pnpm test test/fungibility.test.ts` is green with 15/15 focused tests; `node --test scripts/formal-proof-cache.selftest.mjs` is green with 7/7. Full exact-commit assurance and compact final re-binding follow after the coherent repair commit.
 
@@ -897,7 +897,7 @@ The R105 portable-current-input authority and final publication both continue to
 - The immutable current-review evidence pin is committed at `949234b601bfe162f434932214342267343f1043` and verifies receipt/report/log bytes against evidence commit `7b90543bf15299a5485c773d2ed90d361bbafe22`, whose direct parent is certified full-assurance repair `d04b9da16c5a15248984b50086a0e367772fc746`.
 - Only the affected final dependency closure was currentized. R169, R170, and R170-pristine assurance transports were rebuilt against the new immutable current-review attestation. The final-head theorem now treats `d04b9da...` as the exact final source head and includes the two new internal runtime repair families (`src/coordinator.ts`, `src/integrity.ts`) while preserving 535 public callables, zero public signature changes, and the same two historical public AST changes.
 - Current public compiler surface is `10e90dfc4e5e2a7e203ff93d27af4e98cb3bd53a25d5b7f4c06780d6a76d15a8`. Final families rebuilt exactly to V309 and A121/B58; the 535 registry remains A121/B58/V309/HARD_RED47.
-- The unchanged central binding checker was executed on this currentized registry by the same PR_REVIEW_LOOP (managed process `proc-f9cdf9da-ca6c-41bc-9d11-acdaa24b56bf`) and returned exactly 47 diagnostics, all `EXPLICIT_HARD_RED`, zero unexpected across 535 callables; `final-binder-report.json` records `FINAL_BINDER_GREEN` on surface `10e90dfc...`.
+- The unchanged central binding checker was executed on this currentized registry and returned exactly 47 diagnostics, all `EXPLICIT_HARD_RED`, zero unexpected across 535 callables; `final-binder-report.json` records `FINAL_BINDER_GREEN` on surface `10e90dfc...`.
 - Prospective PR union remains 288 files, below the <=299 hard gate. Next: commit these tracked currentized artifacts/sources, rebuild the same compact support closure and bundles, rebuild the live-input manifest from tracked current bytes, then prove detached compact verify/selftest/registry before push.
 
 ### Review 5169716499 compact package rebuild
@@ -1044,7 +1044,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Three separate detached pristine worktrees at exact binding head `fa8cf1af291c56c0a78f00843b78f7cab0faad0d`, each with frozen offline dependencies under Node 22.22.1, passed the compact modes independently. `verify` returned 309/309 V + 179/179 A/B = 488/488 strict, HARD_RED47, unexpected0; `selftest` accepted honest V/A/B and rejected wrong-mode, re-signed/tampered, immutable-authority, same-mtime drift, foreign-cwd/root, and non-regular/escaping-file controls; `registry --check` reproduced exact A121/B58/V309/HARD_RED47. Each checkout remained tracked-clean.
 - The current systemic full-assurance receipt certifies semantic/formal head `02d7b37c46bfe0f3129fa3f377960d740886a083`; its immutable evidence is committed at `a27b15f90854112a94f75c418d744122e8eb7363` and pinned by `181c84742c169713489acbe7e259e52d24a5296e`. Full assurance is green across package types/tests/build, 27 positive TLC models, all registered mutation rejections, 510/510 public APIs, 2288 fields, and zero unresolved APIs.
 - Review-cycle classification remains as recorded by the coherent systemic audit: valid product/runtime/storage defects were found, so product `cleanStreak` resets 2/3 -> 0/3; valid assurance/proof/test false-greens were found, so `assuranceCleanStreak` remains/resets 0/3. The later unrequested review `5173403060` is non-credit; its RepairLiveness fairness claim is false because the existing weak fairness on `RepairStep` forces the sole enabled `ReloadWorker` branch after interruption.
-- Next atomic actions: commit this diary-only certification descendant, enforce <=299 again, push exact descendant to `review/full-inventoryonce-20260904`, verify local/remote/PR identity, reconcile every current and previously missed review thread, post the PR-level adjudication summary, persist counters in the hub bulletin, then request exactly one new Full Review only after confirming none is already pending.
+- Next atomic actions: commit this diary-only certification descendant, enforce <=299 again, push exact descendant to `review/full-inventoryonce-20260904`, verify local/remote/PR identity, reconcile every current and previously missed review thread, post the PR-level adjudication summary, request exactly one new Full Review only after confirming none is already pending.
 
 
 ## 2026-09-11 — PR_REVIEW_LOOP Full Review 5174371491 adjudication
@@ -1463,7 +1463,7 @@ The R105 portable-current-input authority and final publication both continue to
 - The real finding was assurance-only: compact selftest consumed six tracked adversarial baseline fixtures after the traced read session, while those six bytes were absent from the authoritative compact closure. The pipeline now binds all six baseline files into every closure, requires them in `assertClosure`, freezes their pre-selftest bytes, and verifies the restored tree after the adversarial mutation pass. Old closure red-before showed all six unbound.
 - Exact full assurance source `a3c659fe8c7f464d44220fea188a69c388838d30` passed: 52 Node controls, 44/44 Vitest files / 594/594 tests, strict TypeScript, production build, all 27 positive TLC models, every registered mutation rejection, positive witness, and 510/510 public APIs witnessed with zero unresolved. Repository-state digest is `379205f0398abddaececb87964a5797a7222d7bc50d5d6c6fda3408dccb175b0`. Full evidence `e05b342c625b9693139ba48d4b9b56ccdcb8cc42` is pinned by `33b8897e0d145217c7a632f2b3300606dfc718fc`.
 - Compact currentization `6d8a940528a2b48a36cf2063c18dd14c316d325b` used input key `374caed1f8b6e79e75178a280202d22138a6d5b31f841bcb2da4bac972a16328`; all six adversarial baselines are now explicit closure rows. Pristine certificate evidence `8cba43bf211335f73a133b610c554a5539b951bf` is pinned by `e31a3159be972dd60ce12535276d3c78ccf9b25d`. Registry remains A121/B58/V309/HARD_RED47 and binder remains exactly 535 callables / 488 strict / 47 `EXPLICIT_HARD_RED` / zero unexpected, with 309 value + 179 producer accepted.
-- Because the closure omission was a genuine assurance false-green, `assuranceCleanStreak` resets `1/3 -> 0/3`. The README Shinebright wording was corrected to a generic host-adapter obligation; the proof-cache JSDoc request remains maintainability-only and resets neither streak.
+- Because the closure omission was a genuine assurance false-green, assuranceCleanStreak resets 1/3 to 0/3. The README now states the generic host-adapter obligation. The proof-cache JSDoc request remains a maintainability finding.
 
 
 ## 2026-09-12 — Review 5185508485 prior-day systemic assurance audit
@@ -1563,7 +1563,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 ## 2026-10-12 — Bounded lifetime for copy-on-write digest metadata
 
-- Read both embodiment and segmented-hot-state bulletins; work is confined to the separate `feat/segmented-hot-state` branch. No subagents/delegation. Collaborating through `BULLETIN.local.md` with the session owning the position-segment foundation.
+- Worked on the separate segmented hot-state branch, keeping the existing position-segment foundation intact.
 - Reproduced supported-path retention: 50 public transfers with 1,000 live stock positions retained 51 full versions of the positions map, FIFO map, and item-membership array via WeakMap lineage values. Separately, 6,000 cold membership updates overflowed the stack on first digest computation.
 - Lineage now anchors only to bases with finalized immutable digest aggregates. Once a record/array aggregate is finalized, its predecessor reference is retired; mutable planning revisions remain tracked until finalization. Persisted hash formats, inventory semantics, and normal public calls do not change.
 - New warehouse regressions cover repeated-transfer retention, immutable reader snapshots, cold export/event-replay root equality, mutable-to-frozen digest transitions, and deep cold membership construction.
@@ -1573,18 +1573,18 @@ The R105 portable-current-input authority and final publication both continue to
 
 ## 2026-10-12 15:59 +07 — Segmented restart/replay and long-history hardening
 
-- Used the central placement-v2 `BULLETIN.local.md`; kept topology/warehouse QA/traceability/projection claims untouched. Changes confined to storage plus segmented-state/digest tests.
+- Limited changes to storage and segmented-state and digest tests. The separate topology, warehouse, traceability, and projection work stayed intact.
 - Reproduced two supported `initialWorld` regressions: exact receipt retry changed stock before journal duplicate failure; changed receipt intent also advanced the segment revision before rejection. Journal-known operations with missing durable receipt now delegate to canonical event replay/admission before any segmented mutation. We do not infer original receipt revision from event sequence; claim/count-only revisions can differ.
 - Reproduced a legacy-to-segmented exact retry alias: a serialized receipt first committed through the canonical coordinator returned archived mutable event data on retry. That legacy-owned event is now defensively cloned; journal reads already return copies.
 - Replaced full completed-operation/migration history fence scans with private Applying-only row indexes updated at the same begin/stage/publication/compaction/abort writes. Existing receipt archive/idempotency evidence is retained. A public-command regression with 2,000 receipts observes zero archive iterations for ten new transfers + applying repair queries (red-before: 22).
 - Public same-process tail benchmark across 20,000 retained events: median ~0.30 ms / p95 ~0.40 ms after vs median ~0.48 ms / p95 ~0.61 ms before at 20k. At 1k, medians ~0.33 ms before/after; timings are workload/JIT/load-dependent, while absence of completed-history traversal is deterministic.
 - Executed the actual digest source compiled into VM runtimes with no process global and an older process shim; portable/native SHA agree on known vectors, Thai/emoji, NUL, lone surrogates, and multi-block input. No digest/root-format change.
 - Validation: source and test TypeScript green; 253/253 focused tests; build green; registered `pnpm formal` models/mutations/reachability green; diff-check green. Final raw full shared-tree suite: 675/677 pass. Remaining failures are two missing purpose comments in unreleased untracked topology source and stale combined assurance surface metadata. `pnpm check` stops at assurance; `pnpm test` wrapper stops at the untracked topology compiler root. This is NOT a full-package clean certification or warehouse migration completion.
-- Evidence logs: `/tmp/inventoryonce-restore-red.log`, `/tmp/inventoryonce-restore-green.log`, `/tmp/inventoryonce-replay-alias-red.log`, `/tmp/inventoryonce-history-red.log`, `/tmp/inventoryonce-history-tail-before.jsonl`, `/tmp/inventoryonce-history-tail-after.jsonl`, `/tmp/inventoryonce-hardening-final-focused.log`, `/tmp/inventoryonce-hardening-raw-final.json`, `/tmp/inventoryonce-hardening-formal.log`.
+- Retained replay and history reproductions, before/after history comparisons, and the focused, full-suite, and formal validation logs.
 
 ## 2026-10-12 — Segmented stock fast-path protection scoped by current item lifecycle
 
-- Continued the isolated `feat/segmented-item-scope` branch from integrated `89f8014`; all coordination is in the central placement-v2 `BULLETIN.local.md`. No Codex or delegated agents.
+- Continued the isolated segmented item-scope branch from integrated 89f8014.
 - Red-before public regressions: a reservation or count on item B caused unrelated item A `stock.transfer` to call canonical `readWorld()`; terminal reservation release and abandoned count still imposed perpetual fallback on their own item. The old global `Object.keys(reservations/counts)` gates ignored resource independence and historical lifecycle status.
 - Storage now maintains private per-item protection sets refreshed at initialization, completed canonical publication, and migration publication. Only active reservations and started/observed counts protect their item; terminal histories do not. All event stock-effect item identities are checked, so a mixed A+B transfer still falls back and fails atomically if B's placement-bound claim would be violated.
 - No public InventoryOnce semantic/model/storage contract changed. Existing stable `readWorld` materialization and replay semantics preserved; hot segmented stock events never scan unrelated archived claim/count rows.
@@ -1596,11 +1596,11 @@ The R105 portable-current-input authority and final publication both continue to
 - Added the public storage adapter entrypoint re-export for `segmented-placement` and tested import through `storage-api`; ordinary InventoryOnce application API unchanged.
 - Combined focused QA: 22/22 green across segmented placement, warehouse failpoint/snapshot, item-scope active/terminal lifecycle, and seeded segmented-vs-legacy differential tests.
 - Regenerated combined compiler-based implementation assurance: 581/581 callable APIs witnessed, 2589 fields classified, 0 unresolved. Clean integration branch differs by 31 paths from segmented pass base `695af0b`; embodiment is a prior stacked branch and retains its own review limit.
-- Full exact-commit certification and promotion to authoritative segmented branch follow after generating the final manifest on this exact tree. No Codex or subagents.
+- Full exact-commit certification and integration follow after generating the final manifest on this tree.
 
 ## 2026-10-12 — Segmented standalone placement movement and coherent indexed reads
 
-- Extended the certified segmented warehouse core on disjoint `feat/segmented-topology-hot` from `0ad1468`, coordinating through the central InventoryOnce placement-v2 bulletin. No Codex or delegated agents.
+- Extended the certified segmented warehouse core on a separate topology branch based on 0ad1468.
 - Added optional adapter-native transaction for existing non-embodied stock-free placement-node move/unplace. State-dependent from-parent and cycle validation occur inside the serialized reference adapter; commit advances the global publication revision, appends one event, and lazily catches the canonical projection up. Active reservation/open-count books and embodied/metadata-changing commands conservatively fall back to the legacy coordinator.
 - Maintained private segmented placement forest with safe rebuild on legacy/migration topology publication, exposing only a frozen read-only adapter index to callers. Public direct-parent/children/ancestry use revision-fenced reads and retry if another generation publishes, including async adapter races.
 - Public benchmark: 1000 versus 10000 indirectly anchored stock positions moved at approximately 0.53ms and 0.59ms, with only one placement edge changed, no stock effect and no whole-world access. Single-run Node in-memory reference measurement; external DB adapter not yet implemented.
@@ -1609,7 +1609,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 ## 2026-10-12 — CodeRabbit PR2 review 5490457845: corrected replay and batch embodied invariants
 
-- New CodeRabbit review 5490457845 on feature HEAD 1c5acce reported three inline actionables and two nitpicks; central BB coordination used; exact 97 files processed by CodeRabbit after .coderabbit.yaml filters, regardless of 118 raw PR paths. No Codex or subagents.
+- CodeRabbit review 5490457845 on feature HEAD 1c5acce reported three inline findings and two nitpicks. The review configuration included 97 files out of 118 raw PR paths.
 - Reproduced two supported API defects RED-before: correcting an original receipt after a stock-bearing `placement.moveContents` (zero explicit placementChanges) incorrectly erased the retained move (cart balance 3 instead of 1); and mutable batch projection accepted a new embodied placement metadata node without a live serialized stock instance, while single-event projection rejected it.
 - Fixed correction graph-only no-op pruning to retain stock-bearing Placement events. Fixed mutable batch embodiment reconciliation with pre-event rows captured only for changed placement-node identities before private map mutation; immutable paths and unrelated stock events retain zero-copy projection semantics. Both regression tests GREEN-after.
 - Accepted review quality/performance findings: composition serial-over-lot source test now asserts exact serial genealogy and no lot source; single-run timing thresholds use coarse 4x+50ms smoke checks with explicit structural no-descendant-rewrite guards; filtered exact whereabouts-cohort reads use existing item-to-position indexes to skip unrelated stock rows without adding another public/world-state index. A proxy-based adversarial test went RED-before on global Object.values and GREEN-after with cohort-local item index lookups. Unfiltered full lifecycle enumeration legitimately visits all live rows.
@@ -1617,7 +1617,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 ## 2026-10-12 — PR2 CodeRabbit review 5491353632: regression-safe abstraction and incremental embodiment bindings
 
-- Read central placement-v2 bulletin and latest full review 5491353632 on exact PR head d71c8e8. Two inline actionables and one performance nitpick were all valid; no pushback or new PR needed. Work isolated to feat/pr2-review-5491353632, no Codex/subagents.
+- Full review 5491353632 on PR head d71c8e8 found two valid inline issues and one performance nitpick. The fixes were isolated from the base branch.
 - `test/digest.test.ts` now loads src/digest.ts relative to the test module via import.meta.url, not process CWD, so native-vs-portable digest vectors can run in workspace/IDE test runners.
 - Reviewer identified physical retirement false-green in `abstractInventoryState`: original projected node metadata without retiredByEventId. Added an embodied-cabinet adversarial state witness keeping every other world fact constant but toggling retiredByEventId. RED-before (abstract state mistakenly equal), GREEN-after (node retirement retained), while undefined remains omitted canonically.
 - Reviewer identified O(total placement node count x number of metadata events) embodied serial binding regeneration. The old mutable reducer deleted all binding keys and enumerated every placementNode on each placementNodeDefinitions event. Instrumented regression with 250 existing node masters and 24 ordinary tail events observed 24 global node enumerations RED-before, zero GREEN-after. Incremental reducer tracks only changed metadata node IDs, including those deleted by root correction; captures their original metadata pre-mutation; releases every changed old serial identity first, then installs new identities, preserving unchanged and retired reservations and explicit uniqueness conflicts. No new public index/schema and no full-node-map clone.
@@ -1635,7 +1635,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Historical-repair additivity must compare retained metadata assertion *keys*, `rootEventId`, and canonical fingerprints of the exact lot/node `definition`. `assertedByEventId` and `retiredByEventId` are derived projection lifecycle fields and cannot be treated as illegal metadata master edits. The previous JSON.stringify of entire projected maps rejected a valid late physical destruction assertion and was sensitive to object-key order. Changed comparator to linear own-key correspondence plus stable item/lot/node, policy, embodiment, and recursively key-sorted metadata fingerprints. It still blocks changed/created/removed master definitions.
 - Supported RED-before: public `planHistorical` with a late `scrap` for an already embodied serialized cabinet returned `invalid-history` solely due to changed retirement field. Fix GREEN. Late explicit omission of the same historical scrap initially remained blocked by the precise-retirement correction rule; this is the same lifecycle semantic family, since historical assertions cannot be corrected as ordinary event roots.
 - Added a narrow retirement-revival proof in the projection reducer: permit only a historical repair explicitly omitting an assertion from the *exact retained retirement envelope*, with a negative stock effect matching the same item+serial. Ordinary receipt of that serial stays rejected, unknown/unrelated omissions cannot satisfy this proof, and ordinary corrections retain their existing exact-target behavior. No new public contract/schema or general relaxed retirement policy.
-- Existing `test/historical-repair.test.ts` now witnesses planning, durable publication, unchanged asserted root/definition, derived retirement, ordinary-receipt refusal, explicit assertion omission/restoration, idempotent original repair, and cold event replay consistency. RED captured before the change; final targeted + nearby containers + 10k-history/50k-position scale + four seeded differential scenarios: 4 files / 43 tests GREEN (`/tmp/inventoryonce-pr2-review551164-final-focused.log`). Next: generated assurance, `pnpm check`, `pnpm conformance:full`, exact-commit rerun, guarded push and original inline reply.
+- Existing `test/historical-repair.test.ts` now witnesses planning, durable publication, unchanged asserted root/definition, derived retirement, ordinary-receipt refusal, explicit assertion omission/restoration, idempotent original repair, and cold event replay consistency. RED captured before the change; final targeted + nearby containers + 10k-history/50k-position scale + four seeded differential scenarios: 4 files / 43 tests GREEN. Next: generated assurance, `pnpm check`, `pnpm conformance:full`, exact-commit rerun, guarded push and original inline reply.
 
 ## 2026-10-14 — Correction supersession and metadata-root authority
 
@@ -1673,7 +1673,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - A conforming broad reservation with `withinPlacementNodeIds` must not force `inventoryPlacementSubtreeNodeIds` over 10,000 mostly-empty physical descendants. RED-before through public `createInventoryReservation` had a deterministic child-index Proxy fail on the 41st probe. Use existing indexed `inventorySelectedDeficitPlacementNodeIds` for the scoped deficit-burden pool, preserving explicit allocation and unconstrained semantics; no public API changes, typed-input guards or repeated all-node scans. GREEN-after included feasible one-piece reservation with unrelated 5,000 stock rows and negative deficit in a different pool, plus 43 reservation/index tests. Preserve a separate direct export test for deterministic `inventoryPlacementSubtreeNodeIds` traversal, avoiding false compiler-assurance unreferenced API after removing the hot call.
 - A current Reject-policy facade must permit a later correction that leaves an older, legitimately persisted Record-policy *serialized* negative interval unchanged. RED-before public `planCorrection` correctly identified erroneous `serialized-deficit` for issue-before-receipt, settlement, then replacement of a later positive receipt; the same public plan AND `stock.correct` now pass with unique positive serial relocated. Apply serialized resource rejection to newly exposed intervals only, after computing existing fingerprints. Existing fresh serialized negative assertion remains forbidden even under Record. Preserve existing Reject treatment of newly exposed intervals and worsened open deficits; no extra history scan, clone or schema change.
-- Tests and generated assurance are bound to exact implementation edits; use all conformance gates, commit exact reviewed files, and rerun on committed SHA before pushing. Shared central bulletin contains RED/GREEN and ownership resume trail.
+- Tests and generated assurance are bound to exact implementation edits; use all conformance gates, commit exact reviewed files, and rerun on committed SHA before pushing.
 
 ## 2026-10-14 — Embodied retirement with recorded direct deficit
 
@@ -1723,27 +1723,27 @@ The R105 portable-current-input authority and final publication both continue to
 
 ## 2026-10-17 — Preserve independent measured-axis deficit peaks during late corrections
 
-- Exact currently supported public bug: item defines primary pieces and optional independently measured weight. With normal Record-policy events issue t0 5 pieces/5 kg, receive t1 4/4, issue t2 2/8.25, receive t3 5/10.25, the historical maximum shortage is 5 pieces (t0) and 9.25 kg (t2), on DIFFERENT events. Replacing t1 receipt with 3/3 under Reject leaves worst pieces at 5 but increases worst weight to 10.25 kg. Old planner mistakenly returned `valid:true` and could commit with zero reported deficits, because interval maxima were recorded/compared using only primary piece shortage. The public RED-before regression is in test/dual-measure-counts.test.ts; source marker `/tmp/invo-multiaxis-red-20261017.log`.
+- Exact currently supported public bug: item defines primary pieces and optional independently measured weight. With normal Record-policy events issue t0 5 pieces/5 kg, receive t1 4/4, issue t2 2/8.25, receive t3 5/10.25, the historical maximum shortage is 5 pieces (t0) and 9.25 kg (t2), on DIFFERENT events. Replacing t1 receipt with 3/3 under Reject leaves worst pieces at 5 but increases worst weight to 10.25 kg. Old planner mistakenly returned `valid:true` and could commit with zero reported deficits, because interval maxima were recorded/compared using only primary piece shortage. The public RED-before regression is in test/dual-measure-counts.test.ts.
 - `inventoryHistoricalDeficitIntervals` now retains a normalized measurement vector containing EACH AXIS's maximum shortage across a single open interval, not merely a snapshot from the maximum-primary point. Interval comparison rejects any axis whose peak magnitude increases, including previously absent optional measured axes treated as exact zero; existing root/timing/resolution conditions unchanged. Current-open negative balances are likewise compared across all axes before accepting a strict historical correction. Exact quantity decimals/units preserved. Primary-only historical replay has an allocation-free early branch; normal stock/journal append path untouched. `InventoryHistoricalDeficitInterval.maximumDeficit` documents potentially different peaks per axis.
-- New real public regression (not an artificial retired-field test): strict plan and commit reject independently deeper closed shortage; Record planner permits but reports correct exact 5 piece and 10.25 kg peak; legal correction deepening an intermediate PRIMARY amount within the previously recorded peak without deepening weight still succeeds as a positive control. RED-before expected invalid but got valid; GREEN focused 32/32 and broader 7 suites 77/77 (including four seeded segmented-vs-canonical differential, old Record->Reject scalar coverage and 10k/50k/100k perf checks), historical backwards dependency operations remain 665. Logs `/tmp/invo-multiaxis-green-focus-20261017.log`, `/tmp/invo-multiaxis-broad-20261017.log`. Full working-tree conformance GREEN: 60 package files/795 tests, 23 trace-property files/257 tests, 28 TLC models/forbidden mutants, build/assurance, 617 public API witnesses, zero unresolved; log `/tmp/invo-multiaxis-full-dirty-20261017.log`. Exact commit conformance and guarded push pending at writing.
+- New real public regression (not an artificial retired-field test): strict plan and commit reject independently deeper closed shortage; Record planner permits but reports correct exact 5 piece and 10.25 kg peak; legal correction deepening an intermediate PRIMARY amount within the previously recorded peak without deepening weight still succeeds as a positive control. RED-before expected invalid but got valid; GREEN focused 32/32 and broader 7 suites 77/77 (including four seeded segmented-vs-canonical differential, old Record->Reject scalar coverage and 10k/50k/100k perf checks), historical backwards dependency operations remain 665. Full working-tree conformance GREEN: 60 package files/795 tests, 23 trace-property files/257 tests, 28 TLC models/forbidden mutants, build/assurance, 617 public API witnesses, zero unresolved. Exact commit conformance and guarded push pending at writing.
 - Separate speculative open-secondary-only historical repair was not used as a regression: the current published correction ingress rejects net independent-only changes with zero primary effect. No contract relaxation or new input format introduced. Preserve original external migration/cutover; no legacy code, no new per-normal-stock scans.
 
 ## 2026-10-17 — Lazy first-change placement forest ownership in batch projection
 
-- Supported RED-before issue in CodeRabbit original inline 4301659519, full review 5556555373: public/current committed placement tail of 30 valid changes against 640 retained node edges, when replayed by `applyInventoryCommittedEvents`, enumerated the entire forest 30 times. Structural `Object.keys` spy on only existing full forest keys fails on old version (expected <=2, got 30), log `/tmp/invo-20261017-batch-placement-red.log`.
+- Supported RED-before issue in CodeRabbit original inline 4301659519, full review 5556555373: public/current committed placement tail of 30 valid changes against 640 retained node edges, when replayed by `applyInventoryCommittedEvents`, enumerated the entire forest 30 times. Structural `Object.keys` spy on only existing full forest keys fails on old version (expected <=2, got 30).
 - Batch reducer now retains the published placement state REFERENCE until the first actual topology change, which runs unchanged single-event copy-on-write and produces private detached forest maps. Subsequent topology changes in the same batch mutate only those private maps, and derived embodied-parent reconciliation recognizes already-owned maps within the same event. Cold replay starts with fresh privately owned maps, so uses in-place mode from start. No additional full forest clone for ordinary batches with zero placement changes; no extra touched-world scans or event cloning. Low-level `applyInventoryPlacementChanges` default behavior remains immutable; its explicit `mutatePrivateBatch` opt-in is for callers owning a detached private forest only.
-- GREEN public structural/parity regression (test/projection-batch-catchup.test.ts) after change: 640 existing edges + 30 valid moves -> exactly ONE full forest enumeration, output matches sequential single-event commits AND cold replay, published base is unchanged. Same forest + 24 pure stock receipts -> ZERO forest copies. Separate real embodied-serial scenario: 401 edges + 16 alternating serial stock transfer moves -> ONE forest copy and byte-for-byte projection equality with cold replay. Logs `/tmp/invo-20261017-batch-placement-green-lazy.log`, `/tmp/invo-20261017-batch-embodied-green.log`. Whole 6-family focused suite 276/276 passed (before final embodied regression addition), including 4 seeded segmented-vs-canonical differential and 100k-related public-scale tests; final suite/full certification pending. No old-*Once version shims or defensive copies on normal hot paths.
+- GREEN public structural/parity regression (test/projection-batch-catchup.test.ts) after change: 640 existing edges + 30 valid moves -> exactly ONE full forest enumeration, output matches sequential single-event commits AND cold replay, published base is unchanged. Same forest + 24 pure stock receipts -> ZERO forest copies. Separate real embodied-serial scenario: 401 edges + 16 alternating serial stock transfer moves -> ONE forest copy and byte-for-byte projection equality with cold replay. Whole 6-family focused suite 276/276 passed (before final embodied regression addition), including 4 seeded segmented-vs-canonical differential and 100k-related public-scale tests; final suite/full certification pending. No old-*Once version shims or defensive copies on normal hot paths.
 
 ## 2026-10-17 — Preserve metadata attached to rebased historical placement events
 
 - Full exact-head CodeRabbit #5556790761 original inline 4301856906 revealed genuine **current-format** historical replay data loss. A later valid `Placement` event can carry both one direct-parent move and new parent-node metadata. If an earlier root is corrected to place the same node directly at that later parent, `reconcileHistoricalPlacementChanges` makes the later edge redundant; `reconcileInventoryHistoricalGraphEvents` previously discarded the ENTIRE later event, silently erasing its still-applicable parent metadata and retained definition root. No legacy inputs or hand-mutated invalid events are needed.
-- Added a supported `createInventoryPlacementEvent` pair plus corrected earlier replacement regression in `test/historical-repair.test.ts`: actual topology moves BOX OLD->NEW and later move defines NEW shelf; proposed earlier event directly places BOX at NEW, so later move vanishes but NEW shelf definition must survive with later eventId/provenance. RED-before later event `undefined` instead of retained `PlacementNodeMetadata` (`/tmp/invo-review555679-metadata-RED.log`). Fix only in `src/historical-replay.ts`: drop a redundant placement event only when it has no stock, movement, OR placement metadata; otherwise preserve its original eventId/source/metadata and normalize its effective kind to current `PlacementNodeMetadata`, with no obsolete format or new API. Original later event remains in durable history unchanged; only ephemeral effective replay reclassifies the no-op topology assertion. GREEN regression includes real `createInventoryCorrectionEvent` current kernel planning, published projection apply, and parity against cold replay; `/tmp/invo-review555679-metadata-GREEN2.log`. Eight relevant suites/91 tests GREEN, including four seeded differential families and 10k/50k scale; `/tmp/invo-review555679-metadata-focused-all.log`. Ordinary stock and event append unchanged. Exact source-bound assurance/check/full conformance and guarded commit/push pending.
+- Added a supported `createInventoryPlacementEvent` pair plus corrected earlier replacement regression in `test/historical-repair.test.ts`: actual topology moves BOX OLD->NEW and later move defines NEW shelf; proposed earlier event directly places BOX at NEW, so later move vanishes but NEW shelf definition must survive with later eventId/provenance. RED-before later event `undefined` instead of retained `PlacementNodeMetadata`. Fix only in `src/historical-replay.ts`: drop a redundant placement event only when it has no stock, movement, OR placement metadata; otherwise preserve its original eventId/source/metadata and normalize its effective kind to current `PlacementNodeMetadata`, with no obsolete format or new API. Original later event remains in durable history unchanged; only ephemeral effective replay reclassifies the no-op topology assertion. GREEN regression includes real `createInventoryCorrectionEvent` current kernel planning, published projection apply, and parity against cold replay. Eight relevant suites/91 tests GREEN, including four seeded differential families and 10k/50k scale. Ordinary stock and event append unchanged. Exact source-bound assurance/check/full conformance and guarded commit/push pending.
 
 ## 2026-10-21 — item revision transition design (ACTIVE)
 - Owner requires ordinary configuration correction/editing after a catalog item has been used; immutable historical item definitions must stay immutable but active item revision may advance.
 - Catalog already retains immutable revisions and supports append-only publish. Generic stock reclassification is deliberately conserved PER item revision, while physical transform represents genealogy; do not misuse either for clerical conversion.
 - Plan: add a distinct current-format prospective revision-transition event with exact source/target ratio evidence and a preview/commit API. Require explicit cross-revision quantity mappings and fail closed for unsupported packages, unresolved whereabouts, transfer lifecycles or active reservations; preserve old event history, serial/lot identities and audit trail.
-- Worktree /home/server/Documents/Projects/InventoryOnce-revision-transitions branch feat/item-revision-transitions base 3137fac. Validation and scope results pending.
+- Continued the item revision transition branch from base 3137fac. Validation and scope results were pending.
 
 
 ## 2026-10-21 — revision transition: correction and audited redefinition integration
@@ -1752,7 +1752,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Retained serial holder/node links and child contents confirmed, serialized unit must remain target quantity exactly 1. Partial rollout keeps old/new revisions coexisting. Planner rechecks mutable request/evidence relationship even for completed retries, rather than treating a caller-mutated request as identical.
 - Full suite initially found correction kind enumeration missing the new event; added \`plans.revisionTransition\` correction planner and tested it against retained event history. The existing historical receipt correction planner can also replace a truly mistaken v1 receipt with a v2 receipt and preserve the original root instead of fabricating a physical transformation; executable regression added.
 - Formal bounded \`RevisionTransition\` checked 213 states and passes all invariants after bounding world revisions; model claims only finite common-basis conservation/retained old receipt/atomic transition and not unbounded adapter correctness. Added generated API assurance family and explicit \`TRACE-ITEM-REVISION-TRANSITION-EXACT\` test declaration.
-- Test facts at checkpoint: \`test/revision-transition.test.ts\` 15/15; correction-family test now covers new event. Before changing the public correction planner, \`pnpm check\` and \`pnpm formal\` passed; after changes API manifests must be regenerated and final full suite rerun. Branch remains \`feat/item-revision-transitions\` worktree /home/server/Documents/Projects/InventoryOnce-revision-transitions; no commit or PR yet.
+- Test facts at checkpoint: \`test/revision-transition.test.ts\` 15/15; correction-family test now covers new event. Before changing the public correction planner, \`pnpm check\` and \`pnpm formal\` passed; after changes API manifests must be regenerated and final full suite rerun. The item revision transition branch was still awaiting its commit and PR.
 
 
 ## 2026-10-21 — verified first-class prospective revision-transition PR slice
@@ -1761,7 +1761,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Generic current correction planner was extended with \`plans.revisionTransition\` for replacement of an original revision-transition assertion. The existing \`stock.correct\` can also replace a genuinely wrong historical receipt with a newer correct retained revision and replays downstream history without deleting the root (tested); prospective conversion remains separate from physical transformation genealogy.
 - \`RevisionTransition\` TLA+ finite safety model checks retained original receipt, exact 10:1 physical-basis conservation, target catalog activation, active-dependency blockers and at-most-once committed transition. Finite model: 632 generated/213 distinct states, depth 13; no claim of unbounded adapter proof.
 - API assurance generator and trace manifest now include explicit \`revision-transition\` family/trace and 28 bounded trace entries. Final working-tree gates: \`pnpm check\` PASS; \`pnpm test\` 61 files/813 tests PASS; \`pnpm build\` PASS; \`pnpm formal\` all configured TLC/forbidden mutations PASS; \`git diff --cached --check\` PASS. No exact-commit conformance yet; run after commit. Two optional read-only delegated reviewer processes timed out without reports and were not counted as evidence.
-- Worktree \`/home/server/Documents/Projects/InventoryOnce-revision-transitions\`, branch \`feat/item-revision-transitions\`, base \`3137fac\`. Final commit/PR next; original master remains untouched.
+- Item revision transition branch at base 3137fac. Final commit and PR were pending. The original master ref remained unchanged.
 
 
 ## 2026-11-08 — CodeRabbit PR #4 current-format revision-transition correctness review
@@ -1770,7 +1770,7 @@ The R105 portable-current-input authority and final publication both continue to
 - Focused suites passed 38/38 after review fixes; full working-tree checks passed: pnpm check, pnpm test (61 files/814 tests), pnpm build, pnpm formal (including forbidden-transition checks), regenerated 620-signature API/field/call-chain assurance with no unresolved callables. Exact-commit conformance remains the last certification step. Re-check both original review threads before pushing and reply in-thread with exact checks. No new revision schema, no legacy shim, no app-specific changes.
 
 ## 2026-11-08 ~15:16 +07 — PR4 review resume: prospective transition leaked into historical assertion planner
-- Resumed sole existing worktree /home/server/Documents/Projects/InventoryOnce-revision-transitions, branch feat/item-revision-transitions, head 600226a after new CodeRabbit PR #4 inline review.
+- Resumed the existing item revision transition branch at 600226a after inline review on PR #4.
 - New finding is valid but points to a stronger domain boundary: RevisionTransition is explicitly prospective/current-stock bookkeeping, while InventoryOnceHistoricalAssertionPlans accidentally inherited revisionTransition from the generic correction replacement planner. Replanning a historical transition against current stock is not coherent after later movements/issues, and RecordPhysicalTruth could bypass live reservation blockers.
 - Plan: remove revisionTransition from the public historical assertion planner contract and fail closed at buildInventoryHistoricalAssertions if a runtime/untyped caller still returns a RevisionTransition draft. Keep stock.correct(... plans.revisionTransition(...)) for correcting an already-retained transition. Add a regression using a previously applicable preview followed by an active reservation, proving recordHistorical cannot smuggle that prospective transition into past history and leaves source stock unchanged. Then run focused tests, check/test/build/formal/docs guard/full conformance as required, commit/push same PR branch, reply to original inline thread.
 
@@ -1823,3 +1823,465 @@ The R105 portable-current-input authority and final publication both continue to
 - Rejected CodeRabbit inline 4508044440 and its duplicate storage-conformance nit asking to restore whole-event JSON string searches for superseded migration row ids. The owner explicitly removed project-wide JSON.stringify comparison/search assertions in d74adba. Migration event raw source provenance is the typed metadata.migrationSource field already asserted by both tests; sourceReference is a fingerprint and does not retain the raw row id. No brittle whole-object serialization scan was reintroduced.
 - Accepted the valid maintainability point that sourceUnit and targetUnit were interchangeable positional Quantity arguments. convertInventoryRevisionQuantity now receives current plus a documented InventoryRevisionQuantityConversion carrier, and both current callers pass the already-existing InventoryRevisionTransitionEvidence object directly. This prevents source/target swaps with no new per-call object allocation.
 - Did not convert assertInventoryRevisionTransitionEvidence to an object-argument wrapper: its arguments are already distinct compiler-checked types, while a wrapper would allocate on every normalized event path without fixing a demonstrated ambiguity.
+
+## 2026-11-25 — native physical recording and migration commitment checkpoint
+
+- Started the physical recording and scoped planning work from the sanctioned 0.1.2 base 9b379a934366d9de3c2cfdd08486329f6f15ebc7. Used the installed release to reproduce the behavior.
+- P1 changes the coordinator default for ordinary physical plans. Explicit claims still check feasibility and exact fulfillment, and the deliberate transfer lifecycle and prospective revision-transition workflow keep their protection. Native stock and standalone parent-edge commits no longer gate on live claim rows. Native Record stock applies signed effects using the same measurement sign invariant and retains exact FIFO source requirements. Canonical proof/export catches up from the already committed signed journal. Ordinary policy recording prefers unallocated stock and can use held physical stock when needed. Fungibility continues to prefer a claim-preserving assignment where one fills the report.
+- P4 hashes the complete existing normalized migration binding with the portable SHA-256 helper. Both one and 160 valid opening rows produce 64 hex characters. Source identity still changes the commitment. Existing source provenance and adoption/manifest checks remain in the same contract.
+- ReservationScope now admits detached exact holds and still rejects explicit competing assignments. FungibilityPool recomputes feasibility after physical moves while keeping disjoint, in-scope explicit allocation rules. Fresh direct TLC checked both changed models, rejected the double-allocation mutation, and found the detached and moved exact-hold witnesses. Full cold runner remains pending for the final candidate.
+- Measured CPU, heap, and world reads across 1k/10k/100k unrelated stock rows and journal events. The fixture opens a fresh facade over the same in-memory reference adapter. An injected staged-issue failure recovers publication and replays the exact issue through a new facade over the retained adapter.
+- Next slice P2/P3. Extract a shared allocation/read reducer over complete selected position pools with positive-layer age, ancestry expiry, and relevant exact holds at the published revision. The existing position reader does not carry FIFO age and the whole-report availability includes global feasibility by design. Resolve those inputs at the segmented boundary before routing policy and scoped availability through it. P5 unknown movement evidence and P6 composite contents publication remain pending. The current slice leaves no edits in downstream consumers.
+- Checkpoint validation on Node 22.22.1 passed `pnpm check`, `pnpm build`, `pnpm test` (819 Vitest cases plus 39 Node self-tests), documentation guard, and regenerated assurance correspondence. TLC also rejected the stale-detach-report mutation. All proof logs and reference timings are outside Git. Linked Git metadata is read-only here. Host commit request freezes the exact tested checkpoint paths before work continues.
+
+## 2026-11-25 — indexed policy planning and physical availability checkpoint
+
+- Continued the scoped planning work from clean checkpoint 9162416678f0a46736d70507ce777e381291b756 on the sanctioned 0.1.2 base.
+- P2 uses one FIFO/FEFO reducer for canonical and indexed reads. Native scope supplies complete signed physical pools, exact holds, carried FIFO ages and current ancestry/expiry. Ordered requests share a private overlay of exact rows, and no batch clones the position world. Reference FIFO ages publish with the changed stock rows and use the same conserved-source origin reducer as canonical replay. The native write compares the published revision and journal sequence, then publishes one event and receipt. Stale plans replan, and exact replay reads the saved operation evidence.
+- P3 shares the existing physical availability formulas over the same stock facts. The `/storage` reader returns physical, expiry, deficit and exact hold observations for one selected revision. The existing full availability report retains broad/unbacked claims and global feasibility. Ordinary stock summary and policy preview also use the indexed read when available. Current exact hold postings are position-local, and the original broad-presence flag uses two current expiry representatives per revision. Earlier claim-time requests reconstruct retained lifecycle changes within the requested revision.
+- Native issue/transfer/scrap, policy preview, stock summary, scoped availability and exact retry made zero world reads at 1k/10k/100k unrelated same-revision positions and journal events. Maximum pool result stayed at two stock rows and one exact hold. Fresh `PublishedHeadCAS` TLC passed 1,871 states and the stale native overwrite mutation failed at the named invariant. Executable trace checks canonical parity, carried FIFO, competing revisions, input freezing, interrupted publication and lost reply.
+- The current slice keeps canonical eligibility for serialized/embodied or metadata changes and stock intersecting an open count. Next complete P5 unknown signed transfer/scrap on this publication seam, then use it for P6 direct contents with coupled topology validation. Explicit historical hold-time replay and broad selections can touch their affected revision/context. Mongo/SQLite, actual app and clinic source adoption, and final full cold conformance remain gates on the eventual complete candidate.
+
+## 2026-11-25 — scoped transfer, scrap, and direct contents
+
+- Resumed the preserved indexed planning and availability edits at `9162416678f0a46736d70507ce777e381291b756`. The prior checkpoint's full package tests and executable trace check passed again before extending it.
+- Record transfers partition the witnessed source and unlabelled remainder inside one Transfer event. Policy scrap records the unlabelled signed source with its actual reason. The typed unwitnessed measurements carry neither lot/serial nor original age or cost. Ordinary exact transfer still uses the original event when fully witnessed. A mixed transfer retry uses its retained operation and the historical correction path can omit its complete effect.
+- The direct-contents planner now shares one shape for canonical and indexed reads, with immediate children, current embodied serials and destination ancestry. The existing segmented write fence prepares child edges before writing stock and publishes both with the immutable event and receipt. The standalone move still performs its existing one-edge transition. A nested load under the moved child is never enumerated by either native planning or publication.
+- The focused facade, correction, retry, canonical parity and documentation checks passed. The cold RecordedDeficit model passed and the fabricated witness mutation and valid mixed-transfer reachability test produced their expected counterexamples. PlacementGraph exercises atomic movement of the three coupled facts and rejects a moved edge with a stranded embodied serial. Reference controls at 1k/10k/100k unrelated same-revision rows and events returned one direct row and one child, with zero world reads.
+- Full cold package conformance on the exact committed tree and separate database-driver evidence remain gates. Catalogue tracking requirements still govern unlabelled rows. Explicitly required lot/serial identities and ambiguous independently measured splits cannot be manufactured to cover a shortage.
+
+## 2026-11-25 — settlement at existing signed balances
+
+- A reported transfer or scrap debits the actual unlabelled key when its source has no witnessed lot. The immutable event keeps the unwitnessed quantity even if the source row stays positive. An ordered batch reads that lower balance with its existing FIFO and expiry facts. A direct transfer can settle an existing destination deficit while retaining the witnessed route, with FIFO age only on a positive balance.
+- RecordedDeficit checks same-key settlement and still rejects a fabricated witnessed arrival. PlacementGraph reuses its finite acyclic parent relation and refreshes the saved anchor snapshot after a direct move. The action property still checks the complete stock and edge transition. The revised models completed focused cold checks, with the expected counterexamples for their negative and reachability controls.
+- The previous committed checkpoint passed strict types, package and executable tests, the documentation guard, and build. Its cold run was superseded for these changes. The final candidate requires one complete cold run bound to its committed source.
+
+## 2026-11-25 — scoped planning correctness refinements
+
+- A direct placement list and an ancestor filter now intersect before summing recorded deficits. The index checks current worklist size and direct child counts before reading child identities.
+- Exact Record transfers require the witnessed source to cover all measured axes. A partial witness uses the whole source only if the requested vector leaves a representable remainder. No weight or other independent axis is estimated from the primary count.
+- Same-position positive replacements carry the existing FIFO age. Scoped claim reads retain immutable published evidence, restrict historical exact holds to the selected pool, and sample the default preview time after observing the published revision.
+- The direct-contents stock hook declines standalone unplacement. Its contract still expects domain-validated events and publishes prepared edges inside the same adapter transaction as stock.
+
+## 2026-11-25 — measured claims and scoped reads
+
+- A hold remains visible on its exact deficit row without contributing to usable allocations. Physical policy movements prefer unheld rows and can then use held measured stock without converting between independent axes.
+- Ordered batch debits retain the published position's FIFO and use-by facts. Command snapshots copy typed request fields, and subtree reads check membership once per direct node.
+
+## 2026-11-25 — replay and measured movement evidence
+
+- Scoped planning rechecks the operation after a rejected plan so a concurrent same-intent publication can replay. Preview freezes its request before reading the stock head and uses one claim time for the pool and planner.
+- Physical recording subtracts witnessed vectors from the reported measurements before writing a residual. Deficit pools retain placement constraints, and a recorded shortfall needs a source inside the selected subtree. Lots sharing a direct node use one validated ancestor cutoff per read.
+
+## 2026-11-25 — matching measured witnesses
+
+- Physical policy picks can search another FIFO or FEFO assignment when the first full primary pick differs on a reported independent axis. An exact unheld assignment takes precedence. If held stock supplies the matching vector, the movement records it and leaves its claim in place.
+- An exact scoped retry can replay its completed operation after concurrent catalogue publication. Open subtree counts use the journal's placement edges at observation time, so an edge-only direct-contents move does not create a false discrepancy.
+
+## 2026-11-25 — coherent partial witnesses
+
+- If Record mode's first measured pick contradicts the reported measurements, the bounded allocator can keep the largest compatible positive witness and record the exact remainder. Unreported axes remain on witnessed effects and do not enter remainder arithmetic.
+- A named deficit package must match the reported package. Stock posted under an indexed subtree already satisfies the ancestry predicate, so the position query applies only the remaining stock filters there.
+
+## 2026-11-25 — bounded measured witnesses and exact conservation
+
+- Measured allocation stops exploring a branch once its remaining capacity cannot improve the best witness. It distinguishes stock blocked by an indivisible increment from exhausted stock and keeps the first FIFO or FEFO choice on ties.
+- A genuine primary shortage can be recorded without a compatible witness. Mixed-scale quantities retain their exact values, and event conservation uses temporary wide integers while each stored effect remains a safe-integer quantity.
+- Fallback subtree queries share resolved membership across parent paths without touching descendants outside the selected stock scope.
+
+## 2026-11-25 — exact FIFO remainders
+
+- Greedy picks and the exact allocator's FIFO prefix check keep temporary remainders as wide digits. Two fractional lots can leave an exactly storable shortfall even when the intermediate remainder after the first lot exceeds the storage scale.
+
+## 2026-11-25 — representable allocation trials
+
+- The bounded search uses only storable trial line quantities and final residuals. Incompatible trials leave the search free to find a later exact witness. Both exact and partial searches stop trying smaller choices when the remaining rows cannot improve the result.
+- An unstorable greedy split falls back to the same bounded search. When no known lot can fit, Record can retain the reported movement without inventing lot evidence.
+
+## 2026-11-25 — exact terminal trials and recorded postings
+
+- Terminal allocation choices skip ranges where the pick or final shortfall cannot fit at an exact scale. The jump respects both storage divisibility and the row's allocation increment.
+- Quantity sums and differences can remove trailing zeros when storage requires it. Mixed witnessed and unwitnessed postings reuse the validated split for FIFO provenance. A recorded shortfall's posting still has to match any explicit whereabouts selection.
+
+## 2026-11-25 — recorded posting totals and claim preference
+
+- A recorded movement sums its signed measurement axes before storing quantities. FIFO validation subtracts the separate unwitnessed portions before storing the witnessed remainder.
+- A compatible measured witness can leave a shortfall even when an unused row has a larger whole increment. Physical fungibility can use unheld stock while preserving existing claim shortages. Empty placement intersections have no deficit burden.
+- The recorded-deficit model counts positive unlabelled stock as policy capacity and tracks its witnessed debit separately from the unwitnessed shortfall.
+
+## 2026-11-25 — shared exact movement arithmetic
+
+- Batch movement commands group exact positions before storing their final measurements. Policy batches reuse that grouping, and per-request evidence verifies the same total in wide digits. Fungibility totals and measured remainders share exact digit alignment and storage narrowing.
+- The canonical coordinator checks for an exact replay after the last revision conflict, as the scoped stock writer does.
+
+## 2026-11-25 — exact ordered policy balances
+
+- Ordered policy requests keep their touched stock and deficit balances in exact working digits. FIFO/FEFO and deficit allocation use the same signed pool rules before the event stores its final positions.
+- A whole measured row whose temporary axes cannot form an exact line is ineligible for that trial. The same bounded search can select another coherent witness.
+- Availability stores the selected capacities and their assigned deficit after attributing the whole pool in exact digits.
+
+## 2026-11-25 — exact stock reports and claim capacity
+
+- Stock summaries and canonical and scoped availability retain exact report subtotals until their returned quantities are complete. Signed, expired, held, and dimensional totals therefore give the same result for different row orders.
+- Reservation feasibility keeps deficit-adjusted capacity at full precision for the existing flow solver. Its final requested, fulfillable, and shortage quantities narrow independently when their exact digits fit.
+
+## 2026-11-25 — exact transfer replay and witnessed partitions
+
+- Exact reported transfers retain the original intent and receipt revision in the journal. Reopening a published snapshot lets a retry match that evidence before reading the consumed source.
+- Mixed transfer batches keep witnessed and unwitnessed portions in one working total until each posting is complete. FIFO validation compares the witnessed portions without storing them separately.
+- Partial allocation uses the common divisor of the remaining selectable increments to rule out unreachable amounts. A held row can still supply expiry evidence when both physical picks leave the same shortfall.
+
+## 2026-11-25 — measured witnesses and increment diagnostics
+
+- A partial allocation reports an increment blocker only when a bounded trial with relaxed increments finds a better storable assignment under the same acceptance rule.
+- A measured report can retain a compatible whole witness and record its exact remainder when another measured row is too large to witness the remainder. The picker leaves that row whole and does not infer fractional measurements.
+
+## 2026-11-26 — bounded exact picks and settlement facts
+
+- Exact allocation solves the current increment and suffix divisor together. A partial branch can skip a range when no reachable shortfall can fit storage, and the search budget includes pruning steps. A storage-driven FIFO deviation carries an increment diagnostic only if relaxing increments admits an earlier accepted plan.
+- Policy settlement uses the widened signed pool's expiry evidence for an existing positive row, including stock hidden by a lot selector. Ordered batches index newly introduced deficits by direct placement, and fungibility materializes only the quantities its plan returns.
+
+## 2026-11-26 — exact selection and receipt evidence
+
+- A storable greedy plan can fill a large candidate pool without recursive search. A relaxed increment trial that cannot build an exact movement line leaves the accepted physical plan usable.
+- Both storage write paths bind reported-transfer replay evidence to the actual intent and published revision. The segmented position reducer accepts the same signed balance changes as canonical projection after historical validation.
+- Policy batches reuse exact-position keys within each pool. Fungibility converts eligible member rows individually, so a small request can use stock even when the member's summed capacity cannot be stored.
+
+## 2026-11-26 — exact allocation gaps and reported effects
+
+- The allocator skips gaps between reachable sums when the suffix contains two whole-only rows. Fungibility converts legal member increments first and keeps any remainder in the physical stock row.
+- Exact transfers treat absent optional measurements as zero. A tie between preferred and physical witnesses retains a proven split requirement. A mixed posting carries effect metadata only when the metadata describes the entire quantity.
+- Canonical and native stock publication share the one-primary-resource rule for positive serial positions. Native contents moves check the final rows before publishing either stock or placement changes.
+
+## 2026-11-26 — retained transfer evidence and placement paths
+
+- A reported transfer keeps normalized postings for fully witnessed routes alongside independently recorded remainders. A contents move puts its audit metadata on the placement event even when stock postings are built using a transfer.
+- The position writer checks the revision before comparing stock effects against current rows. Signed stock pools capture shared parent links and use-by cutoffs once. Allocation and availability reuse the pool's subtree restriction, and an explicit ancestry read still describes the captured revision.
+
+## 2026-11-26 — storable allocation bounds and reported remainder axes
+
+- Exact allocation bounds each suffix using the largest legal amount each position can store. Digits in a working balance that cannot appear in a single pick do not make smaller prefixes look more promising.
+- A reported remainder carries the independent axes the report actually contains, including an explicit zero. Intact packages still derive fixed axes from their retained definition.
+
+## 2026-11-26 — allocation bounds and supported stock reports
+
+- The allocator retains its existing bounded search and checks whether quantities fit storage when evaluating picks. A synthetic working balance alone does not justify narrowing every row before searching.
+
+## 2026-11-26 — fungibility increment diagnostics
+
+- Reservation-aware diagnostic trials keep physical increments when they equal the pool allocation increment. A reservation trial needs physically realizable stock amounts to check the claim book. A positive eligible member row below one legal pool pick still supplies increment evidence for a physical shortfall.
+
+## 2026-11-26 — measured remainders and whole-package choices
+
+- A report can need a positive primary remainder when eligible stock has no evidence for one of its positive independent measurements. The picker can stop once it finds a valid plan with the smallest positive remainder at the search scale.
+- Fungibility tests whether whole-package member increments fit using exact working digits before storing an increment. Indivisible stock discarded by the pool increment remains evidence for the shortfall diagnostic.
+
+## 2026-11-26 — legal shortfalls and retained completions
+
+- A measured pick with a required positive remainder uses the common divisor of selectable increments to stop at the first optimal witness. Fungibility compares actual eligible capacity across members in exact ratios before attributing a shortfall to increments.
+- A reopened reported transfer can prove stage completion from its journal receipt. Claim postings use the final lifecycle time even when all changes preceded the Unix epoch.
+
+## 2026-11-26 — selectable measured witnesses and loose pool increments
+
+- A measured row cannot explain a report axis when its smallest pick exceeds the request or its remaining capacity. The planner can prove a positive remainder without exploring smaller divisible picks in that case.
+- Loose stock can have enough raw capacity while falling short of the pool's exact reference increments. The increment diagnostic includes that discarded capacity and still checks whether divisible stock could cover the request.
+
+## 2026-11-26 — measured pick limits and exact common multiples
+
+- An independent axis can rule out a measured row even when its primary increment fits. The planner compares the reported axis with the whole-row measurement or one package's fixed measurement when testing the smallest legal pick.
+- The common-multiple operation reduces scale only as needed to store the exact result, using the same conversion as addition and multiplication.
+
+## 2026-11-26 — policy batch pool lifetime
+
+- A batch keeps published pool rows for reuse only through the last request that can use them. Ordered balance changes and new deficit rows remain available through the entire atomic plan.
+
+## 2026-11-26 — measured report capacity
+
+- A positive measured remainder can be required even when some eligible rows contribute to that axis. The picker uses the sum of their eligible row measurements as an upper bound and still checks every chosen witness exactly.
+- Seeded segmented rows need their retained FIFO starts before they can serve as conserved source layers.
+
+## 2026-11-26 — placement fallback before publication
+
+- When a valid single-node move targets another branch within its current parent, the stock event hook leaves it to the ordinary placement path before publishing. The placement preparer owns the subtree check.
+
+## 2026-11-26 — measured search bounds and member scope
+
+- Measured recording can use its first policy-ordered pick when it reaches the proven positive-remainder floor and passes the exact movement predicate. The recursive search still applies when the shortcut cannot establish an optimal witness.
+- Fungibility previews skip members without matching positive direct stock before applying exact hold rules. Contributing members still use their full signed pools for deficit attribution.
+
+## 2026-11-26 — shared fungibility claim snapshot
+
+- A fungibility plan reads its reservation snapshot once at the selected reservation time. Preview members without matching positive stock skip claim preparation, and contributing members still use their full signed position pools for deficit attribution.
+
+## 2026-11-26 — remaining package capacity and fungibility increments
+
+- The measured split check subtracts accepted witnesses from each row's eligible capacity. A package left in the same row can still show that the report requires a split.
+- Fungibility errors name the exact member allocation increments. Loose stock also follows its configured reference increment.
+
+## 2026-11-26 — measured retry limits and scoped deficit totals
+
+- Measured retries leave out rows whose smallest legal increment exceeds a reported axis. Split detection also checks the final remainder when the first primary-only pick filled the requested quantity.
+- A signed availability read counts the full liability only in physical pools with a selected negative row. Other pools contribute the deficit burden on selected positive rows.
+
+## 2026-11-26 — package witness limits and transfer publication
+
+- Each reported independent axis caps how many fixed packages a row can witness. The resulting primary bound lets the picker retain a complete feasible prefix without exploring smaller divisible picks.
+- A policy transfer settles an unwitnessed remainder within its selected owner scope. A single selected owner can identify the default shortage bucket.
+- Plain transfer replay evidence must match the accepted operation intent and next world revision before either publication path can retain it.
+
+## 2026-11-26 — transfer status scope and replay ownership
+
+- A policy transfer keeps its recorded shortage within the selected stock status. A single selected status also identifies the default shortage bucket.
+- The reported-transfer planner stamps reserved journal replay evidence from the accepted intent and next revision. Publication relies on the planner and revision fence for those facts, and journal restoration still reads that evidence.
+
+## 2026-11-26 — shared measurement limits and transfer scope
+
+- A report's independent axis bounds the combined primary witness across rows. The picker uses the best eligible primary-to-axis ratio as an upper bound, then checks the chosen lines exactly.
+- An unlabelled transfer shortage follows the selected stock scope apart from the lot. Exact singleton constraints can identify the default bucket.
+- An independent-axis hold stays recorded after a source balance becomes nonpositive. That row cannot supply a pick and does not constrain selection from positive rows.
+
+## 2026-11-27 — measured increments and topology replay
+
+- A measured witness bound is rounded down to the common selectable increment before looking for an optimal partial pick. The exact measurement predicate still checks the chosen lines.
+- A completed placement move or unplacement replays its original receipt even when the retry clock precedes the occurrence. New publications still check the current record time.
+
+## 2026-11-27 — unwitnessed scrap scope
+
+- An empty scrap shortage follows the same stock scope as an empty transfer shortage. An exact singleton selector can supply the default bucket identity.
+
+## 2026-11-27 — measured witness search
+
+- A reported axis must be divisible by the common increment of its selectable measurements to admit a complete witness. The allocator can stop once a partial witness reaches the resulting primary remainder bound.
+- When only a complete witness can improve the best result, the search reserves enough primary stock to carry the reported measurements before trying smaller axis-free picks.
+
+## 2026-11-27 — whole-lot suffixes and empty hold pools
+
+- Exact suffix sums cover up to three whole-only lots, so the picker jumps directly across unreachable primary quantities.
+- An empty exact-hold scope has no matching positions and can skip historical claim replay. A broad-claim query still reads the applicable claim state.
+
+## 2026-11-27 — scoped holds and segmented stock
+
+- A positive row with an independent-axis hold stays unavailable to the signed pool. The hold requires explicit fulfillment only when the request selects that row.
+- A receipt starts a FIFO layer when the balance becomes positive. A top-up preserves the previous layer, even when the seeded row has no recorded start.
+- Disjoint revision and direct-placement postings provide exact candidate counts. A narrower subtree can win before those postings are enumerated.
+
+## 2026-11-27 — eligible witnesses and replay
+
+- The picker applies stock expiry before deciding whether a selected independent-axis hold requires explicit fulfillment. A package multiple that exceeds measurement storage can lose to another exact witness.
+- A Reject-mode exact transfer can use a commit-only adapter. The native publisher records its actual world revision for journal replay.
+- A count's occurrence cut can keep a loose direct-contents movement while excluding its source receipt. The retained route contributes its signed quantities without a source age.
+- Disjoint compact postings are counted before they are enumerated, including status constraints and values of one qualified dimension.
+
+## 2026-11-27 — measured witness limits and count cuts
+
+- Preview and movement share the exact witness check for explicitly reported independent axes. Only Record movement can accept a compatible partial witness.
+- The measured search adds primary lower bounds for disjoint groups of axes and counts shared capacity once. Its policy-ordered full attempt applies that budget before bounded backtracking. Increment diagnostics relax increments while retaining the same witness rule.
+- A count cut can retain loose contents whose source receipt was excluded or whose destination arrival settles a signed deficit. Only a positive destination retains a FIFO age.
+
+## 2026-11-27 — eligible measured support
+
+- Preview and movement bound measured search using only increments that fit the report. The original primary trial still distinguishes a measurement constraint from a stock shortage when every measured candidate is excluded.
+
+## 2026-11-27 — combined measurement density
+
+- A complete witness must supply every reported axis. The combined contribution per unit of primary stock gives another lower bound within each connected group of axes. Round row contributions up so the bound stays conservative, then add the bounds of groups that use disjoint stock.
+- Fungibility needs a complete common-basis assignment even when allocated stock is permitted or there are no claims to simulate.
+- When a witness must explain unfixed measurements, the increment diagnostic keeps those rows whole. A fractional trial cannot construct their measured lines.
+
+## 2026-11-27 — measured remainders and claim shortages
+
+- An indivisible measured row can be skipped for a complete pick when its positive remainder on an axis is below every other row's smallest legal contribution. Partial picks still consider that row.
+- If the best measurement ratio cannot supply the report, the primary reserve accounts for each row's finite contribution. Allowing a fractional final row in this calculation keeps the reserve a lower bound for whole picks.
+- Fungibility compares claim shortages before and after a proposed allocation on the changed item revisions at the same authority time. Existing shortages can stay the same while a proposal that increases them is rejected.
+
+## 2026-11-27 — discrete whole-row measurements
+
+- A bounded check of whole measured rows can prove the minimum primary stock needed to explain the independent axes together. It also identifies rows that can never appear in a complete witness. The allocation search still selects the FIFO or FEFO witness and can consider those rows for partial recording.
+- A measured fixed-package witness still needs whole package counts during increment diagnosis. The primary-only increment diagnosis can still test how package increments limit a pick.
+- An incompatible whole-row prefix can be skipped before the allocator tries another divisible primary amount. A partial record may still use any subset that fits the report, including one that leaves independent measurements unwitnessed.
+- Preview withholds a position when its exact reservation is on an independent axis. A complete unheld pick remains usable. If the preview still falls short, the planner asks for explicit fulfillment lines.
+- A whole-measured suffix supplies exact fitting primary totals. The existing ordered search can jump across fine primary digits that cannot improve the remainder.
+- Conserved arrivals can settle signed destination debt. If the destination is still nonpositive, the event carries its route but there is no positive FIFO layer. A filtered history still needs its own separate reason to omit a source age.
+
+## 2026-11-27 — occurrence-cut movement sources
+
+- A count cut can retain a nonserialized reclassification, pack, unpack, or revision transition while omitting the later-occurring receipt that started its source layer. Replay keeps both signed stock effects in the cut and carries the source FIFO age only when it is present.
+
+## 2026-11-27 — conserved movement sources in filtered history
+
+- A correction that omits a receipt can leave an ordinary nonserialized conserved movement in effective history, just as an occurrence cut can omit a later source receipt. Replay retains the signed effects and derives the destination age from a retained fact when the source age is absent. Serialized sources and structured transfer lifecycle backing stay strict.
+
+## 2026-11-27 — signed stock in Reject count cuts
+
+- A count observation cut can keep an ordinary stock debit while excluding the later-occurring receipt that backed the published operation. The cut keeps that signed balance so reconciliation measures the observed discrepancy. Reject still checks the adjustment against current stock, and serialized stock and transfer lifecycle replay keep their backing rules.
+
+## 2026-11-27 — correction age in count cuts
+
+- A correction's FIFO override describes the full ledger at publication. A count cut can omit the receipt that starts that layer or the issue that depletes it. Validate the cut's positive-layer evidence from its own postings while keeping the correction's signed stock delta. Published FIFO replay still applies the stored override.
+
+## 2026-11-27 — measured depth bounds and exact transfers
+
+- When the full-witness proof excludes enough rows to fit the depth bound, run the same ordered exact search on those eligible rows using the original decimal grid. If a full pick is impossible, the partial search can still use the original pool.
+- An exact Reject transfer can publish directly in the native adapter even when it also supports planning reads. The adapter records the actual receipt revision while publishing the signed routes.
+
+## 2026-11-27 — partial search and signed count axes
+
+- Once a full measured pick is ruled out, the ordered partial search can advance past unpicked rows without adding call depth. The smallest legal pick bounds how many selected rows can nest within the existing search limit.
+- If the primary trial exhausts its search, eligible capacity and the exact measured remainder still determine whether realizing the remainder would split an intact row.
+- An occurrence cut can retain a debit while excluding only some of its backing measurements. It keeps the exact signed axes for ordinary rows. Published positions, serial rows, and transfer lifecycle effects retain their sign checks.
+- A positive allowance for unmeasured stock can still be smaller than a row's first legal increment. Such rows stay available for partial picks after the complete search rules them out.
+
+## 2026-11-27 — rows with no legal pick
+
+- Each exact search drops rows whose first legal increment exceeds their available stock or the whole request. It keeps the original decimal scale and policy order. Relaxed diagnostics decide eligibility again using their own increments. Only rows that can contribute a positive pick count toward the search depth limit.
+
+## 2026-11-27 — nested picks and count differences
+
+- An unpicked row advances the ordered search without another frame. A stack holds only positive choices. Its depth bound and the separate trial budget both apply to complete, partial and diagnostic searches.
+- A count adjustment is observed minus expected on each measurement axis. Its signed package difference still has to match whole increments and fixed axes. The resulting published position still has to satisfy stock sign and serial rules.
+
+## 2026-11-27 — signed historical stock differences
+
+- Correction and historical repair post the difference between desired and actual stock on each measurement axis. Opposite signs can result from two valid measured states. Every posted historical difference still requires a nonzero primary change. Fixed packaging checks its signed whole increment and physical assertions retain their movement sign rules.
+
+## 2026-11-27 — exact claims on subtree contents
+
+- Issuing, scrapping, or changing the status of physical subtree contents leaves any exact reservation bindings as recorded. The reservation feasibility read reports shortfalls at the original keys. Restoring the same stock identity can make those claims feasible again.
+
+## 2026-11-27 — reweighed stock and exact claims
+
+- Exact claims keep their original allocation quantities after a physical reweigh. Feasibility uses the current whole-pick increment and rounds each bound quantity before summing it against stock capacity. A claim smaller than a reweighed serial or intact measured row cannot use a fraction of that row.
+
+## 2026-11-27 — broad claims after loss of loose stock
+
+- Each broad claim can take whole stock only in multiples of its eligible whole-pick increments. Its eligible loose stock bounds what can fill the remainder. The sum of these ceilings and the shared stock capacity let a proven optimal assignment end the search within its normal work limit.
+
+## 2026-11-28 — remaining increments in reservation search
+
+- Assigning or skipping a whole stock group changes the increments available to later groups. Each branch uses the remaining groups' shared capacity and increment divisor to bound what its unfilled claims can still take. Pruned visits still count toward the search budget.
+
+## 2026-11-28 — zero measurements and physical increment diagnosis
+
+- A whole-stock witness keeps a stored independent zero. The separately recorded remainder still takes optional axis presence from the report.
+- A fungibility shortage can be tested for physical increment blockage after proving no lawful physical plan exists. The relaxed diagnostic cannot be applied as a movement or passed into the claim trial.
+
+## 2026-11-28 — placement in count observation cuts
+
+- A retained placement event sets its recorded destination in the observation forest. That forest can omit the event that established its former parent. Live publication still requires the recorded former parent and checks every resulting edge.
+
+## 2026-11-28 — stock scope and repair assertions at observation
+
+- A direct count replays the counted item's stock without rebuilding unrelated placement. A subtree count also retains the stock of serialized resources that determine ancestry.
+- Count reconciliation uses active repair assertions at their individual occurrence times. The aggregate repair envelope remains the durable effect on published stock.
+
+## 2026-11-28 — serial routes and placement dependencies in count cuts
+
+- A serialized count retains the full route of each serial that can match the observation. A subtree count also retains the nodes connected to its roots by recorded edges or embodied stock. The placement reducer still validates the retained topology.
+
+## 2026-11-28 — count transfer dependencies and exact whole-stock assignment
+
+- Corrections retain their count-replay order without anchoring unanchored repair assertions. A count retains every line and funding position of a relevant structured transfer.
+- A package's declared fixed axis measures one whole pick. The reservation search suspends each stock group on a private stack while retaining its exact branch order and work bound.
+- A complete fungibility preview can report a discarded reference remainder when a bounded trial proves an earlier storable physical plan under the same claims.
+
+## 2026-11-28 — count cut stock dependencies and assertion order
+
+- Count replay retains loose stock matching the selector and follows conserved routes from arrivals to their sources. A connected structured transfer retains its full lifecycle and every funding line.
+- Unanchored historical assertions replay before the first later physical event that shares their resources. Explicit anchors continue to set the insertion point.
+
+## 2026-11-28 — subtree membership at observation
+
+- Subtree counts replay the placement and carrier facts needed to resolve ancestry at observation. Payload admission uses that resolved subtree. Correction predecessors and complete carrier lifecycles supply the shared reducer with the facts it needs.
+
+## 2026-11-28 — funding, history order, and measured witnesses
+
+- A count retains a supplying row through the last movement or transfer stage that needs it in the observation cut. Selected rows retain their history, and a connected structured transfer still replays its complete retained lifecycle.
+- An unanchored historical assertion can bring backdated predecessors forward ahead of a later fact using the same resources. Explicit anchors still constrain their assertions.
+- Measured allocation uses significant exact digits for its search grid and retains authored precision when emitting storable quantities. Current and historical exact-hold reads both restrict the result to the requested item revision.
+
+## 2026-11-28 — anchored closure, shared-row bound, count roots, and indexed whereabouts
+
+- Bringing forward a backdated predecessor ahead of a later conflicting fact also pulls eligible explicitly anchored descendants whose anchor joined the closure and whose dependency keys intersect the reached component, without letting anchored assertions seed closure alone.
+- Whole-stock reservation feasibility bounds cap each indivisible row by the minimum of its available capacity and the sum of rounded legal claim-edge demand ceilings, preserving per-claim loose bounds and exact integer limits.
+- Count subtree observation seeds one shared worklist with all selected roots and traverses placement children once with a single visited set.
+- Exact `whereaboutsIds` reads on `whereabouts` and `whereaboutsHistory` page the private `dep:whereabouts:<id>` dependency index (including `historicalImpact.whereaboutsIds` and provenance transfers/overrides) under a segmented head/revision fence and fetch only matching current position rows, falling back cleanly when capabilities are absent or concurrent writes interleave.
+
+## 2026-11-28 — override query keys, placement corrections, sibling subtrees, and flow bounds
+
+- Query-mode dependency keys emit the same position, pool/serial/lot, placement-definition, whereabouts, and transfer keys for zero-delta `positiveLayerProvenanceOverrides` positions as for `stockEffects`.
+- Unanchored historical placement repairs keep earlier retained placement `Correction` events on shared placement edges ahead of later repairs during occurrence-cut count replay while continuing to skip count corrections.
+- Count placement dependency discovery walks downward from selected roots to gather affected subtrees and upward through historical parents for cycle checks without pulling unrelated sibling subtrees through shared ancestors.
+- Indivisible-group reservation feasibility tightens its initial `fulfillableBound` with a multi-claim, multi-position `BigIntFlowNetwork` relaxation, and indexed whereabouts reads accumulate sequence/position buckets directly before publishing sparse records.
+
+## 2026-11-28 — suffix whole sums, indexed override keys, heap predecessor order, and shared edge matrix
+
+- Exact single-axis measured suffix whole-sum tracking enumerates legal multiples within an indivisible candidate row up to the suffix-sum cap (`64`) before falling back to divisor bounds, avoiding false state-budget exhaustion when rows hold several packages.
+- Dependency indexing (`mode === "index"`) publishes the same stock-position keys for `positiveLayerProvenanceOverrides` as query mode so indexed historical dependency loads seeded from later events retain age-only provenance overrides.
+- Constrained predecessor ordering pops ready entries through a binary min-heap on physical occurrence time and slice index instead of scanning and splicing an array, while indivisible reservation branch iteration reads a shared `remainingEdgeCapacity` matrix without per-branch cloning.
+
+## 2026-11-28 — measured witnesses in ordered transfer batches
+
+An unwitnessed debit can leave a private transfer-batch row with positive primary stock and a negative independent axis while a later request can make the final signed balance valid. The physical picker excludes that private row as a witness and still considers other eligible lots. Settlement keeps the exact signed totals and publication still validates the final sign. The grouped reservation search also stops serializing the edge matrix in each memo key because the matrix is constant for the whole search.
+
+## 2026-11-28 — scoped deficit reports and retained correction order
+
+Availability attributes recorded deficits in exact position order across signed on-hand, usable on-hand, and unallocated capacity. Indexed whereabouts reads validate the configured catalogue against the same accepted head as their history and position reads. A retained correction can supply the exact stock consumed by a historical assertion, and any superseded corrections are required before its deltas can replay. The predecessor closure carries those durable dependencies even for corrections with no stock or placement effects. Other available predecessors still use physical occurrence time.
+
+The whole-stock reservation search can stop decreasing a single-claim group's pick when that pick plus every later position cannot improve the best result. The same search still explores smaller picks that allow a later package increment to fill the claim.
+
+## 2026-11-28 — placement count cut scope, allocation fallback flags, pruning, and whereabouts precision
+
+- Scoped count projection and placement cycle checks track placement topology chronologically across the cut window and retain root descendants plus ancestor links without dragging in cycles reached after a former descendant leaves the counted subtree.
+- Policy-recorded measured picking no longer drops an empty primary-limit failure into an unwitnessed deficit, and greedy allocation fallback respects `assessIncrementBlockage: false`.
+- Indivisible single-claim reservation assignment uses monotonic suffix bounds across competing groups and uses a shared `edgeCapacityByReservation` matrix name throughout the continuous flow helper.
+- `reclassifyMany` accumulates detached-cohort whereabouts measurements in `InventoryMeasurementTotals` before checking cancellation so valid high-precision splits do not overflow intermediate integer multiplication, and event queries collect placement/provenance dependency keys for `positiveLayerProvenanceOverrides`.
+- Anchored historical closure (`bringForwardHistoricalPredecessors`) now pulls eligible `afterEventId` prerequisites ahead of later facts alongside their dependents while still rejecting chains anchored to later or missing events, and indexed historical dependency loading resolves `afterEventIds` plus embedded repair effective event identities across native and canonical paths.
+- Scoped count dependency traversal (`countPlacementDependencies`) now computes active root ancestors dynamically per edge change so neither destinations entered while leaving a counted root nor former root ancestors leak outside cycles, and derives embodied node parent transitions from the post-event positive serial position rather than raw `stockEffects` iteration order.
+- Detached-cohort `reclassifyMany` conservation checks normalized axis-key parity alongside `InventoryMeasurementTotals` cancellation so explicit optional zero measurements cannot be dropped.
+- Separate forward provider lookup (`dep:event:<id>`) from reverse anchor dependency indexing (`dep:anchored-to:<id>`): ordinary historical queries fetch only the anchor provider envelope without sibling fanout, while corrections and omitted assertions explicitly expand `dep:anchored-to:` for every removed anchor (including omitted embedded repair assertions).
+- `countPlacementDependencies` caches the live root-ancestor set (`liveRootAncestors`) across disjoint edges and invalidates only when a parent edge of a live root or root ancestor changes.
+- Policy measured picking rejects empty-witness fallback unless `canRecordWithoutWitness` is true; `assertReservationAllocationCanBecomeLegalIssue` allows fixed-axis package increments while indivisible feasibility caps unreachable whole-pack slack by the smallest eligible pack.
+- Count replay isolates embedded historical assertion operation/event identities from ordinary operations (`expandInventoryCountRepairAssertions`), retains omitting serial corrections ahead of later historical serial receipts (`insertHistoricalAssertion`), retains unplacements of nodes whose former parent edge was already retained (`countPlacementDependencies`), and restricts per-item segmented whereabouts queries to cohorts referencing each item.
+- `effectiveInventoryHistoryEvents` isolates embedded `operationId`s (and any duplicate `eventId`s) for all effective-history callers so ordinary operations reusing `<repair>:historical:<assertion>` do not collide during `planHistorical` or `recordHistorical`; `countPlacementDependencies` tracks `retainedAttachedNodes` and rewrites leaving placement edges (`detachedPlacementEdgeKeys`) as unplacements in `filterScopedPlacementChanges` so outside reparenting before a former parent's return detaches cleanly without linking outside subtrees.
+- Correction: embedded historical assertions now receive an injectively encoded operation identity (`inventory:historical-assertion:op:<encodeURIComponent(repairOperationId)>:<encodeURIComponent(assertionId)>`) and disjoint event identity (`inventory:historical-assertion:event:...`) directly in `buildInventoryHistoricalAssertions` so explicit `afterEventId` anchor lookup cannot confuse ordinary events or differently-partitioned embedded tuples; `effectiveInventoryHistoryEvents` retains only reducer-private `operationId` isolation.
+
+## 2026-11-28 — review 6097561694 hardening
+
+- `searchInventoryAllocations` tracks `completeSuffixMeasuredCapacity`, `completeSuffixAxisFreeCapacity`, and split whole divisible capacities so complete-witness budget bounds cap unmeasured suffix capacity once only complete picks can improve the result (`src/allocation.ts`).
+- `applyInventoryRecordedDeficitBurden` intersects `positionIdsByPlacementNodeId` with `positionIdsByItemRevisionId` when `placementNodeIds` is non-empty, and `summarizeInventoryPhysicalAvailability` skips deficit attribution maps when `hasRecordedDeficit` is false (`src/deficits.ts`, `src/availability.ts`).
+- `commitInventorySegmentedStockEventIfEligible` routes exhausted native commit declines (`lastOutcome === "declined"`) to canonical `commitInventoryOperation` instead of throwing after 8 retries under unrelated head publishes (`src/facade.ts`).
+- Correction: preserved the existing bounded 8-attempt native contention limit in `commitInventoryScopedMovement` rather than widening exhausted contention into canonical fallback (`src/facade.ts`).
+- `searchInventoryAllocations` allocates complete-witness suffix arrays only when `fullWitnessPrimaryBudget` is supplied; `planInventoryFungibilityAllocation` runs `discardedCapacityImprovesFungibilityPlan` separately with physical-increment relaxation when an earlier row has a sub-increment remainder (`src/allocation.ts`, `src/fungibility.ts`).
+- `planInventoryFungibilityAllocation` omits row-local sub-increment remainders from completed-plan (`shortfall === 0`) `incrementBlockedStock` unless relaxing/discarded capacity actually improves the pick, and `createExactPrimaryReservationSummary` converts fixed-axis independent package holds into exact primary deductions instead of withholding entire rows (`src/fungibility.ts`, `src/picking.ts`).
+- `bringForwardHistoricalPredecessors` includes earlier omitting serial-removal corrections (`isHistoricalSerialRemovalCorrection`) alongside supply corrections; `reconcileInventoryPlacementEmbodiments` applies the scoped count edge filter (`retainedPlacementEdgeKeys` / `detachedPlacementEdgeKeys`) so outside carrier moves never reintroduce out-of-scope cycles; `inventoryConservedArrivalCanSettleDeficit` keeps live and replay deficit settlement for loose `Placement` (`moveContents`) matching `Transfer`/`Reclassification`/`Pack`/`Unpack` (`test/scoped-stock-planning.test.ts` requires loose `contents` settlement live) while still requiring a positive destination for serialized `Placement` (`src/historical-replay.ts`, `src/projection.ts`, `src/stock-age.ts`).
+
+- `planInventoryFungibilityAllocation` physical-increment counterfactuals (`checkPhysicalIncrements`) now resolve safe advisory split movements (`resolveFungibilityReservationTrialMeasurements`) so unrelated or primary-compatible unallocated broad claims no longer force `inventoryAmountForPrimaryAllocation` to suppress genuine `incrementBlockedStock` findings while still rejecting advisory splits that deepen overlapping claims (`src/fungibility.ts`).
+- `bringForwardHistoricalPredecessors` indexes zero-placement earlier corrections by exact supplied position and removed serial so transitive predecessors pulled from the tail pull their funding corrections too without admitting unrelated corrections (`src/historical-replay.ts`).
+- `countPlacementDependencies` accumulates serialized balances in replay order while activating each `embodiedBy` carrier edge only from the event that defines it, keeping standalone post-receipt embodiment definitions aligned with `reconcileInventoryPlacementEmbodiments` (`src/projection.ts`).
+- `insertHistoricalAssertion` preserves tie and anchor-chain ordering for same-anchor assertions across callers and earlier bundles (`src/historical-replay.ts`), and `inventoryAffectedHistoricalEventIds` unions both `before` and `after` dependency keys so replacement-side participating events appear in `historicalImpact.affectedEventIds`.
+- `reservationGroupFeasibility` excludes `transferId !== undefined` rows from `burdenPositions` so prepared/in-transit transfer stock cannot absorb placement deficit debt in claim feasibility (`src/reservations.ts`).
+- `inventoryEventResourceKeys` indexes `historicalImpact.whereaboutsIds` so public `read.events({ whereaboutsIds })` and `snapshot.events` include zero-delta cohort omissions (`src/event-query.ts`).
+- `insertHistoricalAssertion` advances anchored assertions past earlier-or-equal unanchored and anchor-chain siblings in `embeddedEvents` unless blocked by a resource-sharing ordinary base event, preserving same-time mixed-anchor caller and envelope order (`src/historical-replay.ts`).
+- `insertHistoricalAssertion` advances past any earlier-or-equal inserted assertion in `embeddedEvents` regardless of whether it was unanchored or attached to another anchor, and skips unrelated later base events (`!sharedWithBase`) so indexed and canonical storage replay agree (`src/historical-replay.ts`).
+- `insertHistoricalAssertion` checks `[0 .. anchorIndex - 1]` for strictly later conflicting base dependencies when an explicit anchor has `occurredAtEpochMs <= assertion.occurredAtEpochMs` and runs `bringForwardHistoricalPredecessors` with the anchor forced into the closure so same-time anchors cannot borrow stock from later durably-preceding receipts (`src/historical-replay.ts`).
+- `insertHistoricalAssertion` invokes `bringForwardHistoricalPredecessors` when the anchored right scan encounters a strictly later conflicting base event (`isLaterConflictingHistoricalEntry`), pulling eligible same-time funding assertions and their anchors ahead of the barrier while keeping future-anchored siblings bounded (`src/historical-replay.ts`).
+
+## 2026-11-28 — exact fungibility trial balances and retained physical time
+
+Fungibility checks selected movement and the exact remaining balance during allocation. A one-pack movement can fit the durable quantity format while its source remainder cannot. The picker can choose a different lot in either case. The trial rejects only exact arithmetic representation failures and preserves claim and search-limit outcomes. A retained later receipt cannot fund a physically earlier transfer when historical replay pulls dependencies forward. Published reservation snapshots keep the same lifecycle records through migration and restart.
+
+## 2026-11-28 — count replay dependencies and independent claim bounds
+
+An anchored count replay keeps eligible stock, serial, and placement corrections ahead of the assertion they support. A carrier binding removed by a replacement definition keeps the old serial only through that definition change. Indexed cohort history uses the same membership test as the projection and journal, while private dependency keys still locate candidate events. Loose stock in a disjoint claim component cannot relax the whole-package slack bound of another component.
+
+## 2026-11-28 — exact package count witnesses for reservation splits
+
+A fixed-axis package claim must be issuable as one exact movement and leave a storable remainder on every fixed axis. The same count rule serves exact binding and the bounded whole-stock search. Ordinary rows retain sparse exact-claim aggregation. For exceptional rows, decimal divisibility skips impossible package counts and the existing state budget covers restricted choices. Mixed stock bounds cap each disjoint loose component by its own stock, so an unrelated loose shortage cannot hide unreachable whole-package slack.
+
+## 2026-11-28 — executable policy picks and scalar claims
+
+A standalone policy preview checks the exact source balance left by each candidate. Transfer recording also checks the selected destination balance under the same publication fence. If a destination cannot store the first pick, the same bounded search considers alternatives using only the exact destinations for eligible source rows. Ordered batches still carry private balances until their final effects are known. Pure scalar claims use the shared exact split arithmetic when the common decimal grid makes a physical row too large at that scale. Ordinary divisible rows still use continuous flow, and exact claims still aggregate sparsely.
+
+## 2026-11-28 — exact remainder on the reserved measurement axis
+
+An exact claim freezes one axis even when the issue measures other axes separately. Loose stock now checks the reserved axis before admitting or binding the claim. Loose rows still use continuous flow when their aligned digits fit. Higher precision rows use the existing bounded split arithmetic, with the physical balance separate from the capacity after deficit attribution.

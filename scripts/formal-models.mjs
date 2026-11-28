@@ -76,6 +76,9 @@ export function formalConfigCheckNames(config) {
 /** Expected counterexamples as module, config, and the exact invariant TLC must reject. */
 export const formalInvariantMutationChecks = Object.freeze([
   ["UseByReservation", "UseByReservationEpochZeroMutation", "AllocationEvidenceIsPaired"],
+  ["PublishedHeadCAS", "PublishedHeadCASNativeStaleMutation", "HeadFollowsPublishedAttempts"],
+  ["RecordedDeficit", "RecordedDeficitFabricatedTransferMutation", "TransferArrivalsMatchSeparateWitnesses"],
+  ["PlacementGraph", "PlacementGraphDirectContentsSplitMutation", "EmbodiedResourceTracksNodeParent"],
   [
     "SnapshotSupersededWorkflow",
     "SnapshotSupersededWorkflowResumeMutation",
@@ -139,7 +142,12 @@ export const formalInvariantMutationChecks = Object.freeze([
   [
     "ReservationScope",
     "ReservationScopeDetachAvailabilityMutation",
-    "OrdinaryDetachPreservesExactAllocations",
+    "ReportMatchesCurrentPhysicalTruth",
+  ],
+  [
+    "ReservationScope",
+    "ReservationScopeDoubleAllocationMutation",
+    "ActiveExactAllocationsAreDisjoint",
   ],
   [
     "ResourceDimensions",
@@ -250,6 +258,12 @@ export function assertFormalMutationRegistrationConsistency(
 
 /** Named false absence claims that ordinary positive models must refute with concrete reachable states. */
 export const formalPositiveReachabilityChecks = Object.freeze([
+  ["ReservationScope", "ReservationScopeDetachedHoldWitness", "ExactHoldAlwaysAvailable"],
+  ["FungibilityPool", "FungibilityPoolStrandedHoldWitness", "AllocatedClaimNeverStrandedByTransfer"],
+  ["RecordedDeficit", "RecordedDeficitMixedTransferWitness", "MixedTransferIsUnreachable"],
+  ["RecordedDeficit", "RecordedDeficitPositiveUnlabelledWitness", "PositiveUnlabelledSettlementIsUnreachable"],
+  ["RecordedDeficit", "RecordedDeficitUnlabelledAllocationWitness", "PositiveUnlabelledAllocationIsUnreachable"],
+  ["RecordedDeficit", "RecordedDeficitCrossModeReplayWitness", "CrossModeShortageReplayIsUnreachable"],
   ["SnapshotSupersededWorkflow", "SnapshotSupersededWorkflowNonzeroWitness", "NonzeroSnapshotIsUnreachable"],
 ]);
 

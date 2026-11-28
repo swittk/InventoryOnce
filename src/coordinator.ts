@@ -87,7 +87,7 @@ export interface InventoryOperationPlan {
   readonly reservationId?: string;
   /** Count identity changed by this operation. */
   readonly countId?: string;
-  /** Default protects claims; counts/corrections/scrap may record shortage truth. */
+  /** Override claim protection for a deliberate coordinator operation. Ordinary recording leaves claims intact. */
   readonly reservationProtection?: InventoryReservationProtection;
 }
 
@@ -145,8 +145,10 @@ export async function commitInventoryOperation({
   assertOperationIdentity(operationId, intentFingerprint);
   assertPositiveSafeInteger(maxRevisionRetries, "maxRevisionRetries");
 
-  const existing = await storage.readOperation(operationId);
-  if (existing !== undefined) {
+  /** Replay an already frozen operation before consulting mutable physical stock. */
+  const readReplay = async (): Promise<CommitInventoryOperationResult | undefined> => {
+    const existing = await storage.readOperation(operationId);
+    if (existing === undefined) return undefined;
     assertSameIntent(existing, intentFingerprint);
     const receipt = await resumeInventoryDurableOperation(storage, operationId);
     const completedWorld = await storage.readWorld();
@@ -157,24 +159,25 @@ export async function commitInventoryOperation({
       ...(event === undefined ? {} : { event }),
       replayed: true,
     };
-  }
+  };
+  const replay = await readReplay();
+  if (replay !== undefined) return replay;
 
-  const initialWorld = await storage.readWorld();
-  assertInventoryCatalogRetainsSnapshot(catalog, initialWorld.catalog);
   for (let attempt = 0; attempt < maxRevisionRetries; attempt += 1) {
     const world = await storage.readWorld();
-    assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
     const recordedAtEpochMs = clock.nowEpochMs();
     assertInventoryEpochMilliseconds(recordedAtEpochMs, "inventory durable record time");
-    const logicalPlan = await plan({ world, recordedAtEpochMs });
-    const durablePlan = createDurableOperationPlan({
-      catalog,
-      world,
-      recordedAtEpochMs,
-      operationId,
-      deficitPolicy,
-      logicalPlan,
-    });
+    let durablePlan: InventoryDurableOperationPlan;
+    try {
+      assertInventoryCatalogRetainsSnapshot(catalog, world.catalog);
+      const logicalPlan = await plan({ world, recordedAtEpochMs });
+      durablePlan = createDurableOperationPlan({ catalog, world, recordedAtEpochMs, operationId, deficitPolicy, logicalPlan });
+    } catch (error) {
+      // A matching caller may have published before this attempt read its planning world.
+      const concurrent = await readReplay();
+      if (concurrent !== undefined) return concurrent;
+      throw error;
+    }
     try {
       const beginResult = await storage.begin({
         operationId,
@@ -209,6 +212,9 @@ export async function commitInventoryOperation({
       throw error;
     }
   }
+  // A winner may have begun while the final revision conflict was returned.
+  const concurrent = await readReplay();
+  if (concurrent !== undefined) return concurrent;
   throw new Error(
     `Inventory operation '${operationId}' could not freeze a current world revision after ${maxRevisionRetries} attempts.`
   );
@@ -348,14 +354,13 @@ function createDurableOperationPlan({
       });
   }
   if (
-    (logicalPlan.reservationProtection ??
-      InventoryReservationProtection.ProtectClaims) ===
-      InventoryReservationProtection.ProtectClaims &&
+    (logicalPlan.reservationProtection === InventoryReservationProtection.ProtectClaims ||
+      (logicalPlan.reservationProtection === undefined && reservationDelta !== undefined)) &&
     !closesReservationWithoutPhysicalEvent &&
     !consumptionDoesNotIncreaseShortage
   ) {
-    // Ordinary commands protect the claim book that exists when durable truth is recorded.
-    // Backdating occurredAtEpochMs must not bypass a reservation created before this commit.
+    // Explicit claims use the durable record time, even when their action is backdated.
+    // Physical-only recording leaves retained claims and their derived shortages intact.
     assertInventoryReservationsFeasible({
       catalog,
       projection,

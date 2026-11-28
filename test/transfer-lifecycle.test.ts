@@ -8,6 +8,8 @@ import {
 } from "../src/kernel.js";
 import {
   createInventoryOnce,
+  defineInventoryCatalog,
+  defineScalarInventoryItem,
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryTransferStatus,
@@ -42,6 +44,131 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("first-class physical transfer lifecycle", () => {
+  it.each(["separate", "mixed", "disjoint", "connected", "missing-source"] as const)("replays only lifecycle stock the count depends on (%s)", async (scenario) => {
+    const counted = defineScalarInventoryItem({ itemId: "counted", revisionId: "counted-v1", axisId: "pieces", unit: "piece" });
+    const other = defineScalarInventoryItem({ itemId: "other", revisionId: "other-v1", axisId: "pieces", unit: "piece" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [counted, other], activeItemRevisionIds: { counted: counted.revisionId, other: other.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const amount = stockAmount("1", "piece");
+    const countedSource = { itemId: counted.itemId, placementNodeId: "source" };
+    const sameItem = scenario === "disjoint" || scenario === "connected" || scenario === "missing-source";
+    const lateSource = scenario === "disjoint" || scenario === "missing-source";
+    const otherSource = { itemId: sameItem ? counted.itemId : other.itemId, placementNodeId: "source" };
+    if (scenario !== "connected" && scenario !== "missing-source") {
+      await inventory.stock.receive({
+        operationId: "receive-counted", occurredAtEpochMs: time0,
+        to: scenario === "mixed" ? countedSource : { itemId: counted.itemId, placementNodeId: "destination" }, amount,
+      });
+    }
+    await inventory.stock.receive({
+      operationId: "receive-other", occurredAtEpochMs: lateSource ? time3 : time0, to: otherSource, amount,
+    });
+    const otherLine = { lineId: "other", from: otherSource, amount };
+    await inventory.transfers.prepare({
+      operationId: "prepare", occurredAtEpochMs: time1, transferId: "transfer",
+      transitPlacementNodeId: "transit",
+      destinationPlacementNodeId: scenario === "disjoint" || scenario === "connected" ? "elsewhere" : "destination",
+      lines: scenario === "mixed" ? [{ lineId: "counted", from: countedSource, amount }, otherLine] : [otherLine],
+    });
+    await inventory.transfers.dispatch({ operationId: "dispatch", occurredAtEpochMs: time1, transferId: "transfer" });
+    await inventory.transfers.receive({ operationId: "receive", occurredAtEpochMs: time2, transferId: "transfer" });
+    if (scenario === "connected") {
+      await inventory.stock.transfer({
+        operationId: "conserved-move", occurredAtEpochMs: time2,
+        from: { itemId: counted.itemId, placementNodeId: "elsewhere" }, toPlacementNodeId: "destination", amount,
+      });
+    }
+    const command = {
+      countId: "count", operationId: "count", itemRevisionId: counted.revisionId,
+      selector: { itemId: counted.itemId, placementNodeIds: ["destination"] },
+      observedMeasurements: scalarInventoryMeasurements("pieces", parseQuantity("1", "piece")), occurredAtEpochMs: time2,
+    };
+    if (scenario === "missing-source") {
+      await expect(inventory.counts.replaceAbsolute(command)).rejects.toThrow("not currently physical");
+    } else {
+      expect((await inventory.counts.replaceAbsolute(command)).event).toBeUndefined();
+      expect((await inventory.counts.replaceAbsolute(command)).replayed).toBe(true);
+    }
+    expect((await inventory.read.world()).projection.transfers.transfer?.status).toBe(InventoryTransferStatus.Received);
+  });
+
+  it.each(["upstream", "after-funding", "outgoing"] as const)("follows only necessary history for a count's ordinary route (%s)", async (scenario) => {
+    const inventory = createTestInventory();
+    const counted = loosePosition("counted");
+    const other = loosePosition("other");
+    const one = stockAmount("1", "piece");
+    const two = stockAmount("2", "piece");
+    await inventory.stock.receive({ operationId: "counted", occurredAtEpochMs: time0, to: counted, amount: two });
+    const incoming = scenario !== "outgoing";
+    if (incoming) await inventory.stock.receive({ operationId: "other-stock", occurredAtEpochMs: time0, to: other, amount: one });
+    /** Prepare a movement funded by stock physically outside this count cut. */
+    const prepareFromOther = async (occurredAtEpochMs: number) => {
+      await inventory.stock.receive({ operationId: "late-stock", occurredAtEpochMs: time3, to: other, amount: two });
+      await inventory.transfers.prepare({
+        operationId: "backdated-prepare", occurredAtEpochMs, transferId: "transfer",
+        transitPlacementNodeId: "transit", destinationPlacementNodeId: "destination",
+        lines: [{ lineId: "stock", from: other, amount: two }],
+      });
+    };
+    if (scenario === "upstream") await prepareFromOther(time1 - 1);
+    await inventory.stock.transfer({
+      operationId: "ordinary-move", occurredAtEpochMs: time1,
+      from: incoming ? other : counted, toPlacementNodeId: incoming ? "counted" : "other", amount: one,
+    });
+    if (scenario !== "upstream") await prepareFromOther(time2);
+    const command = {
+      countId: "count", operationId: "count", itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["counted"] },
+      observedMeasurements: scalarInventoryMeasurements("pieces", parseQuantity(incoming ? "3" : "1", "piece")),
+      occurredAtEpochMs: time2,
+    };
+    if (scenario === "upstream") {
+      await expect(inventory.counts.replaceAbsolute(command)).rejects.toThrow("transfer lifecycle physical remainder primary quantity must not be negative");
+    } else {
+      expect((await inventory.counts.replaceAbsolute(command)).event).toBeUndefined();
+      expect((await inventory.counts.replaceAbsolute(command)).replayed).toBe(true);
+    }
+  });
+
+  it("publishes release and transit completion while retaining an unrelated shortage", async () => {
+    const inventory = createTestInventory();
+    const selector = inventoryStockSelector("item-a", { placementNodeIds: ["A"] });
+    for (const node of ["A", "B", "C"]) {
+      await inventory.stock.receive({
+        operationId: `seed-${node}`, occurredAtEpochMs: time0, to: loosePosition(node), amount: stockAmount("1", "piece"),
+      });
+    }
+    await inventory.reservations.reserve({
+      operationId: "reserve-transfer-unrelated-a", reservationId: "hold-A", itemRevisionId: "item-a-v2",
+      selector, requested: parseQuantity("1", "piece"), createdAtEpochMs: time1,
+    });
+    for (const node of ["B", "C"]) {
+      await inventory.transfers.prepare({
+        operationId: `prepare-${node}`, occurredAtEpochMs: time1, transferId: node,
+        transitPlacementNodeId: "transit", destinationPlacementNodeId: "destination",
+        lines: [{ lineId: "one", from: loosePosition(node), amount: stockAmount("1", "piece") }],
+      });
+    }
+    await inventory.stock.issue({
+      operationId: "issue-claimed-a", occurredAtEpochMs: time2, from: loosePosition("A"), amount: stockAmount("1", "piece"),
+    });
+    const before = await inventory.read.reservationFeasibility();
+    expect(before.groups[0]?.shortage).toEqual(parseQuantity("1", "piece"));
+    const released = await inventory.transfers.release({
+      operationId: "release-B", occurredAtEpochMs: time2, transferId: "B",
+    });
+    expect(released.transfer.status).toBe(InventoryTransferStatus.Released);
+    await inventory.transfers.dispatch({ operationId: "dispatch-C", occurredAtEpochMs: time2, transferId: "C" });
+    await inventory.transfers.receive({ operationId: "receive-C", occurredAtEpochMs: time3, transferId: "C" });
+    for (const node of ["B", "destination"]) {
+      const rows = await inventory.read.positions(inventoryStockSelector("item-a", { placementNodeIds: [node] }));
+      expect(rows.map(({ measurements }) => measurements.primary.quantity)).toEqual([parseQuantity("1", "piece")]);
+    }
+    expect(await inventory.read.reservationFeasibility()).toEqual(before);
+  });
+
   it("never manufactures prepared stock through Record-mode deficits", async () => {
     const inventory = createInventoryOnce({
       catalog: createTabletCatalog(),

@@ -2,15 +2,23 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createInventoryOnce,
   defineInventoryCatalog,
+  defineInventoryItem,
   defineScalarInventoryItem,
+  extendInventoryCatalog,
   InventoryAllocationMethod,
   InventoryCountStatus,
   InventoryEventKind,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
   InventoryOptionalIdentityConstraintKind,
+  InventoryReservationFeasibilityStatus,
   InventoryStockWhereaboutsState,
+  InventoryTrackingRequirement,
   InventoryWhereaboutsAction,
+  measuredStockAmount,
   parseQuantity,
   stockAmount,
+  unitCode,
 } from "../src/index.js";
 import {
   createInventoryDetachEvent,
@@ -74,6 +82,31 @@ async function quantityAt(
 }
 
 describe("detached and missing stock whereabouts", () => {
+  it("checks the published catalogue before returning exact whereabouts reads", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const earlier = createTestInventory(storage, catalog);
+    const extra = defineScalarInventoryItem({ itemId: "extra", revisionId: "extra-v1", axisId: "pieces", unit: "piece" });
+    const updated = createTestInventory(storage, extendInventoryCatalog({
+      catalog, itemRevisions: [extra], activeItemRevisionIds: { extra: extra.revisionId },
+    }));
+    await earlier.catalog.publish({ operationId: "publish-existing-catalogue", occurredAtEpochMs: time0 });
+    await updated.catalog.publish({ operationId: "publish-expanded-catalogue", occurredAtEpochMs: time1 });
+    const source = { itemId: extra.itemId, placementNodeId: "store" };
+    const amount = stockAmount("1", "piece");
+    await updated.stock.receive({ operationId: "receive-expanded-catalogue", occurredAtEpochMs: time1, to: source, amount });
+    await updated.stock.markMissing({ operationId: "mark-expanded-catalogue", occurredAtEpochMs: time2, from: source, amount });
+    const [cohort] = await updated.read.whereabouts();
+    if (cohort === undefined) throw new Error("Expected the new catalogue's missing cohort.");
+    const query = { whereaboutsIds: [cohort.whereaboutsId] };
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("unexpected full world read"));
+    await expect(earlier.read.whereabouts(query)).rejects.toThrow("Unknown inventory item revision 'extra-v1'");
+    await expect(earlier.read.whereaboutsHistory(query)).rejects.toThrow("Unknown inventory item revision 'extra-v1'");
+    expect(await updated.read.whereabouts(query)).toEqual([cohort]);
+    expect(await updated.read.whereaboutsHistory(query)).toEqual([cohort]);
+    expect(readWorld).not.toHaveBeenCalled();
+  });
+
   it("keeps unresolved lifecycle identity kernel-owned at stock intake", async () => {
     const inventory = createTestInventory();
     await expect(
@@ -410,14 +443,14 @@ describe("detached and missing stock whereabouts", () => {
       createdAtEpochMs: time1,
     });
 
-    await expect(
-      inventory.stock.detach({
-        operationId: "broad-reservation-blocked-detach",
-        occurredAtEpochMs: time2,
-        from: loosePosition("store"),
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
+    await inventory.stock.detach({
+      operationId: "broad-reservation-physical-detach",
+      occurredAtEpochMs: time2,
+      from: loosePosition("store"),
+      amount: stockAmount("1", "piece"),
+    });
+    expect((await inventory.read.reservationFeasibility(time2)).status)
+      .toBe(InventoryReservationFeasibilityStatus.Shortage);
 
     await inventory.reservations.release({
       operationId: "broad-reservation-two:release",
@@ -428,7 +461,7 @@ describe("detached and missing stock whereabouts", () => {
       operationId: "broad-reservation-detach-all",
       occurredAtEpochMs: time2,
       from: loosePosition("store"),
-      amount: stockAmount("2", "piece"),
+      amount: stockAmount("1", "piece"),
     });
     await expect(
       inventory.reservations.reserve({
@@ -584,7 +617,7 @@ describe("detached and missing stock whereabouts", () => {
     expect(remaining[0]?.measurements.primary.quantity.amountMinor).toBe(1);
   });
 
-  it("protects exact reservation bindings while still allowing unreserved stock to detach", async () => {
+  it("retains exact reservation bindings when previously held stock detaches", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "reserved-detach-receive",
@@ -627,26 +660,16 @@ describe("detached and missing stock whereabouts", () => {
     });
     expect(await currentUnresolvedPositions(inventory)).toHaveLength(1);
 
-    await expect(
-      inventory.stock.detach({
-        operationId: "reserved-detach-bound-unit",
-        occurredAtEpochMs: time2,
-        from: placed.key,
-        amount: stockAmount("1", "piece"),
-      })
-    ).rejects.toThrow("cannot all be fulfilled simultaneously");
-
-    await inventory.reservations.release({
-      operationId: "reserved-detach-release",
-      reservationId: "reserved-detach-claim",
-      occurredAtEpochMs: time2,
-    });
     await inventory.stock.detach({
-      operationId: "reserved-detach-after-release",
-      occurredAtEpochMs: time3,
+      operationId: "reserved-detach-bound-unit",
+      occurredAtEpochMs: time2,
       from: placed.key,
       amount: stockAmount("1", "piece"),
     });
+    expect((await inventory.read.reservation("reserved-detach-claim"))?.allocations[0]?.position)
+      .toEqual(placed.key);
+    expect((await inventory.read.reservationFeasibility(time2)).status)
+      .toBe(InventoryReservationFeasibilityStatus.Shortage);
     expect(await currentUnresolvedPositions(inventory)).toHaveLength(2);
   });
 
@@ -1083,5 +1106,425 @@ describe("detached and missing stock whereabouts", () => {
     );
   });
 
+  it("reads exact whereabouts lifecycles and history without readWorld across unrelated stock, corrections, and repair omissions", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const bin = loosePosition("whereabouts-indexed-bin");
+    await inventory.stock.receive({
+      operationId: "whereabouts-indexed-seed",
+      occurredAtEpochMs: time0,
+      to: bin,
+      amount: stockAmount("10", "piece"),
+    });
+
+    // Cohort 1: direct unresolved detach -> partial missing -> partial place.
+    await inventory.stock.detach({
+      operationId: "whereabouts-indexed-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: stockAmount("5", "piece"),
+    });
+    const detached = (await inventory.read.whereabouts()).find(
+      (lifecycle) => lifecycle.originEvent.operationId === "whereabouts-indexed-detach"
+    )?.currentPositions[0];
+    if (detached?.key.whereaboutsId === undefined) {
+      throw new Error("Expected detached cohort position.");
+    }
+    const directId = detached.key.whereaboutsId;
+    await inventory.stock.markMissing({
+      operationId: "whereabouts-indexed-missing",
+      occurredAtEpochMs: time1 + 1,
+      from: detached.key,
+      amount: stockAmount("2", "piece"),
+    });
+    const currentDirectRows = (
+      await inventory.read.whereabouts({ whereaboutsIds: [directId] })
+    )[0]?.currentPositions;
+    const missingRow = currentDirectRows?.find(
+      (row) => row.key.whereaboutsState === InventoryStockWhereaboutsState.Missing
+    );
+    if (missingRow === undefined) {
+      throw new Error("Expected missing split position.");
+    }
+    await inventory.stock.place({
+      operationId: "whereabouts-indexed-place",
+      occurredAtEpochMs: time1 + 2,
+      from: missingRow.key,
+      into: "whereabouts-recovered",
+      amount: stockAmount("1", "piece"),
+    });
+
+    // Cohort 2: correction-resolved cohort.
+    const toCorrect = await inventory.stock.detach({
+      operationId: "whereabouts-indexed-correct-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: stockAmount("2", "piece"),
+    });
+    const correctedId = toCorrect.event.stockEffects.find(
+      (effect) => effect.position.whereaboutsId !== undefined
+    )?.position.whereaboutsId;
+    if (correctedId === undefined) {
+      throw new Error("Expected detached cohort for correction.");
+    }
+    await inventory.stock.correct({
+      operationId: "whereabouts-indexed-correct-to-issue",
+      occurredAtEpochMs: time1 + 1,
+      correctsEventId: toCorrect.event.eventId,
+      reason: "Stock was issued rather than detached.",
+      replaceWith: (plans) =>
+        plans.issue({
+          occurredAtEpochMs: time1,
+          from: bin,
+          amount: stockAmount("2", "piece"),
+        }),
+    });
+
+    // Cohort 3: HistoricalRepair assertion later omitted by a superseding HistoricalRepair envelope.
+    await inventory.stock.recordHistorical({
+      operationId: "whereabouts-indexed-repair-add",
+      occurredAtEpochMs: time2,
+      reason: "Record historical missing and recovery.",
+      assertions: [
+        {
+          assertionId: "hist-missing",
+          assert: (plans) =>
+            plans.markMissing({
+              occurredAtEpochMs: time0 + 1,
+              from: bin,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+        {
+          assertionId: "hist-place",
+          assert: (plans) =>
+            plans.place({
+              occurredAtEpochMs: time0 + 2,
+              from: plans.outputOf("hist-missing"),
+              into: "whereabouts-indexed-bin",
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    const historicalOnly = (await inventory.read.whereaboutsHistory()).find(
+      (lifecycle) => lifecycle.originEvent.operationId === "whereabouts-indexed-repair-add"
+    );
+    if (historicalOnly === undefined) {
+      throw new Error("Expected historical repair cohort.");
+    }
+    await inventory.stock.recordHistorical({
+      operationId: "whereabouts-indexed-repair-omit",
+      occurredAtEpochMs: time3,
+      reason: "Supersede historical missing assertions.",
+      omittedAssertionIds: ["hist-missing", "hist-place"],
+      assertions: [],
+    });
+
+    // Populate unrelated segmented stock rows to prove exact whereabouts reads stay bounded.
+    await inventory.stock.receiveMany({
+      operationId: "whereabouts-unrelated-warehouse-rows",
+      occurredAtEpochMs: time3,
+      lines: Array.from({ length: 1_200 }, (_, index) => ({
+        to: loosePosition(`unrelated-bin-${index}`, { lotId: `UNRELATED-${index}` }),
+        amount: stockAmount("1", "piece"),
+      })),
+    });
+
+    const snapshot = await inventory.read.snapshot();
+    const readWorldSpy = vi.spyOn(storage, "readWorld");
+    const targetIds = [directId, correctedId, historicalOnly.whereaboutsId];
+
+    const exactCurrent = await inventory.read.whereabouts({ whereaboutsIds: targetIds });
+    const exactHistory = await inventory.read.whereaboutsHistory({ whereaboutsIds: targetIds });
+    const exactOmittedHistory = await inventory.read.whereaboutsHistory({
+      whereaboutsIds: [historicalOnly.whereaboutsId],
+    });
+
+    expect(readWorldSpy).not.toHaveBeenCalled();
+    expect(exactCurrent).toEqual(snapshot.whereabouts({ whereaboutsIds: targetIds }));
+    expect(exactHistory).toEqual(snapshot.whereaboutsHistory({ whereaboutsIds: targetIds }));
+    expect(exactOmittedHistory[0]?.history).toHaveLength(2);
+    expect(exactOmittedHistory[0]?.history[1]?.actions).toEqual([
+      InventoryWhereaboutsAction.HistoricallyRepaired,
+    ]);
+    const cohortEvents = await inventory.read.events({
+      whereaboutsIds: [historicalOnly.whereaboutsId],
+    });
+    expect(cohortEvents.events.map(({ operationId }) => operationId)).toEqual([
+      "whereabouts-indexed-repair-add",
+      "whereabouts-indexed-repair-omit",
+    ]);
+    expect(
+      snapshot.events({ whereaboutsIds: [historicalOnly.whereaboutsId] }).events.map(
+        /** Confirm canonical snapshot event queries include zero-delta cohort omissions. */
+        ({ operationId }) => operationId
+      )
+    ).toEqual([
+      "whereabouts-indexed-repair-add",
+      "whereabouts-indexed-repair-omit",
+    ]);
+    await expect(
+      inventory.read.whereabouts({ whereaboutsIds: [] })
+    ).rejects.toThrow("must be omitted instead of empty");
+    expect(readWorldSpy).not.toHaveBeenCalled();
+    readWorldSpy.mockRestore();
+  });
+
+  it("retries exact whereabouts reads when a concurrent mutation moves the segmented head mid-read", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "whereabouts-fence-seed",
+      occurredAtEpochMs: time0,
+      to: loosePosition("fence-bin"),
+      amount: stockAmount("5", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "whereabouts-fence-detach",
+      occurredAtEpochMs: time1,
+      from: loosePosition("fence-bin"),
+      amount: stockAmount("5", "piece"),
+    });
+    const detached = (await inventory.read.whereabouts())[0]?.currentPositions[0];
+    if (detached?.key.whereaboutsId === undefined) {
+      throw new Error("Expected detached position for fence test.");
+    }
+    const whereaboutsId = detached.key.whereaboutsId;
+
+    const queryEventsOriginal = storage.queryInventoryEventsByResourceKeys.bind(storage);
+    let injected = false;
+    vi.spyOn(storage, "queryInventoryEventsByResourceKeys").mockImplementation(async (query) => {
+      const page = await queryEventsOriginal(query);
+      if (!injected) {
+        injected = true;
+        await inventory.stock.markMissing({
+          operationId: "whereabouts-fence-concurrent-missing",
+          occurredAtEpochMs: time2,
+          from: detached.key,
+          amount: stockAmount("2", "piece"),
+        });
+      }
+      return page;
+    });
+    const readWorldSpy = vi.spyOn(storage, "readWorld");
+
+    const lifecycles = await inventory.read.whereabouts({
+      whereaboutsIds: [whereaboutsId],
+    });
+    expect(injected).toBe(true);
+    expect(readWorldSpy).not.toHaveBeenCalled();
+    expect(lifecycles).toHaveLength(1);
+    expect(lifecycles[0]?.currentPositions).toHaveLength(2);
+    expect(lifecycles[0]?.history.map((entry) => entry.event.operationId)).toEqual([
+      "whereabouts-fence-detach",
+      "whereabouts-fence-concurrent-missing",
+    ]);
+    readWorldSpy.mockRestore();
+  });
+
+  it("preserves exact working precision across detached cohort reclassifyMany measurements", async () => {
+    const measuredItem = defineInventoryItem({
+      itemId: "whereabouts-measured",
+      revisionId: "whereabouts-measured-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        role: InventoryMeasurementAxisRole.Primary,
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          unit: unitCode("kg"),
+          role: InventoryMeasurementAxisRole.Independent,
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+      ],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+      qualifiedDimensions: [],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [measuredItem],
+      activeItemRevisionIds: { [measuredItem.itemId]: measuredItem.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const bin = { itemId: measuredItem.itemId, placementNodeId: "whereabouts-reclassify-bin" };
+    await inventory.stock.receive({
+      operationId: "whereabouts-reclassify-receive",
+      occurredAtEpochMs: time0,
+      to: bin,
+      amount: measuredStockAmount("10", "piece", [{ axisId: "weight", value: "10", unit: "kg" }]),
+    });
+    const detached = await inventory.stock.detach({
+      operationId: "whereabouts-reclassify-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: measuredStockAmount("10", "piece", [{ axisId: "weight", value: "10", unit: "kg" }]),
+    });
+    const cohortPosition = detached.event.stockEffects.find(
+      /** Locate the newly detached cohort position. */
+      (effect) => effect.position.whereaboutsId !== undefined,
+    )?.position;
+    if (cohortPosition === undefined) {
+      throw new Error("Expected detached multi-axis cohort.");
+    }
+
+    const reclassified = await inventory.stock.reclassifyMany({
+      operationId: "whereabouts-reclassify-split",
+      occurredAtEpochMs: time2,
+      consume: [
+        {
+          from: cohortPosition,
+          amount: measuredStockAmount("10", "piece", [{ axisId: "weight", value: "10", unit: "kg" }]),
+        },
+      ],
+      produce: [
+        {
+          to: { ...cohortPosition, lotId: "split-a" },
+          amount: measuredStockAmount("8", "piece", [{ axisId: "weight", value: "9", unit: "kg" }]),
+        },
+        {
+          to: { ...cohortPosition, lotId: "split-b" },
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0.123456789012345", unit: "kg" }]),
+        },
+        {
+          to: { ...cohortPosition, lotId: "split-c" },
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0.876543210987655", unit: "kg" }]),
+        },
+      ],
+    });
+    expect(reclassified.event.stockEffects).toHaveLength(4);
+  });
+
+  it("retains explicit zero optional measurement presence across detached cohort reclassifyMany", async () => {
+    const optionalItem = defineInventoryItem({
+      itemId: "whereabouts-optional-zero",
+      revisionId: "whereabouts-optional-zero-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        role: InventoryMeasurementAxisRole.Primary,
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          unit: unitCode("kg"),
+          role: InventoryMeasurementAxisRole.Independent,
+          requirement: InventoryMeasurementRequirement.Optional,
+        },
+      ],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+      qualifiedDimensions: [],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [optionalItem],
+      activeItemRevisionIds: { [optionalItem.itemId]: optionalItem.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const bin = { itemId: optionalItem.itemId, placementNodeId: "whereabouts-zero-bin" };
+    await inventory.stock.receive({
+      operationId: "whereabouts-zero-receive",
+      occurredAtEpochMs: time0,
+      to: bin,
+      amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+    });
+    const detached = await inventory.stock.detach({
+      operationId: "whereabouts-zero-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+    });
+    const cohortPosition = detached.event.stockEffects.find(
+      /** Locate the detached zero-weight cohort position. */
+      (effect) => effect.position.whereaboutsId !== undefined,
+    )?.position;
+    if (cohortPosition === undefined) {
+      throw new Error("Expected detached optional-zero cohort.");
+    }
+
+    await expect(
+      inventory.stock.reclassifyMany({
+        operationId: "whereabouts-zero-drop-axis",
+        occurredAtEpochMs: time2,
+        consume: [
+          {
+            from: cohortPosition,
+            amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+          },
+        ],
+        produce: [
+          {
+            to: { ...cohortPosition, lotId: "quarantine" },
+            amount: stockAmount("1", "piece"),
+          },
+        ],
+      }),
+    ).rejects.toThrow("Generic reclassification must preserve each detached/missing whereabouts cohort exactly.");
+
+    await inventory.stock.reclassifyMany({
+      operationId: "whereabouts-zero-keep-axis",
+      occurredAtEpochMs: time2,
+      consume: [
+        {
+          from: cohortPosition,
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+        },
+      ],
+      produce: [
+        {
+          to: { ...cohortPosition, lotId: "quarantine" },
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0", unit: "kg" }]),
+        },
+      ],
+    });
+    const lifecycles = await inventory.read.whereabouts({
+      whereaboutsIds: [cohortPosition.whereaboutsId!],
+    });
+    expect(lifecycles[0]?.currentPositions[0]?.measurements.independent).toEqual([
+      { axisId: "weight", quantity: parseQuantity("0", "kg") },
+    ]);
+  });
+
+  it("excludes a repeated correction from a cohort touched solely by its replacement draft", async () => {
+    const inventory = createTestInventory();
+    const bin = loosePosition("replacement-cohort");
+    const one = stockAmount("1", "piece");
+    await inventory.stock.receive({
+      operationId: "replacement-stock", occurredAtEpochMs: time0, to: bin, amount: stockAmount("4", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "replacement-detach", occurredAtEpochMs: time1, from: bin, amount: stockAmount("2", "piece"),
+    });
+    const [cohort] = await inventory.read.whereabouts();
+    const source = cohort?.currentPositions[0]?.key;
+    if (cohort === undefined || source === undefined) throw new Error("Expected detached cohort.");
+    const issue = await inventory.stock.issue({
+      operationId: "replacement-issue", occurredAtEpochMs: time1 + 1, from: bin, amount: one,
+    });
+    for (const attempt of [1, 2]) {
+      await inventory.stock.correct({
+        operationId: "replacement-correction-" + attempt,
+        occurredAtEpochMs: time1 + 1 + attempt,
+        correctsEventId: issue.event.eventId,
+        reason: "The detached cohort supplied the issue.",
+        replaceWith: (plans) => plans.issue({ occurredAtEpochMs: time1 + 1, from: source, amount: one }),
+      });
+    }
+    const query = { whereaboutsIds: [cohort.whereaboutsId] };
+    const snapshot = await inventory.read.snapshot();
+    const canonical = await snapshot.whereaboutsHistory(query);
+    expect(canonical).toHaveLength(1);
+    expect(await inventory.read.whereaboutsHistory(query)).toEqual(canonical);
+  });
 
 });

@@ -15,43 +15,34 @@ import {
 } from "./projection.js";
 import { inventorySparseRecordValue } from "./sparse-record.js";
 import {
+  addExactQuantityDigits,
+  compareWorkingQuantities,
+  subtractWorkingQuantity,
+  workingQuantityAtDecimals,
+  type ExactQuantityDigits,
+  type InventoryWorkingQuantity,
+} from "./quantity-storage.js";
+import {
   inventoryStockSelector,
   type InventoryStockSelector,
 } from "./selectors.js";
 import {
-  addQuantity,
   compareQuantity,
-  integerAtDecimals,
-  negateQuantity,
-  quantity,
-  safeNumber,
-  subtractQuantity,
   zeroQuantity,
-  type Quantity,
   type UnitCode,
 } from "./quantity.js";
 
 /** Reserved untracked lot identity used by ordinary policy shortfall when no explicit deficit position is supplied. */
 export const INVENTORY_RECORDED_DEFICIT_LOT_ID = "__inventory_deficit__";
 
-/** One positive capacity row that may be burdened by recorded direct-placement-pool deficit. */
-export interface InventoryDeficitCapacityLine {
+/** One positive capacity on the selected axis before narrowing any returned quantities. */
+export interface InventoryWorkingDeficitCapacityLine {
   /** Exact positive physical position supplying this capacity. */
   readonly position: InventoryStockPositionKey;
   /** Positive capacity already reduced by exact claims or caller-owned constraints. */
-  readonly capacity: Quantity;
+  readonly capacity: InventoryWorkingQuantity;
   /** Smallest legal remaining quantity for intact package/serial rows. */
-  readonly allocationIncrement?: Quantity;
-}
-
-/** Exact capacities after every selected direct placement's recorded deficit has first priority. */
-export interface InventoryDeficitCapacityAdjustment {
-  /** Adjusted non-negative capacity by exact physical position identity. */
-  readonly capacityByPositionIdentity: ReadonlyMap<string, Quantity>;
-  /** Total positive deficit magnitude recorded in the selected direct-placement pools. */
-  readonly recordedDeficit: Quantity;
-  /** Deficit still not backed by any supplied positive capacity. */
-  readonly uncoveredDeficit: Quantity;
+  readonly allocationIncrement?: InventoryWorkingQuantity;
 }
 
 /** Inputs for applying durable signed deficit to otherwise-positive capacity rows. */
@@ -67,55 +58,49 @@ export interface ApplyInventoryRecordedDeficitBurdenInput {
   /** Selected pools; deficit never crosses direct-placement boundaries. */
   readonly placementNodeIds: readonly string[];
   /** Positive capacities in deterministic burden order, reduced without going negative. */
-  readonly lines: readonly InventoryDeficitCapacityLine[];
+  readonly lines: readonly InventoryWorkingDeficitCapacityLine[];
 }
 
 /**
  * Broaden one caller selector to the direct-placement pool that owns recorded deficit.
  * Lot/package/serial/owner constraints choose what the caller may consume; they do not split
- * one item's shortage into separate liabilities that can be bypassed or paid repeatedly.
+ * one item's shortage into separate liabilities. Explicit whereabouts select distinct pools.
  */
 export function inventoryRecordedDeficitPoolSelector(
   selector: InventoryStockSelector,
-  itemRevisionId: ItemRevisionId,
-  placementNodeIds: readonly string[]
+  itemRevisionId: ItemRevisionId
 ): InventoryStockSelector {
   return inventoryStockSelector(selector.itemId, {
     itemRevisionIds: [itemRevisionId],
-    // Keep subtree ancestry as a predicate: expanding every descendant into
-    // Allowed values turns one warehouse read into quadratic list matching.
-    ...(selector.placementNodeIds === undefined &&
-    selector.withinPlacementNodeIds !== undefined
-      ? { withinPlacementNodeIds: selector.withinPlacementNodeIds }
-      : placementNodeIds.length === 0
-        ? {}
-        : { placementNodeIds }),
+    // Direct and subtree predicates intersect. Keep ancestry as a predicate
+    // so a warehouse read need not enumerate every descendant.
+    ...(selector.placement === undefined ? {} : { placement: selector.placement }),
+    ...(selector.placementNodeIds === undefined ? {} : { placementNodeIds: selector.placementNodeIds }),
+    ...(selector.withinPlacementNodeIds === undefined ? {} : { withinPlacementNodeIds: selector.withinPlacementNodeIds }),
+    ...(selector.whereabouts === undefined ? {} : { whereabouts: selector.whereabouts }),
+    ...(selector.whereaboutsStates === undefined ? {} : { whereaboutsStates: selector.whereaboutsStates }),
   });
 }
 
 /**
  * Limit deficit pools to direct nodes holding this item revision, without
- * traversing unrelated empty descendants. Include roots so an empty subtree
- * never becomes the unconstrained empty-list wildcard.
+ * traversing unrelated empty descendants. An intersected selector can return
+ * no direct pools, and the feasibility reducer treats that as no capacity.
  */
 export function inventorySelectedDeficitPlacementNodeIds(
   projection: InventoryProjectionState,
   selector: InventoryStockSelector,
   itemRevisionId: ItemRevisionId
 ): readonly string[] {
-  if (selector.placementNodeIds !== undefined) return selector.placementNodeIds;
   const roots = selector.withinPlacementNodeIds;
-  if (roots === undefined) return [];
-  const selected = new Set<string>(roots);
+  if (roots === undefined) return selector.placementNodeIds ?? [];
+  const selected = new Set<string>(selector.placementNodeIds === undefined ? roots : []);
   // Reuse the projection's bounded subtree-vs-item index chooser: a small
   // subtree of a huge item must not scan every unrelated item position,
   // while a huge empty subtree must not walk all unrelated placement nodes.
   const occupied = findInventoryPositions(
     projection,
-    inventoryStockSelector(selector.itemId, {
-      itemRevisionIds: [itemRevisionId],
-      withinPlacementNodeIds: roots,
-    })
+    inventoryRecordedDeficitPoolSelector(selector, itemRevisionId)
   );
   for (const position of occupied) {
     const nodeId = position.key.placementNodeId;
@@ -149,28 +134,159 @@ export function inventoryPositionDeficitMeasurements(
  */
 export function applyInventoryRecordedDeficitBurden({
   projection,
-  itemRevisionId,
+  ...input
+}: ApplyInventoryRecordedDeficitBurdenInput): InventoryWorkingDeficitBurden {
+  return applyInventoryWorkingDeficitBurdenToPositions({
+    ...input,
+    positions: inventoryDeficitRevisionRows(
+      projection,
+      input.itemRevisionId,
+      input.placementNodeIds
+    ),
+  });
+}
+
+/** Read signed rows for one exact revision through the canonical indexes, intersecting placements when scoped. */
+function* inventoryDeficitRevisionRows(
+  projection: InventoryProjectionState,
+  itemRevisionId: ItemRevisionId,
+  placementNodeIds: readonly string[]
+): Iterable<InventoryStockPosition> {
+  const revisionPositionIds =
+    inventorySparseRecordValue(
+      projection.positionIdsByItemRevisionId,
+      itemRevisionId
+    ) ?? [];
+  if (placementNodeIds.length > 0) {
+    const selectedNodes = [...new Set(placementNodeIds)];
+    let placementPositionCount = 0;
+    for (const nodeId of selectedNodes) {
+      placementPositionCount +=
+        inventorySparseRecordValue(
+          projection.positionIdsByPlacementNodeId,
+          nodeId
+        )?.length ?? 0;
+    }
+    if (placementPositionCount < revisionPositionIds.length) {
+      for (const nodeId of selectedNodes) {
+        for (const positionIdentity of inventorySparseRecordValue(
+          projection.positionIdsByPlacementNodeId,
+          nodeId
+        ) ?? []) {
+          const position = projection.positions[positionIdentity];
+          if (position === undefined) {
+            throw new Error(
+              `Inventory deficit placement index references missing position '${positionIdentity}'.`
+            );
+          }
+          if (position.key.itemRevisionId === itemRevisionId) yield position;
+        }
+      }
+      return;
+    }
+  }
+  const placementFilter =
+    placementNodeIds.length === 0 ? undefined : new Set(placementNodeIds);
+  for (const positionIdentity of revisionPositionIds) {
+    const position = projection.positions[positionIdentity];
+    if (position === undefined) {
+      throw new Error(
+        `Inventory deficit item-revision index references missing position '${positionIdentity}'.`
+      );
+    }
+    if (
+      placementFilter === undefined ||
+      (position.key.placementNodeId !== undefined &&
+        placementFilter.has(position.key.placementNodeId))
+    ) {
+      yield position;
+    }
+  }
+}
+
+/** Deficit reducer inputs with all signed rows supplied by the caller's physical pool. */
+interface ApplyInventoryWorkingDeficitBurdenToPositionsInput
+  extends Omit<ApplyInventoryRecordedDeficitBurdenInput, "projection" | "lines"> {
+  /** Signed position rows of this revision from every selected pool. */
+  readonly positions: Iterable<InventoryStockPosition>;
+  /** Working capacity in the order that bears each pool's deficit. */
+  readonly lines: readonly InventoryWorkingDeficitCapacityLine[];
+}
+
+/** Attribute deficit to working capacities using the supplied published signs. */
+export function applyInventoryWorkingDeficitBurdenToPositions({
+  positions,
+  lines,
   axisId,
+  unit,
+  ...scope
+}: ApplyInventoryWorkingDeficitBurdenToPositionsInput): InventoryWorkingDeficitBurden {
+  return applyInventoryWorkingDeficitBurden({
+    ...scope, unit, lines, deficits: inventorySignedDeficitRows(positions, axisId, unit),
+  });
+}
+
+/** One negative measurement in a signed stock pool. */
+export interface InventorySignedDeficitRow {
+  /** Exact position that owns the negative balance. */
+  readonly position: InventoryStockPositionKey;
+  /** Signed deficit measurement on the selected axis. */
+  readonly signed: InventoryWorkingQuantity;
+}
+
+/** Read only negative selected-axis measurements from the published signed rows. */
+function* inventorySignedDeficitRows(
+  positions: Iterable<InventoryStockPosition>,
+  axisId: string,
+  unit: UnitCode,
+): Iterable<InventorySignedDeficitRow> {
+  for (const position of positions) {
+    if (!inventoryPositionIsDeficit(position)) continue;
+    const signed = inventoryMeasurementAt(position.measurements, axisId, unit);
+    if (signed.amountMinor < 0) yield { position: position.key, signed };
+  }
+}
+
+/** Signed pool rows and ordered positive capacities on a single working axis. */
+interface ApplyInventoryWorkingDeficitBurdenInput extends Omit<ApplyInventoryRecordedDeficitBurdenInput, "projection" | "axisId" | "lines"> {
+  /** Negative balances from the selected signed pool. */
+  readonly deficits: Iterable<InventorySignedDeficitRow>;
+  /** Positive capacity in the order that supplies deficit. */
+  readonly lines: readonly InventoryWorkingDeficitCapacityLine[];
+}
+
+/** Full-precision result of charging each signed pool's deficit to its capacity. */
+interface InventoryWorkingDeficitBurden {
+  /** Exact remaining capacity by position identity. */
+  readonly capacityByPositionIdentity: ReadonlyMap<string, InventoryWorkingQuantity>;
+  /** Exact total deficit in every selected pool. */
+  readonly recordedDeficit: InventoryWorkingQuantity;
+  /** Exact deficit left after the available capacity is used. */
+  readonly uncoveredDeficit: InventoryWorkingQuantity;
+}
+
+/** Reduce published or unpublished capacity with the same per-pool liability rule. */
+export function applyInventoryWorkingDeficitBurden({
+  deficits,
+  itemRevisionId,
   unit,
   placementNodeIds,
   lines,
-}: ApplyInventoryRecordedDeficitBurdenInput): InventoryDeficitCapacityAdjustment {
+}: ApplyInventoryWorkingDeficitBurdenInput): InventoryWorkingDeficitBurden {
   const selectedLocations = normalizePlacementNodeIds(placementNodeIds);
   const allLocationsSelected = selectedLocations.size === 0;
   const deficitByLocation = recordedDeficitByLocation(
-    projection,
-    itemRevisionId,
-    axisId,
-    unit,
+    deficits,
     allLocationsSelected ? undefined : selectedLocations
   );
-  let recordedDeficit = zeroQuantity(unit);
+  /** Aggregate all pools before materializing any reported quantity. */
+  const recordedDeficit: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   for (const deficit of deficitByLocation.values()) {
-    recordedDeficit = addQuantity(recordedDeficit, deficit);
+    addExactQuantityDigits(recordedDeficit, deficit.minor, deficit.decimals);
   }
 
-  const capacityByPositionIdentity = new Map<string, Quantity>();
-  const linesByLocation = new Map<string, InventoryDeficitCapacityLine[]>();
+  const capacityByPositionIdentity = new Map<string, InventoryWorkingQuantity>();
+  const linesByLocation = new Map<string, InventoryWorkingDeficitCapacityLine[]>();
   for (const line of lines) {
     if (line.position.itemRevisionId !== itemRevisionId) {
       throw new Error(
@@ -217,13 +333,17 @@ export function applyInventoryRecordedDeficitBurden({
     burdenLocations = new Set([...allLocations].sort());
   }
 
-  let uncoveredDeficit = zeroQuantity(unit);
+  /** Accumulate debt left after all usable capacity has been attributed. */
+  const uncoveredDeficit: ExactQuantityDigits = { minor: 0n, decimals: 0 };
   for (const placementNodeId of burdenLocations) {
-    let remaining = deficitByLocation.get(placementNodeId) ?? zeroQuantity(unit);
+    const poolDeficit = deficitByLocation.get(placementNodeId);
+    if (poolDeficit === undefined) continue;
+    /** Keep debt exact while every position in this pool absorbs its share. */
+    let remaining: InventoryWorkingQuantity = { amountMinor: poolDeficit.minor, decimals: poolDeficit.decimals, unit };
     const locationLines = linesByLocation.get(placementNodeId) ?? [];
     for (const line of locationLines) {
       if (
-        compareQuantity(remaining, zeroQuantity(unit, remaining.decimals)) <= 0
+        remaining.amountMinor <= 0n
       ) {
         break;
       }
@@ -242,59 +362,40 @@ export function applyInventoryRecordedDeficitBurden({
       capacityByPositionIdentity.set(identity, adjusted.capacity);
       remaining = adjusted.remainingDeficit;
     }
-    uncoveredDeficit = addQuantity(uncoveredDeficit, remaining);
+    addExactQuantityDigits(uncoveredDeficit, BigInt(remaining.amountMinor), remaining.decimals);
   }
   return {
     capacityByPositionIdentity,
-    recordedDeficit,
-    uncoveredDeficit,
+    recordedDeficit: { amountMinor: recordedDeficit.minor, decimals: recordedDeficit.decimals, unit },
+    uncoveredDeficit: { amountMinor: uncoveredDeficit.minor, decimals: uncoveredDeficit.decimals, unit },
   };
 }
 
 /** Collect positive deficit magnitude by exact direct placement without assigning it to lots. */
 function recordedDeficitByLocation(
-  projection: InventoryProjectionState,
-  itemRevisionId: ItemRevisionId,
-  axisId: string,
-  unit: UnitCode,
+  deficits: Iterable<InventorySignedDeficitRow>,
   selectedLocations: ReadonlySet<string> | undefined
-): ReadonlyMap<string, Quantity> {
-  const result = new Map<string, Quantity>();
-  for (const positionIdentity of inventorySparseRecordValue(
-    projection.positionIdsByItemRevisionId,
-    itemRevisionId
-  ) ?? []) {
-    const position = projection.positions[positionIdentity];
-    if (position === undefined) {
-      throw new Error(
-        `Inventory deficit item-revision index references missing position '${positionIdentity}'.`
-      );
-    }
+): ReadonlyMap<string, ExactQuantityDigits> {
+  const result = new Map<string, ExactQuantityDigits>();
+  for (const { position, signed } of deficits) {
     if (
       selectedLocations !== undefined &&
-      (position.key.placementNodeId === undefined ||
-        !selectedLocations.has(position.key.placementNodeId))
+      (position.placementNodeId === undefined ||
+        !selectedLocations.has(position.placementNodeId))
     ) continue;
-    if (!inventoryPositionIsDeficit(position)) continue;
-    const signed = inventoryMeasurementAt(position.measurements, axisId, unit);
-    if (compareQuantity(signed, zeroQuantity(unit, signed.decimals)) >= 0) {
-      continue;
-    }
-    const magnitude = negateQuantity(signed);
     const poolIdentity =
       selectedLocations === undefined
-        ? inventoryDeficitPhysicalPoolIdentity(position.key)
-        : position.key.placementNodeId!;
-    result.set(
-      poolIdentity,
-      addQuantity(result.get(poolIdentity) ?? zeroQuantity(unit), magnitude)
-    );
+        ? inventoryDeficitPhysicalPoolIdentity(position)
+        : position.placementNodeId!;
+    const total = result.get(poolIdentity);
+    if (total === undefined) result.set(poolIdentity, { minor: -BigInt(signed.amountMinor), decimals: signed.decimals });
+    else addExactQuantityDigits(total, -BigInt(signed.amountMinor), signed.decimals);
   }
   return result;
 }
 
 /** Stable internal physical-pool identity for broad deficit accounting without inventing a placement. */
-function inventoryDeficitPhysicalPoolIdentity(
+export function inventoryDeficitPhysicalPoolIdentity(
   position: InventoryStockPositionKey
 ): string {
   if (position.placementNodeId !== undefined) {
@@ -308,22 +409,22 @@ function inventoryDeficitPhysicalPoolIdentity(
 
 /** Reduce one positive capacity by deficit while respecting intact allocation increments. */
 function capacityAfterDeficit(
-  capacity: Quantity,
-  deficit: Quantity,
-  allocationIncrement: Quantity | undefined
+  capacity: InventoryWorkingQuantity,
+  deficit: InventoryWorkingQuantity,
+  allocationIncrement: InventoryWorkingQuantity | undefined
 ): {
   /** Capacity remaining after applying as much deficit as this line can absorb. */
-  readonly capacity: Quantity;
+  readonly capacity: InventoryWorkingQuantity;
   /** Deficit still requiring attribution to later positive capacity lines. */
-  readonly remainingDeficit: Quantity;
+  readonly remainingDeficit: InventoryWorkingQuantity;
 } {
-  if (compareQuantity(capacity, deficit) <= 0) {
+  if (compareWorkingQuantities(capacity, deficit) <= 0) {
     return {
       capacity: zeroQuantity(capacity.unit, capacity.decimals),
-      remainingDeficit: subtractQuantity(deficit, capacity),
+      remainingDeficit: subtractWorkingQuantity(deficit, capacity),
     };
   }
-  const exactRemainder = subtractQuantity(capacity, deficit);
+  const exactRemainder = subtractWorkingQuantity(capacity, deficit);
   if (allocationIncrement === undefined) {
     return {
       capacity: exactRemainder,
@@ -339,22 +440,19 @@ function capacityAfterDeficit(
 
 /** Floor one non-negative quantity to an exact positive same-unit increment. */
 function floorQuantityToIncrement(
-  value: Quantity,
-  increment: Quantity
-): Quantity {
+  value: InventoryWorkingQuantity,
+  increment: InventoryWorkingQuantity
+): InventoryWorkingQuantity {
   const decimals = Math.max(value.decimals, increment.decimals);
-  const valueMinor = integerAtDecimals(value, decimals);
-  const incrementMinor = integerAtDecimals(increment, decimals);
+  const valueMinor = workingQuantityAtDecimals(value, decimals);
+  const incrementMinor = workingQuantityAtDecimals(increment, decimals);
   // BigInt division truncates exactly; non-negative operands therefore floor without Number conversion.
   const floored = (valueMinor / incrementMinor) * incrementMinor;
-  return quantity({
-    amountMinor: safeNumber(
-      floored,
-      "Inventory deficit adjusted capacity"
-    ),
+  return {
+    amountMinor: floored,
     decimals,
     unit: value.unit,
-  });
+  };
 }
 
 /** Normalize, sort, and reject duplicate/empty direct-placement identities. */
@@ -378,14 +476,14 @@ function normalizePlacementNodeIds(values: readonly string[]): ReadonlySet<strin
 
 /** Require a positive same-unit capacity before arithmetic starts. */
 function requirePositiveCapacity(
-  value: Quantity,
+  value: InventoryWorkingQuantity,
   unit: UnitCode,
   label: string
 ): void {
   if (value.unit !== unit) {
     throw new Error(`${label} uses a different unit.`);
   }
-  if (compareQuantity(value, zeroQuantity(unit, value.decimals)) <= 0) {
+  if (value.amountMinor <= 0n) {
     throw new Error(`${label} must be positive.`);
   }
 }

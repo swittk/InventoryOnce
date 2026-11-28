@@ -4,31 +4,31 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `7e20051c3bc9eed0cbf41c26a5a27283e09827de83491aba2a002624ed8e4c36`
+Surface SHA-256: `0549a3c5765189fcf0a5adfa00916b79e4746a6af1c912e5dc3cb8231971d4dd`
 
 ## Mechanically covered surface
 
 - Grouped façade/read methods: 137
 - Authority-port methods: 14
 - Durable-storage-port methods: 17
-- Public exported class methods: 109
-- Root callable exports: 100
-- Storage callable exports: 36
+- Public exported class methods: 115
+- Root callable exports: 102
+- Storage callable exports: 38
 - Migration callable exports: 15
-- Kernel callable exports: 192
-- Reachable public data types: 469
-- Classified public fields: 2820
-- Input-reachable fields: 2356
-- Output-reachable fields: 1096
-- Callback-argument-reachable fields: 417
-- Callback-result-reachable fields: 444
+- Kernel callable exports: 194
+- Reachable public data types: 482
+- Classified public fields: 2878
+- Input-reachable fields: 2383
+- Output-reachable fields: 1137
+- Callback-argument-reachable fields: 422
+- Callback-result-reachable fields: 448
 - Callable-field overload signatures: 12
-- Optional fields: 1142
+- Optional fields: 1153
 - Explicit undefined-union fields: 11
 - Explicit nullable fields: 9
-- Public call/construct overload signatures: 620
-- Directly executed public APIs: 257
-- Public APIs exercised through tested internal call chains: 359
+- Public call/construct overload signatures: 632
+- Directly executed public APIs: 273
+- Public APIs exercised through tested internal call chains: 355
 - Explicit-gap public APIs: 4
 - Unreferenced public APIs: 0
 - Explicit recursive type edges: 5
@@ -51,7 +51,7 @@ Any added/removed method, callable export, class method, type field, field type,
 | correction | 4 | CorrectionHistory, InventoryOperation, PublishedHeadCAS | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | count | 11 | PhysicalCount, InventoryOperation, PublishedHeadCAS, ResourceDimensions | covered | GAP-COUNT-CORRECTION-HISTORY-REPLAY |
 | dimension-reclassification | 30 | ResourceDimensions, ReclassificationConservation, InventoryOperation, PlacementGraph | covered | — |
-| durable-protocol | 93 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
+| durable-protocol | 100 | InventoryOperation, PublishedHeadCAS, RepairLiveness, DurableTransferRefinement, SnapshotSupersededWorkflow | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED, GAP-PRODUCTION-STORAGE-SCALE-GC, GAP-HASH-COLLISION-ASSUMPTION |
 | external-plugin-boundary | 4 | CatalogPublication | explicit-gap | GAP-EXTERNAL-MIGRATION-CALLBACKS, GAP-LEGACY-SOURCE-INTERPRETATION |
 | facade-construction | 2 | InventoryOperation | covered | GAP-EXTERNAL-CLOCK, GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | fungibility-movement | 3 | FungibilityPool, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, PublishedHeadCAS | covered | GAP-FUNGIBILITY-EXACT-SEARCH-BOUND |
@@ -65,17 +65,17 @@ Any added/removed method, callable export, class method, type field, field type,
 | packaging-reclassification | 4 | PackagingIdentity, ReclassificationConservation, DualMeasure, InventoryOperation | covered | — |
 | placement-command | 18 | PlacementGraph, ResourceDimensions, UseByReservation, CorrectionHistory, InventoryOperation | covered | — |
 | pure-exact-value | 90 | DualMeasure, PackagingIdentity | covered | — |
-| read-current | 34 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
+| read-current | 39 | PublishedHeadCAS, ResourceDimensions, PlacementGraph, UseByReservation, ReservationScope, CollectionView, FungibilityPool, CorrectionHistory | covered | — |
 | read-history | 18 | HistoricalRepair, CorrectionHistory, PublishedHeadCAS | covered | — |
 | read-snapshot | 24 | PublishedHeadCAS, PlacementGraph | covered | GAP-DB-IMPLEMENTATION-UNBOUNDED |
 | reservation | 19 | ReservationSafety, ReservationScope, UseByReservation, InventoryOperation | covered | — |
 | revision-transition | 3 | RevisionTransition, CatalogPublication, InventoryOperation, PublishedHeadCAS, ReservationScope | covered | — |
-| scrap | 5 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
+| scrap | 5 | RecordedDeficit, InventoryOperation, PackagingIdentity, DualMeasure, ReservationScope, UseByReservation | covered | — |
 | stock-issue | 4 | InventoryOperation, PackagingIdentity, DualMeasure, ReservationSafety, UseByReservation | covered | — |
 | stock-policy-issue | 2 | InventoryOperation, ReservationScope, ReservationSafety, UseByReservation, PackagingIdentity, RecordedDeficit, FungibilityPool | covered | — |
-| stock-policy-transfer | 2 | ResourceDimensions, PlacementGraph, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, FungibilityPool | covered | — |
+| stock-policy-transfer | 2 | RecordedDeficit, ResourceDimensions, PlacementGraph, DurableTransferRefinement, ReservationScope, ReservationSafety, UseByReservation, InventoryOperation, FungibilityPool | covered | — |
 | stock-receipt | 5 | InventoryOperation, PublishedHeadCAS, PackagingIdentity, DualMeasure, ResourceDimensions, PlacementGraph | covered | — |
-| stock-transfer | 2 | ResourceDimensions, PlacementGraph, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
+| stock-transfer | 2 | RecordedDeficit, ResourceDimensions, PlacementGraph, DurableTransferRefinement, InventoryOperation, PackagingIdentity | covered | — |
 | storage-integrity | 15 | InventoryOperation, PublishedHeadCAS | covered | GAP-HASH-COLLISION-ASSUMPTION |
 | traceability | 9 | TraceabilityGraph, TraceabilityAssociation, InventoryOperation | covered | GAP-GRAPH-ADVERSARIAL-SEARCH |
 | transfer-lifecycle | 11 | TransferLifecycle, ResourceDimensions, ReservationSafety, InventoryOperation, DurableTransferRefinement, PublishedHeadCAS, PackagingIdentity, FungibilityPool | covered | — |
@@ -86,15 +86,15 @@ Any added/removed method, callable export, class method, type field, field type,
 
 | Classification | Fields |
 |---|---:|
-| abstract-semantic | 1357 |
+| abstract-semantic | 1404 |
 | application decoration | 13 |
-| identity/retry-semantic | 838 |
+| identity/retry-semantic | 849 |
 | observational/audit-only | 595 |
 | unsupported/unmodelled | 17 |
 
 ## Kernel reference-adapter seam
 
-The finite refinement suite runs the core façade against the memory reference adapter. Mongo/SQLite adapter and Shinebright application-call evidence belong to downstream integration repositories and are not executed here.
+The finite refinement suite runs the core façade against the memory reference adapter. Downstream integrations must verify their Mongo/SQLite adapters and application calls.
 
 | Kernel call | Family | Required evidence |
 |---|---|---|

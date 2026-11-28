@@ -12,3 +12,10 @@ export * from "./coordinator.js";
 export * from "./integrity.js";
 /** Published world shape persisted by a durable adapter. */
 export * from "./world.js";
+
+/** Exact signed stock and claim evidence returned by indexed planning adapters. */
+export type { InventoryScopedStockPool, InventoryScopedStockPosition } from "./stock-scope.js";
+
+/** Scoped physical availability for indexed stock/lot readers. */
+export { readInventoryScopedStockAvailability, type ReadInventoryScopedStockAvailabilityInput } from "./scoped-availability.js";
+export type { InventoryPhysicalAvailabilityRevisionSummary } from "./availability.js";

@@ -8,7 +8,14 @@ import {
 } from "./catalog.js";
 import type { InventoryStockPosition } from "./model.js";
 import { inventoryMeasurementAt } from "./measurements.js";
-import { compareQuantity, zeroQuantity } from "./quantity.js";
+import { parseQuantity, quantityEq, type Quantity } from "./quantity.js";
+
+/** Require one primary resource for a positive serialized position. */
+export function assertInventoryActiveSerialQuantity(serialIdentity: string, primary: Quantity): void {
+  if (!quantityEq(primary, parseQuantity("1", primary.unit))) {
+    throw new Error(`Active serial ${serialIdentity} must represent exactly one primary resource.`);
+  }
+}
 
 /** Reject unsupported wire discriminators before any amount-specific catalogue lookup or durable planning. */
 export function assertInventoryAmountKind(amount: InventoryAmount): void {
@@ -36,6 +43,18 @@ export function positionHasUnfixedIndependentMeasuredContents(
   item: InventoryItemDefinitionRevision,
   packaging?: InventoryPackagingDefinitionRevision
 ): boolean {
+  return itemHasUnfixedIndependentMeasuredContents(item, packaging,
+    /** A nonzero optional axis must be preserved just like a required one. */
+    (axis) => inventoryMeasurementAt(position.measurements, axis.axisId, axis.unit).amountMinor !== 0,
+  );
+}
+
+/** Test the same independent-axis rule against stored or working measurements. */
+export function itemHasUnfixedIndependentMeasuredContents(
+  item: InventoryItemDefinitionRevision,
+  packaging: InventoryPackagingDefinitionRevision | undefined,
+  axisIsNonzero: (axis: InventoryItemDefinitionRevision["independentAxes"][number]) => boolean,
+): boolean {
   for (const axis of item.independentAxes) {
     if (
       packaging?.fixedContents.independent.some(
@@ -45,14 +64,9 @@ export function positionHasUnfixedIndependentMeasuredContents(
     ) {
       continue;
     }
-    const measured = inventoryMeasurementAt(
-      position.measurements,
-      axis.axisId,
-      axis.unit
-    );
     if (
       axis.requirement === InventoryMeasurementRequirement.Required ||
-      compareQuantity(measured, zeroQuantity(axis.unit, measured.decimals)) !== 0
+      axisIsNonzero(axis)
     ) {
       return true;
     }

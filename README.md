@@ -208,6 +208,8 @@ For a standalone place, `placement.move({ nodeId, into })` changes only the node
 
 An embodied resource cannot be issued, scrapped, transformed away, or de-individualized while its node has direct stock or child nodes. `placement.moveContents({ nodeId, into })` evacuates every direct stock row and direct child node as one event; nested descendants remain under their immediate child. Once empty, destruction retires the node with the resource, while de-individualization returns one unit to fungible stock and retires the old serial/node identity. Rebuildable parent/child, direct-stock, serial, and embodiment indexes accelerate these checks without becoming another source of physical truth.
 
+On indexed storage, moving direct contents reads the source's exact rows and immediate child bindings plus the destination's ancestry. Stock, independently moved child edges, and edges driven by embodied serials publish together in the same event and revision.
+
 `stock.detach(...)` removes an exact quantity from its known direct placement while keeping it in current inventory. `stock.markMissing(...)` records that the unresolved cohort is genuinely missing. `stock.place(...)` gives detached/missing stock a new known direct placement. InventoryOnce derives and preserves the lifecycle identity; callers do not invent graph edges or cohort IDs.
 
 `read.whereabouts()` returns current unresolved lifecycles with origin provenance. `read.whereaboutsHistory()` also returns resolved lifecycles, including later placement, issue, scrap, count adjustment, correction, or historical-repair events. Broad on-hand reporting includes unresolved stock as accounted truth, while ordinary usable availability, reservations, and FIFO/FEFO picking exclude it until placement is known again.
@@ -383,11 +385,11 @@ so incompatible package/reference ratios cannot produce fractional packages. Ind
 or otherwise unusual mappings remain valid for exact summaries, but callers must supply explicit
 measured movement lines instead of asking the allocator to guess a split.
 
-Pool allocation searches FIFO/FEFO candidates across members and accepts only a complete assignment that
-leaves all existing item reservations feasible at durable record time. Physical use-by remains evaluated
-at event occurrence time, but backdating cannot bypass a claim already present when the operation commits.
-Transfer previews/commands simulate the destination as well as the source removal, so a broad claim may
-remain feasible across placement scopes while an exactly allocated source row cannot move underneath its claim.
+Pool allocation searches FIFO/FEFO candidates across members. The reservation-aware preview simulates
+source removal and transfer arrivals against claims active at the selected reservation time. Ordinary
+physical commands prefer a complete assignment that preserves those claims at durable record time and
+use the physical assignment when no claim-preserving assignment can fill the report. Physical use-by
+is evaluated at event occurrence time.
 The emitted event still names the actual selected item revision, package, lot, serial, and direct placement; the
 pool revision/common-basis quantities are retained as audit evidence, not as synthetic pooled stock.
 
@@ -412,15 +414,31 @@ A clinic may explicitly configure `InventoryDeficitPolicy.Record`. In that mode,
 - remains visible after later receipts until an explicit correction/count/business action resolves the liability;
 - retains the same operation identity, changed-intent rejection, publication, repair, and audit semantics as every other InventoryOnce operation.
 
+In Record mode, a reported transfer may contain both a witnessed part and an unwitnessed shortage. The witnessed part retains its real position identity, source FIFO age, and line evidence. `event.unwitnessedStockMovements` identifies the exact signed source and unlabelled arrival for the remainder. It carries no lot, serial, source-age or cost evidence. Policy scrap keeps the reported reason and records its unwitnessed quantity at an unlabelled signed source. When witnessed and unwitnessed quantities share an exact row, the stock effect is their total and any line evidence applies to the witnessed remainder after subtracting the typed unwitnessed portion. The existing tracking and intact-package requirements still apply.
+
+An unlabelled debit settles against the balance at the same exact position. If five unlabelled pieces are on hand and the report has two unwitnessed pieces, three remain at the source and the event still records both unwitnessed pieces. A witnessed arrival can also pay down a negative destination balance. Its FIFO age applies to any positive stock that remains at the destination.
+
+Structured transfer lifecycle stages require physical source stock during historical replay. A proposed correction that removes that backing stock returns an `invalid-history` conflict that identifies the lifecycle failure.
+
 Migration may therefore preserve coherent clinic truth such as positive tracked lots plus a negative `__untracked__` row when their signed sum equals the parent balance. A negative opening is not synthesized as a receipt: it compiles to an explicit Issue deficit event. Unit identity, algebra, and unresolved workflow rows still fail closed.
 
 ## Reservations after physical loss
 
-Normal issues/transfers/reclassifications and new claims are rejected if they would make the active claim set infeasible. Count reconciliation, correction, and scrap record explicit physical truth even when reality makes claims short.
+Ordinary issues, transfers, reclassifications, cart moves, counts, corrections, and scrap record what happened even when claims become or remain short. Policy recording prefers unallocated stock when it can fill the request. Claims and exact allocation evidence stay in place. Explicit reserve, refine, and allocate still require feasible claims, and consumption still requires the exact recorded fulfillment.
 
 Call `inventory.read.reservationFeasibility()` after those operations. It checks current published stock against claims active at the authority clock time. Pass an exact time as `inventory.read.reservationFeasibility(at)` to use reservation creation, expiry, and terminal-status intervals at that time; this does not rewind the stock projection. It returns each competing item/axis group with exact `requested`, maximum `fulfillable`, and `shortage` quantities plus the affected reservation IDs. Lifecycle commands cannot be dated before creation/an earlier lifecycle change or after their durable record time. Late physical truth must come through scrap, count reconciliation, or correction instead of backdating the current claim book.
 
 ## Rebuildable performance indexes
+
+Indexed adapters can serve ordinary FIFO/FEFO planning and stock summaries from the selected physical
+pools at one published revision. A batch plans its requests in order and commits one event and one
+receipt. Current exact holds, lot expiry, ancestor use-by and FIFO origins stay with the affected
+positions. Repeating an operation returns its frozen allocation evidence, even after the chosen stock
+has moved. The `/storage` helper `readInventoryScopedStockAvailability` exposes exact physical,
+expired, deficit and held capacity for a selected item revision. The scale measurements for scoped
+availability cover that helper. The public `inventory.read.availability` report reads the full published
+world so it can include broad and unbacked claims and global feasibility.
+
 
 Correctness does not require hot reads to replay or scan the complete journal. The projection rebuilds
 and durably publishes several derived indexes with the same world revision:
@@ -501,11 +519,11 @@ pnpm assurance
 pnpm conformance:check
 ```
 
-The audit enumerates every public API and semantic field, validates every referenced TLA symbol, requires executable witnesses for state/result refinements or emits an explicit gap, and includes the migration/storage machinery. Bounded traces in this standalone repository execute the real facade against the memory reference adapter. Mongo/SQLite adapter evidence and Shinebright's receive, issue, transfer, and absolute-count seam are downstream integration responsibilities and are not claimed as executable evidence here. See `formal/IMPLEMENTATION_CONFORMANCE.md`.
+The audit enumerates every public API and semantic field, validates every referenced TLA symbol, requires executable witnesses for state/result refinements or emits an explicit gap, and includes the migration/storage machinery. Bounded traces in this standalone repository execute the real facade against the memory reference adapter. Downstream integrations must verify their Mongo/SQLite adapters and the application calls for receipt, issue, transfer, and absolute count. See `formal/IMPLEMENTATION_CONFORMANCE.md`.
 
 ## Formal boundary and future work
 
-`pnpm formal` checks bounded TLA+ models for generic placement topology, ancestor-move stability, detached/missing resource dimensions, heterogeneous composition revisions, read-only collection views, explicit revision-frozen fungibility, broad reservations (including unavailable unplaced stock and shortage after explicit physical loss), association/genealogy meanings, movement-safe counts, dual measurements, distributed rights, correction history, complete-plan durable publication, refinement, repair liveness, and package identity.
+`pnpm formal` checks bounded TLA+ models for generic placement topology, ancestor-move stability, detached/missing resource dimensions, heterogeneous composition revisions, read-only collection views, explicit revision-frozen fungibility, broad reservations (including unavailable unplaced stock and shortage after ordinary physical recording), association/genealogy meanings, movement-safe counts, dual measurements, distributed rights, correction history, complete-plan durable publication, refinement, repair liveness, and package identity.
 
 The composition and collection models were committed before their TypeScript surfaces. `CompositionRevision`
 uses the exact 21+7 and 20+5+3 generations and proves revision-pinned opening, transfer preservation,
@@ -518,8 +536,7 @@ The fungibility model was likewise committed before the TypeScript surface. The 
 executable companions for revisioned definitions, exact common-basis summaries, reservation-aware
 FIFO/FEFO selection, and issue/transfer/scrap events that retain member identity. Broad reservations
 whose own claim is directly denominated in a fungibility-pool basis remain a modeled future extension;
-current pool movements protect the existing item-reservation book rather than pretending one item claim
-is a cross-item pool claim. One-way/priority/clinical substitution remains outside mutual fungibility.
+current pool movements retain the existing item-reservation book and its exact item claims. One-way/priority/clinical substitution remains outside mutual fungibility.
 
 Most single-authority semantics above now have TypeScript companions. `DistributedRights` remains a future design constraint for offline/multi-writer stock. The TLA+ models are bounded state machines, not a proof of arbitrary TypeScript or arbitrary database code. See `formal/README.md`, `formal/FOUNDATIONS.md`, and `formal/TOOLING.md` for the exact claims.
 
@@ -548,7 +565,7 @@ pnpm assurance           # audit the current source against those manifests
 pnpm formal              # run every registered bounded TLA+ model
 ```
 
-The assurance audit includes the `/migrations` surface and every public input/output field. It requires executable state/result abstraction, bounded real-facade traces, retry/rejection semantics, and the memory reference-adapter/failpoint evidence owned by this repository. Mongo/SQLite adapter conformance and Shinebright's `receiveMany`, `issueManyByPolicy`, `transferManyByPolicy`, and `counts.replaceAbsolute` seam remain explicit downstream evidence obligations. See `formal/IMPLEMENTATION_CONFORMANCE.md` and `formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json` for the exact claims and remaining bounds.
+The assurance audit includes the `/migrations` surface and every public input/output field. It requires executable state/result abstraction, bounded real-facade traces, retry/rejection semantics, and the memory reference-adapter/failpoint evidence owned by this repository. Downstream integrations must verify Mongo/SQLite adapter conformance and their calls to `receiveMany`, `issueManyByPolicy`, `transferManyByPolicy`, and `counts.replaceAbsolute`. See `formal/IMPLEMENTATION_CONFORMANCE.md` and `formal/implementation-conformance/FORMAL_COVERAGE_GAPS.json` for the exact claims and remaining bounds.
 
 ## Opening-snapshot workflow disposition
 

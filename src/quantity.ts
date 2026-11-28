@@ -1,4 +1,6 @@
 /** Exact physical-quantity arithmetic. InventoryOnce never uses epsilon comparisons. */
+import { InventoryQuantityRepresentationError, leastCommonWorkingQuantityMultiple, quantityGreatestCommonDivisor, storableQuantityDigits } from "./quantity-storage.js";
+
 declare const unitCodeBrand: unique symbol;
 
 /** Largest decimal scale accepted for one durable physical quantity. */
@@ -127,28 +129,27 @@ export function quantityEq(left: Quantity, right: Quantity): boolean {
 export function addQuantity(left: Quantity, right: Quantity): Quantity {
   assertSameUnit(left, right);
   const decimals = Math.max(left.decimals, right.decimals);
-  return quantity({
-    amountMinor: safeNumber(
-      integerAtDecimals(left, decimals) + integerAtDecimals(right, decimals),
-      "Quantity addition",
-    ),
-    decimals,
-    unit: left.unit,
-  });
+  return quantityAtStorableScale(
+    integerAtDecimals(left, decimals) + integerAtDecimals(right, decimals),
+    decimals, left.unit, "Quantity addition",
+  );
 }
 
 /** Subtract two exact same-unit quantities without discarding decimal digits. */
 export function subtractQuantity(left: Quantity, right: Quantity): Quantity {
   assertSameUnit(left, right);
   const decimals = Math.max(left.decimals, right.decimals);
-  return quantity({
-    amountMinor: safeNumber(
-      integerAtDecimals(left, decimals) - integerAtDecimals(right, decimals),
-      "Quantity subtraction",
-    ),
-    decimals,
-    unit: left.unit,
-  });
+  return quantityAtStorableScale(
+    integerAtDecimals(left, decimals) - integerAtDecimals(right, decimals),
+    decimals, left.unit, "Quantity subtraction",
+  );
+}
+
+/** Store an exact arithmetic result without discarding any significant digits. */
+function quantityAtStorableScale(minor: bigint, decimals: number, unit: UnitCode, label: string): Quantity {
+  const stored = storableQuantityDigits(minor, decimals);
+  if (stored === undefined) throw new InventoryQuantityRepresentationError(`${label} exceeds the safe integer storage range.`);
+  return quantity({ ...stored, unit });
 }
 
 /** Flip the sign of one exact quantity without changing its unit/scale. */
@@ -166,14 +167,12 @@ export function multiplyQuantityByWholeNumber(
   multiplier: number,
 ): Quantity {
   assertSafeInteger(multiplier, "Quantity whole-number multiplier");
-  return quantity({
-    amountMinor: safeNumber(
-      BigInt(value.amountMinor) * BigInt(multiplier),
-      "Quantity whole-number multiplication",
-    ),
-    decimals: value.decimals,
-    unit: value.unit,
-  });
+  return quantityAtStorableScale(
+    BigInt(value.amountMinor) * BigInt(multiplier),
+    value.decimals,
+    value.unit,
+    "Quantity whole-number multiplication",
+  );
 }
 
 /** Multiply by an exact positive target-unit-per-source-unit factor. */
@@ -224,7 +223,7 @@ export function quantityWholeMultipleCount(
   return safeNumber(valueInteger / wholeUnitInteger, "Whole-unit quantity count");
 }
 
-/** Return the least positive quantity divisible by both exact same-unit quantities. */
+/** Return the least positive exact common multiple at the closest storable scale. */
 export function leastCommonQuantityMultiple(
   left: Quantity,
   right: Quantity,
@@ -232,16 +231,10 @@ export function leastCommonQuantityMultiple(
   assertSameUnit(left, right);
   positiveQuantity(left, "Left quantity multiple");
   positiveQuantity(right, "Right quantity multiple");
-  const decimals = Math.max(left.decimals, right.decimals);
-  const leftInteger = integerAtDecimals(left, decimals);
-  const rightInteger = integerAtDecimals(right, decimals);
-  const divisor = gcd(leftInteger, rightInteger);
-  const multiple = (leftInteger / divisor) * rightInteger;
-  return quantity({
-    amountMinor: safeNumber(multiple, "Least common quantity multiple"),
-    decimals,
-    unit: left.unit,
-  });
+  const multiple = leastCommonWorkingQuantityMultiple(left, right);
+  return quantityAtStorableScale(
+    BigInt(multiple.amountMinor), multiple.decimals, multiple.unit, "Least common quantity multiple",
+  );
 }
 
 /** Validate and reduce one positive safe-integer conversion ratio. */
@@ -251,7 +244,7 @@ export function quantityRatio(numerator: number, denominator = 1): QuantityRatio
   if (numerator <= 0 || denominator <= 0) {
     throw new Error("Quantity conversion ratio must be positive.");
   }
-  const divisor = gcd(BigInt(numerator), BigInt(denominator));
+  const divisor = quantityGreatestCommonDivisor(BigInt(numerator), BigInt(denominator));
   return {
     numerator: safeNumber(BigInt(numerator) / divisor, "Quantity ratio numerator"),
     denominator: safeNumber(BigInt(denominator) / divisor, "Quantity ratio denominator"),
@@ -313,7 +306,7 @@ function exactFractionQuantity(
   }
   let numerator = rawNumerator;
   let denominator = rawDenominator;
-  const divisor = gcd(abs(numerator), denominator);
+  const divisor = quantityGreatestCommonDivisor(abs(numerator), denominator);
   numerator /= divisor;
   denominator /= divisor;
 
@@ -328,10 +321,14 @@ function exactFractionQuantity(
     fives += 1;
   }
   if (denominator !== 1n) {
-    throw new Error(`${label} has a non-terminating decimal result.`);
+    throw new InventoryQuantityRepresentationError(`${label} has a non-terminating decimal result.`);
   }
   const decimals = Math.max(twos, fives);
-  assertDecimals(decimals);
+  if (decimals > MAXIMUM_QUANTITY_DECIMALS) {
+    throw new InventoryQuantityRepresentationError(
+      `Quantity decimals must be an integer from 0 through ${MAXIMUM_QUANTITY_DECIMALS}.`,
+    );
+  }
   const scaled =
     numerator *
     (2n ** BigInt(decimals - twos)) *
@@ -355,18 +352,6 @@ export function integerAtDecimals(
   return BigInt(value.amountMinor) * powerOfTen(targetDecimals - value.decimals);
 }
 
-/** Return the greatest common divisor for two integers used in exact conversion math. */
-function gcd(left: bigint, right: bigint): bigint {
-  let a = abs(left);
-  let b = abs(right);
-  while (b !== 0n) {
-    const next = a % b;
-    a = b;
-    b = next;
-  }
-  return a === 0n ? 1n : a;
-}
-
 /** Return a non-negative bigint without converting through floating point. */
 function abs(value: bigint): bigint {
   return value < 0n ? -value : value;
@@ -382,7 +367,7 @@ function powerOfTen(power: number): bigint {
 export function safeNumber(value: bigint, label: string): number {
   const converted = Number(value);
   if (!Number.isSafeInteger(converted)) {
-    throw new Error(`${label} exceeds the safe integer storage range.`);
+    throw new InventoryQuantityRepresentationError(`${label} exceeds the safe integer storage range.`);
   }
   return converted;
 }

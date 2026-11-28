@@ -1,4 +1,15 @@
+import { inventoryEventWhereaboutsMembership } from "./whereabouts-membership.js";
+import { candidateSubtreePositionIds } from "./stock-scope.js";
+import {
+  assertInventoryStockAgeOverride,
+  captureConservedPositiveLayerStarts,
+  inventoryConservedArrivalCanSettleDeficit,
+  replayCountScope,
+  replayEffectiveStockAge,
+  type InventoryStockAgeReplay,
+} from "./stock-age.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { addExactQuantityDigits, type ExactQuantityDigits } from "./quantity-storage.js";
 import {
   cloneInventorySparseRecord,
   createInventorySparseRecord,
@@ -25,6 +36,7 @@ import {
   zeroInventoryMeasurements,
 } from "./measurements.js";
 import {
+  assertInventoryIdentity,
   inventoryLotIdentity,
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
@@ -37,15 +49,16 @@ import {
   applyInventoryPlacementChanges,
   emptyInventoryPlacementState,
   inventoryPlacementParentNodeId,
+  type InventoryPlacementChange,
   type InventoryPlacementState,
 } from "./placement.js";
 import {
   compareQuantity,
   parseQuantity,
-  quantityEq,
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
+import { assertInventoryActiveSerialQuantity } from "./stock-amount-rules.js";
 import {
   InventoryOptionalIdentityConstraintKind,
   inventoryStockPositionMatchesNormalizedSelector,
@@ -370,6 +383,22 @@ function cloneInventoryProjectionForEventBatch(
   };
 }
 
+/** Prepared stock and placement selection used only by a private count cut. */
+interface InventoryCountProjectionScope {
+  /** Historical placement nodes that can affect membership in the counted subtrees. */
+  readonly placementNodeIds: ReadonlySet<string>;
+  /** Placement-changing events that can affect membership or ancestry in the counted subtrees. */
+  readonly placementEventIds?: ReadonlySet<string>;
+  /** Exact (eventId, nodeId) edges authorized in the counted placement subgraph. */
+  readonly retainedPlacementEdgeKeys?: ReadonlySet<string>;
+  /** Event/node pairs that leave the tracked subgraph and must replay as unplacements. */
+  readonly detachedPlacementEdgeKeys?: ReadonlySet<string>;
+  /** Stock selected by the count or needed to fund it at this sequence. */
+  readonly includesPosition: (position: InventoryStockPositionKey, recordSequence: number) => boolean;
+  /** Complete structured transfers whose lines can contribute to the observed stock. */
+  readonly transferIds: ReadonlySet<string>;
+}
+
 /**
  * Shared reducer. Whole-history replay owns a fresh private projection and may mutate its maps
  * to avoid cloning every growing index once per event; live commits always use copy-on-write.
@@ -378,7 +407,9 @@ function applyInventoryCommittedEventInternal(
   { catalog, state, event, deficitPolicy }: ApplyInventoryCommittedEventInput,
   mutateProjection: boolean,
   projectTraceability: boolean,
-  ownsPlacement = mutateProjection
+  ownsPlacement = mutateProjection,
+  replayStockAge?: InventoryStockAgeReplay,
+  countScope?: InventoryCountProjectionScope
 ): ApplyInventoryCommittedEventResult {
   const normalizedDraft = defineInventoryEvent({ catalog, event });
   const normalizedEvent = commitInventoryEvent(
@@ -433,10 +464,23 @@ function applyInventoryCommittedEventInternal(
       `Inventory recordSequence ${normalizedEvent.recordSequence} already exists.`
     );
   }
+  // Normalize the full fact before limiting private replay to the stock the count can depend on.
+  const transferId = normalizedEvent.transferLifecycle?.transferId;
+  const replayTransfer = transferId !== undefined && (countScope === undefined || countScope.transferIds.has(transferId));
+  const stockEvent = countScope === undefined
+    ? normalizedEvent
+    : transferId === undefined
+      ? countScopedStockEvent(normalizedEvent, countScope)
+      : replayTransfer ? normalizedEvent : { ...normalizedEvent, stockEffects: [], positiveLayerProvenanceTransfers: [] };
+  const eventPlacementDefinitions = normalizedEvent.placementNodeDefinitions ?? [];
+  const placementNodeDefinitions = countScope === undefined ? eventPlacementDefinitions : eventPlacementDefinitions.filter(
+    /** Retain definitions for the placement component the observation uses. */
+    ({ nodeId }) => countScope.placementNodeIds.has(nodeId)
+  );
   /** Whether this event can change the correction ownership index. */
   const correctionProjectionChanges = normalizedEvent.correction !== undefined;
   /** Whether stock effects touch a serial historically/currently bound to a node. */
-  const embodiedSerialStockChanges = normalizedEvent.stockEffects.some(
+  const embodiedSerialStockChanges = stockEvent.stockEffects.some(
     /** Detect one serial whose lifetime or placement can change embodied topology. */
     (effect) =>
       effect.position.serialId !== undefined &&
@@ -449,15 +493,15 @@ function applyInventoryCommittedEventInternal(
   const placementNodeProjectionChanges =
     correctionProjectionChanges ||
     embodiedSerialStockChanges ||
-    (normalizedEvent.placementNodeDefinitions?.length ?? 0) > 0;
+    placementNodeDefinitions.length > 0;
   /** Whether lot metadata/root ownership needs a private copy for this event. */
   const lotProjectionChanges =
     correctionProjectionChanges ||
     (normalizedEvent.lotDefinitions?.length ?? 0) > 0;
   /** Whether any current stock/index/FIFO/serial value can change. */
   const stockProjectionChanges =
-    normalizedEvent.stockEffects.length > 0 ||
-    (normalizedEvent.positiveLayerProvenanceOverrides?.length ?? 0) > 0;
+    stockEvent.stockEffects.length > 0 ||
+    (stockEvent.positiveLayerProvenanceOverrides?.length ?? 0) > 0;
   const correctionEventIdByCorrectedEventId: Record<string, string> =
     mutateProjection
       ? (state.correctionEventIdByCorrectedEventId as Record<string, string>)
@@ -566,7 +610,7 @@ function applyInventoryCommittedEventInternal(
     normalizedEvent
   );
   const replacementPlacementNodeIds = new Set<string>();
-  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+  for (const definition of placementNodeDefinitions) {
     replacementPlacementNodeIds.add(definition.nodeId);
   }
   /** Only nodes redefined or removed by this event can change serial binding identities. */
@@ -598,7 +642,7 @@ function applyInventoryCommittedEventInternal(
       }
     }
   }
-  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+  for (const definition of placementNodeDefinitions) {
     const nodeId = definition.nodeId;
     rememberPreviousPlacementNode(nodeId);
     const rootEventId =
@@ -845,11 +889,9 @@ function applyInventoryCommittedEventInternal(
   applyIndexedIdentityMutations(lotIdentitiesByItemId, lotIndexMutations);
 
   /** Structured transfer truth is rebuilt from the same immutable event before publication. */
-  const transfers = applyInventoryTransferLifecycleEvent(
-    state.transfers,
-    state.positions,
-    normalizedEvent
-  );
+  const transfers = replayTransfer
+    ? applyInventoryTransferLifecycleEvent(state.transfers, state.positions, normalizedEvent)
+    : state.transfers;
 
   /** Copy used while deriving the next all-or-nothing stock projection. */
   const positions: Record<string, InventoryStockPosition> = mutateProjection
@@ -923,14 +965,21 @@ function applyInventoryCommittedEventInternal(
   const touchedPositionIdsBySerialIdentity = new Map<string, Set<string>>();
   /** Conserved moves carry the oldest current source/destination layer into the destination. */
   const conservedPositiveLayerStartByDestinationId =
-    captureConservedPositiveLayerStarts(state, normalizedEvent);
-  for (const effect of normalizedEvent.stockEffects) {
+    captureConservedPositiveLayerStarts(
+      stockEvent,
+      /** Read a FIFO start from the published state before applying any effect. */
+      (positionId) => state.positiveLayerStartedAtEpochMsByPositionId[positionId],
+      replayStockAge
+    );
+  for (const effect of stockEvent.stockEffects) {
+    /** Embodied serial stock must still have a positive instance after a move. */
+    let embodiedNodeId: string | undefined;
     if (effect.position.serialId !== undefined) {
       const serialIdentity = inventorySerialIdentity(
         effect.position.itemId,
         effect.position.serialId
       );
-      const embodiedNodeId = inventorySparseRecordValue(
+      embodiedNodeId = inventorySparseRecordValue(
         placementNodeIdByEmbodiedSerialIdentity,
         serialIdentity
       );
@@ -961,21 +1010,25 @@ function applyInventoryCommittedEventInternal(
       earlier?.measurements ??
       zeroInventoryMeasurements(effect.measurementsDelta);
     const next = addInventoryMeasurements(current, effect.measurementsDelta);
-    assertInventoryMeasurementsFollowPrimarySign(
-      next,
-      `Stock position ${identity}`
-    );
-    // Historical planners reject newly exposed shortages; a verified correction
-    // may leave a previously recorded deficit open while improving it.
-    if (
-      deficitPolicy === InventoryDeficitPolicy.Reject &&
-      normalizedEvent.kind !== InventoryEventKind.Correction &&
-      normalizedEvent.kind !== InventoryEventKind.HistoricalRepair
-    ) {
-      nonNegativeInventoryMeasurements(next, `Stock position ${identity}`);
+    // A count cut can omit receipts that backed primary and independent axes at publication.
+    // Keep the exact signed axes in the private cut while preserving serial and transfer-lifecycle checks.
+    if (replayStockAge !== "occurrence-cut" || effect.position.serialId !== undefined ||
+        normalizedEvent.transferLifecycle !== undefined) {
+      assertInventoryMeasurementsFollowPrimarySign(next, `Stock position ${identity}`);
+      // A verified correction may improve a previously recorded deficit without closing it.
+      if (deficitPolicy === InventoryDeficitPolicy.Reject && normalizedEvent.kind !== InventoryEventKind.Correction &&
+          normalizedEvent.kind !== InventoryEventKind.HistoricalRepair) {
+        nonNegativeInventoryMeasurements(next, `Stock position ${identity}`);
+      }
     }
     const wasPositive = quantityIsPositive(current.primary.quantity);
     const isPositive = quantityIsPositive(next.primary.quantity);
+    if (!isPositive && conservedPositiveLayerStartByDestinationId.has(identity) &&
+      (embodiedNodeId !== undefined || !inventoryConservedArrivalCanSettleDeficit(normalizedEvent, effect.position.serialId))) {
+      throw new Error(
+        `Conserved FIFO provenance destination ${identity} is not positive after its event.`
+      );
+    }
     if (inventoryMeasurementsAreZero(next)) {
       deleteInventorySparseRecordValue(positions, identity);
       if (effect.position.whereaboutsId !== undefined) {
@@ -1083,9 +1136,9 @@ function applyInventoryCommittedEventInternal(
       position === undefined ||
       !quantityIsPositive(position.measurements.primary.quantity)
     ) {
-      throw new Error(
-        `Conserved FIFO provenance destination ${identity} is not positive after its event.`
-      );
+      // The event still witnessed this conserved route. All incoming stock
+      // paid down the signed balance, leaving no current layer to age.
+      continue;
     }
     setInventorySparseRecordValue(
       positiveLayerStartedAtEpochMsByPositionId,
@@ -1093,37 +1146,31 @@ function applyInventoryCommittedEventInternal(
       startedAtEpochMs
     );
   }
-  for (const override of normalizedEvent.positiveLayerProvenanceOverrides ??
+  for (const override of stockEvent.positiveLayerProvenanceOverrides ??
     []) {
     const identity = inventoryStockPositionIdentity(override.position);
     const position = positions[identity];
-    if (override.startedAtEpochMs === undefined) {
-      if (
-        position !== undefined &&
-        quantityIsPositive(position.measurements.primary.quantity)
-      ) {
-        throw new Error(
-          `Correction cannot remove positive-layer provenance from positive position ${identity}.`
-        );
-      }
+    // Counts need signed balances from included postings. A full-ledger
+    // correction age can refer to a layer outside that observation cut.
+    const startedAtEpochMs = replayStockAge === "occurrence-cut"
+      ? inventorySparseRecordValue(positiveLayerStartedAtEpochMsByPositionId, identity)
+      : override.startedAtEpochMs;
+    assertInventoryStockAgeOverride(
+      startedAtEpochMs,
+      position !== undefined && quantityIsPositive(position.measurements.primary.quantity),
+      identity
+    );
+    if (startedAtEpochMs === undefined) {
       deleteInventorySparseRecordValue(
         positiveLayerStartedAtEpochMsByPositionId,
         identity
       );
       continue;
     }
-    if (
-      position === undefined ||
-      !quantityIsPositive(position.measurements.primary.quantity)
-    ) {
-      throw new Error(
-        `Correction cannot assign positive-layer provenance to non-positive position ${identity}.`
-      );
-    }
     setInventorySparseRecordValue(
       positiveLayerStartedAtEpochMsByPositionId,
       identity,
-      override.startedAtEpochMs
+      startedAtEpochMs
     );
   }
   refreshTouchedSerialIndexes({
@@ -1131,7 +1178,11 @@ function applyInventoryCommittedEventInternal(
     touchedPositionIdsBySerialIdentity,
     positivePositionIdBySerialIdentity,
   });
-  for (const change of normalizedEvent.placementChanges ?? []) {
+  const eventPlacementChanges = normalizedEvent.placementChanges ?? [];
+  const placementChanges = countScope === undefined
+    ? eventPlacementChanges
+    : filterScopedPlacementChanges(normalizedEvent.eventId, eventPlacementChanges, countScope);
+  for (const change of placementChanges) {
     const projected = inventorySparseRecordValue(placementNodes, change.nodeId);
     if (
       projected?.retiredByEventId === undefined &&
@@ -1148,7 +1199,9 @@ function applyInventoryCommittedEventInternal(
   let placement = applyInventoryPlacementChanges({
     state: state.placement,
     eventId: normalizedEvent.eventId,
-    changes: normalizedEvent.placementChanges ?? [],
+    changes: replayStockAge === "occurrence-cut"
+      ? placementChangesForOccurrenceCut(state.placement, placementChanges)
+      : placementChanges,
     mutatePrivateBatch: ownsPlacement,
     /** Resolve destination policy from the event-final projected node metadata. */
     acceptsPlacement: (nodeId) => {
@@ -1188,8 +1241,9 @@ function applyInventoryCommittedEventInternal(
       ? {}
       : { omittedHistoricalAssertionIds: normalizedEvent.historicalRepair.omittedAssertionIds }),
     retainedEvents: state.events,
+    ...(countScope === undefined ? {} : { countScope }),
   });
-  for (const definition of normalizedEvent.placementNodeDefinitions ?? []) {
+  for (const definition of placementNodeDefinitions) {
     if (definition.acceptsPlacement !== false) continue;
     const directPositions =
       inventorySparseRecordValue(
@@ -1338,6 +1392,8 @@ interface ReconcileInventoryPlacementEmbodimentsInput {
   readonly omittedHistoricalAssertionIds?: readonly string[];
   /** Previously published events used to authenticate a retrospective omission. */
   readonly retainedEvents: Readonly<Record<string, InventoryCommittedEvent>>;
+  /** Count topology scope when replaying embodied carrier edges inside a scoped count cut. */
+  readonly countScope?: InventoryCountProjectionScope;
 }
 
 /** Allow revival only when the exact retained repair's serialized retirement is omitted. */
@@ -1380,7 +1436,7 @@ function historicalRepairOmitsEmbodiedRetirement({
   return false;
 }
 
-/** Keep embodied node parent/lifetime derived from its one live serial resource. */
+/** Reconcile embodied node placement state within the shared reducer and active count scope. */
 function reconcileInventoryPlacementEmbodiments({
   previousPlacementNodes,
   previousPlacementNodeById,
@@ -1397,6 +1453,7 @@ function reconcileInventoryPlacementEmbodiments({
   supersedesCorrectionEventId,
   omittedHistoricalAssertionIds,
   retainedEvents,
+  countScope,
 }: ReconcileInventoryPlacementEmbodimentsInput): InventoryPlacementState {
   let nextPlacement = placement;
   // An initial copy-on-write transition creates the private batch forest;
@@ -1484,16 +1541,25 @@ function reconcileInventoryPlacementEmbodiments({
         nodeId
       );
       if (currentParentNodeId !== undefined) {
-        nextPlacement = applyInventoryPlacementChanges({
-          state: nextPlacement,
-          eventId,
-          changes: [{ nodeId, fromParentNodeId: currentParentNodeId }],
-          mutatePrivateBatch: ownsPlacement,
-          acceptsPlacement:
-            /** Removing an edge while retiring a node never adds a new parent. */
-            () => true,
-        });
-        ownsPlacement = true;
+        const retireChange: InventoryPlacementChange = {
+          nodeId,
+          fromParentNodeId: currentParentNodeId,
+        };
+        const scopedRetire = countScope === undefined
+          ? [retireChange]
+          : filterScopedPlacementChanges(eventId, [retireChange], countScope);
+        if (scopedRetire.length > 0) {
+          nextPlacement = applyInventoryPlacementChanges({
+            state: nextPlacement,
+            eventId,
+            changes: scopedRetire,
+            mutatePrivateBatch: ownsPlacement,
+            acceptsPlacement:
+              /** Removing an edge while retiring a node never adds a new parent. */
+              () => true,
+          });
+          ownsPlacement = true;
+        }
       }
       setInventorySparseRecordValue(placementNodes, nodeId, {
         ...projected,
@@ -1507,7 +1573,27 @@ function reconcileInventoryPlacementEmbodiments({
         `Embodied serial index ${serialIdentity} references missing stock.`
       );
     }
-    const desiredParentNodeId = position.key.placementNodeId;
+    const currentParentNodeId = inventoryPlacementParentNodeId(
+      nextPlacement,
+      nodeId
+    );
+    const rawChange: InventoryPlacementChange = {
+      nodeId,
+      ...(currentParentNodeId === undefined
+        ? {}
+        : { fromParentNodeId: currentParentNodeId }),
+      ...(position.key.placementNodeId === undefined
+        ? {}
+        : { toParentNodeId: position.key.placementNodeId }),
+    };
+    const scopedChanges = countScope === undefined
+      ? [rawChange]
+      : filterScopedPlacementChanges(eventId, [rawChange], countScope);
+    const scopedChange = scopedChanges[0];
+    if (scopedChange === undefined || scopedChange.fromParentNodeId === scopedChange.toParentNodeId) {
+      continue;
+    }
+    const desiredParentNodeId = scopedChange.toParentNodeId;
     if (desiredParentNodeId !== undefined) {
       const desiredParent = inventorySparseRecordValue(
         placementNodes,
@@ -1519,25 +1605,10 @@ function reconcileInventoryPlacementEmbodiments({
         );
       }
     }
-    const currentParentNodeId = inventoryPlacementParentNodeId(
-      nextPlacement,
-      nodeId
-    );
-    if (currentParentNodeId === desiredParentNodeId) continue;
     nextPlacement = applyInventoryPlacementChanges({
       state: nextPlacement,
       eventId,
-      changes: [
-        {
-          nodeId,
-          ...(currentParentNodeId === undefined
-            ? {}
-            : { fromParentNodeId: currentParentNodeId }),
-          ...(desiredParentNodeId === undefined
-            ? {}
-            : { toParentNodeId: desiredParentNodeId }),
-        },
-      ],
+      changes: [scopedChange],
       mutatePrivateBatch: ownsPlacement,
       acceptsPlacement:
         /** Resolve one derived embodied parent against current active node policy. */
@@ -1580,61 +1651,16 @@ function inventoryCorrectionMetadataSources(
   return [root, superseded];
 }
 
-/** Return every whereabouts lifecycle identity retained by one event or its corrected root. */
+/** Resolve the exact retained root for cohort membership before applying a correction. */
 function inventoryWhereaboutsIdsTouchedByProjectionEvent(
   state: InventoryProjectionState,
   event: InventoryCommittedEvent
 ): readonly string[] {
-  const result = new Set<string>();
-  addDirectInventoryWhereaboutsIds(result, event);
-  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
-    result.add(whereaboutsId);
-  }
-  for (const assertion of event.historicalRepair?.assertions ?? []) {
-    addDirectInventoryWhereaboutsIds(result, assertion.event);
-  }
-  if (event.correction !== undefined) {
-    const corrected = inventorySparseRecordValue(
-      state.events,
-      event.correction.correctsEventId
-    );
-    if (corrected === undefined) {
-      throw new Error(
-        "Whereabouts correction references missing event '" +
-          event.correction.correctsEventId +
-          "'."
-      );
-    }
-    addDirectInventoryWhereaboutsIds(result, corrected);
-  }
-  const ordered = [...result];
-  ordered.sort(compareInventoryIdentityText);
-  return ordered;
-}
-
-/** Add direct whereabouts identities retained in one event's stock/provenance evidence. */
-function addDirectInventoryWhereaboutsIds(
-  result: Set<string>,
-  event: InventoryEventDraft
-): void {
-  for (const effect of event.stockEffects) {
-    if (effect.position.whereaboutsId !== undefined) {
-      result.add(effect.position.whereaboutsId);
-    }
-  }
-  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-    if (transfer.from.whereaboutsId !== undefined) {
-      result.add(transfer.from.whereaboutsId);
-    }
-    if (transfer.to.whereaboutsId !== undefined) {
-      result.add(transfer.to.whereaboutsId);
-    }
-  }
-  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
-    if (override.position.whereaboutsId !== undefined) {
-      result.add(override.position.whereaboutsId);
-    }
-  }
+  const rootId = event.correction?.correctsEventId;
+  if (rootId === undefined) return inventoryEventWhereaboutsMembership(event);
+  const root = inventorySparseRecordValue(state.events, rootId);
+  if (root === undefined) throw new Error("Whereabouts correction references missing event '" + rootId + "'.");
+  return inventoryEventWhereaboutsMembership(event, root);
 }
 
 /** Stable current placement-node comparison including policy, identifiers, and metadata. */
@@ -1667,13 +1693,630 @@ function inventoryLotDefinitionFingerprint(
   ]);
 }
 
+/** Apply a retained destination relative to the topology reconstructed at observation. */
+function placementChangesForOccurrenceCut(
+  state: InventoryPlacementState,
+  changes: readonly InventoryPlacementChange[]
+): readonly InventoryPlacementChange[] {
+  if (changes.length === 0) return changes;
+  const replayChanges: InventoryPlacementChange[] = [];
+  for (const { nodeId, toParentNodeId } of changes) {
+    // The earlier parent recorded at publication can come from an omitted event.
+    const fromParentNodeId = inventoryPlacementParentNodeId(state, nodeId);
+    if (fromParentNodeId === toParentNodeId) continue;
+    replayChanges.push({
+      nodeId,
+      ...(fromParentNodeId === undefined ? {} : { fromParentNodeId }),
+      ...(toParentNodeId === undefined ? {} : { toParentNodeId }),
+    });
+  }
+  return replayChanges;
+}
+
+/** Keep only stock effects and corresponding age evidence used by a count cut. */
+function countScopedStockEvent(
+  event: InventoryCommittedEvent,
+  { includesPosition }: InventoryCountProjectionScope
+): InventoryCommittedEvent {
+  const { positiveLayerProvenanceTransfers, positiveLayerProvenanceOverrides, recordSequence } = event;
+  return {
+    ...event,
+    stockEffects: event.stockEffects.filter(
+      /** Limit stock effects to the item's balances and any needed embodiment stock. */
+      ({ position }) => includesPosition(position, recordSequence)
+    ),
+    ...(positiveLayerProvenanceTransfers === undefined ? {} : {
+      positiveLayerProvenanceTransfers: positiveLayerProvenanceTransfers.filter(
+        /** A retained arrival needs its source layer, while an isolated debit does not need its destination. */
+        ({ to }) => includesPosition(to, recordSequence)
+      ),
+    }),
+    ...(positiveLayerProvenanceOverrides === undefined ? {} : {
+      positiveLayerProvenanceOverrides: positiveLayerProvenanceOverrides.filter(
+        /** Apply FIFO overrides only to positions retained in the cut. */
+        ({ position }) => includesPosition(position, recordSequence)
+      ),
+    }),
+  };
+}
+
+/** Build the canonical key identifying an (eventId, nodeId) transition inside a scoped placement cut. */
+function placementScopedEdgeKey(eventId: string, nodeId: string): string {
+  return JSON.stringify([eventId, nodeId]);
+}
+
+/** Filter and rewrite leaving placement changes inside a count cut so former subtrees detach cleanly. */
+function filterScopedPlacementChanges(
+  eventId: string,
+  changes: readonly InventoryPlacementChange[],
+  countScope: InventoryCountProjectionScope
+): readonly InventoryPlacementChange[] {
+  const retainedEdges = countScope.retainedPlacementEdgeKeys;
+  const detachedKeys = countScope.detachedPlacementEdgeKeys;
+  const checkDetached = detachedKeys !== undefined && detachedKeys.size > 0;
+  const result: InventoryPlacementChange[] = [];
+  for (const change of changes) {
+    if (!countScope.placementNodeIds.has(change.nodeId)) continue;
+    if (countScope.placementEventIds !== undefined && !countScope.placementEventIds.has(eventId)) {
+      continue;
+    }
+    const edgeKey = retainedEdges !== undefined || checkDetached
+      ? placementScopedEdgeKey(eventId, change.nodeId)
+      : undefined;
+    if (retainedEdges !== undefined && !retainedEdges.has(edgeKey!)) continue;
+    if (checkDetached && detachedKeys.has(edgeKey!)) {
+      const { toParentNodeId: _outsideParent, ...detached } = change;
+      result.push(detached);
+      continue;
+    }
+    result.push(change);
+  }
+  return result;
+}
+
+/** Retain entire routes for serials that can affect the selected positions or their ancestry. */
+function prepareCountProjectionScope(
+  input: ProjectInventoryEventsInput & {
+    /** Internal selector dependency passed only by count reconciliation. */
+    readonly [replayCountScope]?: InventoryStockSelector;
+  },
+  events: readonly InventoryCommittedEvent[]
+): InventoryCountProjectionScope | undefined {
+  const selector = input[replayCountScope];
+  if (selector === undefined) return undefined;
+  const { withinPlacementNodeIds, ...directSelector } = selector;
+  const placement = withinPlacementNodeIds === undefined
+    ? undefined : countPlacementDependencies(events, withinPlacementNodeIds);
+  /** Exact subtree membership after the retained topology and carrier history have replayed. */
+  const observedNodes = placement === undefined ? undefined : countObservedPlacementNodes(input, events, placement);
+  /** Match the direct stock filters and placement membership at observation. */
+  const matchesObservedPosition = (position: InventoryStockPositionKey): boolean =>
+    inventoryStockPositionMatchesNormalizedSelector(position, directSelector) &&
+    (observedNodes === undefined || (position.placementNodeId !== undefined && observedNodes.has(position.placementNodeId)));
+  const serials = new Set<string>();
+  for (const event of events) {
+    for (const { position } of event.stockEffects) {
+      if (position.serialId === undefined || !matchesObservedPosition(position)) continue;
+      serials.add(inventorySerialIdentity(position.itemId, position.serialId));
+    }
+  }
+  /** Preserve all positions of each selected serial so incoming and outgoing stock remain paired. */
+  const includesObservedPosition = (position: InventoryStockPositionKey, sequence: number): boolean => {
+    if (position.serialId === undefined) return matchesObservedPosition(position);
+    const identity = inventorySerialIdentity(position.itemId, position.serialId);
+    return serials.has(identity) || sequence <= (placement?.embodiedSerialThrough.get(identity) ?? 0);
+  };
+  return {
+    placementNodeIds: placement?.nodeIds ?? new Set(),
+    ...(placement === undefined
+      ? {}
+      : {
+          placementEventIds: placement.placementEventIds,
+          retainedPlacementEdgeKeys: placement.retainedPlacementEdgeKeys,
+          detachedPlacementEdgeKeys: placement.detachedPlacementEdgeKeys,
+        }),
+    ...countStockDependencies(events, includesObservedPosition),
+  };
+}
+
+/** Derive subtree membership through the shared reducer using its placement and carrier inputs. */
+function countObservedPlacementNodes(
+  { catalog, deficitPolicy }: ProjectInventoryEventsInput,
+  events: readonly InventoryCommittedEvent[],
+  placement: InventoryCountPlacementDependencies
+): ReadonlySet<string> {
+  /** A carrier's stock position supplies the parent of its embodied node. */
+  const includesCarrier = (position: InventoryStockPositionKey, sequence: number): boolean =>
+    position.serialId !== undefined &&
+    sequence <= (placement.embodiedSerialThrough.get(inventorySerialIdentity(position.itemId, position.serialId)) ?? 0);
+  /** A standalone topology needs only placement and correction facts. */
+  const hasCarriers = placement.embodiedSerialThrough.size !== 0;
+  const scope: InventoryCountProjectionScope = {
+    placementNodeIds: placement.nodeIds,
+    placementEventIds: placement.placementEventIds,
+    retainedPlacementEdgeKeys: placement.retainedPlacementEdgeKeys,
+    detachedPlacementEdgeKeys: placement.detachedPlacementEdgeKeys,
+    ...(hasCarriers ? countStockDependencies(events, includesCarrier) :
+      { transferIds: new Set<string>(), includesPosition: includesCarrier }),
+  };
+  const retained = countPlacementReplayEvents(events, scope, hasCarriers);
+  const replayScope: InventoryCountProjectionScope = {
+    ...scope,
+    /** Funding bounds use the original cut sequence, even after the prepass compacts it. */
+    includesPosition: (position, sequence) => scope.includesPosition(position, retained[sequence - 1]!.recordSequence),
+  };
+  let state = emptyInventoryProjectionState();
+  for (const [index, fact] of retained.entries()) {
+    // The retained facts form a contiguous private reducer input.
+    const event = { ...fact, recordSequence: index + 1 };
+    state = applyInventoryCommittedEventInternal(
+      { catalog, state, event, deficitPolicy }, true, false, true, "occurrence-cut", replayScope
+    ).state;
+  }
+  /** Seed one worklist with all roots and traverse children once with a shared observed set. */
+  const observed = new Set<string>();
+  const pending: string[] = [];
+  for (const root of placement.roots) {
+    assertInventoryIdentity(root, "placement rootNodeId");
+    if (observed.has(root)) continue;
+    observed.add(root);
+    pending.push(root);
+  }
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined) break;
+    const children =
+      inventorySparseRecordValue(
+        state.placement.childNodeIdsByParentNodeId,
+        current
+      ) ?? [];
+    for (const child of children) {
+      if (child === undefined || observed.has(child)) continue;
+      observed.add(child);
+      pending.push(child);
+    }
+  }
+  return observed;
+}
+
+/** Select the placement and carrier facts with the correction evidence they need. */
+function countPlacementReplayEvents(
+  events: readonly InventoryCommittedEvent[],
+  { placementNodeIds, placementEventIds, transferIds, includesPosition }: InventoryCountProjectionScope,
+  hasCarriers: boolean,
+): readonly InventoryCommittedEvent[] {
+  /** Selected placement, carrier and correction event identities. */
+  const retainedIds = new Set<string>();
+  for (const event of events) {
+    const correction = event.correction;
+    // A correction can remove a definition without carrying any replacement placement fields.
+    const correctsRetainedPlacement = correction !== undefined && (retainedIds.has(correction.correctsEventId) ||
+      (correction.supersedesCorrectionEventId !== undefined && retainedIds.has(correction.supersedesCorrectionEventId)));
+    const transferId = event.transferLifecycle?.transferId;
+    if (correctsRetainedPlacement || (transferId !== undefined && transferIds.has(transferId)) ||
+        (placementEventIds !== undefined && placementEventIds.has(event.eventId)) ||
+        (placementEventIds === undefined && event.placementChanges?.some(
+          /** Keep changes to the historical topology component. */
+          ({ nodeId }) => placementNodeIds.has(nodeId)
+        )) ||
+        event.placementNodeDefinitions?.some(
+          /** Keep definitions used by placement and embodiment checks. */
+          ({ nodeId }) => placementNodeIds.has(nodeId)
+        ) ||
+        (hasCarriers && event.stockEffects.some(
+          /** Keep stock effects supplying a carrier or its structured movement. */
+          ({ position }) => includesPosition(position, event.recordSequence)
+        ))) {
+      retainedIds.add(event.eventId);
+    }
+  }
+  const retained: InventoryCommittedEvent[] = [];
+  // A correction's root and predecessor occur earlier in the retained cut.
+  for (let index = events.length - 1; index >= 0; index -= 1) {
+    const event = events[index]!;
+    if (!retainedIds.has(event.eventId)) continue;
+    retained.push(event);
+    const correction = event.correction;
+    if (correction === undefined) continue;
+    retainedIds.add(correction.correctsEventId);
+    if (correction.supersedesCorrectionEventId !== undefined) retainedIds.add(correction.supersedesCorrectionEventId);
+  }
+  return retained.reverse();
+}
+
+/** Follow exact rows through transfer stages and follow serialized rows along their entire route. */
+function countTransferPositionIdentity(position: InventoryStockPositionKey): string {
+  return position.serialId === undefined
+    ? inventoryStockPositionIdentity(position)
+    : inventorySerialIdentity(position.itemId, position.serialId);
+}
+
+/** One recorded route that can supply a counted position. */
+type InventoryCountStockRoute =
+  | {
+    /** Sequence at which the destination needs the source balance. */
+    readonly sequence: number;
+    /** Ordinary movement's source position or serial. */
+    readonly source: string;
+  }
+  | {
+    /** Sequence at which the structured lifecycle touches a needed position. */
+    readonly sequence: number;
+    /** Structured lifecycle to replay as a complete unit. */
+    readonly transferId: string;
+  };
+
+/** Keep supplying rows through the use that needs them and preserve complete structured transfers. */
+function countStockDependencies(
+  events: readonly InventoryCommittedEvent[],
+  matchesPosition: InventoryCountProjectionScope["includesPosition"]
+): Pick<InventoryCountProjectionScope, "transferIds" | "includesPosition"> {
+  const transferIds = new Set<string>();
+  if (!events.some(
+    /** A count without stock routes has no additional funding dependencies. */
+    (event) => event.transferLifecycle !== undefined || (event.positiveLayerProvenanceTransfers?.length ?? 0) > 0
+  )) return { transferIds, includesPosition: matchesPosition };
+  /** Last stage that needs each stock row in a structured lifecycle. */
+  const positionsByTransfer = new Map<string, Map<string, number>>();
+  /** Incoming dependencies per row, in increasing cut sequence. */
+  const routesByDestination = new Map<string, InventoryCountStockRoute[]>();
+  /** Latest sequence at which a needed stock row still contributes. */
+  const neededThrough = new Map<string, number>();
+  /** Visit a row again only when a longer required prefix exposes another route. */
+  const pending = new Set<string>();
+  /** Extend the part of a row's history that can contribute to the count. */
+  function need(identity: string, through: number): void {
+    if (through <= (neededThrough.get(identity) ?? 0)) return;
+    neededThrough.set(identity, through);
+    pending.add(identity);
+  }
+  /** Record each incoming dependency once where it can be traversed in sequence. */
+  function addRoute(destination: string, route: InventoryCountStockRoute): void {
+    const routes = routesByDestination.get(destination);
+    if (routes === undefined) routesByDestination.set(destination, [route]);
+    else routes.push(route);
+  }
+  for (const event of events) {
+    const sequence = event.recordSequence;
+    const transferId = event.transferLifecycle?.transferId;
+    if (transferId === undefined) {
+      for (const { from, to } of event.positiveLayerProvenanceTransfers ?? []) {
+        addRoute(countTransferPositionIdentity(to), { sequence, source: countTransferPositionIdentity(from) });
+      }
+    }
+    for (const { position } of event.stockEffects) {
+      const identity = countTransferPositionIdentity(position);
+      if (matchesPosition(position, sequence)) need(identity, sequence);
+      if (transferId !== undefined) {
+        const positions = positionsByTransfer.get(transferId) ?? new Map<string, number>();
+        positions.set(identity, sequence);
+        positionsByTransfer.set(transferId, positions);
+        addRoute(identity, { sequence, transferId });
+      }
+    }
+  }
+  /** Each incoming route is examined at most once below its row's advancing bound. */
+  const nextRouteByPosition = new Map<string, number>();
+  for (const identity of pending) {
+    pending.delete(identity);
+    const routes = routesByDestination.get(identity);
+    if (routes === undefined) continue;
+    let index = nextRouteByPosition.get(identity) ?? 0;
+    const through = neededThrough.get(identity)!;
+    for (; index < routes.length; index += 1) {
+      const route = routes[index]!;
+      if (route.sequence > through) break;
+      if ("source" in route) {
+        need(route.source, route.sequence);
+      } else if (!transferIds.has(route.transferId)) {
+        // Keep the whole lifecycle and fund each line through its last retained stock effect.
+        transferIds.add(route.transferId);
+        for (const [position, lastStage] of positionsByTransfer.get(route.transferId) ?? []) need(position, lastStage);
+      }
+    }
+    nextRouteByPosition.set(identity, index);
+  }
+  return {
+    transferIds,
+    /** Retain the counted row or the prefix required by a downstream movement. */
+    includesPosition: (position, sequence) => matchesPosition(position, sequence) ||
+      (neededThrough.size !== 0 && sequence <= (neededThrough.get(countTransferPositionIdentity(position)) ?? 0)),
+  };
+}
+
+/** Nodes and embodied stock needed to evaluate the ancestry of a count. */
+interface InventoryCountPlacementDependencies {
+  /** Subtree roots named by the count selector. */
+  readonly roots: readonly string[];
+  /** Nodes connected to a selected root by time-relevant retained placement evidence. */
+  readonly nodeIds: ReadonlySet<string>;
+  /** Placement-changing events that affect membership or ancestry in the counted subtrees. */
+  readonly placementEventIds: ReadonlySet<string>;
+  /** Exact (eventId, nodeId) transitions authorized inside the counted placement subgraph. */
+  readonly retainedPlacementEdgeKeys: ReadonlySet<string>;
+  /** Event/node pairs leaving the tracked subgraph that must replay as unplacements. */
+  readonly detachedPlacementEdgeKeys: ReadonlySet<string>;
+  /** Last cut sequence needing each serial for a retained definition or movement. */
+  readonly embodiedSerialThrough: ReadonlyMap<string, number>;
+}
+
+/** Working primary balance and current placement of one embodied serial position. */
+interface InventoryEmbodiedPositionBalance {
+  /** Direct parent placement node, or undefined when in-transit, detached, or missing. */
+  readonly placementNodeId: string | undefined;
+  /** Exact working primary digits across applied stock effects. */
+  readonly primary: ExactQuantityDigits;
+}
+
+/** Find possible dependencies in cut order so former descendants and former ancestors cannot pull outside cycles. */
+function countPlacementDependencies(
+  events: readonly InventoryCommittedEvent[],
+  roots: readonly string[]
+): InventoryCountPlacementDependencies {
+  /** Serials that become embodied by some placement node at some point in the cut. */
+  const futureEmbodiedSerials = new Set<string>();
+  for (const event of events) {
+    for (const { embodiedBy } of event.placementNodeDefinitions ?? []) {
+      if (embodiedBy === undefined) continue;
+      futureEmbodiedSerials.add(inventorySerialIdentity(embodiedBy.itemId, embodiedBy.serialId));
+    }
+  }
+  /** Active embodied node identities keyed by serial only after their definition event replays. */
+  const nodesBySerial = new Map<string, Set<string>>();
+  /** Current serial binding per node identity so updates never leak stale carrier bindings. */
+  const serialByNodeId = new Map<string, string>();
+  /** Earlier carrier bindings needed only through the correction that removes them. */
+  const releasedBindingsByNode = new Map<string, Map<string, number>>();
+  /** Nodes an earlier metadata event bound to a serial, for later omission corrections. */
+  const embodiedNodesByEventId = new Map<string, readonly string[]>();
+  const rootsSet = new Set(roots);
+  const nodeIds = new Set(roots);
+  const placementEventIds = new Set<string>();
+  const retainedPlacementEdgeKeys = new Set<string>();
+  const detachedPlacementEdgeKeys = new Set<string>();
+  /** Nodes currently attached to a retained parent inside the scoped subgraph. */
+  const retainedAttachedNodes = new Set<string>();
+  /** Lightweight parent pointers in cut order so moves out of roots stop pulling later outside moves. */
+  const parentByNode = new Map<string, string>();
+  const childrenByParent = new Map<string, Set<string>>();
+  const lastEdgeEventIdByNode = new Map<string, string>();
+  /** Per-serial position primary balances so embodied moves derive from the whole-event ending position. */
+  const serialBalances = new Map<string, Map<string, InventoryEmbodiedPositionBalance>>();
+
+  /** True when a node currently resides inside any counted root subtree. */
+  function isUnderRoot(nodeId: string): boolean {
+    const seen = new Set<string>();
+    let current: string | undefined = nodeId;
+    while (current !== undefined && !seen.has(current)) {
+      if (rootsSet.has(current)) return true;
+      seen.add(current);
+      current = parentByNode.get(current);
+    }
+    return false;
+  }
+
+  /** Cached live ancestors above all counted roots; invalidated only when a chain edge changes. */
+  let liveRootAncestors: Set<string> | undefined = new Set(roots);
+
+  /** Walk live ancestors above all counted roots so moved-away roots or leaving destinations do not stay sticky. */
+  function currentRootAncestors(): Set<string> {
+    if (liveRootAncestors !== undefined) return liveRootAncestors;
+    const ancestors = new Set<string>();
+    for (const root of roots) {
+      let current: string | undefined = root;
+      while (current !== undefined && !ancestors.has(current)) {
+        ancestors.add(current);
+        current = parentByNode.get(current);
+      }
+    }
+    liveRootAncestors = ancestors;
+    return ancestors;
+  }
+
+  /** Retain a node's active edge when re-entry pulls a subtree or ancestor chain into scope. */
+  function retainNodeEdge(targetNodeId: string): void {
+    nodeIds.add(targetNodeId);
+    const edgeEventId = lastEdgeEventIdByNode.get(targetNodeId);
+    if (edgeEventId !== undefined) {
+      const edgeKey = placementScopedEdgeKey(edgeEventId, targetNodeId);
+      placementEventIds.add(edgeEventId);
+      retainedPlacementEdgeKeys.add(edgeKey);
+      detachedPlacementEdgeKeys.delete(edgeKey);
+      if (parentByNode.has(targetNodeId)) retainedAttachedNodes.add(targetNodeId);
+    }
+  }
+
+  /** Retain all current live descendants and their defining edges when a detached node re-enters roots. */
+  function retainDescendants(startNodeId: string): void {
+    const pending = [startNodeId];
+    const seen = new Set<string>([startNodeId]);
+    for (let current = pending.pop(); current !== undefined; current = pending.pop()) {
+      retainNodeEdge(current);
+      for (const childId of childrenByParent.get(current) ?? []) {
+        if (seen.has(childId)) continue;
+        seen.add(childId);
+        pending.push(childId);
+      }
+    }
+  }
+
+  /** Retain all upward ancestors and their defining edges for cycle validation. */
+  function retainAncestors(startNodeId: string): void {
+    const seen = new Set<string>();
+    let current: string | undefined = startNodeId;
+    while (current !== undefined && !seen.has(current)) {
+      seen.add(current);
+      retainNodeEdge(current);
+      current = parentByNode.get(current);
+    }
+  }
+
+  /** Process one topological edge change (explicit or embodied serial stock move) in cut order. */
+  function applyEdge(eventId: string, nodeId: string, toParentNodeId: string | undefined): void {
+    const wasUnderRoot = isUnderRoot(nodeId);
+    const toUnderRoot = toParentNodeId !== undefined && isUnderRoot(toParentNodeId);
+    const touchesAncestor = currentRootAncestors().has(nodeId);
+    if (wasUnderRoot || toUnderRoot || touchesAncestor || retainedAttachedNodes.has(nodeId)) {
+      const edgeKey = placementScopedEdgeKey(eventId, nodeId);
+      placementEventIds.add(eventId);
+      retainedPlacementEdgeKeys.add(edgeKey);
+      nodeIds.add(nodeId);
+      if (!wasUnderRoot && toUnderRoot) retainDescendants(nodeId);
+      if (toParentNodeId !== undefined && (toUnderRoot || touchesAncestor)) {
+        retainAncestors(toParentNodeId);
+        retainedAttachedNodes.add(nodeId);
+      } else {
+        // Leaving a retained parent for outside/unplaced detaches in the scoped graph without linking outside subtrees.
+        if (toParentNodeId !== undefined) {
+          detachedPlacementEdgeKeys.add(edgeKey);
+        }
+        retainedAttachedNodes.delete(nodeId);
+      }
+    }
+    const previousParent = parentByNode.get(nodeId);
+    if (previousParent !== undefined) {
+      childrenByParent.get(previousParent)?.delete(nodeId);
+    }
+    if (toParentNodeId === undefined) {
+      parentByNode.delete(nodeId);
+      lastEdgeEventIdByNode.delete(nodeId);
+    } else {
+      parentByNode.set(nodeId, toParentNodeId);
+      lastEdgeEventIdByNode.set(nodeId, eventId);
+      const children = childrenByParent.get(toParentNodeId) ?? new Set<string>();
+      children.add(nodeId);
+      childrenByParent.set(toParentNodeId, children);
+    }
+    // Disjoint edges cannot alter any upward root chain; only invalidate when a live root/ancestor moves.
+    if (touchesAncestor) {
+      liveRootAncestors = undefined;
+    }
+  }
+
+  /** Resolve the post-event live parent placement from the one positive position of an embodied serial. */
+  function desiredEmbodiedParent(serialId: string): string | undefined {
+    const positions = serialBalances.get(serialId);
+    if (positions === undefined) return undefined;
+    for (const entry of positions.values()) {
+      if (entry.primary.minor > 0n) return entry.placementNodeId;
+    }
+    return undefined;
+  }
+
+  /** End one carrier binding and preserve the prefix that validates the previous definition. */
+  function releaseBinding(nodeId: string, serialId: string, through: number): void {
+    nodesBySerial.get(serialId)?.delete(nodeId);
+    serialByNodeId.delete(nodeId);
+    const previous = releasedBindingsByNode.get(nodeId);
+    if (previous === undefined) releasedBindingsByNode.set(nodeId, new Map([[serialId, through]]));
+    else previous.set(serialId, through);
+  }
+
+  for (const event of events) {
+    for (const { nodeId, toParentNodeId } of event.placementChanges ?? []) {
+      applyEdge(event.eventId, nodeId, toParentNodeId);
+    }
+    if (futureEmbodiedSerials.size > 0) {
+      const touchedSerials = new Set<string>();
+      const definitions = event.placementNodeDefinitions ?? [];
+      const correction = event.correction;
+      if (correction !== undefined) {
+        const prior = correction.supersedesCorrectionEventId ?? correction.correctsEventId;
+        for (const nodeId of embodiedNodesByEventId.get(prior) ?? []) {
+          const previousSerial = serialByNodeId.get(nodeId);
+          if (previousSerial === undefined || definitions.some(
+            /** Explicit replacements update their binding below. */
+            (definition) => definition.nodeId === nodeId
+          )) continue;
+          releaseBinding(nodeId, previousSerial, event.recordSequence);
+        }
+      }
+      /** Only definitions that bind a serial can need an implicit release later. */
+      const embodiedNodeIds: string[] = [];
+      for (const definition of definitions) {
+        const previousSerial = serialByNodeId.get(definition.nodeId);
+        if (definition.embodiedBy === undefined) {
+          // Generic definitions leave subsequent serial movements independent of this node.
+          if (previousSerial !== undefined) {
+            releaseBinding(definition.nodeId, previousSerial, event.recordSequence);
+          }
+          continue;
+        }
+        const serialId = inventorySerialIdentity(
+          definition.embodiedBy.itemId,
+          definition.embodiedBy.serialId
+        );
+        if (previousSerial !== undefined && previousSerial !== serialId) {
+          releaseBinding(definition.nodeId, previousSerial, event.recordSequence);
+        }
+        serialByNodeId.set(definition.nodeId, serialId);
+        embodiedNodeIds.push(definition.nodeId);
+        const nodes = nodesBySerial.get(serialId) ?? new Set<string>();
+        nodes.add(definition.nodeId);
+        nodesBySerial.set(serialId, nodes);
+        touchedSerials.add(serialId);
+      }
+      if (embodiedNodeIds.length > 0) embodiedNodesByEventId.set(event.eventId, embodiedNodeIds);
+      for (const { position, measurementsDelta } of event.stockEffects) {
+        if (position.serialId === undefined) continue;
+        const serialId = inventorySerialIdentity(position.itemId, position.serialId);
+        if (!futureEmbodiedSerials.has(serialId)) continue;
+        // Derive carrier edges only after the embodiment definition has taken effect.
+        if (nodesBySerial.has(serialId)) touchedSerials.add(serialId);
+        let positions = serialBalances.get(serialId);
+        if (positions === undefined) {
+          positions = new Map<string, InventoryEmbodiedPositionBalance>();
+          serialBalances.set(serialId, positions);
+        }
+        const posId = inventoryStockPositionIdentity(position);
+        const existing = positions.get(posId);
+        const delta = measurementsDelta.primary.quantity;
+        if (existing === undefined) {
+          const minor = BigInt(delta.amountMinor);
+          if (minor !== 0n) {
+            positions.set(posId, {
+              placementNodeId: position.placementNodeId,
+              primary: { minor, decimals: delta.decimals },
+            });
+          }
+        } else {
+          addExactQuantityDigits(existing.primary, BigInt(delta.amountMinor), delta.decimals);
+          if (existing.primary.minor === 0n) positions.delete(posId);
+        }
+      }
+      for (const serialId of touchedSerials) {
+        const desiredParent = desiredEmbodiedParent(serialId);
+        for (const nodeId of nodesBySerial.get(serialId) ?? []) {
+          if (parentByNode.get(nodeId) !== desiredParent) {
+            applyEdge(event.eventId, nodeId, desiredParent);
+          }
+        }
+      }
+    }
+  }
+  const embodiedSerialThrough = new Map<string, number>();
+  for (const nodeId of nodeIds) {
+    for (const [identity, sequence] of releasedBindingsByNode.get(nodeId) ?? []) {
+      if (sequence > (embodiedSerialThrough.get(identity) ?? 0)) embodiedSerialThrough.set(identity, sequence);
+    }
+    const current = serialByNodeId.get(nodeId);
+    if (current !== undefined) embodiedSerialThrough.set(current, Infinity);
+  }
+  return {
+    roots,
+    nodeIds,
+    placementEventIds,
+    retainedPlacementEdgeKeys,
+    detachedPlacementEdgeKeys,
+    embodiedSerialThrough,
+  };
+}
+
 /** Replay committed history through the same reducer used for live commits. */
-export function projectInventoryEvents({
-  catalog,
-  events,
-  deficitPolicy,
-  throughRecordSequence,
-}: ProjectInventoryEventsInput): InventoryProjectionState {
+export function projectInventoryEvents(input: ProjectInventoryEventsInput): InventoryProjectionState {
+  const { catalog, events, deficitPolicy, throughRecordSequence } = input;
+  const stockAge = replayEffectiveStockAge in input ? input[replayEffectiveStockAge] : undefined;
+  const replayStockAge = stockAge === "effective-history" || stockAge === "occurrence-cut" ? stockAge : undefined;
   if (
     throughRecordSequence !== undefined &&
     (!Number.isSafeInteger(throughRecordSequence) || throughRecordSequence < 0)
@@ -1681,6 +2324,7 @@ export function projectInventoryEvents({
     throw new Error("throughRecordSequence must be a non-negative safe integer.");
   }
   const ordered = inventoryEventsInRecordSequence(events);
+  const countScope = prepareCountProjectionScope(input, ordered);
   let state = emptyInventoryProjectionState();
   /** Number of ordered events actually replayed into this requested historical cut. */
   let appliedEventCount = 0;
@@ -1693,10 +2337,15 @@ export function projectInventoryEvents({
     state = applyInventoryCommittedEventInternal(
       { catalog, state, event, deficitPolicy },
       true,
-      false
+      false,
+      true,
+      replayStockAge,
+      countScope
     ).state;
     appliedEventCount += 1;
   }
+  // The count only needs stock and, for subtree selectors, the placement forest.
+  if (countScope !== undefined) return state;
   /** Reuse the exact replayed prefix so post-cut graph changes can never leak into the historical state. */
   const traceabilityEvents =
     throughRecordSequence === undefined
@@ -1828,7 +2477,18 @@ function candidatePositionIds(
   // full selector matcher still verifies each position's current ancestry.
   if (selector.withinPlacementNodeIds !== undefined) {
     const subtreeCandidates = candidateSubtreePositionIds(
-      state,
+      {
+        /** Read exact position postings for one anchored node. */
+        positionIds: (nodeId) => {
+          const ids = inventorySparseRecordValue(state.positionIdsByPlacementNodeId, nodeId) ?? [];
+          return { size: ids.length, ids };
+        },
+        /** Read immediate child postings without copying the published array. */
+        childNodeIds: (nodeId) => {
+          const ids = inventorySparseRecordValue(state.placement.childNodeIdsByParentNodeId, nodeId) ?? [];
+          return { size: ids.length, ids };
+        },
+      },
       selector.withinPlacementNodeIds,
       itemCandidateCount
     );
@@ -1849,121 +2509,6 @@ function candidatePositionIds(
   // A position has exactly one item revision; no deduplication is necessary.
   candidates.sort(compareInventoryIdentityText);
   return candidates;
-}
-
-/** One enter/leave visit in the bounded physical placement traversal. */
-interface InventorySubtreeCandidateVisit {
-  /** Exact placement node being inspected. */
-  readonly nodeId: string;
-  /** Whether this visit finishes a node after its descendants. */
-  readonly exiting: boolean;
-}
-
-/**
- * Enumerate selective subtree stock without traversing an arbitrarily large
- * mostly empty topology. Once the graph/index search would cost as much as
- * the item/revision candidates, return undefined to use that existing index.
- */
-function candidateSubtreePositionIds(
-  state: InventoryProjectionState,
-  rootNodeIds: readonly string[],
-  itemCandidateCount: number
-): readonly string[] | undefined {
-  // With small item scopes, filtering a few rows is cheaper than graph work.
-  if (itemCandidateCount < 128) return undefined;
-  const visitedNodes = new Set<string>();
-  const ancestors = new Set<string>();
-  const candidates: string[] = [];
-  for (const rootNodeId of rootNodeIds) {
-    const pending: InventorySubtreeCandidateVisit[] = [
-      { nodeId: rootNodeId, exiting: false },
-    ];
-    while (pending.length > 0) {
-      const visit = pending.pop();
-      if (visit === undefined) break;
-      const nodeId = visit.nodeId;
-      if (visit.exiting) {
-        ancestors.delete(nodeId);
-        visitedNodes.add(nodeId);
-        continue;
-      }
-      if (ancestors.has(nodeId)) {
-        throw new Error("Placement graph contains a cycle at '" + nodeId + "'.");
-      }
-      // Several selected roots can overlap. A direct-stock identity must be
-      // considered exactly once, regardless of the number of matching roots.
-      if (visitedNodes.has(nodeId)) continue;
-      if (visitedNodes.size + ancestors.size + 1 >= itemCandidateCount) {
-        return undefined;
-      }
-      ancestors.add(nodeId);
-      const directPositions = inventorySparseRecordValue(
-        state.positionIdsByPlacementNodeId,
-        nodeId
-      ) ?? [];
-      for (const positionId of directPositions) candidates.push(positionId);
-      if (candidates.length >= itemCandidateCount) return undefined;
-      const children =
-        inventorySparseRecordValue(
-          state.placement.childNodeIdsByParentNodeId,
-          nodeId
-        ) ?? [];
-      // Do not allocate/traverse 100k sibling nodes to answer a 5k-row item
-      // query. This conservative bound affects only the chosen index path.
-      if (
-        children.length + visitedNodes.size + ancestors.size >=
-        itemCandidateCount
-      ) {
-        return undefined;
-      }
-      pending.push({ nodeId, exiting: true });
-      for (let index = children.length - 1; index >= 0; index -= 1) {
-        const child = children[index];
-        if (child !== undefined) {
-          pending.push({ nodeId: child, exiting: false });
-        }
-      }
-    }
-  }
-  candidates.sort(compareInventoryIdentityText);
-  return candidates;
-}
-
-/** Capture FIFO age before a conserved movement changes source/destination positions. */
-function captureConservedPositiveLayerStarts(
-  state: InventoryProjectionState,
-  event: InventoryCommittedEvent
-): ReadonlyMap<string, number> {
-  const result = new Map<string, number>();
-  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-    const sourceId = inventoryStockPositionIdentity(transfer.from);
-    const destinationId = inventoryStockPositionIdentity(transfer.to);
-    const source = state.positions[sourceId];
-    if (
-      source === undefined ||
-      !quantityIsPositive(source.measurements.primary.quantity)
-    ) {
-      throw new Error(
-        `Conserved FIFO provenance source ${sourceId} is not currently positive.`
-      );
-    }
-    const sourceStartedAtEpochMs = state.positiveLayerStartedAtEpochMsByPositionId[sourceId];
-    if (sourceStartedAtEpochMs === undefined) {
-      throw new Error(
-        `Conserved FIFO provenance source ${sourceId} has no projected layer start.`
-      );
-    }
-    const destinationStartedAtEpochMs =
-      state.positiveLayerStartedAtEpochMsByPositionId[destinationId];
-    result.set(
-      destinationId,
-      destinationStartedAtEpochMs === undefined ||
-        sourceStartedAtEpochMs < destinationStartedAtEpochMs
-        ? sourceStartedAtEpochMs
-        : destinationStartedAtEpochMs
-    );
-  }
-  return result;
 }
 
 /** Record one exact final identity membership for a touched grouping row. */
@@ -2054,11 +2599,7 @@ function refreshTouchedSerialIndexes({
       if (position === undefined) continue;
       const primary = position.measurements.primary.quantity;
       if (!quantityIsPositive(primary)) continue;
-      if (!quantityEq(primary, parseQuantity("1", primary.unit))) {
-        throw new Error(
-          `Active serial ${serialIdentity} must represent exactly one primary resource.`
-        );
-      }
+      assertInventoryActiveSerialQuantity(serialIdentity, primary);
       if (
         positivePositionId !== undefined &&
         positivePositionId !== positionId

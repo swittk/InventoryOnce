@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryReservationFeasibilityStatus,
+  InventoryReservationStatus,
   defineScalarInventoryItem,
   extendInventoryCatalog,
   packageAmount,
@@ -15,6 +16,12 @@ import {
   defineInventoryMigration,
   dryRunInventoryMigration,
 } from "../src/migrations-api.js";
+import {
+  createInventoryPlacementEvent,
+  defineInventoryEvent,
+  inventoryCatalogSnapshot,
+  inventoryEventIntentFingerprint,
+} from "../src/kernel.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
   clockAt,
@@ -31,6 +38,284 @@ import {
 export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
   "TRACE-PLACEMENT-COMMAND-ATOMIC",
 ] as const;
+
+it("declines standalone unplacement and independent routes through the stock commit hook", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const catalog = createTabletCatalog();
+  const inventory = createTestInventory(storage, catalog);
+  await inventory.placement.move({
+    operationId: "place-before-unplace", occurredAtEpochMs: time0,
+    nodeId: "child", into: "parent",
+  });
+  await inventory.placement.move({
+    operationId: "place-independent-child", occurredAtEpochMs: time0,
+    nodeId: "other-child", into: "other-parent",
+  });
+  const before = storage.readSegmentedStockHead();
+  const event = createInventoryPlacementEvent({
+    catalog, operationId: "unplace-child", occurredAtEpochMs: time1,
+    nodeId: "child", fromParentNodeId: "parent",
+  });
+  const independent = defineInventoryEvent({
+    catalog,
+    event: {
+      ...event, eventId: "independent-moves", operationId: "independent-moves",
+      placementChanges: [
+        { nodeId: "child", fromParentNodeId: "parent", toParentNodeId: "next-parent" },
+        { nodeId: "other-child", fromParentNodeId: "other-parent", toParentNodeId: "next-other-parent" },
+      ],
+    },
+  });
+  for (const draft of [event, independent]) {
+    expect(await storage.commitSegmentedStockEvent({
+      catalog: inventoryCatalogSnapshot(catalog), operationId: draft.operationId,
+      intentFingerprint: inventoryEventIntentFingerprint(draft), recordedAtEpochMs: time2,
+      expectedWorldRevision: before.worldRevision, expectedRecordSequence: before.recordSequence,
+      deficitPolicy: InventoryDeficitPolicy.Reject, event: draft,
+    })).toBeUndefined();
+  }
+  expect(storage.readSegmentedStockHead()).toEqual(before);
+  await inventory.placement.unplace({
+    operationId: event.operationId, occurredAtEpochMs: time1,
+    nodeId: "child", expectedParent: "parent",
+  });
+  expect(storage.readPlacementSegment().parentNodeId("child")).toBeUndefined();
+});
+
+it("declines a single-node move into its sibling through the contents commit hook", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const catalog = createTabletCatalog();
+  const inventory = createTestInventory(storage, catalog);
+  for (const nodeId of ["child", "sibling"]) {
+    await inventory.placement.move({
+      operationId: `place-${nodeId}`, occurredAtEpochMs: time0, nodeId, into: "parent",
+    });
+  }
+  const before = storage.readSegmentedStockHead();
+  const event = createInventoryPlacementEvent({
+    catalog, operationId: "nest-child", occurredAtEpochMs: time1,
+    nodeId: "child", fromParentNodeId: "parent", toParentNodeId: "sibling",
+  });
+  await expect(storage.commitSegmentedStockEvent({
+    catalog: inventoryCatalogSnapshot(catalog), operationId: event.operationId,
+    intentFingerprint: inventoryEventIntentFingerprint(event), recordedAtEpochMs: time2,
+    expectedWorldRevision: before.worldRevision, expectedRecordSequence: before.recordSequence,
+    deficitPolicy: InventoryDeficitPolicy.Reject, event,
+  })).resolves.toBeUndefined();
+  expect(storage.readSegmentedStockHead()).toEqual(before);
+  expect(await storage.readOperation(event.operationId)).toBeUndefined();
+  expect(await inventory.read.placementAncestry("child")).toEqual(["child", "parent"]);
+
+  const moved = await inventory.placement.move({
+    operationId: event.operationId, occurredAtEpochMs: time1, nodeId: "child", into: "sibling",
+  });
+  expect(moved.event.placementChanges).toEqual(event.placementChanges);
+  expect(await inventory.read.placementAncestry("child")).toEqual(["child", "sibling", "parent"]);
+  expect(storage.readSegmentedStockHead().worldRevision).toBe(before.worldRevision + 1);
+});
+
+it("replays a contents move published between the operation lookup and head read", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  const inventory = createTestInventory(storage);
+  await inventory.stock.receive({
+    operationId: "receive-contents-race", occurredAtEpochMs: time0,
+    to: loosePosition("source"), amount: stockAmount("1", "piece"),
+  });
+  const command = {
+    operationId: "contents-race", occurredAtEpochMs: time1, nodeId: "source", into: "destination",
+  };
+  const baseline = storage.readSegmentedStockHead();
+  const readOperation = storage.readOperation.bind(storage);
+  vi.spyOn(storage, "readOperation").mockImplementationOnce(async (operationId) => {
+    const prior = await readOperation(operationId);
+    await inventory.placement.moveContents(command);
+    return prior;
+  });
+  const readWorld = vi.spyOn(storage, "readWorld");
+  const replay = await inventory.placement.moveContents(command);
+  expect(replay.replayed).toBe(true);
+  expect(replay.receipt.worldRevision).toBe(baseline.worldRevision + 1);
+  expect(storage.readSegmentedStockHead().worldRevision).toBe(baseline.worldRevision + 1);
+  expect(readWorld).not.toHaveBeenCalled();
+});
+
+it("publishes direct stock, standalone children, and embodied children at one native fence", async () => {
+  const storage = createInMemoryInventoryDurableStorage();
+  // A failpoint routes reference writes through the canonical staged coordinator.
+  const canonicalStorage = createInMemoryInventoryDurableStorage({ failpoint: () => undefined });
+  const catalog = createHeterogeneousPlacementCatalog();
+  const native = createTestInventory(storage, catalog);
+  const canonical = createTestInventory(canonicalStorage, catalog);
+  for (const inventory of [native, canonical]) {
+    await inventory.stock.receive({
+      operationId: "receive-composite", occurredAtEpochMs: time0,
+      to: loosePosition("source"), amount: stockAmount("3", "piece"),
+    });
+    await inventory.stock.individualize({
+      operationId: "individualize-composite", occurredAtEpochMs: time1,
+      from: loosePosition("source"), amount: stockAmount("1", "piece"),
+      serialId: "case", asPlacementNode: { acceptsPlacement: true },
+    });
+    await inventory.stock.receive({
+      operationId: "stock-below-composite", occurredAtEpochMs: time1,
+      to: { itemId: "item-b", placementNodeId: "case" }, amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "independent-composite-child", occurredAtEpochMs: time1, nodeId: "standalone", into: "source",
+    });
+  }
+  const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(new Error("whole world"));
+  const before = storage.readSegmentedStockHead();
+  const direct = storage.readSegmentedDirectContents({
+    sourceNodeId: "source", destinationNodeId: "destination",
+  });
+  expect(direct.positions).toHaveLength(2);
+  expect(direct.children).toMatchObject([{ nodeId: "case", embodiedPosition: { key: { serialId: "case" } } }, { nodeId: "standalone" }]);
+  const metadata = { inventoryOnceReportedTransferReplay: "placement audit reference" };
+  const input = {
+    operationId: "empty-composite", occurredAtEpochMs: time2, nodeId: "source", into: "destination", metadata,
+  };
+  await expect(native.placement.moveContents({ ...input, into: "case" })).rejects.toThrow("descendants");
+  const publish = storage.commitSegmentedStockEvent.bind(storage);
+  const write = vi.spyOn(storage, "commitSegmentedStockEvent");
+  write.mockRejectedValueOnce(new Error("before composite publish"));
+  await expect(native.placement.moveContents(input)).rejects.toThrow("before composite publish");
+  expect(storage.readSegmentedStockHead()).toEqual(before);
+  expect(await native.read.placementAncestry("case")).toEqual(["case", "source"]);
+  expect(await native.read.placementAncestry("standalone")).toEqual(["standalone", "source"]);
+  expect(await native.read.positions({ itemId: "item-a", placementNodeIds: ["source"] }))
+    .toEqual(direct.positions);
+  expect(await native.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] })).toEqual([]);
+  write.mockImplementationOnce(async (plan) => {
+    await publish(plan);
+    throw new Error("after composite publish");
+  });
+  await expect(native.placement.moveContents(input)).rejects.toThrow("after composite publish");
+  const result = await createTestInventory(storage, catalog).placement.moveContents(input);
+  expect(result).toEqual({ ...await canonical.placement.moveContents(input), replayed: true });
+  expect(result.event.metadata).toEqual(metadata);
+  expect(result.receipt.worldRevision).toBe(before.worldRevision + 1);
+  expect(await native.read.placementAncestry("case")).toEqual(["case", "destination"]);
+  expect(await native.read.placementAncestry("standalone")).toEqual(["standalone", "destination"]);
+  const nativePlacement = storage.readPlacementSegment();
+  const canonicalPlacement = canonicalStorage.readPlacementSegment();
+  expect(await nativePlacement.childNodeIds("source")).toEqual(await canonicalPlacement.childNodeIds("source"));
+  expect(await nativePlacement.childNodeIds("destination")).toEqual(await canonicalPlacement.childNodeIds("destination"));
+  expect(await nativePlacement.contentRoot()).toEqual(await canonicalPlacement.contentRoot());
+  expect(await native.read.positions({ itemId: "item-b", placementNodeIds: ["case"] })).toHaveLength(1);
+  expect(await native.read.positions({ itemId: "item-a", placementNodeIds: ["source"] })).toEqual([]);
+  const destinationRows = await native.read.positions({ itemId: "item-a", placementNodeIds: ["destination"] });
+  expect(destinationRows).toHaveLength(2);
+  expect(destinationRows.find((row) => row.key.serialId === undefined)?.measurements.primary.quantity)
+    .toEqual(parseQuantity("2", "piece"));
+  expect(destinationRows.find((row) => row.key.serialId === "case")?.measurements.primary.quantity)
+    .toEqual(parseQuantity("1", "piece"));
+  expect(readWorld).not.toHaveBeenCalled();
+  readWorld.mockRestore();
+  expect(await native.read.world()).toEqual(await canonical.read.world());
+});
+
+it("reconciles a subtree count after an edge-only contents move on both storage paths", async () => {
+  const catalog = createTabletCatalog();
+  const storage = createInMemoryInventoryDurableStorage();
+  const canonicalStorage = createInMemoryInventoryDurableStorage({ failpoint: () => undefined });
+  const native = createTestInventory(storage, catalog);
+  const canonical = createTestInventory(canonicalStorage, catalog);
+  for (const inventory of [native, canonical]) {
+    await inventory.stock.receive({
+      operationId: "receive-beneath-count-cart", occurredAtEpochMs: time0,
+      to: loosePosition("child"), amount: stockAmount("2", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "park-count-cart-child", occurredAtEpochMs: time0, nodeId: "child", into: "source",
+    });
+    await inventory.counts.start({
+      operationId: "start-source-subtree-count", countId: "source-count", startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["source"] },
+    });
+  }
+
+  const command = { operationId: "move-after-count-start", occurredAtEpochMs: time2, nodeId: "source", into: "destination" };
+  const readWorld = vi.spyOn(storage, "readWorld");
+  const moved = await native.placement.moveContents(command);
+  expect(moved).toEqual(await canonical.placement.moveContents(command));
+  expect(moved.event.stockEffects).toEqual([]);
+  expect(readWorld).not.toHaveBeenCalled();
+  readWorld.mockRestore();
+
+  for (const inventory of [native, canonical]) {
+    await inventory.counts.observe({
+      operationId: "observe-empty-source-subtree", countId: "source-count", observedAtEpochMs: time2,
+      observations: [],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      operationId: "reconcile-empty-source-subtree", countId: "source-count", completedAtEpochMs: time3,
+    });
+    expect(reconciled.event).toBeUndefined();
+    expect(await inventory.read.placementAncestry("child")).toEqual(["child", "destination"]);
+    const childPositions = await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["child"] });
+    expect(childPositions.map((position) => position.measurements.primary.quantity)).toEqual([parseQuantity("2", "piece")]);
+  }
+  expect(await native.read.world()).toEqual(await canonical.read.world());
+});
+
+it.each([
+  { move: "node", deficit: "1", error: "is not positive after its event" },
+  { move: "contents", deficit: "1", error: "is not positive after its event" },
+  { move: "node", deficit: "0.5", error: "must represent exactly one primary resource" },
+  { move: "contents", deficit: "0.5", error: "must represent exactly one primary resource" },
+])("keeps an embodied edge and serial unchanged after a $move move into a $deficit deficit", async ({ move, deficit, error }) => {
+  const catalog = createTabletCatalog();
+  for (const storage of [
+    createInMemoryInventoryDurableStorage(),
+    createInMemoryInventoryDurableStorage({ failpoint: () => undefined }),
+  ]) {
+    const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.issue({
+      operationId: "serial-destination-deficit", occurredAtEpochMs: time0,
+      from: loosePosition("destination", { serialId: "deficit-case" }), amount: stockAmount(deficit, "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "receive-deficit-case", occurredAtEpochMs: time0,
+      to: loosePosition("source"), amount,
+    });
+    await inventory.stock.individualize({
+      operationId: "embody-deficit-case", occurredAtEpochMs: time1,
+      from: loosePosition("source"), amount, serialId: "deficit-case",
+      asPlacementNode: { acceptsPlacement: true },
+    });
+    if (move === "contents") {
+      await inventory.stock.receive({
+        operationId: "receive-mixed-loose", occurredAtEpochMs: time1, to: loosePosition("source"),
+        amount: stockAmount("2", "piece"),
+      });
+      await inventory.placement.move({
+        operationId: "attach-mixed-sibling", occurredAtEpochMs: time1, nodeId: "standalone-sibling", into: "source",
+      });
+    }
+    const before = await inventory.read.world();
+    const beforeStock = storage.readSegmentedStockHead();
+    const beforeRows = storage.readPositionSegment().materialize();
+    const command = {
+      operationId: "move-into-serial-deficit", occurredAtEpochMs: time2,
+      nodeId: move === "node" ? "deficit-case" : "source", into: "destination",
+    };
+    await expect(move === "node" ? inventory.placement.move(command) : inventory.placement.moveContents(command))
+      .rejects.toThrow(error);
+    expect(await inventory.read.placementAncestry("deficit-case")).toEqual(["deficit-case", "source"]);
+    if (move === "contents") {
+      expect(await inventory.read.placementAncestry("standalone-sibling")).toEqual(["standalone-sibling", "source"]);
+      const looseRows = (await inventory.read.positions({ itemId: "item-a" })).filter(({ key }) => key.serialId === undefined);
+      expect(looseRows.map(({ key }) => key.placementNodeId)).toEqual(["source"]);
+      expect(looseRows.map(({ measurements }) => measurements.primary.quantity)).toEqual([parseQuantity("2", "piece")]);
+    }
+    expect(await storage.readOperation(command.operationId)).toBeUndefined();
+    expect(await inventory.read.world()).toEqual(before);
+    expect(storage.readSegmentedStockHead()).toEqual(beforeStock);
+    expect(storage.readPositionSegment().materialize()).toEqual(beforeRows);
+  }
+});
 
 /** Node use-by after opening but before the later test authority time. */
 const shortUseBy = 1787563800000;
@@ -724,24 +1009,18 @@ describe("generic placement topology", () => {
       })
     ).toHaveLength(1);
 
-    await expect(
-      inventory.placement.changeContentsStatus({
-        operationId: "blocked-subtree-status",
-        occurredAtEpochMs: time2,
-        nodeId: "PALLET-1",
-        toStatusId: "quarantine",
-      })
-    ).rejects.toThrow("exact reservation bindings");
-    await inventory.reservations.release({
-      operationId: "release-carton-packages",
-      reservationId: "exact-carton-packages",
-      occurredAtEpochMs: time2,
-    });
-    await inventory.placement.changeContentsStatus({
+    const claim = await inventory.read.reservation("exact-carton-packages");
+    const quarantined = await inventory.placement.changeContentsStatus({
       operationId: "quarantine-subtree",
       occurredAtEpochMs: time2,
       nodeId: "PALLET-1",
       toStatusId: "quarantine",
+    });
+    expect(quarantined.event.kind).toBe(InventoryEventKind.Reclassification);
+    expect(await inventory.read.reservation("exact-carton-packages")).toEqual(claim);
+    expect(await inventory.read.reservationFeasibility()).toMatchObject({
+      status: InventoryReservationFeasibilityStatus.Shortage,
+      groups: [{ reservationIds: ["exact-carton-packages"], shortage: parseQuantity("600", "piece") }],
     });
     expect(
       [
@@ -760,6 +1039,8 @@ describe("generic placement topology", () => {
         ...(await inventory.read.positions({ itemId: "item-b" })),
       ].every((position) => position.key.statusId === undefined)
     ).toBe(true);
+    expect(await inventory.read.reservation("exact-carton-packages")).toEqual(claim);
+    expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
   });
 
   it("enforces optimistic parents, one parent, target policy, and acyclic topology", async () => {
@@ -876,6 +1157,71 @@ describe("generic placement topology", () => {
     expect((await scrappedInventory.read.reservationFeasibility()).status).toBe(
       InventoryReservationFeasibilityStatus.Shortage
     );
+  });
+
+  it.each([
+    [InventoryDeficitPolicy.Record, false],
+    [InventoryDeficitPolicy.Record, true],
+    [InventoryDeficitPolicy.Reject, false],
+    [InventoryDeficitPolicy.Reject, true],
+  ] as const)("records reserved subtree contents like exact stock (policy: %s, canonical: %s)", async (policy, canonical) => {
+    for (const [verb, kind] of [
+      ["issue", InventoryEventKind.Issue],
+      ["scrap", InventoryEventKind.Scrap],
+      ["changeStatus", InventoryEventKind.Reclassification],
+      ["clearStatus", InventoryEventKind.Reclassification],
+    ] as const) {
+      /** Run an equivalent physical action with either an exact position or its ancestor. */
+      async function recordContents(subtree: boolean) {
+        // A failpoint routes reference writes through the canonical staged coordinator.
+        const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+        const inventory = createTestInventory(storage, undefined, clockAt(time3), policy);
+        const amount = stockAmount("2", "piece");
+        const quantity = parseQuantity("2", "piece");
+        const selector = { itemId: "item-a", placementNodeIds: ["child"] };
+        const to = loosePosition("child", verb === "clearStatus" ? { statusId: "quarantine" } : {});
+        await inventory.stock.receive({ operationId: "receive-contents", occurredAtEpochMs: time0, to, amount });
+        await inventory.placement.move({ operationId: "place-child", occurredAtEpochMs: time0, nodeId: "child", into: "tray" });
+        const [position] = await inventory.read.positions(selector);
+        if (position === undefined) throw new Error("Expected nested stock to allocate.");
+        const allocations = [{ position: position.key, quantity }];
+        const reservationId = "exact-child-claim";
+        await inventory.reservations.reserve({
+          operationId: "reserve-contents", reservationId, itemRevisionId: position.key.itemRevisionId,
+          selector, requested: quantity, createdAtEpochMs: time1,
+        });
+        await inventory.reservations.allocate({
+          operationId: "allocate-contents", reservationId, allocations, occurredAtEpochMs: time1,
+        });
+        expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+        const header = { operationId: "record-contents", occurredAtEpochMs: time2, reason: "Physical stock disposition." };
+        const contents = { ...header, nodeId: "tray" };
+        const exact = { ...header, from: position.key, amount };
+        /** Use the same physical verb for either form of the stock target. */
+        function record() {
+          switch (verb) {
+            case "issue": return subtree ? inventory.placement.issueContents(contents) : inventory.stock.issue(exact);
+            case "scrap": return subtree ? inventory.placement.scrapContents(contents) : inventory.stock.scrap(exact);
+            case "changeStatus": return subtree
+              ? inventory.placement.changeContentsStatus({ ...contents, toStatusId: "quarantine" })
+              : inventory.stock.changeStatus({ ...exact, toStatusId: "quarantine" });
+            case "clearStatus": return subtree ? inventory.placement.clearContentsStatus(contents) : inventory.stock.clearStatus(exact);
+          }
+        }
+        const committed = await record();
+        expect(committed.event.kind).toBe(kind);
+        expect(await record()).toEqual({ ...committed, replayed: true });
+        expect(await inventory.read.reservation(reservationId)).toMatchObject({ status: InventoryReservationStatus.Active, allocations });
+        expect(await inventory.read.reservationFeasibility()).toMatchObject({
+          status: InventoryReservationFeasibilityStatus.Shortage,
+          groups: [{ reservationIds: [reservationId], requested: quantity, fulfillable: parseQuantity("0", "piece"), shortage: quantity }],
+        });
+        expect(await inventory.read.placementAncestry("child")).toEqual(["child", "tray"]);
+        return { effects: committed.event.stockEffects, positions: await inventory.read.positions(selector) };
+      }
+      const exact = await recordContents(false);
+      expect(await recordContents(true)).toEqual(exact);
+    }
   });
 
   it("inherits the earliest use-by from placement ancestry", async () => {

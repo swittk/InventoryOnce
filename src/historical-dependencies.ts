@@ -18,6 +18,10 @@ export interface LoadInventoryHistoricalDependenciesInput {
   readonly seedEvents: readonly InventoryEventDraft[];
   /** Embedded historical assertion identities whose envelopes seed the closure. */
   readonly assertionIds?: readonly string[];
+  /** Explicit anchor event identities whose containing envelopes seed the closure. */
+  readonly afterEventIds?: readonly string[];
+  /** Removed or corrected event identities whose reverse anchored dependents must also be loaded. */
+  readonly reverseAnchorEventIds?: readonly string[];
 }
 
 /**
@@ -30,20 +34,34 @@ export async function loadInventoryHistoricalDependencies({
   projection,
   seedEvents,
   assertionIds = [],
+  afterEventIds = [],
+  reverseAnchorEventIds = [],
 }: LoadInventoryHistoricalDependenciesInput): Promise<
   readonly InventoryCommittedEvent[] | undefined
 > {
   if (!inventoryStorageSupportsEventQuery(storage)) return undefined;
   const pendingKeys = new Set<string>();
+  const omittedAssertionIds = new Set<string>(assertionIds);
+  const reverseTargets = new Set<string>(reverseAnchorEventIds);
   for (const event of seedEvents) {
     for (const key of inventoryEventDependencyKeys(event)) pendingKeys.add(key);
   }
   for (const assertionId of assertionIds) {
     pendingKeys.add("dep:assertion:" + assertionId);
   }
+  for (const afterEventId of afterEventIds) {
+    pendingKeys.add("dep:event:" + afterEventId);
+  }
+  for (const eventId of reverseAnchorEventIds) {
+    pendingKeys.add("dep:anchored-to:" + eventId);
+  }
   if (pendingKeys.size === 0) return [];
   const queriedKeys = new Set<string>();
   const events = new Map<string, InventoryCommittedEvent>();
+  /** Enqueue one dependency key unless it was already queried in this closure walk. */
+  function enqueueKey(key: string): void {
+    if (!queriedKeys.has(key)) pendingKeys.add(key);
+  }
   while (pendingKeys.size !== 0) {
     const batch = [...pendingKeys].filter(
       /** Keep only resource keys not already expanded. */
@@ -68,7 +86,27 @@ export async function loadInventoryHistoricalDependencies({
         if (events.has(event.eventId)) continue;
         events.set(event.eventId, event);
         for (const key of inventoryEventDependencyKeys(event)) {
-          if (!queriedKeys.has(key)) pendingKeys.add(key);
+          enqueueKey(key);
+        }
+        // Only omitted/corrected anchors pull reverse dependents so ordinary reads avoid fanout.
+        for (const assertion of event.historicalRepair?.assertions ?? []) {
+          if (omittedAssertionIds.has(assertion.assertionId)) {
+            enqueueKey("dep:anchored-to:" + assertion.event.eventId);
+          }
+        }
+        if (
+          event.correction !== undefined &&
+          reverseTargets.has(event.correction.correctsEventId)
+        ) {
+          reverseTargets.add(event.eventId);
+          enqueueKey("dep:anchored-to:" + event.eventId);
+          if (
+            event.correctionReplacement !== undefined &&
+            event.correctionReplacement !== null
+          ) {
+            reverseTargets.add(event.correctionReplacement.eventId);
+            enqueueKey("dep:anchored-to:" + event.correctionReplacement.eventId);
+          }
         }
       }
       afterRecordSequence = page.nextAfterRecordSequence;

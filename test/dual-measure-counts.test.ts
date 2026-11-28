@@ -7,6 +7,7 @@ import {
   InventoryMeasurementAxisRole,
   InventoryMeasurementRequirement,
   InventoryTrackingRequirement,
+  compareQuantity,
   createInventoryOnce,
   defineInventoryCatalog,
   defineInventoryItem,
@@ -100,6 +101,123 @@ function measuredShortageAmount(pieces: string, weight: string) {
 }
 
 describe("historical shortages on independently measured stock", () => {
+  it("keeps an exact fixed-weight box claim fulfillable after identical stock merges", async () => {
+    const item = defineInventoryItem({ ...measuredItem(), reservationAxisId: "weight" });
+    const box = defineInventoryPackaging({
+      revisionId: "fixed-weight-box", itemId, itemRevisionId, packageUnit: unitCode("box"),
+      fixedContents: measuredVector("1", "3"),
+    }, item);
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [itemId]: itemRevisionId }, packagingRevisions: [box],
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: { nowEpochMs: () => occurredAtEpochMs + 10 },
+    });
+    const position = { itemId, itemRevisionId, placementNodeId: "store", packagingRevisionId: box.revisionId };
+    const selector = { itemId, placementNodeIds: ["store"] };
+    const three = parseQuantity("3", "kg");
+    await inventory.stock.receive({ operationId: "first-box", occurredAtEpochMs, to: position, amount: packageAmount(1, box.revisionId) });
+    await inventory.reservations.reserve({
+      operationId: "reserve", reservationId: "held", itemRevisionId, selector, requested: three, createdAtEpochMs: occurredAtEpochMs + 1,
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate", reservationId: "held", occurredAtEpochMs: occurredAtEpochMs + 1,
+      allocations: [{ position, quantity: three }],
+    });
+    const claimBeforeMerge = await inventory.read.reservation("held");
+    expect(claimBeforeMerge?.allocations).toEqual([{ position, quantity: three }]);
+    await inventory.stock.receive({
+      operationId: "second-box", occurredAtEpochMs: occurredAtEpochMs + 2, to: position, amount: packageAmount(1, box.revisionId),
+    });
+    const positions = await inventory.read.positions(selector);
+    expect(positions).toHaveLength(1);
+    expect(positions[0]?.key).toEqual(position);
+    expect(positions[0]?.measurements).toEqual(measuredVector("2", "6"));
+    expect(await inventory.read.reservation("held")).toEqual(claimBeforeMerge);
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
+      fulfillable: three, shortage: parseQuantity("0", "kg"),
+    });
+  });
+
+  it("reserves, allocates, and consumes a single fixed-weight box when multiple boxes sit in the row first", async () => {
+    const item = defineInventoryItem({ ...measuredItem(), reservationAxisId: "weight" });
+    const box = defineInventoryPackaging({
+      revisionId: "fixed-weight-box-2x", itemId, itemRevisionId, packageUnit: unitCode("box"),
+      fixedContents: measuredVector("1", "3"),
+    }, item);
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [itemId]: itemRevisionId }, packagingRevisions: [box],
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: { nowEpochMs: () => occurredAtEpochMs + 10 },
+    });
+    const position = { itemId, itemRevisionId, placementNodeId: "store", packagingRevisionId: box.revisionId };
+    const selector = { itemId, placementNodeIds: ["store"] };
+    const three = parseQuantity("3", "kg");
+    await inventory.stock.receive({
+      operationId: "two-boxes-first", occurredAtEpochMs, to: position, amount: packageAmount(2, box.revisionId),
+    });
+    await inventory.reservations.reserve({
+      operationId: "reserve-one-box", reservationId: "one-box", itemRevisionId, selector, requested: three, createdAtEpochMs: occurredAtEpochMs + 1,
+    });
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
+      fulfillable: three, shortage: parseQuantity("0", "kg"),
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate-one-box", reservationId: "one-box", occurredAtEpochMs: occurredAtEpochMs + 1,
+      allocations: [{ position, quantity: three }],
+    });
+    await inventory.reservations.consume({
+      operationId: "consume-one-box", reservationId: "one-box", occurredAtEpochMs: occurredAtEpochMs + 2,
+      fulfillment: [{ from: position, amount: packageAmount(1, box.revisionId) }],
+    });
+    const remaining = await inventory.read.positions(selector);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]?.measurements).toEqual(measuredVector("1", "3"));
+  });
+
+  it.each([
+    ["before", 2, 3, "2", "34"],
+    ["straddling", 2, 5, "1", "10"],
+    ["after", 5, 6, "3", "33"],
+    ["omitted", 2, 3, "3", "33"],
+  ] as const)("counts only active repair assertions at the observation (%s)", async (mode, issueOffset, receiveOffset, pieces, weight) => {
+    const { strict: inventory } = measuredShortageFacades();
+    const position = { itemId, itemRevisionId, placementNodeId: "store" };
+    const selector = { itemId, placementNodeIds: ["store"] };
+    await inventory.stock.receive({
+      operationId: "receive", occurredAtEpochMs, to: position, amount: measuredShortageAmount("3", "33"),
+    });
+    await inventory.counts.start({ operationId: "start", countId: "count", selector, startedAtEpochMs: occurredAtEpochMs });
+    await inventory.counts.observe({
+      operationId: "observe", countId: "count", observedAtEpochMs: occurredAtEpochMs + 4,
+      observations: [{ position, measurements: measuredVector(pieces, weight) }],
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "late-repair", occurredAtEpochMs: occurredAtEpochMs + 7, reason: "Record late issue and receipt.",
+      assertions: [
+        { assertionId: "late-issue", assert: (plans) => plans.issue({
+          occurredAtEpochMs: occurredAtEpochMs + issueOffset, from: position, amount: measuredShortageAmount("2", "23"),
+        }) },
+        { assertionId: "late-receipt", assert: (plans) => plans.receive({
+          occurredAtEpochMs: occurredAtEpochMs + receiveOffset, to: position, amount: measuredShortageAmount("1", "24"),
+        }) },
+      ],
+    });
+    if (mode === "omitted") {
+      await inventory.stock.recordHistorical({
+        operationId: "omit-repair", occurredAtEpochMs: occurredAtEpochMs + 8, reason: "Remove both superseded assertions.",
+        assertions: [], omittedAssertionIds: ["late-issue", "late-receipt"],
+      });
+    }
+    const command = { operationId: "reconcile", countId: "count", completedAtEpochMs: occurredAtEpochMs + 9 };
+    const result = await inventory.counts.reconcile(command);
+    expect(result.event).toBeUndefined();
+    expect((await inventory.counts.reconcile(command)).replayed).toBe(true);
+    expect((await inventory.read.positions(selector)).map(({ measurements }) => measurements))
+      .toEqual([mode === "omitted" ? measuredVector("3", "33") : measuredVector("2", "34")]);
+  });
+
   it("rejects a historical correction deepening weight despite an unchanged piece peak", async () => {
     const { recorder, strict } = measuredShortageFacades();
     const position = { itemId, placementNodeId: "measured-historical-bin" };
@@ -194,6 +312,84 @@ describe("measurement axis identity", () => {
 });
 
 describe("independent physical count reconciliation", () => {
+  it.each([false, true])("reports only whole fulfillable claims after reweighing (canonical: %s)", async (canonical) => {
+    const item = defineInventoryItem({
+      ...measuredItem(),
+      reservationAxisId: "weight",
+      tracking: { lot: InventoryTrackingRequirement.Forbidden, serial: InventoryTrackingRequirement.Optional },
+    });
+    const packaging = defineInventoryPackaging({
+      revisionId: "reweighed-box", itemId, itemRevisionId, packageUnit: unitCode("box"),
+      fixedContents: inventoryMeasurementVector({ axisId: "pieces", quantity: parseQuantity("24", "piece") }, []),
+    }, item);
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [itemId]: itemRevisionId }, packagingRevisions: [packaging],
+    });
+    const selector = { itemId, placementNodeIds: ["held"] };
+    for (const [shape, pieces, identity] of [
+      ["serial", "1", { serialId: "held-serial" }],
+      ["package", "24", { packagingRevisionId: packaging.revisionId }],
+      ["loose", "2", {}],
+    ] as const) {
+      for (const [weight, heldFulfillable] of [["2.5", 2.5], ["3", 3], ["4.25", shape === "loose" ? 3 : 0]] as const) {
+        for (const broad of [false, true]) {
+          // A failpoint routes reference writes through the canonical staged coordinator.
+          const storage = createInMemoryInventoryDurableStorage(canonical ? { failpoint: () => undefined } : {});
+          const inventory = createInventoryOnce({ catalog, storage, clock: { nowEpochMs: () => occurredAtEpochMs + 10 } });
+          const quantity = parseQuantity("3", "kg");
+          const amount = shape === "package"
+            ? packageAmount(1, packaging.revisionId, [{ axisId: "weight", value: "3", unit: "kg" }])
+            : measuredShortageAmount(pieces, "3");
+          await inventory.stock.receive({
+            operationId: "receive-held", occurredAtEpochMs, to: { itemId, placementNodeId: "held", ...identity }, amount,
+          });
+          const [position] = await inventory.read.positions(selector);
+          if (position === undefined) throw new Error("Expected a measured stock row to allocate.");
+          const allocations = [{ position: position.key, quantity }];
+          await inventory.reservations.reserve({
+            operationId: "reserve-held", reservationId: "held", itemRevisionId, selector, requested: quantity,
+            createdAtEpochMs: occurredAtEpochMs + 1,
+          });
+          await inventory.reservations.allocate({
+            operationId: "allocate-held", reservationId: "held", allocations, occurredAtEpochMs: occurredAtEpochMs + 1,
+          });
+          if (broad) {
+            await inventory.stock.receive({
+              operationId: "receive-spare", occurredAtEpochMs, to: { itemId, placementNodeId: "spare" },
+              amount: measuredShortageAmount("1", "2"),
+            });
+            await inventory.reservations.reserve({
+              operationId: "reserve-spare", reservationId: "spare", itemRevisionId, requested: parseQuantity("2", "kg"),
+              selector: { itemId, placementNodeIds: ["spare"] }, createdAtEpochMs: occurredAtEpochMs + 1,
+            });
+          }
+          const claim = await inventory.read.reservation("held");
+          expect(claim?.allocations).toEqual(allocations);
+          await inventory.counts.replaceAbsolute({
+            countId: "reweigh", operationId: "reweigh", itemRevisionId, selector,
+            observedMeasurements: measuredVector(pieces, weight), occurredAtEpochMs: occurredAtEpochMs + 2,
+          });
+          const [reweighed] = await inventory.read.positions(selector);
+          expect(reweighed?.measurements).toEqual(measuredVector(pieces, weight));
+          expect(await inventory.read.reservation("held")).toEqual(claim);
+          const report = await inventory.read.reservationFeasibility();
+          const [group] = report.groups;
+          if (group === undefined) throw new Error("Expected the measured claim group.");
+          expect(report.groups).toHaveLength(1);
+          expect(compareQuantity(group.requested, parseQuantity(broad ? "5" : "3", "kg"))).toBe(0);
+          expect(compareQuantity(group.fulfillable, parseQuantity(String(heldFulfillable + (broad ? 2 : 0)), "kg"))).toBe(0);
+          expect(compareQuantity(group.shortage, parseQuantity(String(3 - heldFulfillable), "kg"))).toBe(0);
+          if (!broad && heldFulfillable === 0) {
+            await expect(inventory.reservations.consume({
+              operationId: "consume-held", reservationId: "held", occurredAtEpochMs: occurredAtEpochMs + 3,
+              fulfillment: [{ from: position.key, amount }],
+            })).rejects.toThrow("cannot retain axis 'weight' when primary is zero");
+          }
+        }
+      }
+    }
+  });
+
   it("adjusts measured weight while primary piece stock is unchanged", async () => {
     const inventory = inventoryFor();
     await inventory.stock.receive({

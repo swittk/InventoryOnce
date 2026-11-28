@@ -4,15 +4,15 @@ import type {
   InventoryItemDefinitionRevision,
   InventoryPackagingDefinitionRevision,
 } from "./catalog.js";
-import {
-  inventoryPositionDeficitMeasurements,
-  inventoryPositionIsDeficit,
-} from "./deficits.js";
+import { inventoryPositionIsDeficit } from "./deficits.js";
 import type { InventoryCommittedEvent } from "./events.js";
 import {
-  addInventoryMeasurements,
-  type InventoryMeasurementVector,
-} from "./measurements.js";
+  addInventoryMeasurementTotals,
+  inventoryMeasurementTotalsFromVector,
+  materializeInventoryMeasurementTotals,
+  type InventoryMeasurementTotals,
+} from "./measurement-totals.js";
+import type { InventoryMeasurementVector } from "./measurements.js";
 import { zeroInventoryMeasurementsForItem } from "./measurement-schema.js";
 import type {
   InventoryStockPosition,
@@ -141,7 +141,25 @@ export function summarizeInventoryStock({
   selector: rawSelector,
 }: SummarizeInventoryStockInput): InventoryStockSummary {
   const selector = normalizeInventoryStockSelector(rawSelector);
-  const positions = findInventoryPositions(projection, selector);
+  return summarizeInventoryStockPositions({
+    catalog, selector, positions: findInventoryPositions(projection, selector),
+  });
+}
+
+/** Physical summary inputs already resolved at one published revision. */
+interface SummarizeInventoryStockPositionsInput {
+  /** Catalogue published at the same revision as the stock rows. */
+  readonly catalog: InventoryCatalog;
+  /** Normalized selector used to obtain the rows. */
+  readonly selector: InventoryStockSelector;
+  /** Rows prefiltered by the selector, including placement ancestry if requested. */
+  readonly positions: readonly InventoryStockPosition[];
+}
+
+/** Aggregate rows already selected at one published stock revision. */
+export function summarizeInventoryStockPositions({
+  catalog, selector, positions,
+}: SummarizeInventoryStockPositionsInput): InventoryStockSummary {
   const positionsByRevision = new Map<
     ItemRevisionId,
     InventoryStockPosition[]
@@ -176,9 +194,7 @@ export function summarizeInventoryStock({
     revisions.push({
       itemId: item.itemId,
       itemRevisionId: item.revisionId,
-      total: sumRevisionMeasurements(item, revisionPositions),
-      physicalOnHand: sumRevisionPhysicalMeasurements(item, revisionPositions),
-      deficit: sumRevisionDeficitMeasurements(item, revisionPositions),
+      ...sumRevisionMeasurements(item, revisionPositions),
       positions: revisionPositions,
       byPlacementNode: summarizeOptionalIdentity(
         revisionPositions,
@@ -241,43 +257,29 @@ export function listInventoryPackagingRevisions({
   return result;
 }
 
-/** Sum exact positions within one frozen item revision, returning schema-correct zero when empty. */
+/** Sum each signed, physical, and deficit report in exact working digits. */
 function sumRevisionMeasurements(
   item: InventoryItemDefinitionRevision,
   positions: readonly InventoryStockPosition[]
-): InventoryMeasurementVector {
-  let total = zeroInventoryMeasurementsForItem(item);
+): Pick<InventoryStockRevisionSummary, "total" | "physicalOnHand" | "deficit"> {
+  const zero = zeroInventoryMeasurementsForItem(item);
+  const signed = inventoryMeasurementTotalsFromVector(zero);
+  const physical = inventoryMeasurementTotalsFromVector(zero);
+  const deficit = inventoryMeasurementTotalsFromVector(zero);
   for (const position of positions) {
-    total = addInventoryMeasurements(total, position.measurements);
+    addInventoryMeasurementTotals(signed, position.measurements);
+    if (inventoryPositionIsDeficit(position)) {
+      addInventoryMeasurementTotals(deficit, position.measurements, -1n);
+    } else {
+      addInventoryMeasurementTotals(physical, position.measurements);
+    }
   }
-  return total;
-}
-
-/** Sum only positive physical positions; signed deficit is reported separately. */
-function sumRevisionPhysicalMeasurements(
-  item: InventoryItemDefinitionRevision,
-  positions: readonly InventoryStockPosition[]
-): InventoryMeasurementVector {
-  let total = zeroInventoryMeasurementsForItem(item);
-  for (const position of positions) {
-    if (inventoryPositionIsDeficit(position)) continue;
-    total = addInventoryMeasurements(total, position.measurements);
-  }
-  return total;
-}
-
-/** Sum positive deficit magnitude without exposing it as physical stock. */
-function sumRevisionDeficitMeasurements(
-  item: InventoryItemDefinitionRevision,
-  positions: readonly InventoryStockPosition[]
-): InventoryMeasurementVector {
-  let total = zeroInventoryMeasurementsForItem(item);
-  for (const position of positions) {
-    const deficit = inventoryPositionDeficitMeasurements(position);
-    if (deficit === undefined) continue;
-    total = addInventoryMeasurements(total, deficit);
-  }
-  return total;
+  const primaryAxisId = item.primaryAxis.axisId;
+  return {
+    total: materializeInventoryMeasurementTotals(signed, primaryAxisId),
+    physicalOnHand: materializeInventoryMeasurementTotals(physical, primaryAxisId),
+    deficit: materializeInventoryMeasurementTotals(deficit, primaryAxisId),
+  };
 }
 
 
@@ -285,10 +287,12 @@ function sumRevisionDeficitMeasurements(
 interface MutableInventoryStockDimensionBucket {
   /** Dimension value, omitted for the explicit absence bucket. */
   readonly valueId?: string;
-  /** Running exact measurement total. */
-  readonly measurements: InventoryMeasurementVector;
+  /** First row, reused directly when the bucket contains a single position. */
+  readonly first: InventoryMeasurementVector;
+  /** Exact axes accumulated once the bucket has more than one position. */
+  totals?: InventoryMeasurementTotals;
   /** Running number of exact positions. */
-  readonly positionCount: number;
+  positionCount: number;
 }
 
 /** Group exact positions by one optional identity while retaining absent-value stock explicitly. */
@@ -304,21 +308,25 @@ function summarizeOptionalIdentity(
     if (current === undefined) {
       buckets.set(key, {
         ...(valueId === undefined ? {} : { valueId }),
-        measurements: position.measurements,
+        first: position.measurements,
         positionCount: 1,
       });
       continue;
     }
-    buckets.set(key, {
-      ...(current.valueId === undefined ? {} : { valueId: current.valueId }),
-      measurements: addInventoryMeasurements(
-        current.measurements,
-        position.measurements
-      ),
-      positionCount: current.positionCount + 1,
+    current.totals ??= inventoryMeasurementTotalsFromVector(current.first);
+    addInventoryMeasurementTotals(current.totals, position.measurements);
+    current.positionCount += 1;
+  }
+  const result: InventoryStockDimensionBucket[] = [];
+  for (const { valueId, first, totals, positionCount } of buckets.values()) {
+    result.push({
+      ...(valueId === undefined ? {} : { valueId }),
+      measurements: totals === undefined
+        ? first
+        : materializeInventoryMeasurementTotals(totals, first.primary.axisId),
+      positionCount,
     });
   }
-  const result = [...buckets.values()];
   result.sort(compareDimensionBucket);
   return result;
 }

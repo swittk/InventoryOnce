@@ -1,11 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  inventoryEventDependencyIndexKeys,
+  inventoryEventDependencyKeys,
+} from "../src/event-query.js";
+import { loadInventoryHistoricalDependencies } from "../src/historical-dependencies.js";
+import { inventoryLotIdentity, inventoryStockPositionIdentity } from "../src/model.js";
+import { projectInventoryEvents } from "../src/projection.js";
+import {
+  InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryEventQueryDirection,
   stockAmount,
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
+  createTabletCatalog,
   createTestInventory,
   loosePosition,
   time0,
@@ -371,6 +380,102 @@ describe("indexed retained event history", () => {
         occurredThroughEpochMs: time0,
       })
     ).rejects.toThrow("range is reversed");
+  });
+
+  it("indexes and queries dependency keys for positive-layer provenance override positions with zero stock delta", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const catalog = createTabletCatalog();
+    const inventory = createTestInventory(storage, catalog);
+    const to = loosePosition("store", { lotId: "LOT-OVERRIDE" });
+    const transferredTo = loosePosition("override-other", { lotId: "LOT-OVERRIDE" });
+    const receipt = await inventory.stock.receive({
+      operationId: "override-key-receipt-1",
+      occurredAtEpochMs: time0,
+      to,
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "override-key-receipt-2",
+      occurredAtEpochMs: time1,
+      to,
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.issue({
+      operationId: "override-key-issue",
+      occurredAtEpochMs: time2 + 1,
+      from: to,
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.transfer({
+      operationId: "override-key-transfer",
+      occurredAtEpochMs: time2 + 2,
+      from: to,
+      toPlacementNodeId: "override-other",
+      amount: stockAmount("2", "piece"),
+    });
+    const correction = await inventory.stock.correct({
+      operationId: "override-key-correct",
+      occurredAtEpochMs: time3,
+      correctsEventId: receipt.event.eventId,
+      reason: "Move initial receipt occurrence without changing ending stock quantity.",
+      replaceWith: (plans) =>
+        plans.receive({
+          occurredAtEpochMs: time2,
+          to,
+          amount: stockAmount("2", "piece"),
+        }),
+    });
+    expect(correction.event.stockEffects).toEqual([]);
+    expect(correction.event.positiveLayerProvenanceOverrides).toHaveLength(1);
+    const overridePosition =
+      correction.event.positiveLayerProvenanceOverrides![0]!.position;
+    expect(overridePosition.placementNodeId).toBe("override-other");
+    const keys = new Set(inventoryEventDependencyKeys(correction.event));
+    const indexKeys = new Set(inventoryEventDependencyIndexKeys(correction.event));
+    const positionDep = "dep:position:" + inventoryStockPositionIdentity(overridePosition);
+    const lotDep = "dep:lot-stock:" + inventoryLotIdentity(to.itemId, "LOT-OVERRIDE");
+    expect(keys.has(positionDep)).toBe(true);
+    expect(keys.has(lotDep)).toBe(true);
+    expect(keys.has("dep:lot-definition:" + inventoryLotIdentity(to.itemId, "LOT-OVERRIDE"))).toBe(true);
+    expect(keys.has("dep:placement-definition:store")).toBe(true);
+    expect(indexKeys.has(positionDep)).toBe(true);
+    expect(indexKeys.has(lotDep)).toBe(true);
+
+    const laterIssue = await inventory.stock.issue({
+      operationId: "override-key-later-issue",
+      occurredAtEpochMs: time3,
+      from: transferredTo,
+      amount: stockAmount("1", "piece"),
+    });
+    const retained = await inventory.read.events({ limit: 100 });
+    const projection = projectInventoryEvents({
+      catalog,
+      events: retained.events,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const loaded = await loadInventoryHistoricalDependencies({
+      storage,
+      projection,
+      seedEvents: [laterIssue.event],
+    });
+    expect(loaded).toBeDefined();
+    expect(
+      loaded!.some(
+        /** Confirm the zero-delta age override event is indexed under the destination position. */
+        (event) => event.eventId === correction.event.eventId,
+      ),
+    ).toBe(true);
+
+    const byPlacement = await inventory.read.events({
+      placementNodeIds: ["override-other"],
+      limit: 100,
+    });
+    expect(
+      byPlacement.events.some(
+        /** Confirm placement-filtered queries include zero-delta provenance overrides at the destination bin. */
+        (event) => event.eventId === correction.event.eventId,
+      ),
+    ).toBe(true);
   });
 
 });

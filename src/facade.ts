@@ -1,5 +1,14 @@
+import { inventoryEventWhereaboutsMembership } from "./whereabouts-membership.js";
+import { createInventoryRecordedMovement, type InventoryUnwitnessedMovementLine } from "./recorded-movement.js";
+import { stampInventoryReportedTransferReplay } from "./reported-transfer-replay.js";
+import { historicalWhereaboutsId } from "./stock-age.js";
+import {
+  inventoryScopedStockMatches,
+  type InventoryScopedStockPool,
+} from "./stock-scope.js";
 import { assertInventoryAmountKind } from "./stock-amount-rules.js";
 import { compareInventoryIdentityText } from "./ordering.js";
+import { InventoryExactAllocationLimitError } from "./allocation.js";
 import {
   summarizeInventoryAvailability,
   type InventoryAvailabilitySummary,
@@ -13,6 +22,7 @@ import {
   stockAmount,
   assertInventoryAmountSum,
   type InventoryAmount,
+  type InventoryIndependentAmountInput,
 } from "./amounts.js";
 import {
   assertInventoryCatalogRetainsSnapshot,
@@ -54,6 +64,7 @@ import {
   type CommitInventoryOperationResult,
   InventoryReservationProtection,
   commitInventoryOperation,
+  resumeInventoryDurableOperation,
   type InventoryClock,
 } from "./coordinator.js";
 import {
@@ -115,6 +126,7 @@ import {
   type CreateInventoryTransformationInput,
   type CreateInventoryUnpackInput,
   type InventoryCommandHeader,
+  type InventoryTransferLine,
   type InventoryPlacementNodeMetadataInput,
   type InventoryLotMetadataInput,
   type InventoryTransformationLine,
@@ -143,11 +155,13 @@ import {
 } from "./event-query.js";
 import {
   INVENTORY_RECORDED_DEFICIT_LOT_ID,
+  inventoryRecordedDeficitPoolSelector,
   inventoryPositionIsDeficit,
 } from "./deficits.js";
 import {
   assertInventoryEpochMilliseconds,
   InventoryEventKind,
+  InventoryTransferLifecycleAction,
   InventoryTraceabilityRelationAction,
   InventoryTraceabilityRelationKind,
   defineInventoryEvent,
@@ -157,6 +171,7 @@ import {
   type InventoryHistoricalAssertion,
   type InventoryHistoricalImpact,
   type InventoryStockEffect,
+  type InventoryPositiveLayerProvenanceTransfer,
   type InventoryTraceabilityRelationChange,
 } from "./events.js";
 import {
@@ -164,13 +179,21 @@ import {
   inventoryFungibilityScopeIdentity,
   normalizeInventoryFungibilityScope,
   planInventoryFungibilityAllocation,
+  planInventoryFungibilityRecordingAllocation,
   summarizeInventoryFungibility,
   type InventoryFungibilityAllocationLine,
   type InventoryFungibilityAllocationPlan,
   type InventoryFungibilityReservationEffect,
   type InventoryFungibilityScope,
   type InventoryFungibilitySummary,
+  type PlanInventoryFungibilityAllocationInput,
 } from "./fungibility.js";
+import {
+  addInventoryMeasurementTotals,
+  inventoryMeasurementChangeFitsStorage,
+  materializeInventoryMeasurementTotals,
+  type InventoryMeasurementTotals,
+} from "./measurement-totals.js";
 import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
@@ -211,6 +234,7 @@ import {
   type InventoryPlacementChange,
 } from "./placement.js";
 import {
+  emptyInventoryProjectionState,
   findInventoryPositions,
   InventoryDeficitPolicy,
   type InventoryProjectedPlacementNodeDefinition,
@@ -223,12 +247,15 @@ import {
   quantity,
   quantityEq,
   quantityToDecimalString,
+  quantityWholeMultipleCount,
+  subtractQuantity,
   zeroQuantity,
   type Quantity,
 } from "./quantity.js";
 import {
   listInventoryPackagingRevisions,
   summarizeInventoryStock,
+  summarizeInventoryStockPositions,
   type InventoryStockSummary,
   type ListInventoryPackagingRevisionsInput,
 } from "./read-model.js";
@@ -240,9 +267,22 @@ import {
 import {
   inventoryAmountForPrimaryAllocation,
   planInventoryAllocation,
+  inventoryAllocationPoolFromWorld,
+  inventoryAllocationPoolSelector,
+  inventoryPolicyMovementRemainder,
+  inventoryPolicyPositionMeasurement,
+  planInventoryAllocationInPool,
+  planWorkingInventoryAllocation,
+  resolveAllocationItemAndSelector,
+  type ResolvedAllocationSelection,
+  type PlanWorkingInventoryAllocationInput,
   type InventoryAllocationPolicyRequest,
   type InventoryPolicyAllocationLine,
   type InventoryPolicyAllocationPlan,
+  type InventoryPolicyWorkingPool,
+  type InventoryPolicyWorkingPosition,
+  type InventoryPolicyWorkingRow,
+  type InventoryWorkingPolicyAllocationPlan,
 } from "./picking.js";
 import {
   allocateInventoryReservation,
@@ -255,8 +295,6 @@ import {
   type InventoryReservationAllocation,
   type NewInventoryReservation,
   inspectInventoryReservationFeasibility,
-  inventoryReservationIsActiveAt,
-  inventoryReservationsAt,
   type InventoryReservationFeasibilityReport,
 } from "./reservations.js";
 import {
@@ -272,6 +310,10 @@ import {
 import {
   inventoryStorageSupportsEventQuery,
   inventoryStorageSupportsSegmentedPlacement,
+  inventoryStorageSupportsSegmentedStockPlanning,
+  InventoryDurableOperationState,
+  type InventorySegmentedDirectContents,
+  type InventorySegmentedStockPlanningCapability,
   type InventoryDurableStorage,
   type InventoryOperationReceipt,
   type InventorySegmentedPlacementStorageCapability,
@@ -282,6 +324,7 @@ import {
   inventoryStorageSupportsSegmentedStockEventCommit,
   readInventorySegmentedPositionSnapshot,
   type InventorySegmentedPositionReader,
+  type InventorySegmentedResult,
 } from "./segmented-state.js";
 import {
   findInventoryWhereaboutsHistory,
@@ -303,7 +346,6 @@ import {
 } from "./transfers.js";
 import { inventoryPositionIsExpiredAt } from "./usability.js";
 import type { InventoryWorldState } from "./world.js";
-
 /** Default wall clock used when applications do not inject one. */
 const systemInventoryClock: InventoryClock = {
   /** Return canonical current UTC time. */
@@ -522,7 +564,7 @@ export interface InventoryOnceOperationResult {
 export interface InventoryOnceEventResult extends InventoryOnceOperationResult {
   /** Committed immutable event. */
   readonly event: InventoryCommittedEvent;
-  /** Exact durable shortfall recorded only by policy Issue under Record mode. */
+  /** Exact durable shortfall when a policy command records a physical report. */
   readonly deficit?: InventoryOnceRecordedDeficit;
 }
 
@@ -830,11 +872,11 @@ export interface InventoryOncePolicyBatchAllocationLine {
   readonly expiresAtEpochMs?: number;
 }
 
-/** Exact durable shortfall recorded as a signed non-allocatable Issue position. */
+/** Exact durable shortfall posted as a signed debit at its source. */
 export interface InventoryOnceRecordedDeficit {
-  /** Exact signed position receiving the shortfall Issue effect. */
+  /** Exact position receiving the negative shortfall effect, which can settle against an existing balance. */
   readonly position: InventoryStockPositionKey;
-  /** Normal positive amount whose Issue records the negative deficit. */
+  /** Positive reported amount that the negative posting represents. */
   readonly amount: InventoryAmount;
   /** Exact positive primary shortfall represented by this deficit. */
   readonly primary: Quantity;
@@ -848,7 +890,7 @@ export interface InventoryOncePolicyBatchAllocation {
   readonly groupId: string;
   /** Exact source lines assigned to only this request. */
   readonly lines: readonly InventoryOncePolicyBatchAllocationLine[];
-  /** Durable unallocated shortfall recorded only under Issue + Record mode. */
+  /** Durable unallocated shortfall recorded under Record mode. */
   readonly deficit?: InventoryOnceRecordedDeficit;
 }
 
@@ -1622,7 +1664,7 @@ export interface InventoryOnceStockApi {
   issueMany(
     input: InventoryOnceIssueManyInput
   ): Promise<InventoryOnceEventResult>;
-  /** Select FIFO/FEFO positions and issue them atomically, failing on shortfall. */
+  /** Issue FIFO/FEFO picks atomically. Reject mode fails on shortfall, and Record mode can commit and return a recordable deficit. */
   issueByPolicy(
     input: InventoryOnceIssueByPolicyInput
   ): Promise<InventoryOnceEventResult>;
@@ -2000,7 +2042,7 @@ export interface InventoryOnceReadApi {
   events(input?: InventoryEventQuery): Promise<InventoryEventPage>;
   /** Read one revision-safe physical summary with package/lot/direct-placement/status/party breakdowns. */
   summary(selector: InventoryStockSelector): Promise<InventoryStockSummary>;
-  /** Read truthful physical/use-by/exact-allocation/broad-claim availability facts. */
+  /** Read the full published world to report physical availability and global claim feasibility. */
   availability(
     selector: InventoryStockSelector,
     atEpochMs?: number
@@ -2118,14 +2160,10 @@ function requireInventoryOnceInternals(
 async function commitInventoryEventDraft(
   owner: InventoryOnce,
   event: InventoryEventDraft,
-  reservationProtection = InventoryReservationProtection.ProtectClaims,
   validateWorld?: (world: InventoryWorldState) => void
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  if (
-    validateWorld === undefined &&
-    reservationProtection === InventoryReservationProtection.ProtectClaims
-  ) {
+  if (validateWorld === undefined) {
     const segmented = await commitInventorySegmentedStockEventIfEligible(
       owner,
       event
@@ -2142,7 +2180,7 @@ async function commitInventoryEventDraft(
     /** Freeze this already-built event against the current published world. */
     plan: ({ world }) => {
       validateWorld?.(world);
-      return { event, reservationProtection };
+      return { event };
     },
   });
   return createInventoryOnceEventResult(result);
@@ -2154,10 +2192,7 @@ async function commitInventorySegmentedStockEventIfEligible(
   event: InventoryEventDraft
 ): Promise<InventoryOnceEventResult | undefined> {
   const internals = requireInventoryOnceInternals(owner);
-  if (
-    internals.deficitPolicy !== InventoryDeficitPolicy.Reject ||
-    !inventoryStorageSupportsSegmentedStockEventCommit(internals.storage)
-  ) {
+  if (!inventoryStorageSupportsSegmentedStockEventCommit(internals.storage)) {
     return undefined;
   }
   const recordedAtEpochMs = internals.clock.nowEpochMs();
@@ -2166,6 +2201,7 @@ async function commitInventorySegmentedStockEventIfEligible(
     operationId: event.operationId,
     intentFingerprint: inventoryEventIntentFingerprint(event),
     recordedAtEpochMs,
+    deficitPolicy: internals.deficitPolicy,
     event,
   });
   if (committed === undefined) return undefined;
@@ -2216,6 +2252,7 @@ async function commitInventorySegmentedHistoricalEventIfEligible(
     recordedAtEpochMs,
     expectedWorldRevision: world.revision,
     expectedRecordSequence: world.projection.lastRecordSequence,
+    deficitPolicy: internals.deficitPolicy,
     event,
   });
   if (committed === undefined) return undefined;
@@ -2293,9 +2330,16 @@ async function commitInventoryTransferOperation(
     intentFingerprint,
     clock: internals.clock,
     deficitPolicy: internals.deficitPolicy,
-    plan: /** Process one transfer-lifecycle collection entry deterministically. */ ({
-      world,
-    }) => ({ event: planEvent(world) }),
+    /** Only Prepare removes ordinary stock from the claim pool. */
+    plan: ({ world }) => {
+      const event = planEvent(world);
+      return {
+        event,
+        reservationProtection: event.transferLifecycle?.action === InventoryTransferLifecycleAction.Prepare
+          ? InventoryReservationProtection.ProtectClaims
+          : InventoryReservationProtection.RecordPhysicalTruth,
+      };
+    },
   });
   const event = result.event;
   if (event === undefined)
@@ -2688,7 +2732,7 @@ class InventoryOnceTransformationsImplementation
   }
 }
 
-/** True when every required measurement axis is covered by current stock. */
+/** Compare required measurement axes, treating a missing independent measurement as zero. */
 function inventoryMeasurementsCoverRequired(
   available: InventoryMeasurementVector,
   required: InventoryMeasurementVector
@@ -2703,11 +2747,11 @@ function inventoryMeasurementsCoverRequired(
       /** Match the same independently measured axis before comparing exact quantity. */
       (candidate) => candidate.axisId === needed.axisId
     );
-    if (
-      current === undefined ||
-      compareQuantity(current.quantity, needed.quantity) < 0
-    )
+    if (current === undefined) {
+      if (needed.quantity.amountMinor > 0) return false;
+    } else if (compareQuantity(current.quantity, needed.quantity) < 0) {
       return false;
+    }
   }
   return true;
 }
@@ -3003,7 +3047,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     input: InventoryOnceTransferInput
   ): Promise<InventoryOnceEventResult> {
     const { catalog } = requireInventoryOnceInternals(this.owner);
-    return commitInventoryEventDraft(
+    return commitInventoryReportedExactTransfer(
       this.owner,
       createInventoryTransferEvent({
         ...input,
@@ -3017,7 +3061,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     input: InventoryOnceTransferManyInput
   ): Promise<InventoryOnceEventResult> {
     const { catalog } = requireInventoryOnceInternals(this.owner);
-    return commitInventoryEventDraft(
+    return commitInventoryReportedExactTransfer(
       this.owner,
       createInventoryTransferManyEvent({
         ...input,
@@ -3301,7 +3345,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
     return commitInventoryEventDraft(
       this.owner,
       event,
-      InventoryReservationProtection.ProtectClaims,
       /** Check the frozen world before consuming a traceability identity. */
       (world) => assertTransformationInputsAreDetached(world, event)
     );
@@ -3317,8 +3360,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       createInventoryScrapEvent({
         ...input,
         catalog,
-      }),
-      InventoryReservationProtection.RecordPhysicalTruth
+      })
     );
   }
 
@@ -3332,8 +3374,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       createInventoryScrapManyEvent({
         ...input,
         catalog,
-      }),
-      InventoryReservationProtection.RecordPhysicalTruth
+      })
     );
   }
 
@@ -3371,6 +3412,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
         (assertion) => assertion.event
       ),
       assertionIds: omittedAssertionIds,
+      afterEventIds: collectHistoricalAfterEventIds(assertions),
     });
     try {
       const planned = createInventoryHistoricalRepairEvent(
@@ -3472,6 +3514,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
           (assertion) => assertion.event
         ),
         assertionIds: omittedAssertionIds,
+        afterEventIds: collectHistoricalAfterEventIds(assertions),
       });
       return createInventoryHistoricalRepairEvent(
         {
@@ -3517,8 +3560,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       /** Replan the exact dependency cone against the won published revision. */
       plan: async ({ world, recordedAtEpochMs }) => ({
         event: await planEvent(world, recordedAtEpochMs),
-        reservationProtection:
-          InventoryReservationProtection.RecordPhysicalTruth,
       }),
     });
     return createInventoryOnceEventResult(result);
@@ -3548,6 +3589,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
         ...(root === undefined ? [] : [root]),
         ...(replacement === undefined ? [] : [replacement]),
       ],
+      reverseAnchorEventIds: [input.correctsEventId],
     });
     try {
       const event = createInventoryCorrectionEvent(
@@ -3637,6 +3679,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
           ...(root === undefined ? [] : [root]),
           ...(replacement === undefined ? [] : [replacement]),
         ],
+        reverseAnchorEventIds: [input.correctsEventId],
       });
       return createInventoryCorrectionEvent(
         {
@@ -3681,8 +3724,6 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
       /** Recalculate the exact dependency cone against the won published revision. */
       plan: async ({ world, recordedAtEpochMs }) => ({
         event: await planEvent(world, recordedAtEpochMs),
-        reservationProtection:
-          InventoryReservationProtection.RecordPhysicalTruth,
       }),
     });
     return createInventoryOnceEventResult(result);
@@ -3762,7 +3803,8 @@ async function commitInventoryFungibilityMovement(
         recordedAtEpochMs,
         `${kind} fungibility movement`
       );
-      const allocation = planInventoryFungibilityAllocation({
+      /** Prefer the existing claim-preserving assignment when one is available. */
+      const planning: PlanInventoryFungibilityAllocationInput = {
         catalog: internals.catalog,
         world,
         fungibilityRevisionId: input.fungibilityRevisionId,
@@ -3778,7 +3820,8 @@ async function commitInventoryFungibilityMovement(
         ...(input.allowAllocatedStock === undefined
           ? {}
           : { allowAllocatedStock: input.allowAllocatedStock }),
-      });
+      };
+      const allocation = planInventoryFungibilityRecordingAllocation(planning);
       assertFungibilityAllocationComplete(allocation);
       return {
         event: createFungibilityMovementEvent(
@@ -3788,12 +3831,6 @@ async function commitInventoryFungibilityMovement(
           allocation,
           toPlacementNodeId
         ),
-        ...(kind === InventoryFungibilityMovementKind.Scrap
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
       };
     },
   });
@@ -3829,7 +3866,7 @@ function assertFungibilityMovementRequest(
     input.allowAllocatedStock === true
   ) {
     throw new Error(
-      "Only explicit fungibility scrap may select allocated stock."
+      "Only fungibility scrap may skip the preference for unallocated stock."
     );
   }
   if (kind === InventoryFungibilityMovementKind.Transfer) {
@@ -3880,7 +3917,7 @@ function assertFungibilityAllocationComplete(
   }
   if (plan.incrementBlockedStock) {
     throw new Error(
-      `Inventory fungibility pool has ${shortfall} shortfall because intact package/serial increments cannot be split.`
+      `Inventory fungibility pool has ${shortfall} shortfall because the request does not fit the eligible members' exact allocation increments.`
     );
   }
   throw new Error(
@@ -4038,30 +4075,456 @@ interface InventoryPolicyBatchAllocationEvidence {
   readonly groupId: string;
   /** Exact encoded source evidence for this request. */
   readonly lines: readonly InventoryPolicyBatchAllocationEvidenceLine[];
-  /** Optional durable shortfall recorded under Issue + Record mode. */
+  /** Optional durable shortfall recorded by this request under Record mode. */
   readonly deficit?: InventoryPolicyBatchDeficitEvidence;
 }
 
-/** One policy shortfall frozen as a normal exact Issue line plus public replay evidence. */
+/** One policy shortfall frozen as an exact signed posting and public replay evidence. */
 interface InventoryPolicyRecordedDeficit {
-  /** Positive exact amount/position whose Issue creates or extends signed deficit. */
+  /** Positive exact reported quantity at the source position that takes the deficit. */
   readonly line: CreateInventoryIssueManyInput["lines"][number];
   /** Public exact evidence retained in immutable event metadata. */
   readonly evidence: InventoryOnceRecordedDeficit;
 }
 
-/** One grouped exact source after several requests selected the same position. */
-interface InventoryPolicyBatchExactLine {
-  /** Position fields accepted by exact issue/transfer commands. */
-  readonly from: InventoryStockPositionInput;
-  /** Frozen item revision governing the position. */
-  readonly itemRevisionId: string;
-  /** Sum of every exact request allocation assigned to this position. */
-  readonly measurements: InventoryMeasurementVector;
-  /** Exact intact-package revision retained by this source position. */
-  readonly packagingRevisionId?: string;
-  /** Whole package count represented by the summed allocations. */
-  readonly packageCount?: number;
+/** The signed pools and exact lookups needed by one policy or batch planner. */
+interface InventoryPolicyStockSource {
+  /** Complete signed pool plus current exact holds for this request. */
+  pool(selection: ResolvedAllocationSelection): InventorySegmentedResult<InventoryScopedStockPool>;
+  /** Exact current signed row for a reported source or deficit. */
+  position(positionId: string): InventorySegmentedResult<InventoryStockPosition | undefined>;
+  /** Current ancestry for an explicit deficit position that a later request may need. */
+  ancestry(nodeId: string): InventorySegmentedResult<readonly string[]>;
+  /** Exact facts for a direct contents move without visiting any descendants. */
+  directContents(nodeId: string, into: string): InventorySegmentedResult<InventorySegmentedDirectContents>;
+}
+
+/** Freeze exact transfer replay evidence and partition Record shortfalls at the same publication fence. */
+async function commitInventoryReportedExactTransfer(
+  owner: InventoryOnce,
+  event: InventoryEventDraft
+): Promise<InventoryOnceEventResult> {
+  const internals = requireInventoryOnceInternals(owner);
+  // Exact Reject-mode transfers need no planning read. The native publisher owns the receipt revision.
+  // Adapters that decline native publication still use the existing planning routes.
+  if (internals.deficitPolicy === InventoryDeficitPolicy.Reject) {
+    const committed = await commitInventorySegmentedStockEventIfEligible(owner, event);
+    if (committed !== undefined) return committed;
+  }
+  const intentFingerprint = inventoryEventIntentFingerprint(event);
+  return commitInventoryScopedMovement({
+    internals,
+    operationId: event.operationId,
+    intentFingerprint,
+    /** Retain replay evidence for either policy and partition only Record reports. */
+    plan: async (source, _recordedAtEpochMs, nextWorldRevision) => {
+      const planned = internals.deficitPolicy === InventoryDeficitPolicy.Record
+        ? await planRecordedExactTransfer({ catalog: internals.catalog, event, readPosition: source.position })
+        : event;
+      return stampInventoryReportedTransferReplay(planned, intentFingerprint, nextWorldRevision);
+    },
+  });
+}
+
+/** One exact reported transfer and the source facts at its publication fence. */
+interface PlanRecordedExactTransferInput {
+  /** Retained definitions used to interpret exact amounts. */
+  readonly catalog: InventoryCatalog;
+  /** Normalized caller intent before partitioning witnessed and unknown stock. */
+  readonly event: InventoryEventDraft;
+  /** Read exact positions at the revision used for publication. */
+  readonly readPosition: InventoryPolicyStockSource["position"];
+}
+
+/** Partition normalized one-to-one transfer routes using exact current source quantities. */
+async function planRecordedExactTransfer({
+  catalog, event, readPosition,
+}: PlanRecordedExactTransferInput): Promise<InventoryEventDraft> {
+  /** The normalized one-to-one draft provides both exact postings for each route. */
+  const effectsByPosition = new Map<string, InventoryStockEffect>();
+  for (const effect of event.stockEffects) {
+    effectsByPosition.set(inventoryStockPositionIdentity(effect.position), effect);
+  }
+  /** Keep fully backed postings verbatim, including explicit optional measurements. */
+  const witnessedEffects: InventoryStockEffect[] = [];
+  /** Every backed portion carries its original exact FIFO route. */
+  const witnessedRoutes: InventoryPositiveLayerProvenanceTransfer[] = [];
+  /** Only partial witnesses need new amounts and signed postings. */
+  const partial: InventoryTransferLine[] = [];
+  /** Unbacked remainders are posted independently of witnessed lots. */
+  const unknown: InventoryUnwitnessedMovementLine[] = [];
+  for (const route of event.positiveLayerProvenanceTransfers ?? []) {
+    const sourceId = inventoryStockPositionIdentity(route.from);
+    const effect = effectsByPosition.get(sourceId);
+    const destination = effectsByPosition.get(inventoryStockPositionIdentity(route.to));
+    const toPlacementNodeId = route.to.placementNodeId;
+    if (effect === undefined || destination === undefined || toPlacementNodeId === undefined) {
+      throw new Error("Exact transfer lost a signed route endpoint.");
+    }
+    const requested = negateInventoryMeasurements(effect.measurementsDelta);
+    const current = await readPosition(sourceId);
+    const backed = current !== undefined && current.measurements.primary.quantity.amountMinor > 0;
+    if (backed && inventoryMeasurementsCoverRequired(current.measurements, requested)) {
+      witnessedEffects.push(effect, destination);
+      witnessedRoutes.push(route);
+      continue;
+    }
+    // Independently measured axes cannot be apportioned from the primary
+    // count. A partial witness must be the whole source, with a valid remainder.
+    if (backed && (
+      compareQuantity(requested.primary.quantity, current.measurements.primary.quantity) <= 0 ||
+      !inventoryMeasurementsCoverRequired(requested, current.measurements)
+    )) {
+      throw new Error("Reported transfer cannot partition independent measurements into an exact witness and remainder.");
+    }
+    const { itemRevisionId, ...from } = route.from;
+    const witnessedMeasurements = backed ? current.measurements : undefined;
+    if (witnessedMeasurements !== undefined) {
+      partial.push({
+        from, toPlacementNodeId, itemRevisionId,
+        amount: inventoryAmountForPrimaryAllocation({
+          catalog, itemRevisionId,
+          position: { key: route.from, measurements: witnessedMeasurements },
+          allocatedPrimary: witnessedMeasurements.primary.quantity,
+        }),
+        ...(effect.metadata === undefined ? {} : { metadata: effect.metadata }),
+      });
+    }
+    if (from.serialId !== undefined) {
+      throw new Error("Unwitnessed transfer cannot claim a serial identity.");
+    }
+    // The ledger nets signed postings at the real unlabelled key. The typed
+    // portion preserves the exact report even when the row stays positive.
+    const { lotId: _witnessedLot, ...unlabelledSource } = from;
+    const remainder = witnessedMeasurements === undefined ? requested :
+      subtractRecordedTransferWitness(requested, witnessedMeasurements);
+    unknown.push({
+      from: unlabelledSource, toPlacementNodeId, itemRevisionId,
+      amount: reportedRemainderAmount(catalog, route.from.packagingRevisionId, remainder),
+    });
+  }
+  if (unknown.length === 0) return event;
+  const partialEvent = partial.length === 0 ? undefined : createInventoryTransferManyEvent({
+    catalog, operationId: event.operationId, occurredAtEpochMs: event.occurredAtEpochMs, lines: partial,
+  });
+  for (const effect of partialEvent?.stockEffects ?? []) witnessedEffects.push(effect);
+  for (const route of partialEvent?.positiveLayerProvenanceTransfers ?? []) witnessedRoutes.push(route);
+  return createInventoryRecordedMovement({
+    catalog, header: inventoryCommandHeaderFromPlacementInput(event), kind: InventoryEventKind.Transfer,
+    witnessed: witnessedEffects.length === 0 ? undefined : {
+      ...event, stockEffects: witnessedEffects, positiveLayerProvenanceTransfers: witnessedRoutes,
+    },
+    unknown,
+  });
+}
+
+/** Take a witnessed portion from the exact report without adding unreported axes. */
+function subtractRecordedTransferWitness(
+  report: InventoryMeasurementVector,
+  witness: InventoryMeasurementVector,
+): InventoryMeasurementVector {
+  const independent: InventoryMeasurementVector["independent"][number][] = [];
+  for (const { axisId, quantity } of report.independent) {
+    independent.push({
+      /** Axis explicitly measured or fixed by the requested package. */
+      axisId,
+      /** Exact reported quantity still outside the witnessed stock. */
+      quantity: subtractQuantity(quantity, inventoryMeasurementAt(witness, axisId, quantity.unit)),
+    });
+  }
+  return {
+    /** Remaining amount in the primary axis already shared by report and witness. */
+    primary: {
+      /** Frozen primary axis of the item revision. */
+      axisId: report.primary.axisId,
+      /** Exact primary quantity still outside the witnessed stock. */
+      quantity: subtractQuantity(report.primary.quantity, witness.primary.quantity),
+    },
+    /** Only the exact report's independent axes, including any explicit zero. */
+    independent,
+  };
+}
+
+/** Store reported remainder axes verbatim, including measured zero for an optional axis. */
+function reportedRemainderAmount(
+  catalog: InventoryCatalog,
+  packagingRevisionId: string | undefined,
+  measurements: InventoryMeasurementVector,
+): InventoryAmount {
+  if (packagingRevisionId === undefined) return inventoryMeasuredAmountFromVector(measurements);
+  const packaging = catalog.packagingRevision(packagingRevisionId);
+  const count = quantityWholeMultipleCount(measurements.primary.quantity, packaging.fixedContents.primary.quantity);
+  const independent: InventoryIndependentAmountInput[] = [];
+  for (const { axisId, quantity } of measurements.independent) {
+    if (packaging.fixedContents.independent.some(
+      /** Fixed axes come from the retained package definition when resolving the amount. */
+      (axis) => axis.axisId === axisId,
+    )) continue;
+    independent.push({
+      /** Independently reported axis not fixed by the intact package. */
+      axisId,
+      /** Exact decimal representation of the measured remainder. */
+      value: quantityToDecimalString(quantity),
+      /** Unit frozen by the item revision's axis. */
+      unit: quantity.unit,
+    });
+  }
+  return packageAmount(count, packagingRevisionId, independent);
+}
+
+/** Read policy facts from the canonical snapshot held by the staged coordinator. */
+function canonicalPolicyStockSource(
+  world: InventoryWorldState,
+  recordedAtEpochMs: number
+): InventoryPolicyStockSource {
+  return {
+    /** Read only this exact signed pool from the canonical position index. */
+    pool: (selection) => inventoryAllocationPoolFromWorld(world, selection, recordedAtEpochMs),
+    /** Look up one optional explicit deficit position from the same snapshot. */
+    position: (positionId) => world.projection.positions[positionId],
+    /** Resolve the direct placement against the same published forest. */
+    ancestry: (nodeId) => inventoryPlacementAncestry(world.projection.placement, nodeId),
+    /** Read the same immediate facts from the coordinator's complete snapshot. */
+    directContents: (nodeId, into) => {
+      const childNodeIds = inventorySparseRecordValue(world.projection.placement.childNodeIdsByParentNodeId, nodeId) ?? [];
+      const children = childNodeIds.map(
+        /** Pair each immediate child with its live serial row when physically embodied. */
+        (childId) => {
+        const embodiedPosition = inventoryEmbodiedPlacementNodePosition(world, childId);
+        return { nodeId: childId, ...(embodiedPosition === undefined ? {} : { embodiedPosition }) };
+        }
+      );
+      return {
+        positions: inventoryDirectPositivePositionsAtNode(world, nodeId),
+        children,
+        destinationAncestry: inventoryPlacementAncestry(world.projection.placement, into),
+      };
+    },
+  };
+}
+
+/** Read policy facts through published segmented indexes. */
+function segmentedPolicyStockSource(
+  storage: InventorySegmentedStockPlanningCapability,
+  recordedAtEpochMs: number
+): InventoryPolicyStockSource {
+  /** Reuse the same reader for exact positions in this scoped planning attempt. */
+  let positions: ReturnType<InventorySegmentedStockPlanningCapability["readPositionSegment"]> | undefined;
+  return {
+    /** Read the complete affected pool with the claim and FIFO evidence it needs. */
+    pool: (selection) => storage.readSegmentedStockPool({
+      selector: inventoryAllocationPoolSelector(selection),
+      itemRevisionId: selection.item.revisionId,
+      reservationAtEpochMs: recordedAtEpochMs,
+    }),
+    /** Read one exact signed row for an optional explicit deficit identity. */
+    position: async (positionId) => (await (positions ??= storage.readPositionSegment())).position(positionId),
+    /** Read live ancestry through the same published topology index. */
+    ancestry: async (nodeId) => (await storage.readPlacementSegment()).ancestry(nodeId),
+    /** Read direct rows and child bindings from the adapter's current indexes. */
+    directContents: (sourceNodeId, destinationNodeId) =>
+      storage.readSegmentedDirectContents({ sourceNodeId, destinationNodeId }),
+  };
+}
+
+/** A physical command's frozen input and its shared scoped event planner. */
+interface CommitInventoryScopedMovementInput {
+  /** Configuration of the application façade running this command. */
+  readonly internals: InventoryOnceInternals;
+  /** Stable operation id. */
+  readonly operationId: string;
+  /** Frozen command intent before any adapter await. */
+  readonly intentFingerprint: string;
+  /** Plan one event from one signed view and its next publication revision. */
+  plan(source: InventoryPolicyStockSource, recordedAtEpochMs: number, nextWorldRevision: number): Promise<InventoryEventDraft>;
+}
+
+/** Commit a scoped event through the existing segmented fence or canonical coordinator. */
+async function commitInventoryScopedMovement({
+  internals,
+  operationId,
+  intentFingerprint,
+  plan,
+}: CommitInventoryScopedMovementInput): Promise<InventoryOnceEventResult> {
+  const { storage, catalog, clock, deficitPolicy } = internals;
+  const catalogSnapshot = inventoryCatalogSnapshot(catalog);
+  // Indexed reads can remain available when writes use the canonical coordinator.
+  if (inventoryStorageSupportsSegmentedStockEventCommit(storage) &&
+      inventoryStorageSupportsSegmentedStockPlanning(storage)) {
+    /** Replay from the scoped receipt, or use the canonical path when it holds the event. */
+    const readScopedReplay = async (): Promise<InventoryOnceEventResult | null | undefined> => {
+      const existing = await storage.readOperation(operationId);
+      if (existing === undefined) return undefined;
+      if (existing.intentFingerprint !== intentFingerprint) {
+        throw new Error("Inventory operationId was retried with changed intent.");
+      }
+      const alreadyCompleted = existing.state === InventoryDurableOperationState.Completed;
+      const receipt = alreadyCompleted ? existing.receipt : await resumeInventoryDurableOperation(storage, operationId);
+      const completed = alreadyCompleted ? existing : await storage.readOperation(operationId);
+      return completed?.event === undefined ? null : { receipt, event: completed.event, replayed: true };
+    };
+    let attempt = 0;
+    for (; attempt < 8; attempt += 1) {
+      const replay = await readScopedReplay();
+      if (replay === null) break;
+      if (replay !== undefined) return replay;
+      const head = await storage.readSegmentedStockHead();
+      const recordedAtEpochMs = clock.nowEpochMs();
+      const source = segmentedPolicyStockSource(storage, recordedAtEpochMs);
+      let event: InventoryEventDraft;
+      try {
+        if (head.worldRevision !== 0 && head.catalog.digest !== catalog.digest) {
+          throw new Error(
+            "Inventory command uses unpublished catalogue revisions; publish the retained inventory catalogue first."
+          );
+        }
+        event = await plan(source, recordedAtEpochMs, head.worldRevision + 1);
+      } catch (error) {
+        // The matching operation can publish before this head read, including before a catalogue update.
+        const concurrent = await readScopedReplay();
+        if (concurrent === null) break;
+        if (concurrent !== undefined) return concurrent;
+        // A shortfall or other domain error from mixed generations is not authoritative.
+        if ((await storage.readSegmentedStockHead()).worldRevision !== head.worldRevision) {
+          continue;
+        }
+        throw error;
+      }
+      const committed = await storage.commitSegmentedStockEvent({
+        catalog: catalogSnapshot,
+        operationId,
+        intentFingerprint,
+        recordedAtEpochMs,
+        deficitPolicy,
+        expectedWorldRevision: head.worldRevision,
+        expectedRecordSequence: head.recordSequence,
+        event,
+      });
+      if (committed !== undefined) {
+        return {
+          receipt: {
+            operationId,
+            eventId: committed.event.eventId,
+            recordedAtEpochMs: committed.recordedAtEpochMs,
+            worldRevision: committed.worldRevision,
+          },
+          event: committed.event,
+          replayed: committed.replayed,
+        };
+      }
+      // A competing publish invalidates the scoped plan. A stable decline requests canonical publication.
+      if ((await storage.readSegmentedStockHead()).worldRevision === head.worldRevision) break;
+    }
+    if (attempt === 8) {
+      // The winning publish can occur between the final decline and head read.
+      const concurrent = await readScopedReplay();
+      if (concurrent === undefined) {
+        throw new Error(`Inventory operation '${operationId}' could not freeze a current stock revision.`);
+      }
+      if (concurrent !== null) return concurrent;
+    }
+  }
+  return createInventoryOnceEventResult(await commitInventoryOperation({
+    catalog,
+    storage,
+    operationId,
+    intentFingerprint,
+    clock,
+    deficitPolicy,
+    /** Plan against the coordinator's own coherent canonical snapshot. */
+    plan: async ({ world, recordedAtEpochMs }) => ({
+      event: await plan(canonicalPolicyStockSource(world, recordedAtEpochMs), recordedAtEpochMs, world.revision + 1),
+    }),
+  }));
+}
+
+/** Working pool and exact positions indexed once for this view. */
+interface PolicyBatchPoolView {
+  /** Signed pool passed to the shared allocator. */
+  readonly pool: InventoryPolicyWorkingPool;
+  /** Same current rows keyed by their stable position identity. */
+  readonly rowsById: ReadonlyMap<string, InventoryPolicyWorkingRow>;
+}
+
+/** Overlay facts from earlier requests onto one distinct original batch pool. */
+interface PolicyPoolAfterPriorRequestsInput {
+  /** Original published stock and claim facts for this pool. */
+  readonly published: PolicyBatchPoolView;
+  /** All exact rows changed by earlier requests in the batch. */
+  readonly changed: ReadonlyMap<string, InventoryPolicyWorkingPosition>;
+  /** Newly introduced deficit candidates for this revision and direct placement constraint. */
+  readonly addedDeficits: Iterable<[string, PolicyBatchDeficitRow]>;
+  /** Signed pool selector used to admit new rows. */
+  readonly selector: InventoryStockSelector;
+}
+
+/** Apply shared ordered-request changes to one pool without copying unrelated positions. */
+function policyPoolAfterPriorRequests({
+  published, changed, addedDeficits, selector,
+}: PolicyPoolAfterPriorRequestsInput): PolicyBatchPoolView {
+  if (changed.size === 0) return published;
+  const positions: InventoryPolicyWorkingRow[] = [];
+  const rowsById = new Map<string, InventoryPolicyWorkingRow>();
+  for (const [id, row] of published.rowsById) {
+    const next = changed.get(id);
+    // Prior requests change balances. The published pool still owns age and expiry.
+    const current = next === undefined ? row : {
+      position: next,
+      ...(row.layerStartedAtEpochMs === undefined ? {} : { layerStartedAtEpochMs: row.layerStartedAtEpochMs }),
+      ...(row.effectiveUseByEpochMs === undefined ? {} : { effectiveUseByEpochMs: row.effectiveUseByEpochMs }),
+    };
+    positions.push(current);
+    rowsById.set(id, current);
+  }
+  for (const [id, row] of addedDeficits) {
+    if (!inventoryScopedStockMatches(row.position.key, selector, row.ancestry)) continue;
+    positions.push(row);
+    rowsById.set(id, row);
+  }
+  return { pool: { positions, reservations: published.pool.reservations }, rowsById };
+}
+
+/** A new deficit needs its ancestry when admitting it to a different request's pool. */
+interface PolicyBatchDeficitRow extends InventoryPolicyWorkingRow {
+  /** Direct placement and its ancestors at the batch's publication fence. */
+  readonly ancestry: readonly string[];
+}
+
+/** Newly introduced batch deficits grouped by exact position and direct placement. */
+interface PolicyBatchDeficitRows {
+  /** All rows for one revision, including stock without a direct placement. */
+  readonly all: Map<string, PolicyBatchDeficitRow>;
+  /** Direct nodes with new rows, for pools that name one or more exact nodes. */
+  readonly byPlacement: Map<string, Map<string, PolicyBatchDeficitRow>>;
+}
+
+/** Select candidate deficits without walking earlier requests from other bins. */
+function* policyBatchDeficitCandidates(
+  deficits: PolicyBatchDeficitRows | undefined,
+  placementNodeIds: readonly string[] | undefined
+): IterableIterator<[string, PolicyBatchDeficitRow]> {
+  if (deficits === undefined) return;
+  if (placementNodeIds === undefined) {
+    yield* deficits.all.entries();
+    return;
+  }
+  for (const nodeId of placementNodeIds) yield* deficits.byPlacement.get(nodeId)?.entries() ?? [];
+}
+
+/** Apply a debit to one unpublished row. All individual axes stay exact until commit. */
+function debitPolicyBatchPosition(
+  position: InventoryPolicyWorkingRow["position"] | undefined,
+  key: InventoryStockPositionKey,
+  amount: InventoryMeasurementVector,
+): InventoryPolicyWorkingPosition {
+  // Only the first debit needs to copy the published vector into working totals.
+  const totals: InventoryMeasurementTotals = position !== undefined && "totals" in position
+    ? position.totals : new Map();
+  if (position !== undefined && "measurements" in position) {
+    addInventoryMeasurementTotals(totals, position.measurements);
+  }
+  addInventoryMeasurementTotals(totals, amount, -1n);
+  return { key, totals };
 }
 
 /** Plan every request against one evolving world and publish one durable event. */
@@ -4078,12 +4541,8 @@ async function commitInventoryPolicyBatch(
     throw new Error("Inventory policy batch supports only issue or transfer.");
   }
   const internals = requireInventoryOnceInternals(owner);
-  assertInventoryPolicyBatchInput(
-    kind,
-    input,
-    toPlacementNodeId,
-    internals.deficitPolicy
-  );
+  /** Only new planning needs to check whether this façade can record a deficit. */
+  const hasDeficitPosition = assertInventoryPolicyBatchInput(kind, input, toPlacementNodeId);
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-batch-${kind}`,
     input.operationId,
@@ -4097,110 +4556,130 @@ async function commitInventoryPolicyBatch(
     input.requests.map(policyBatchRequestFingerprint),
     toPlacementNodeId ?? null,
   ]);
-  const result = await commitInventoryOperation({
-    catalog: internals.catalog,
-    storage: internals.storage,
+  const eventResult = await commitInventoryScopedMovement({
+    internals,
     operationId: input.operationId,
     intentFingerprint,
-    clock: internals.clock,
-    deficitPolicy: internals.deficitPolicy,
-    /** Freeze every allocation from one published revision before anything becomes visible. */
-    plan: ({ world, recordedAtEpochMs }) => {
+    /** Freeze ordered requests over one published fence and their private signed overlay. */
+    plan: async (source, recordedAtEpochMs) => {
+      assertInventoryPolicyDeficitMode(hasDeficitPosition, internals.deficitPolicy);
       assertInventoryLifecycleTimeWasRecorded(
         input.occurredAtEpochMs,
         recordedAtEpochMs,
         `${kind} policy batch`
       );
-      const planningPositions: Record<string, InventoryStockPosition> = {
-        ...world.projection.positions,
-      };
-      const planningPositionIdsByItemRevisionId =
-        createInventorySparseRecord<readonly string[]>();
-      for (const [revisionId, positionIds] of Object.entries(
-        world.projection.positionIdsByItemRevisionId
-      )) {
-        setInventorySparseRecordValue(
-          planningPositionIdsByItemRevisionId,
-          revisionId,
-          [...positionIds]
-        );
-      }
-      const planningWorld: InventoryWorldState = {
-        ...world,
-        projection: {
-          ...world.projection,
-          positions: planningPositions,
-          positionIdsByItemRevisionId: planningPositionIdsByItemRevisionId,
-        },
-      };
+      /** The last request that can reuse each original signed stock pool. */
+      const lastRequestIndexByPool = new Map<string, number>();
+      /** Resolve each selection once and keep its widened pool identity for planning. */
+      const preparedRequests = input.requests.map(
+        /** Register the last use while retaining the caller's request order. */
+        (request, index) => {
+          const selection = resolveAllocationItemAndSelector(
+            internals.catalog, request.selector, request.amount, request.itemRevisionId
+          );
+          const poolSelector = inventoryAllocationPoolSelector(selection);
+          const poolId = inventoryStockSelectorIdentity(poolSelector);
+          lastRequestIndexByPool.set(poolId, index);
+          return { request, selection, poolSelector, poolId };
+        }
+      );
+      /** Keep original pool rows only until their final request. */
+      const pools = new Map<string, PolicyBatchPoolView>();
+      /** Exact rows changed by earlier requests in this same logical event. */
+      const changed = new Map<string, InventoryPolicyWorkingPosition>();
+      /** Newly negative rows absent from the published pools, grouped by revision and placement. */
+      const addedDeficits = new Map<string, PolicyBatchDeficitRows>();
       const allocations: InventoryOncePolicyBatchAllocation[] = [];
       const selectedLines: InventoryPolicyAllocationLine[] = [];
       const deficitLines: CreateInventoryIssueManyInput["lines"][number][] = [];
-      let recordedDeficit = false;
-      for (const request of input.requests) {
-        const allocation = planInventoryAllocation({
+      for (const [index, { request, selection, poolSelector, poolId }] of preparedRequests.entries()) {
+        const lastUse = lastRequestIndexByPool.get(poolId) === index;
+        let initialPool = pools.get(poolId);
+        if (initialPool === undefined) {
+          const pool = await source.pool(selection);
+          const rowsById = new Map<string, InventoryPolicyWorkingRow>();
+          for (const row of pool.positions) rowsById.set(inventoryStockPositionIdentity(row.position.key), row);
+          initialPool = { pool, rowsById };
+          if (!lastUse) pools.set(poolId, initialPool);
+        } else if (lastUse) {
+          pools.delete(poolId);
+        }
+        const revisionId = selection.item.revisionId;
+        const { pool, rowsById: currentRows } = policyPoolAfterPriorRequests({
+          published: initialPool, changed, selector: poolSelector,
+          addedDeficits: policyBatchDeficitCandidates(addedDeficits.get(revisionId), poolSelector.placementNodeIds),
+        });
+        const allocation = planInventoryAllocationForRecording({
           catalog: internals.catalog,
-          world: planningWorld,
-          selector: request.selector,
-          amount: request.amount,
-          method: request.method,
+          selection, pool, amount: request.amount, method: request.method,
+          allowMeasuredShortfall: internals.deficitPolicy === InventoryDeficitPolicy.Record,
           atEpochMs: input.occurredAtEpochMs,
           reservationAtEpochMs: recordedAtEpochMs,
-          ...(request.itemRevisionId === undefined
-            ? {}
-            : { itemRevisionId: request.itemRevisionId }),
-          ...(request.allowExpiredLots === undefined
-            ? {}
-            : { allowExpiredLots: request.allowExpiredLots }),
+          ...(request.allowExpiredLots === undefined ? {} : { allowExpiredLots: request.allowExpiredLots }),
         });
-        const deficit = policyRecordedDeficit({
+        const deficit = await policyRecordedDeficit({
           catalog: internals.catalog,
           kind,
           deficitPolicy: internals.deficitPolicy,
           input: policyMovementInputFromBatchRequest(input, request),
           allocation,
-          projection: planningWorld.projection,
+          /** Use the widened signed pool's current row and its retained expiry. */
+          settlementRow: (id) => currentRows.get(id),
+          ancestry: source.ancestry,
         });
         allocations.push(
           policyBatchAllocation(request, allocation.lines, deficit?.evidence)
         );
         for (const line of allocation.lines) selectedLines.push(line);
-        applyPolicyAllocationToPlanningPositions(
-          internals.catalog,
-          planningPositions,
-          allocation.lines
-        );
+        for (const line of allocation.lines) {
+          const id = inventoryStockPositionIdentity(line.position);
+          const row = currentRows.get(id);
+          if (row === undefined) throw new Error(`Inventory policy allocation lost position '${id}'.`);
+          changed.set(id, debitPolicyBatchPosition(
+            row.position, row.position.key,
+            resolveInventoryAmount(internals.catalog, selection.item, line.amount).measurements,
+          ));
+        }
         if (deficit !== undefined) {
-          recordedDeficit = true;
           deficitLines.push(deficit.line);
-          applyPolicyDeficitToPlanningProjection(
-            internals.catalog,
-            planningPositions,
-            planningPositionIdsByItemRevisionId,
-            deficit.evidence
-          );
+          const position = deficit.evidence.position;
+          const id = inventoryStockPositionIdentity(position);
+          const prior = changed.get(id) ?? currentRows.get(id)?.position ?? await source.position(id);
+          const measurements = resolveInventoryAmount(internals.catalog, selection.item, deficit.evidence.amount).measurements;
+          // An unwitnessed debit may leave positive stock with its original FIFO and expiry facts.
+          const debited = debitPolicyBatchPosition(prior, position, measurements);
+          changed.set(id, debited);
+          let revisionDeficits = addedDeficits.get(revisionId);
+          const existingDeficit = revisionDeficits?.all.get(id);
+          if (prior === undefined || existingDeficit !== undefined) {
+            if (revisionDeficits === undefined) {
+              revisionDeficits = { all: new Map(), byPlacement: new Map() };
+              addedDeficits.set(revisionId, revisionDeficits);
+            }
+            const nodeId = position.placementNodeId;
+            const deficitRow: PolicyBatchDeficitRow = {
+              /** Current signed balance after this request. */
+              position: debited,
+              /** The first request captures ancestry for admission to later pools. */
+              ancestry: existingDeficit?.ancestry ?? (nodeId === undefined ? [] : await source.ancestry(nodeId)),
+            };
+            revisionDeficits.all.set(id, deficitRow);
+            if (nodeId !== undefined) {
+              let placementDeficits = revisionDeficits.byPlacement.get(nodeId);
+              if (placementDeficits === undefined) {
+                placementDeficits = new Map();
+                revisionDeficits.byPlacement.set(nodeId, placementDeficits);
+              }
+              placementDeficits.set(id, deficitRow);
+            }
+          }
         }
       }
-      return {
-        event: createPolicyBatchMovementEvent(
-          internals.catalog,
-          kind,
-          input,
-          allocations,
-          selectedLines,
-          deficitLines,
-          toPlacementNodeId
-        ),
-        ...(recordedDeficit
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
-      };
+      return createPolicyBatchMovementEvent(
+        internals.catalog, kind, input, allocations, selectedLines, deficitLines, toPlacementNodeId
+      );
     },
   });
-  const eventResult = createInventoryOnceEventResult(result);
   const allocations = inventoryPolicyBatchAllocationsFromEvent(
     internals.catalog,
     eventResult.event
@@ -4212,13 +4691,12 @@ async function commitInventoryPolicyBatch(
   };
 }
 
-/** Reject ambiguous request identities and unsafe transfer scopes before writing. */
+/** Validate batch intent and report whether any request names a deficit position. */
 function assertInventoryPolicyBatchInput(
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyBatchInput,
-  toPlacementNodeId: string | undefined,
-  deficitPolicy: InventoryDeficitPolicy
-): void {
+  toPlacementNodeId: string | undefined
+): boolean {
   if (input.requests.length === 0) {
     throw new Error("Inventory policy batch needs at least one request.");
   }
@@ -4227,6 +4705,8 @@ function assertInventoryPolicyBatchInput(
       `Inventory metadata key '${inventoryPolicyBatchMetadataKey}' is reserved for core allocation evidence.`
     );
   }
+  /** Remember explicit deficit positions while visiting each request once. */
+  let hasDeficitPosition = false;
   const requestIds = new Set<string>();
   for (const request of input.requests) {
     const requestId = request.requestId.trim();
@@ -4265,10 +4745,11 @@ function assertInventoryPolicyBatchInput(
           ? {}
           : { deficitPosition: request.deficitPosition }),
       },
-      toPlacementNodeId,
-      deficitPolicy
+      toPlacementNodeId
     );
+    hasDeficitPosition ||= request.deficitPosition !== undefined;
   }
+  return hasDeficitPosition;
 }
 
 /** Stable caller-intent identity for one ordered policy-batch request. */
@@ -4383,78 +4864,6 @@ function policyBatchAllocation(
   };
 }
 
-/** Subtract one request's lines from the one private positions map shared by this batch plan. */
-function applyPolicyAllocationToPlanningPositions(
-  catalog: InventoryCatalog,
-  positions: Record<string, InventoryStockPosition>,
-  lines: readonly InventoryPolicyAllocationLine[]
-): void {
-  for (const line of lines) {
-    const identity = inventoryStockPositionIdentity(line.position);
-    const position = positions[identity];
-    if (position === undefined) {
-      throw new Error(
-        `Inventory policy allocation references missing position '${identity}'.`
-      );
-    }
-    const item = catalog.itemRevision(line.position.itemRevisionId);
-    const allocated = resolveInventoryAmount(
-      catalog,
-      item,
-      line.amount
-    ).measurements;
-    positions[identity] = {
-      ...position,
-      measurements: subtractInventoryMeasurements(
-        position.measurements,
-        allocated
-      ),
-    };
-  }
-}
-
-/** Apply one newly recorded shortfall to the private world used by later batch requests. */
-function applyPolicyDeficitToPlanningProjection(
-  catalog: InventoryCatalog,
-  positions: Record<string, InventoryStockPosition>,
-  positionIdsByItemRevisionId: Record<string, readonly string[]>,
-  deficit: InventoryOnceRecordedDeficit
-): void {
-  const item = catalog.itemRevision(deficit.position.itemRevisionId);
-  const resolved = resolveInventoryAmount(catalog, item, deficit.amount);
-  if (!quantityEq(resolved.measurements.primary.quantity, deficit.primary)) {
-    throw new Error(
-      "Inventory policy deficit amount disagrees with primary evidence."
-    );
-  }
-  const identity = inventoryStockPositionIdentity(deficit.position);
-  const current = positions[identity];
-  positions[identity] =
-    current === undefined
-      ? {
-          key: deficit.position,
-          measurements: negateInventoryMeasurements(resolved.measurements),
-        }
-      : {
-          ...current,
-          measurements: subtractInventoryMeasurements(
-            current.measurements,
-            resolved.measurements
-          ),
-        };
-  const indexed =
-    inventorySparseRecordValue(positionIdsByItemRevisionId, item.revisionId) ?? [];
-  if (!indexed.includes(identity)) {
-    const next = [...indexed, identity];
-    next.sort();
-    setInventorySparseRecordValue(
-      positionIdsByItemRevisionId,
-      item.revisionId,
-      next
-    );
-  }
-}
-
 /** Build one issue/transfer event after combining repeated exact source positions. */
 function createPolicyBatchMovementEvent(
   catalog: InventoryCatalog,
@@ -4465,11 +4874,6 @@ function createPolicyBatchMovementEvent(
   deficitLines: readonly CreateInventoryIssueManyInput["lines"][number][],
   toPlacementNodeId: string | undefined
 ): InventoryEventDraft {
-  const exactLines = combinePolicyBatchExactLines(
-    catalog,
-    selectedLines,
-    deficitLines
-  );
   const header: InventoryCommandHeader = {
     ...inventoryCommandHeaderFromPolicyInput(input),
     metadata: {
@@ -4478,183 +4882,52 @@ function createPolicyBatchMovementEvent(
     },
   };
   if (kind === InventoryPolicyMovementKind.Issue) {
+    /** Positions combining witnessed and unwitnessed debits have per-request evidence only. */
+    const deficitPositionIds = new Set<string>();
+    for (const allocation of allocations) {
+      if (allocation.deficit !== undefined) {
+        deficitPositionIds.add(inventoryStockPositionIdentity(allocation.deficit.position));
+      }
+    }
     return createInventoryIssueManyEvent({
       catalog,
       ...header,
-      lines: exactLines,
+      lines: [
+        ...selectedLines.map(
+          /** Do not attach FIFO evidence to the unwitnessed part of a shared posting. */
+          (selected) => {
+            const { metadata, ...effect } = policyIssueLine(selected);
+            return metadata === undefined || (deficitPositionIds.size !== 0 &&
+              deficitPositionIds.has(inventoryStockPositionIdentity(selected.position)))
+              ? effect : { ...effect, metadata };
+          }
+        ),
+        ...deficitLines,
+      ],
     });
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
     if (toPlacementNodeId === undefined) {
       throw new Error("Policy transfer batch lost destination direct placement.");
     }
-    return createInventoryTransferManyEvent({
-      catalog,
-      ...header,
-      lines: exactLines.map(
-        /** Apply the shared destination after every source allocation is frozen. */
-        (line) => ({ ...line, toPlacementNodeId })
-      ),
-    });
+    const transferLines = selectedLines.map(
+      /** Apply the shared destination after every source allocation is frozen. */
+      (line) => ({ ...policyIssueLine(line), toPlacementNodeId })
+    );
+    if (deficitLines.length !== 0) {
+      return createInventoryRecordedMovement({
+        catalog, header, kind: InventoryEventKind.Transfer, witnessed: undefined,
+        witnessedTransferLines: transferLines,
+        unknown: deficitLines.map(
+          /** Retain each request shortage with the same observed destination. */
+          (line) => ({ ...line, toPlacementNodeId })
+        ),
+      });
+    }
+    if (transferLines.length === 0) throw new Error("Inventory policy transfer batch has no stock effects.");
+    return createInventoryTransferManyEvent({ catalog, ...header, lines: transferLines });
   }
   throw new Error("Inventory policy batch cannot create a scrap event.");
-}
-
-/** Sum repeated source positions so one event still has one effect per position. */
-function combinePolicyBatchExactLines(
-  catalog: InventoryCatalog,
-  lines: readonly InventoryPolicyAllocationLine[],
-  additionalLines: readonly CreateInventoryIssueManyInput["lines"][number][] = []
-): readonly CreateInventoryIssueManyInput["lines"][number][] {
-  return combinePolicyExactIssueLines(catalog, [
-    ...lines.map(policyIssueLine),
-    ...additionalLines,
-  ]);
-}
-
-/** Combine normal exact Issue inputs after freezing package/revision position identity. */
-function combinePolicyExactIssueLines(
-  catalog: InventoryCatalog,
-  lines: readonly CreateInventoryIssueManyInput["lines"][number][]
-): readonly CreateInventoryIssueManyInput["lines"][number][] {
-  const grouped = new Map<string, InventoryPolicyBatchExactLine>();
-  for (const line of lines) {
-    const item =
-      line.itemRevisionId === undefined
-        ? catalog.activeItem(line.from.itemId)
-        : catalog.itemRevision(line.itemRevisionId);
-    if (item.itemId !== line.from.itemId) {
-      throw new Error("Inventory policy exact Issue item/revision differ.");
-    }
-    const resolved = resolveInventoryAmount(catalog, item, line.amount);
-    const packagingRevisionId = resolved.packaging?.revisionId;
-    if (
-      line.from.packagingRevisionId !== undefined &&
-      line.from.packagingRevisionId !== packagingRevisionId
-    ) {
-      throw new Error(
-        "Inventory policy exact Issue amount package differs from its position."
-      );
-    }
-    const position = normalizeInventoryStockPositionKey({
-      ...line.from,
-      itemRevisionId: item.revisionId,
-      ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
-    });
-    assertPositionMatchesItem(item, position);
-    const positionIdentity = inventoryStockPositionIdentity(position);
-    const earlier = grouped.get(positionIdentity);
-    const { itemRevisionId, ...from } = position;
-    if (earlier === undefined) {
-      grouped.set(positionIdentity, {
-        from,
-        itemRevisionId,
-        measurements: resolved.measurements,
-        ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
-        ...(resolved.packageCount === undefined
-          ? {}
-          : { packageCount: resolved.packageCount }),
-      });
-      continue;
-    }
-    if (earlier.packagingRevisionId !== packagingRevisionId) {
-      throw new Error(
-        `Inventory policy repeated source '${positionIdentity}' with changed package identity.`
-      );
-    }
-    grouped.set(positionIdentity, {
-      ...earlier,
-      measurements: addInventoryMeasurements(
-        earlier.measurements,
-        resolved.measurements
-      ),
-      ...(packagingRevisionId === undefined
-        ? {}
-        : {
-            packageCount: addPolicyBatchPackageCounts(
-              earlier.packageCount,
-              resolved.packageCount,
-              positionIdentity
-            ),
-          }),
-    });
-  }
-  const positionIdentities = [...grouped.keys()];
-  positionIdentities.sort();
-  const exactLines: CreateInventoryIssueManyInput["lines"][number][] = [];
-  for (const positionIdentity of positionIdentities) {
-    const line = grouped.get(positionIdentity);
-    if (line === undefined) {
-      throw new Error(
-        `Inventory policy lost grouped position '${positionIdentity}'.`
-      );
-    }
-    exactLines.push({
-      from: line.from,
-      itemRevisionId: line.itemRevisionId,
-      amount: policyBatchExactLineAmount(catalog, line, positionIdentity),
-    });
-  }
-  return exactLines;
-}
-
-/** Rebuild one grouped source amount without silently unpacking intact package stock. */
-function policyBatchExactLineAmount(
-  catalog: InventoryCatalog,
-  line: InventoryPolicyBatchExactLine,
-  positionIdentity: string
-): InventoryAmount {
-  const measured = inventoryMeasuredAmountFromVector(line.measurements);
-  if (line.packagingRevisionId === undefined) return measured;
-  const packageCount = requirePolicyBatchPackageCount(
-    line.packageCount,
-    positionIdentity
-  );
-  const packaging = catalog.packagingRevision(line.packagingRevisionId);
-  const fixedAxisIds = new Set(
-    packaging.fixedContents.independent.map(
-      /** Package-fixed axes must not be repeated as independently observed inputs. */
-      (fixed) => fixed.axisId
-    )
-  );
-  return packageAmount(
-    packageCount,
-    line.packagingRevisionId,
-    measured.independent.filter(
-      /** Retain only independently observed axes not already fixed by the package revision. */
-      (independent) => !fixedAxisIds.has(independent.axisId)
-    )
-  );
-}
-
-/** Add two package counts while rejecting missing or unsafe whole-number evidence. */
-function addPolicyBatchPackageCounts(
-  left: number | undefined,
-  right: number | undefined,
-  positionIdentity: string
-): number {
-  const total =
-    requirePolicyBatchPackageCount(left, positionIdentity) +
-    requirePolicyBatchPackageCount(right, positionIdentity);
-  if (!Number.isSafeInteger(total)) {
-    throw new Error(
-      `Inventory policy batch package count overflowed at '${positionIdentity}'.`
-    );
-  }
-  return total;
-}
-
-/** Require one positive safe package count retained by a grouped source line. */
-function requirePolicyBatchPackageCount(
-  value: number | undefined,
-  positionIdentity: string
-): number {
-  if (value === undefined || !Number.isSafeInteger(value) || value <= 0) {
-    throw new Error(
-      `Inventory policy batch has invalid package count at '${positionIdentity}'.`
-    );
-  }
-  return value;
 }
 
 /** Encode exact per-request allocations as JSON-safe immutable event metadata. */
@@ -4869,10 +5142,8 @@ function inventoryPolicyDeficitFromEvent(
 ): InventoryOnceRecordedDeficit | undefined {
   const encoded = event.metadata?.[inventoryPolicyDeficitMetadataKey];
   if (encoded === undefined) return undefined;
-  if (event.kind !== InventoryEventKind.Issue) {
-    throw new Error(
-      "Inventory policy deficit evidence belongs only to an Issue event."
-    );
+  if (event.kind !== InventoryEventKind.Issue && event.unwitnessedStockMovements === undefined) {
+    throw new Error("Inventory policy deficit needs an Issue or an unwitnessed movement.");
   }
   const evidence = policyBatchDeficitFromMetadata(encoded);
   const effect = event.stockEffects.find(
@@ -4898,10 +5169,15 @@ function inventoryPolicyDeficitFromEvent(
       `Inventory policy deficit primary evidence disagrees at '${evidence.positionIdentity}'.`
     );
   }
+  const unwitnessed = event.unwitnessedStockMovements?.[0];
+  if (unwitnessed !== undefined &&
+      inventoryStockPositionIdentity(unwitnessed.from) !== evidence.positionIdentity) {
+    throw new Error("Inventory policy shortfall disagrees with its unwitnessed source.");
+  }
   if (
     !inventoryMeasurementsEqual(
       resolved,
-      negateInventoryMeasurements(effect.measurementsDelta)
+      unwitnessed?.measurements ?? negateInventoryMeasurements(effect.measurementsDelta)
     )
   ) {
     throw new Error(
@@ -5106,7 +5382,16 @@ function assertPolicyBatchEvidenceMatchesEvent(
     if (effect.measurementsDelta.primary.quantity.amountMinor >= 0) continue;
     sourceEffects.set(inventoryStockPositionIdentity(effect.position), effect);
   }
-  const allocatedByPosition = new Map<string, InventoryMeasurementVector>();
+  const allocatedByPosition = new Map<string, InventoryMeasurementTotals>();
+  /** Preserve each exact source partition until the complete evidence has been read. */
+  const addPart = (positionIdentity: string, part: InventoryMeasurementVector): void => {
+    let totals = allocatedByPosition.get(positionIdentity);
+    if (totals === undefined) {
+      totals = new Map();
+      allocatedByPosition.set(positionIdentity, totals);
+    }
+    addInventoryMeasurementTotals(totals, part);
+  };
   for (const allocation of allocations) {
     for (const line of allocation.lines) {
       const effect = sourceEffects.get(line.positionIdentity);
@@ -5126,13 +5411,7 @@ function assertPolicyBatchEvidenceMatchesEvent(
           `Inventory policy batch primary evidence disagrees at '${line.positionIdentity}'.`
         );
       }
-      const earlier = allocatedByPosition.get(line.positionIdentity);
-      allocatedByPosition.set(
-        line.positionIdentity,
-        earlier === undefined
-          ? resolved
-          : addInventoryMeasurements(earlier, resolved)
-      );
+      addPart(line.positionIdentity, resolved);
     }
     if (allocation.deficit !== undefined) {
       const effect = sourceEffects.get(allocation.deficit.positionIdentity);
@@ -5152,15 +5431,7 @@ function assertPolicyBatchEvidenceMatchesEvent(
           `Inventory policy batch deficit primary evidence disagrees at '${allocation.deficit.positionIdentity}'.`
         );
       }
-      const earlier = allocatedByPosition.get(
-        allocation.deficit.positionIdentity
-      );
-      allocatedByPosition.set(
-        allocation.deficit.positionIdentity,
-        earlier === undefined
-          ? resolved
-          : addInventoryMeasurements(earlier, resolved)
-      );
+      addPart(allocation.deficit.positionIdentity, resolved);
     }
   }
   for (const [positionIdentity, effect] of sourceEffects) {
@@ -5168,7 +5439,7 @@ function assertPolicyBatchEvidenceMatchesEvent(
     if (
       allocated === undefined ||
       !inventoryMeasurementsEqual(
-        allocated,
+        materializeInventoryMeasurementTotals(allocated, effect.measurementsDelta.primary.axisId),
         negateInventoryMeasurements(effect.measurementsDelta)
       )
     ) {
@@ -5240,6 +5511,12 @@ function requirePolicyBatchMetadataString(
   return value;
 }
 
+/** Standalone policy planning keeps the captured source rows and their live ancestry. */
+interface StandalonePolicyAllocationInput extends PlanWorkingInventoryAllocationInput {
+  /** Current signed rows under the movement's publication fence. */
+  readonly pool: InventoryScopedStockPool;
+}
+
 /** Plan and commit one policy movement against the same world revision it selects from. */
 async function commitInventoryPolicyMovement(
   owner: InventoryOnce,
@@ -5248,12 +5525,7 @@ async function commitInventoryPolicyMovement(
   toPlacementNodeId?: string
 ): Promise<InventoryOnceEventResult> {
   const internals = requireInventoryOnceInternals(owner);
-  assertPolicyMovementRequest(
-    kind,
-    input,
-    toPlacementNodeId,
-    internals.deficitPolicy
-  );
+  assertPolicyMovementRequest(kind, input, toPlacementNodeId);
   const intentFingerprint = inventoryIntentFingerprint([
     `inventory-policy-${kind}`,
     input.operationId,
@@ -5273,65 +5545,57 @@ async function commitInventoryPolicyMovement(
     policyDeficitPositionFingerprint(input.deficitPosition),
     toPlacementNodeId ?? null,
   ]);
-  const result = await commitInventoryOperation({
-    catalog: internals.catalog,
-    storage: internals.storage,
+  const eventResult = await commitInventoryScopedMovement({
+    internals,
     operationId: input.operationId,
     intentFingerprint,
-    clock: internals.clock,
-    deficitPolicy: internals.deficitPolicy,
-    /** Select and freeze exact physical lines from the current world used by this durable plan. */
-    plan: ({ world, recordedAtEpochMs }) => {
+    /** Derive the exact movement legs from one published signed pool. */
+    plan: async (source, recordedAtEpochMs) => {
+      assertInventoryPolicyDeficitMode(input.deficitPosition !== undefined, internals.deficitPolicy);
       assertInventoryLifecycleTimeWasRecorded(
         input.occurredAtEpochMs,
         recordedAtEpochMs,
         `${kind} policy movement`
       );
-      const allocation = planInventoryAllocation({
+      const selection = resolveAllocationItemAndSelector(
+        internals.catalog, input.selector, input.amount, input.itemRevisionId
+      );
+      const pool = await source.pool(selection);
+      const allocationInput: StandalonePolicyAllocationInput = {
         catalog: internals.catalog,
-        world,
-        selector: input.selector,
-        amount: input.amount,
-        method: input.method,
+        selection, pool, amount: input.amount, method: input.method,
+        allowMeasuredShortfall: internals.deficitPolicy === InventoryDeficitPolicy.Record,
+        checkSourceBalance: true,
         atEpochMs: input.occurredAtEpochMs,
         reservationAtEpochMs: recordedAtEpochMs,
-        ...(input.itemRevisionId === undefined
-          ? {}
-          : { itemRevisionId: input.itemRevisionId }),
         ...(input.allowExpiredLots === undefined
           ? {}
           : { allowExpiredLots: input.allowExpiredLots }),
         ...(input.allowAllocatedStock === undefined
           ? {}
           : { allowAllocatedStock: input.allowAllocatedStock }),
-      });
-      const deficit = policyRecordedDeficit({
+      };
+      const allocation = toPlacementNodeId === undefined
+        ? planInventoryAllocationForRecording(allocationInput)
+        : await planPolicyTransferAllocation(source, allocationInput, toPlacementNodeId.trim());
+      const deficit = await policyRecordedDeficit({
         catalog: internals.catalog,
         kind,
         deficitPolicy: internals.deficitPolicy,
         input,
         allocation,
-        projection: world.projection,
-      });
-      return {
-        event: createPolicyMovementEvent(
-          internals.catalog,
-          kind,
-          input,
-          allocation.lines,
-          toPlacementNodeId,
-          deficit
+        /** The widened signed pool includes any existing row at the accepted settlement position. */
+        settlementRow: (id) => pool.positions.find(
+          /** Match the exact signed position, including dimensions omitted by the widened selector. */
+          (row) => inventoryStockPositionIdentity(row.position.key) === id
         ),
-        ...(kind === InventoryPolicyMovementKind.Scrap || deficit !== undefined
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
-      };
+        ancestry: source.ancestry,
+      });
+      return createPolicyMovementEvent(
+        internals.catalog, kind, input, allocation.lines, toPlacementNodeId, deficit
+      );
     },
   });
-  const eventResult = createInventoryOnceEventResult(result);
   const deficit = inventoryPolicyDeficitFromEvent(
     internals.catalog,
     eventResult.event
@@ -5342,12 +5606,107 @@ async function commitInventoryPolicyMovement(
   };
 }
 
-/** Reject unsafe policy combinations before planning or writing. */
+/** Plan one transfer with scoped destination evidence only for the rows it might use. */
+async function planPolicyTransferAllocation(
+  source: InventoryPolicyStockSource,
+  input: StandalonePolicyAllocationInput,
+  toPlacementNodeId: string,
+): Promise<InventoryWorkingPolicyAllocationPlan> {
+  const first = planInventoryAllocationForRecording(input);
+  /** Cache absent destinations as well as current vectors in this attempt. */
+  const destinations = new Map<string, InventoryMeasurementVector | undefined>();
+  /** Read the one current position this exact source would credit. */
+  async function readDestination(from: InventoryStockPositionKey): Promise<InventoryMeasurementVector | undefined> {
+    const fromId = inventoryStockPositionIdentity(from);
+    if (!destinations.has(fromId)) {
+      const intoId = inventoryStockPositionIdentity({ ...from, placementNodeId: toPlacementNodeId });
+      destinations.set(fromId, (await source.position(intoId))?.measurements);
+    }
+    return destinations.get(fromId);
+  }
+  let fits = true;
+  for (const line of first.lines) {
+    const balance = await readDestination(line.position);
+    if (balance === undefined) continue;
+    const movement = resolveInventoryAmount(input.catalog, input.selection.item, line.amount).measurements;
+    if (!inventoryMeasurementChangeFitsStorage(balance, movement, 1)) fits = false;
+  }
+  if (fits) return first;
+
+  // Read alternative destinations only when the ordinary pick cannot be stored.
+  for (const row of input.pool.positions) {
+    if (row.position.measurements.primary.quantity.amountMinor <= 0 ||
+        !inventoryScopedStockMatches(row.position.key, input.selection.selector, row.ancestry) ||
+        (input.allowExpiredLots !== true && row.effectiveUseByEpochMs !== undefined &&
+          row.effectiveUseByEpochMs <= input.atEpochMs)) continue;
+    await readDestination(row.position.key);
+  }
+  return planInventoryAllocationForRecording({ ...input, destinationBalances: destinations });
+}
+
+/** Prefer stock free of exact holds, then use actual held stock if it covers more of the physical report. */
+function planInventoryAllocationForRecording(
+  input: PlanWorkingInventoryAllocationInput
+): InventoryWorkingPolicyAllocationPlan {
+  /** Plan against all eligible physical stock, including stock held by a reservation. */
+  const planPhysical = () => planWorkingInventoryAllocation({
+    ...input, allowAllocatedStock: true, recordingAttempt: "all-physical",
+  });
+  /** Keep the preferred result only when its search decides a pick within budget. */
+  let preferred: InventoryWorkingPolicyAllocationPlan | undefined;
+  if (!input.allowAllocatedStock) {
+    try {
+      preferred = planWorkingInventoryAllocation({ ...input, recordingAttempt: "prefer-unheld" });
+    } catch (error) {
+      if (!(error instanceof InventoryExactAllocationLimitError)) throw error;
+      // An exhausted preference search says nothing about the full physical pool.
+    }
+  }
+  const measured = input.amount.independent.length !== 0;
+  const item = input.selection.item;
+  /** Calculate the remaining reported axes for one measured witness plan. */
+  const remainderOf = (plan: InventoryWorkingPolicyAllocationPlan): InventoryMeasurementVector | undefined =>
+    inventoryPolicyMovementRemainder({
+      catalog: input.catalog, item, report: plan.requestedMeasurements, lines: plan.lines,
+    });
+  let selected = preferred ?? planPhysical();
+  let residual = measured ? remainderOf(selected) : undefined;
+  if (preferred !== undefined && (preferred.shortfall.amountMinor !== 0 ||
+    (measured && residual === undefined))) {
+    const physical = planPhysical();
+    const physicalResidual = measured ? remainderOf(physical) : undefined;
+    const shortfallComparison = compareQuantity(physical.shortfall, preferred.shortfall);
+    // A coherent partial witness is better than a fuller count that contradicts the report.
+    if ((!measured || physicalResidual !== undefined) &&
+        ((measured && residual === undefined) ||
+          shortfallComparison < 0)) {
+      selected = physical;
+      residual = physicalResidual;
+    }
+    // Keep the preferred witness on a tie while retaining a proven split requirement in the physical pool.
+    if (shortfallComparison === 0 && physical.incrementBlockedStock &&
+        (!measured || physicalResidual !== undefined) && !selected.incrementBlockedStock) {
+      selected = { ...selected, incrementBlockedStock: true };
+    }
+    // Holds can hide expired stock in the preferred pass, even on a shortfall tie.
+    if (physical.expiredStockWasExcluded && !selected.expiredStockWasExcluded) {
+      selected = { ...selected, expiredStockWasExcluded: true };
+    }
+  }
+  if (!measured) return selected;
+  if (residual === undefined) {
+    throw new Error("Reported physical movement remainder cannot exactly match its witnessed axes.");
+  }
+  if (inventoryMeasurementsAreZero(residual)) return selected;
+  const packagingRevisionId = input.amount.kind === InventoryAmountKind.Package ? input.amount.packagingRevisionId : undefined;
+  return { ...selected, shortfallAmount: reportedRemainderAmount(input.catalog, packagingRevisionId, residual) };
+}
+
+/** Reject unsafe combinations of fields in the frozen policy intent. */
 function assertPolicyMovementRequest(
   kind: InventoryPolicyMovementKind,
   input: InventoryOncePolicyMovementInput,
-  toPlacementNodeId: string | undefined,
-  deficitPolicy: InventoryDeficitPolicy
+  toPlacementNodeId: string | undefined
 ): void {
   if (input.reservationId !== undefined) {
     throw new Error(
@@ -5362,14 +5721,8 @@ function assertPolicyMovementRequest(
       "Inventory policy metadata cannot replace core allocation/deficit evidence."
     );
   }
-  if (
-    input.deficitPosition !== undefined &&
-    (kind !== InventoryPolicyMovementKind.Issue ||
-      deficitPolicy !== InventoryDeficitPolicy.Record)
-  ) {
-    throw new Error(
-      "Inventory deficitPosition is accepted only by policy Issue under Record mode."
-    );
+  if (kind !== InventoryPolicyMovementKind.Issue && input.deficitPosition?.lotId !== undefined) {
+    throw new Error("Unwitnessed stock cannot name a source lot.");
   }
   if (input.deficitPosition?.serialId !== undefined) {
     throw new Error(
@@ -5381,7 +5734,7 @@ function assertPolicyMovementRequest(
     input.allowAllocatedStock === true
   ) {
     throw new Error(
-      "Only explicit physical scrap may select already-allocated stock."
+      "Only physical scrap may skip the preference for unallocated stock."
     );
   }
   if (kind === InventoryPolicyMovementKind.Transfer) {
@@ -5408,9 +5761,17 @@ function assertPolicyMovementRequest(
   }
 }
 
+/** Allow explicit deficit positions only when planning a new Record-mode operation. */
+function assertInventoryPolicyDeficitMode(hasDeficitPosition: boolean, deficitPolicy: InventoryDeficitPolicy): void {
+  if (hasDeficitPosition && deficitPolicy !== InventoryDeficitPolicy.Record) {
+    throw new Error("Inventory deficitPosition is accepted only under Record mode.");
+  }
+}
+
 /** Fail closed instead of inventing negative/untracked stock on policy shortfall. */
 function assertPolicyAllocationComplete(
-  plan: InventoryPolicyAllocationPlan
+  plan: Pick<InventoryPolicyAllocationPlan, "shortfall" | "expiredStockWasExcluded" |
+    "allocationConstraintBlockedStock" | "incrementBlockedStock">
 ): void {
   if (plan.shortfall.amountMinor === 0) return;
   const shortfall = `${quantityToDecimalString(plan.shortfall)} ${
@@ -5447,27 +5808,32 @@ interface PolicyRecordedDeficitInput {
   /** Caller command including optional explicit deficit position. */
   readonly input: InventoryOncePolicyMovementInput;
   /** Exact native allocation/shortfall result. */
-  readonly allocation: InventoryPolicyAllocationPlan;
-  /** Current signed projection used to reject collision with positive physical stock. */
-  readonly projection: InventoryProjectionState;
+  readonly allocation: InventoryWorkingPolicyAllocationPlan;
+  /** Current exact settlement balance and expiry from the signed allocation pool. */
+  settlementRow(positionId: string): InventoryPolicyWorkingRow | undefined;
+  /** Resolve exact placement ancestry from the signed planning view. */
+  readonly ancestry: InventoryPolicyStockSource["ancestry"];
 }
 
-/** Return one normal Issue line for recordable shortfall, or enforce Reject/other verbs unchanged. */
-function policyRecordedDeficit({
+/** Resolve the exact signed source for a recordable physical shortfall. */
+async function policyRecordedDeficit({
   catalog,
   kind,
   deficitPolicy,
   input,
   allocation,
-  projection,
-}: PolicyRecordedDeficitInput): InventoryPolicyRecordedDeficit | undefined {
+  settlementRow,
+  ancestry: readAncestry,
+}: PolicyRecordedDeficitInput): Promise<InventoryPolicyRecordedDeficit | undefined> {
   if (allocation.shortfall.amountMinor === 0) return undefined;
-  if (
-    kind !== InventoryPolicyMovementKind.Issue ||
-    deficitPolicy !== InventoryDeficitPolicy.Record
-  ) {
+  if (deficitPolicy !== InventoryDeficitPolicy.Record) {
     assertPolicyAllocationComplete(allocation);
     return undefined;
+  }
+  const unwitnessed = kind !== InventoryPolicyMovementKind.Issue;
+  const serial = allocation.selector.serial;
+  if (unwitnessed && serial !== undefined && serial.kind !== InventoryOptionalIdentityConstraintKind.Absent) {
+    throw new Error("Unwitnessed stock cannot claim a serial identity.");
   }
   assertPolicyShortfallIsRecordable(allocation);
   const amount = allocation.shortfallAmount;
@@ -5480,30 +5846,71 @@ function policyRecordedDeficit({
   const from = resolvePolicyDeficitPosition(
     input.deficitPosition,
     allocation.selector,
-    item
+    item,
+    unwitnessed
   );
+  // Infer only exact identity choices for a default unwitnessed shortage bucket.
+  const defaultScope = unwitnessed && input.deficitPosition === undefined ? allocation.selector : undefined;
+  const defaultOwnerId = inventorySingleSelectedDeficitIdentity(defaultScope?.owner);
+  const defaultStatusId = inventorySingleSelectedDeficitIdentity(defaultScope?.status);
+  const defaultCustodianId = inventorySingleSelectedDeficitIdentity(defaultScope?.custodian);
+  const defaultDispositionAuthorityId = inventorySingleSelectedDeficitIdentity(defaultScope?.dispositionAuthority);
+  /** Exact selected dimension values available for the default bucket. */
+  const defaultDimensions: InventoryQualifiedDimension[] = [];
+  for (const dimension of defaultScope?.qualifiedDimensions ?? []) {
+    if (dimension.kind !== InventoryOptionalIdentityConstraintKind.Allowed || dimension.valueIds?.length !== 1) continue;
+    const valueId = dimension.valueIds[0];
+    if (valueId !== undefined) defaultDimensions.push({ dimensionId: dimension.dimensionId, valueId });
+  }
   const resolved = resolveInventoryAmount(catalog, item, amount);
+  const packagingRevisionId = resolved.packaging?.revisionId;
+  if (from.packagingRevisionId !== undefined && from.packagingRevisionId !== packagingRevisionId) {
+    throw new Error("Inventory policy deficit position packaging revision differs from its amount.");
+  }
   const position = normalizeInventoryStockPositionKey({
     ...from,
     itemRevisionId: item.revisionId,
-    ...(resolved.packaging === undefined
-      ? {}
-      : { packagingRevisionId: resolved.packaging.revisionId }),
+    ...(defaultOwnerId === undefined ? {} : { ownerId: defaultOwnerId }),
+    ...(defaultStatusId === undefined ? {} : { statusId: defaultStatusId }),
+    ...(defaultCustodianId === undefined ? {} : { custodianId: defaultCustodianId }),
+    ...(defaultDispositionAuthorityId === undefined ? {} : { dispositionAuthorityId: defaultDispositionAuthorityId }),
+    ...(defaultDimensions.length === 0 ? {} : { qualifiedDimensions: defaultDimensions }),
+    ...(packagingRevisionId === undefined ? {} : { packagingRevisionId }),
   });
   assertPositionMatchesItem(item, position);
-  const existing =
-    projection.positions[inventoryStockPositionIdentity(position)];
-  if (
-    existing !== undefined &&
-    inventoryMeasurementAt(
-      existing.measurements,
-      item.primaryAxis.axisId,
-      item.primaryAxis.unit
-    ).amountMinor > 0
-  ) {
-    throw new Error(
-      "Inventory policy deficit position currently contains allocatable physical stock."
-    );
+  const placementScope = inventoryRecordedDeficitPoolSelector(allocation.selector, item.revisionId);
+  const ancestry = placementScope.withinPlacementNodeIds === undefined || position.placementNodeId === undefined
+    ? []
+    : await readAncestry(position.placementNodeId);
+  if (!inventoryScopedStockMatches(position, placementScope, ancestry)) {
+    throw new Error("Inventory policy deficit position is outside the selected placement scope or whereabouts.");
+  }
+  // An unlabelled source cannot inherit the selected lot, but must preserve the other stock facts.
+  const { lot: _lot, lotIds: _lotIds, ...settlementScope } = allocation.selector;
+  const row = settlementRow(inventoryStockPositionIdentity(position));
+  if (row !== undefined && inventoryPolicyPositionMeasurement(
+    row.position, item.primaryAxis.axisId, item.primaryAxis.unit
+  ).amountMinor > 0n) {
+    if (!unwitnessed) {
+      throw new Error("Inventory policy deficit position currently contains allocatable physical stock.");
+    }
+    if (!inventoryScopedStockMatches(position, settlementScope, ancestry)) {
+      throw new Error("Inventory policy deficit position contains positive stock outside the selected stock scope.");
+    }
+    // The lot filter may have hidden this row from allocation, but settling its physical stock still requires the expiry override.
+    if (!input.allowExpiredLots && row.effectiveUseByEpochMs !== undefined &&
+        row.effectiveUseByEpochMs <= input.occurredAtEpochMs) {
+      assertPolicyAllocationComplete({ ...allocation, expiredStockWasExcluded: true });
+    }
+  } else if (unwitnessed && !inventoryScopedStockMatches(position, settlementScope, ancestry)) {
+    const { owner, status } = settlementScope;
+    if (owner !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, owner })) {
+      throw new Error("Inventory policy deficit position is outside the selected owner scope.");
+    }
+    if (status !== undefined && !inventoryStockPositionMatchesNormalizedSelector(position, { itemId: item.itemId, status })) {
+      throw new Error("Inventory policy deficit position is outside the selected status scope.");
+    }
+    throw new Error("Inventory policy deficit position is outside the selected stock scope.");
   }
   const { itemRevisionId, ...exactFrom } = position;
   return {
@@ -5520,26 +5927,24 @@ function policyRecordedDeficit({
   };
 }
 
+/** Infer a shortage bucket identity only when the selector provides exactly one value. */
+function inventorySingleSelectedDeficitIdentity(constraint: InventoryOptionalIdentityConstraint | undefined): string | undefined {
+  return constraint?.kind === InventoryOptionalIdentityConstraintKind.Allowed && constraint.valueIds?.length === 1
+    ? constraint.valueIds[0] : undefined;
+}
+
 /** Resolve one unallocated deficit position without pretending it is a selected lot/serial identity. */
 function resolvePolicyDeficitPosition(
   explicit: InventoryStockPositionInput | undefined,
   selector: InventoryStockSelector,
-  item: InventoryItemDefinitionRevision
+  item: InventoryItemDefinitionRevision,
+  unwitnessed: boolean
 ): InventoryStockPositionInput {
   const normalizedSelector = normalizeInventoryStockSelector(selector);
   if (explicit !== undefined) {
     if (explicit.itemId !== item.itemId) {
       throw new Error(
         "Inventory policy deficit position belongs to another item."
-      );
-    }
-    if (
-      normalizedSelector.placementNodeIds !== undefined &&
-      (explicit.placementNodeId === undefined ||
-        !normalizedSelector.placementNodeIds.includes(explicit.placementNodeId))
-    ) {
-      throw new Error(
-        "Inventory policy deficit position is outside the selected placement scope."
       );
     }
     if (explicit.serialId !== undefined) {
@@ -5561,7 +5966,7 @@ function resolvePolicyDeficitPosition(
   return {
     itemId: item.itemId,
     placementNodeId,
-    lotId: INVENTORY_RECORDED_DEFICIT_LOT_ID,
+    ...(unwitnessed ? {} : { lotId: INVENTORY_RECORDED_DEFICIT_LOT_ID }),
   };
 }
 
@@ -5579,7 +5984,7 @@ function policyDeficitMetadataValue(
 
 /** Preserve ambiguity errors while allowing only genuine lack of stock to become deficit. */
 function assertPolicyShortfallIsRecordable(
-  allocation: InventoryPolicyAllocationPlan
+  allocation: InventoryWorkingPolicyAllocationPlan
 ): void {
   if (allocation.expiredStockWasExcluded) {
     assertPolicyAllocationComplete(allocation);
@@ -5616,16 +6021,45 @@ function createPolicyMovementEvent(
               ),
             }),
       },
-      lines: combinePolicyBatchExactLines(
-        catalog,
-        lines,
-        deficit === undefined ? [] : [deficit.line]
-      ),
+      lines: [...lines.map(policyIssueLine), ...(deficit === undefined ? [] : [deficit.line])],
     });
   }
+  const eventKind = kind === InventoryPolicyMovementKind.Transfer
+    ? InventoryEventKind.Transfer
+    : InventoryEventKind.Scrap;
+  const witnessed = lines.length === 0 ? undefined : createWitnessedPolicyMovement(
+    catalog, header, kind, lines, toPlacementNodeId
+  );
   if (deficit !== undefined) {
-    throw new Error("Only policy Issue may record deficit.");
+    return createInventoryRecordedMovement({
+      catalog,
+      header: {
+        ...header,
+        metadata: {
+          ...(header.metadata ?? {}),
+          [inventoryPolicyDeficitMetadataKey]: policyDeficitMetadataValue(deficit.evidence),
+        },
+      },
+      kind: eventKind,
+      witnessed,
+      unknown: [{
+        ...deficit.line,
+        ...(toPlacementNodeId === undefined ? {} : { toPlacementNodeId }),
+      }],
+    });
   }
+  if (witnessed === undefined) throw new Error("Inventory policy movement has no stock effects.");
+  return witnessed;
+}
+
+/** Build the witnessed portion with the checked ordinary physical builders. */
+function createWitnessedPolicyMovement(
+  catalog: InventoryCatalog,
+  header: InventoryCommandHeader,
+  kind: InventoryPolicyMovementKind,
+  lines: readonly InventoryPolicyAllocationLine[],
+  toPlacementNodeId: string | undefined
+): InventoryEventDraft {
   if (kind === InventoryPolicyMovementKind.Transfer) {
     if (toPlacementNodeId === undefined) {
       throw new Error("Policy transfer lost destination direct placement.");
@@ -5634,19 +6068,12 @@ function createPolicyMovementEvent(
       catalog,
       ...header,
       lines: lines.map(
-        /** Add the one explicit destination while preserving each selected source identity. */
-        (line) => ({
-          ...policyIssueLine(line),
-          toPlacementNodeId,
-        })
+        /** Apply one destination while keeping the exact witnessed identity and FIFO evidence. */
+        (line) => ({ ...policyIssueLine(line), toPlacementNodeId })
       ),
     });
   }
-  return createInventoryScrapManyEvent({
-    catalog,
-    ...header,
-    lines: lines.map(policyIssueLine),
-  });
+  return createInventoryScrapManyEvent({ catalog, ...header, lines: lines.map(policyIssueLine) });
 }
 
 /** Strip allocation-only fields while retaining the normal immutable command header. */
@@ -5818,11 +6245,18 @@ class InventoryOnceReplacementPlansImplementation
   private readonly catalog: InventoryCatalog;
   /** Synthetic stable operation identity used only inside the replacement assertion. */
   private readonly operationId: string;
+  /** Distinct whereabouts cohort override isolating historical repairs from ordinary commands. */
+  private readonly whereaboutsId: string | undefined;
 
   /** Bind correction replacement plans to one catalogue/correction operation. */
-  constructor(catalog: InventoryCatalog, operationId: string) {
+  constructor(
+    catalog: InventoryCatalog,
+    operationId: string,
+    whereaboutsId?: string
+  ) {
     this.catalog = catalog;
     this.operationId = operationId;
+    this.whereaboutsId = whereaboutsId;
   }
 
   /** Plan an append-only correction that removes the retained root from current truth. */
@@ -5891,6 +6325,9 @@ class InventoryOnceReplacementPlansImplementation
         ...input,
         catalog: this.catalog,
         operationId: this.operationId,
+        ...(this.whereaboutsId === undefined
+          ? {}
+          : { [historicalWhereaboutsId]: this.whereaboutsId }),
       })
     );
   }
@@ -5917,6 +6354,9 @@ class InventoryOnceReplacementPlansImplementation
         ...input,
         catalog: this.catalog,
         operationId: this.operationId,
+        ...(this.whereaboutsId === undefined
+          ? {}
+          : { [historicalWhereaboutsId]: this.whereaboutsId }),
       })
     );
   }
@@ -6300,9 +6740,10 @@ class InventoryOnceHistoricalAssertionPlansImplementation
   constructor(
     catalog: InventoryCatalog,
     operationId: string,
-    earlierAssertions: ReadonlyMap<string, InventoryEventDraft>
+    earlierAssertions: ReadonlyMap<string, InventoryEventDraft>,
+    whereaboutsId: string
   ) {
-    super(catalog, operationId);
+    super(catalog, operationId, whereaboutsId);
     this.earlierAssertions = earlierAssertions;
   }
 
@@ -6350,6 +6791,20 @@ class InventoryOnceHistoricalAssertionPlansImplementation
   }
 }
 
+/** Build disjoint, injective operation, event, and cohort identities for historical assertions. */
+function inventoryHistoricalAssertionScopedId(
+  kind: "op" | "event" | "whereabouts",
+  repairOperationId: string,
+  assertionId: string
+): string {
+  const encodedRepair = encodeURIComponent(repairOperationId);
+  const encodedAssertion = encodeURIComponent(assertionId);
+  if (kind === "whereabouts") {
+    return `inventory:historical-whereabouts:${encodedRepair}:${encodedAssertion}`;
+  }
+  return `inventory:historical-assertion:${kind}:${encodedRepair}:${encodedAssertion}`;
+}
+
 /** Build stable ordinary assertion drafts from existing correction-plan verbs. */
 function buildInventoryHistoricalAssertions(
   catalog: InventoryCatalog,
@@ -6361,6 +6816,7 @@ function buildInventoryHistoricalAssertions(
   ) {
     throw new Error("Historical repair must add or omit at least one assertion.");
   }
+  assertInventoryIdentity(input.operationId, "historical repair operationId");
   const assertionIds = new Set<string>();
   const result: InventoryHistoricalAssertion[] = [];
   const earlierAssertions = new Map<string, InventoryEventDraft>();
@@ -6380,15 +6836,35 @@ function buildInventoryHistoricalAssertions(
     }
     const plans = new InventoryOnceHistoricalAssertionPlansImplementation(
       catalog,
-      `${input.operationId}:historical:${assertion.assertionId}`,
-      earlierAssertions
+      inventoryHistoricalAssertionScopedId(
+        "op",
+        input.operationId,
+        assertion.assertionId
+      ),
+      earlierAssertions,
+      inventoryHistoricalAssertionScopedId(
+        "whereabouts",
+        input.operationId,
+        assertion.assertionId
+      )
     );
-    const event = readReplacementEventDraft(assertion.assert(plans));
-    if (event === undefined) {
+    const draft = readReplacementEventDraft(assertion.assert(plans));
+    if (draft === undefined) {
       throw new Error(
         "Historical assertion cannot use omit(); omit an earlier assertionId instead."
       );
     }
+    const event = defineInventoryEvent({
+      catalog,
+      event: {
+        ...draft,
+        eventId: inventoryHistoricalAssertionScopedId(
+          "event",
+          input.operationId,
+          assertion.assertionId
+        ),
+      },
+    });
     result.push({
       assertionId: assertion.assertionId,
       ...(assertion.afterEventId === undefined
@@ -6410,6 +6886,19 @@ function buildInventoryHistoricalAssertions(
     }
   }
   return result;
+}
+
+/** Collect every explicit anchor event id referenced by pending historical assertions. */
+function collectHistoricalAfterEventIds(
+  assertions: readonly InventoryHistoricalAssertion[]
+): readonly string[] {
+  const afterEventIds: string[] = [];
+  for (const assertion of assertions) {
+    if (assertion.afterEventId !== undefined) {
+      afterEventIds.push(assertion.afterEventId);
+    }
+  }
+  return afterEventIds;
 }
 
 /** Normalize one stable unique assertion-id set. */
@@ -6727,7 +7216,6 @@ async function commitInventoryPlacementTopologyChange(
     inventoryMetadataFingerprint(input.metadata),
   ]);
   if (
-    internals.deficitPolicy === InventoryDeficitPolicy.Reject &&
     input.node === undefined &&
     destinationMetadata === undefined &&
     inventoryStorageSupportsSegmentedPlacement(internals.storage)
@@ -6918,122 +7406,70 @@ async function commitInventoryPlacementDirectContentsMove(
     input.reason ?? null,
     inventoryMetadataFingerprint(input.metadata),
   ]);
-  const result = await commitInventoryOperation({
-    catalog: internals.catalog,
-    storage: internals.storage,
+  return commitInventoryScopedMovement({
+    internals,
     operationId: input.operationId,
     intentFingerprint,
-    clock: internals.clock,
-    deficitPolicy: internals.deficitPolicy,
-    /** Select exact direct contents and child nodes from one fenced published world. */
-    plan: ({ world, recordedAtEpochMs }) => {
-      assertInventoryLifecycleTimeWasRecorded(
-        input.occurredAtEpochMs,
-        recordedAtEpochMs,
-        "placement contents move"
-      );
-      if (
-        inventoryPlacementNodeIsWithin(
-          world.projection.placement,
-          input.into,
-          input.nodeId
-        )
-      ) {
-        throw new Error(
-          "Placement contents destination cannot be the source node or one of its descendants."
-        );
-      }
-      const positions = inventoryDirectPositivePositionsAtNode(
-        world,
-        input.nodeId
-      );
-      const childNodeIds =
-        inventorySparseRecordValue(
-          world.projection.placement.childNodeIdsByParentNodeId,
-          input.nodeId
-        ) ?? [];
-      const placementChanges: InventoryPlacementChange[] = [];
-      for (const childNodeId of childNodeIds) {
-        const embodiedPosition = inventoryEmbodiedPlacementNodePosition(
-          world,
-          childNodeId
-        );
-        if (embodiedPosition !== undefined) {
-          if (embodiedPosition.key.placementNodeId !== input.nodeId) {
-            throw new Error(
-              `Embodied child node '${childNodeId}' disagrees with its unique stock placement.`
-            );
-          }
-          continue;
-        }
-        placementChanges.push({
-          nodeId: childNodeId,
-          fromParentNodeId: input.nodeId,
-          toParentNodeId: input.into,
-        });
-      }
-      if (positions.length === 0 && placementChanges.length === 0) {
-        throw new Error(
-          `Inventory placement node '${input.nodeId}' has no direct contents to move.`
-        );
-      }
-      const header = inventoryCommandHeaderFromPlacementInput(input);
-      const stockEvent =
-        positions.length === 0
-          ? undefined
-          : createInventoryTransferManyEvent({
-              catalog: internals.catalog,
-              ...header,
-              lines: positions.map(
-                /** Move one complete current direct row to the shared destination. */
-                (position) => {
-                  const source = placementContentsSourceLine(
-                    internals.catalog,
-                    position
-                  );
-                  return {
-                    ...source,
-                    toPlacementNodeId: input.into,
-                  };
-                }
-              ),
-            });
-      const event: InventoryEventDraft =
-        stockEvent === undefined
-          ? {
-              eventId: inventoryEventIdForOperation(input.operationId),
-              operationId: input.operationId,
-              kind: InventoryEventKind.Placement,
-              occurredAtEpochMs: input.occurredAtEpochMs,
-              stockEffects: [],
-              placementChanges,
-              traceabilityChanges: [],
-              ...(input.actorId === undefined ? {} : { actorId: input.actorId }),
-              ...(input.sourcePartyId === undefined
-                ? {}
-                : { sourcePartyId: input.sourcePartyId }),
-              ...(input.destinationPartyId === undefined
-                ? {}
-                : { destinationPartyId: input.destinationPartyId }),
-              ...(input.sourceReference === undefined
-                ? {}
-                : { sourceReference: input.sourceReference }),
-              ...(input.reason === undefined ? {} : { reason: input.reason }),
-              ...(input.metadata === undefined
-                ? {}
-                : { metadata: input.metadata }),
-            }
-          : {
-              ...stockEvent,
-              kind: InventoryEventKind.Placement,
-              placementChanges,
-            };
-      return {
-        event: defineInventoryEvent({ catalog: internals.catalog, event }),
-      };
+    /** Plan one composite event from direct rows and edges at the publication fence. */
+    plan: async (source, recordedAtEpochMs) => {
+      assertInventoryLifecycleTimeWasRecorded(input.occurredAtEpochMs, recordedAtEpochMs, "placement contents move");
+      const facts = await source.directContents(input.nodeId, input.into);
+      return planInventoryDirectContentsMove(internals.catalog, input, facts);
     },
   });
-  return createInventoryOnceEventResult(result);
+}
+
+/** Build the same atomic placement event from canonical or segmented direct facts. */
+function planInventoryDirectContentsMove(
+  catalog: InventoryCatalog,
+  input: InventoryOnceMovePlacementContentsInput,
+  facts: InventorySegmentedDirectContents
+): InventoryEventDraft {
+  if (facts.destinationAncestry.includes(input.nodeId)) {
+    throw new Error("Placement contents destination cannot be the source node or one of its descendants.");
+  }
+  const placementChanges: InventoryPlacementChange[] = [];
+  for (const { nodeId, embodiedPosition } of facts.children) {
+    if (embodiedPosition !== undefined) {
+      // The serial stock effect drives the embodied node's parent.
+      if (embodiedPosition.key.placementNodeId !== input.nodeId) {
+        throw new Error(`Embodied child node '${nodeId}' disagrees with its unique stock placement.`);
+      }
+      continue;
+    }
+    placementChanges.push({ nodeId, fromParentNodeId: input.nodeId, toParentNodeId: input.into });
+  }
+  const positions: InventoryStockPosition[] = [];
+  for (const row of facts.positions) {
+    if (row.measurements.primary.quantity.amountMinor > 0) positions.push(row);
+  }
+  positions.sort(comparePlacementContentsPosition);
+  if (positions.length === 0 && placementChanges.length === 0) {
+    throw new Error(`Inventory placement node '${input.nodeId}' has no direct contents to move.`);
+  }
+  const header = inventoryCommandHeaderFromPlacementInput(input);
+  const stockEvent = positions.length === 0 ? undefined : createInventoryTransferManyEvent({
+    catalog,
+    // Transfer supplies the postings only. The enclosing placement event owns the audit header.
+    operationId: input.operationId,
+    occurredAtEpochMs: input.occurredAtEpochMs,
+    lines: positions.map(
+      /** Move each whole direct row using its exact measured or package amount. */
+      (position) => ({ ...placementContentsSourceLine(catalog, position), toPlacementNodeId: input.into })
+    ),
+  });
+  return defineInventoryEvent({
+    catalog,
+    event: {
+      ...header,
+      eventId: stockEvent?.eventId ?? inventoryEventIdForOperation(input.operationId),
+      kind: InventoryEventKind.Placement,
+      stockEffects: stockEvent?.stockEffects ?? [],
+      traceabilityChanges: [],
+      ...(stockEvent === undefined ? {} : { positiveLayerProvenanceTransfers: stockEvent.positiveLayerProvenanceTransfers ?? [] }),
+      placementChanges,
+    },
+  });
 }
 
 /** Return every positive stock row anchored directly at one exact node. */
@@ -7104,10 +7540,7 @@ function inventoryEmbodiedPlacementNodePosition(
 
 /** Copy the normal immutable command header from one placement command. */
 function inventoryCommandHeaderFromPlacementInput(
-  input:
-    | InventoryOnceMovePlacementInput
-    | InventoryOnceUnplaceInput
-    | InventoryOnceMovePlacementContentsInput
+  input: InventoryCommandHeader
 ): InventoryCommandHeader {
   return {
     operationId: input.operationId,
@@ -7174,11 +7607,7 @@ async function commitInventoryPlacementContentsOperation(
         operation,
         contents
       );
-      assertNoExactReservationBindsPlacementContents(
-        world,
-        affectedPositions,
-        input.occurredAtEpochMs
-      );
+      // Keep exact claims in place so feasibility can report any resulting shortage.
       const event = createInventoryPlacementContentsEvent(
         internals.catalog,
         operation,
@@ -7186,12 +7615,6 @@ async function commitInventoryPlacementContentsOperation(
       );
       return {
         event,
-        ...(kind === InventoryPlacementContentsOperationKind.Scrap
-          ? {
-              reservationProtection:
-                InventoryReservationProtection.RecordPhysicalTruth,
-            }
-          : {}),
       };
     },
   });
@@ -7278,42 +7701,6 @@ function findPositionsChangedByPlacementContentsOperation(
     return changed;
   }
   return contents.positions;
-}
-
-/** Reject a content operation before it could strand an exact claim on an old position key. */
-function assertNoExactReservationBindsPlacementContents(
-  world: InventoryWorldState,
-  positions: readonly InventoryStockPosition[],
-  atEpochMs: number
-): void {
-  const affectedPositionIds = new Set<string>();
-  for (const position of positions) {
-    affectedPositionIds.add(inventoryStockPositionIdentity(position.key));
-  }
-  const blockingReservationIds: string[] = [];
-  for (const reservation of inventoryReservationsAt(world.reservations, atEpochMs)) {
-    if (!inventoryReservationIsActiveAt(reservation, atEpochMs)) continue;
-    for (const allocation of reservation.allocations) {
-      if (
-        !affectedPositionIds.has(
-          inventoryStockPositionIdentity(allocation.position)
-        )
-      ) {
-        continue;
-      }
-      blockingReservationIds.push(reservation.reservationId);
-      break;
-    }
-  }
-  blockingReservationIds.sort(compareInventoryIdentityText);
-  if (blockingReservationIds.length > 0) {
-    throw new Error(
-      "Placement-subtree content operation would move or remove exact reservation bindings; " +
-        `release, consume, or reallocate these claims first: ${blockingReservationIds.join(
-          ", "
-        )}.`
-    );
-  }
 }
 
 /** Build one immutable event carrying every exact subtree-content stock line. */
@@ -8887,7 +9274,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
         return {
           countResult: started,
           countId: input.countId,
-          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -8932,7 +9318,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
         return {
           countResult: observed,
           countId: input.countId,
-          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -8990,8 +9375,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
           ...(plan.event === undefined ? {} : { event: plan.event }),
           countResult: completed,
           countId: input.countId,
-          reservationProtection:
-            InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -9030,7 +9413,6 @@ class InventoryOnceCountsImplementation implements InventoryOnceCountsApi {
         return {
           countResult: abandoned,
           countId: input.countId,
-          reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
         };
       },
     });
@@ -9196,7 +9578,6 @@ async function commitAbsoluteCountStart({
       return {
         countResult: started,
         countId: input.countId,
-        reservationProtection: InventoryReservationProtection.RecordPhysicalTruth,
       };
     },
   });
@@ -10188,6 +10569,160 @@ async function readInventorySegmentedPlacementSnapshot<Result>(
   return { coherent: false };
 }
 
+/** Prefix used by the private journal dependency index for exact whereabouts lifecycles. */
+const inventoryWhereaboutsDependencyKeyPrefix = "dep:whereabouts:";
+
+/** Assemble a minimal projection containing only indexed events for the requested whereabouts cohorts. */
+function buildIndexedWhereaboutsEventsProjection(
+  orderedEvents: readonly InventoryCommittedEvent[],
+  whereaboutsIdSet: ReadonlySet<string>
+): InventoryProjectionState {
+  const base = emptyInventoryProjectionState();
+  const events = createInventorySparseRecord<InventoryCommittedEvent>();
+  const eventIdsBySequence = createInventorySparseRecord<string>();
+  const eventSequencesByWhereaboutsId = createInventorySparseRecord<readonly number[]>();
+  /** Locally owned mutable buckets avoid copying cohort sequence arrays on every push. */
+  const mutableSequencesByWhereaboutsId = new Map<string, number[]>();
+  for (const event of orderedEvents) {
+    setInventorySparseRecordValue(events, event.eventId, event);
+    setInventorySparseRecordValue(eventIdsBySequence, String(event.recordSequence), event.eventId);
+    const rootId = event.correction?.correctsEventId;
+    // A root that touches this cohort is returned by the same private dependency query.
+    const correctedRoot = rootId === undefined ? undefined : inventorySparseRecordValue(events, rootId);
+    for (const whereaboutsId of inventoryEventWhereaboutsMembership(event, correctedRoot)) {
+      if (!whereaboutsIdSet.has(whereaboutsId)) continue;
+      const bucket = mutableSequencesByWhereaboutsId.get(whereaboutsId);
+      if (bucket === undefined) mutableSequencesByWhereaboutsId.set(whereaboutsId, [event.recordSequence]);
+      else bucket.push(event.recordSequence);
+    }
+  }
+  for (const [whereaboutsId, sequences] of mutableSequencesByWhereaboutsId) {
+    setInventorySparseRecordValue(eventSequencesByWhereaboutsId, whereaboutsId, sequences);
+  }
+  const lastEvent = orderedEvents[orderedEvents.length - 1];
+  return {
+    ...base,
+    events,
+    eventIdsBySequence,
+    eventSequencesByWhereaboutsId,
+    lastRecordSequence: lastEvent?.recordSequence ?? 0,
+  };
+}
+
+/**
+ * Read exact whereabouts lifecycles or history without loading the entire world when storage
+ * supports indexed event dependency queries and segmented position reads.
+ */
+async function readExactInventoryWhereabouts<Result>(
+  { storage, catalog }: Pick<InventoryOnceInternals, "storage" | "catalog">,
+  whereaboutsIds: readonly string[],
+  project: (projection: InventoryProjectionState) => Result
+): Promise<Result | undefined> {
+  if (
+    !inventoryStorageSupportsSegmentedStockPlanning(storage) ||
+    !inventoryStorageSupportsEventQuery(storage)
+  ) {
+    return undefined;
+  }
+  if (whereaboutsIds.length === 0) {
+    return project(emptyInventoryProjectionState());
+  }
+  const whereaboutsIdSet = new Set(whereaboutsIds);
+  const requestedWhereaboutsIds = [...whereaboutsIdSet];
+  const resourceKeys: string[] = [];
+  for (const whereaboutsId of requestedWhereaboutsIds) {
+    resourceKeys.push(inventoryWhereaboutsDependencyKeyPrefix + whereaboutsId);
+  }
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const head = await storage.readSegmentedStockHead();
+    const eventsById = new Map<string, InventoryCommittedEvent>();
+    let afterRecordSequence: number | undefined;
+    let headMoved = false;
+    do {
+      const page = await storage.queryInventoryEventsByResourceKeys({
+        resourceKeys,
+        ...(afterRecordSequence === undefined ? {} : { afterRecordSequence }),
+        limit: 1_000,
+      });
+      if (page.throughRecordSequence !== head.recordSequence) {
+        headMoved = true;
+        break;
+      }
+      for (const event of page.events) {
+        if (!eventsById.has(event.eventId)) eventsById.set(event.eventId, event);
+      }
+      afterRecordSequence = page.nextAfterRecordSequence;
+    } while (afterRecordSequence !== undefined);
+    if (headMoved) continue;
+
+    const orderedEvents = [...eventsById.values()];
+    orderedEvents.sort(
+      /** Replay cohort events in exact durable sequence order. */
+      (left, right) => left.recordSequence - right.recordSequence
+    );
+    const eventsProjection = buildIndexedWhereaboutsEventsProjection(orderedEvents, whereaboutsIdSet);
+    const firstPass = inventoryWhereaboutsLifecycles(eventsProjection, whereaboutsIdSet);
+    const cohortsByItemId = new Map<string, Set<string>>();
+    for (const lifecycle of firstPass) {
+      for (const itemId of lifecycle.itemIds) {
+        let bucket = cohortsByItemId.get(itemId);
+        if (bucket === undefined) {
+          bucket = new Set<string>();
+          cohortsByItemId.set(itemId, bucket);
+        }
+        bucket.add(lifecycle.whereaboutsId);
+      }
+    }
+
+    const positions = createInventorySparseRecord<InventoryStockPosition>();
+    const positionIdsByWhereaboutsId = createInventorySparseRecord<readonly string[]>();
+    const mutablePositionIdsByWhereaboutsId = new Map<string, string[]>();
+    if (cohortsByItemId.size > 0) {
+      const segment = await storage.readPositionSegment();
+      if ((await segment.revision()) !== head.worldRevision) continue;
+      for (const [itemId, cohortIds] of cohortsByItemId) {
+        const itemPositions = await segment.queryPositions({
+          itemId,
+          whereaboutsIds: [...cohortIds],
+        });
+        if (itemPositions === undefined) return undefined;
+        for (const position of itemPositions) {
+          const whereaboutsId = position.key.whereaboutsId;
+          if (whereaboutsId === undefined || !whereaboutsIdSet.has(whereaboutsId)) continue;
+          const positionId = inventoryStockPositionIdentity(position.key);
+          if (inventorySparseRecordValue(positions, positionId) !== undefined) continue;
+          setInventorySparseRecordValue(positions, positionId, position);
+          const bucket = mutablePositionIdsByWhereaboutsId.get(whereaboutsId);
+          if (bucket === undefined) {
+            mutablePositionIdsByWhereaboutsId.set(whereaboutsId, [positionId]);
+          } else {
+            bucket.push(positionId);
+          }
+        }
+      }
+      if ((await segment.revision()) !== head.worldRevision) continue;
+      for (const [whereaboutsId, ids] of mutablePositionIdsByWhereaboutsId) {
+        setInventorySparseRecordValue(positionIdsByWhereaboutsId, whereaboutsId, ids);
+      }
+    }
+
+    const headAfter = await storage.readSegmentedStockHead();
+    if (
+      headAfter.worldRevision !== head.worldRevision ||
+      headAfter.recordSequence !== head.recordSequence
+    ) {
+      continue;
+    }
+    assertInventoryCatalogRetainsSnapshot(catalog, head.catalog);
+    return project({
+      ...eventsProjection,
+      positions,
+      positionIdsByWhereaboutsId,
+    });
+  }
+  return undefined;
+}
+
 /** Private implementation of current/history reads. */
 class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   /** Owning façade. */
@@ -10241,6 +10776,16 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   async whereabouts(
     input: InventoryOnceWhereaboutsQuery = {}
   ): Promise<readonly InventoryWhereaboutsLifecycle[]> {
+    if (input.whereaboutsIds !== undefined) {
+      const internals = requireInventoryOnceInternals(this.owner);
+      const indexed = await readExactInventoryWhereabouts(
+        internals,
+        input.whereaboutsIds,
+        /** Filter exact-cohort unresolved lifecycles using existing semantics. */
+        (projection) => findCurrentInventoryWhereaboutsLifecycles(projection, input)
+      );
+      if (indexed !== undefined) return indexed;
+    }
     return findCurrentInventoryWhereaboutsLifecycles(
       (await this.world()).projection,
       input
@@ -10251,6 +10796,16 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   async whereaboutsHistory(
     input: InventoryWhereaboutsHistoryQuery = {}
   ): Promise<readonly InventoryWhereaboutsLifecycle[]> {
+    if (input.whereaboutsIds !== undefined) {
+      const internals = requireInventoryOnceInternals(this.owner);
+      const indexed = await readExactInventoryWhereabouts(
+        internals,
+        input.whereaboutsIds,
+        /** Filter exact-cohort lifecycle history using existing semantics. */
+        (projection) => findInventoryWhereaboutsHistory(projection, input)
+      );
+      if (indexed !== undefined) return indexed;
+    }
     return findInventoryWhereaboutsHistory((await this.world()).projection, input);
   }
 
@@ -10268,6 +10823,19 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     selector: InventoryStockSelector
   ): Promise<InventoryStockSummary> {
     const internals = requireInventoryOnceInternals(this.owner);
+    const storage = internals.storage;
+    if (inventoryStorageSupportsSegmentedStockPlanning(storage)) {
+      const normalized = normalizeInventoryStockSelector(selector);
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const head = await storage.readSegmentedStockHead();
+        const positions = await (await storage.readPositionSegment()).queryPositions(normalized);
+        if (positions === undefined) break;
+        if ((await storage.readSegmentedStockHead()).worldRevision !== head.worldRevision) continue;
+        assertInventoryCatalogRetainsSnapshot(internals.catalog, head.catalog);
+        const catalog = head.worldRevision === 0 ? internals.catalog : inventoryCatalogFromSnapshot(head.catalog);
+        return summarizeInventoryStockPositions({ catalog, selector: normalized, positions });
+      }
+    }
     const world = await this.world();
     return summarizeInventoryStock({
       catalog: inventoryCatalogForPublishedWorld(world, internals.catalog),
@@ -10297,29 +10865,52 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
     input: InventoryOncePlanAllocationInput
   ): Promise<InventoryPolicyAllocationPlan> {
     const internals = requireInventoryOnceInternals(this.owner);
+    const storage = internals.storage;
+    const {
+      selector, itemRevisionId, amount, method, allowExpiredLots, allowAllocatedStock, reservationId,
+      atEpochMs: requestedAt, reservationAtEpochMs: requestedReservationAt,
+    } = input;
+    /** Public allocation options shared by the native and canonical planners. */
+    const request = {
+      amount,
+      method,
+      ...(allowExpiredLots === undefined ? {} : { allowExpiredLots }),
+      ...(allowAllocatedStock === undefined ? {} : { allowAllocatedStock }),
+      ...(reservationId === undefined ? {} : { reservationId }),
+    };
+    if (inventoryStorageSupportsSegmentedStockPlanning(storage)) {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const head = await storage.readSegmentedStockHead();
+        // Default time must include claims already visible in this revision.
+        const atEpochMs = requestedAt ?? internals.clock.nowEpochMs();
+        const reservationAtEpochMs = requestedReservationAt ?? atEpochMs;
+        const catalog = head.worldRevision === 0
+          ? internals.catalog
+          : inventoryCatalogFromSnapshot(head.catalog);
+        assertInventoryCatalogRetainsSnapshot(internals.catalog, head.catalog);
+        const selection = resolveAllocationItemAndSelector(
+          catalog, selector, amount, itemRevisionId
+        );
+        const source = segmentedPolicyStockSource(storage, reservationAtEpochMs);
+        const pool = await source.pool(selection);
+        if ((await storage.readSegmentedStockHead()).worldRevision !== head.worldRevision) continue;
+        return planInventoryAllocationInPool({ ...request, catalog, selection, pool, atEpochMs, reservationAtEpochMs });
+      }
+      throw new Error("Inventory allocation could not read a current stock revision.");
+    }
     const world = await this.world();
     return planInventoryAllocation({
+      ...request,
       catalog: inventoryCatalogForPublishedWorld(world, internals.catalog),
       world,
-      selector: input.selector,
-      amount: input.amount,
-      method: input.method,
-      atEpochMs: input.atEpochMs ?? internals.clock.nowEpochMs(),
-      ...(input.reservationAtEpochMs === undefined
+      selector,
+      atEpochMs: requestedAt ?? internals.clock.nowEpochMs(),
+      ...(requestedReservationAt === undefined
         ? {}
-        : { reservationAtEpochMs: input.reservationAtEpochMs }),
-      ...(input.itemRevisionId === undefined
+        : { reservationAtEpochMs: requestedReservationAt }),
+      ...(itemRevisionId === undefined
         ? {}
-        : { itemRevisionId: input.itemRevisionId }),
-      ...(input.allowExpiredLots === undefined
-        ? {}
-        : { allowExpiredLots: input.allowExpiredLots }),
-      ...(input.reservationId === undefined
-        ? {}
-        : { reservationId: input.reservationId }),
-      ...(input.allowAllocatedStock === undefined
-        ? {}
-        : { allowAllocatedStock: input.allowAllocatedStock }),
+        : { itemRevisionId }),
     });
   }
 

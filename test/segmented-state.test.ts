@@ -6,6 +6,7 @@ import {
   createInMemoryInventorySegmentedPositionStore,
   InventorySegmentRevisionConflictError,
 } from "../src/segmented-state.js";
+import { createInMemoryInventorySegmentedPlacementStore } from "../src/segmented-placement.js";
 import {
   createInMemoryInventoryDurableStorage,
   InventoryDurableOperationState,
@@ -26,6 +27,7 @@ import {
   type InventoryStockPosition,
 } from "../src/model.js";
 import { parseQuantity } from "../src/quantity.js";
+import { InventoryDeficitPolicy } from "../src/projection.js";
 
 /** Build one exact positive stock row for segmented-store tests. */
 function segmentedPosition(input: {
@@ -130,6 +132,79 @@ async function expectSegmentMatchesPublishedWorld(
 }
 
 describe("segmented inventory position store", () => {
+  it("reports a stale stock-effects revision before evaluating its old placement witness", async () => {
+    const planner = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const concurrent = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const amount = stockAmount("1", "piece");
+    const to = loosePosition("source");
+    for (const inventory of [planner, concurrent]) {
+      await inventory.stock.receive({ operationId: "stale-stock-receive", occurredAtEpochMs: time0, to, amount });
+    }
+    const positions = await planner.read.positions({ itemId: "item-a" });
+    const segment = createInMemoryInventorySegmentedPositionStore({
+      revision: 1, positions,
+      positiveLayerStarts: Object.fromEntries(positions.map((position) => [inventoryStockPositionIdentity(position.key), time0])),
+    });
+    const { event: planned } = await planner.placement.moveContents({
+      operationId: "stale-stock-plan", occurredAtEpochMs: time2, nodeId: "source", into: "destination",
+    });
+    const { event: issue } = await concurrent.stock.issue({
+      operationId: "stale-stock-concurrent", occurredAtEpochMs: time1, from: loosePosition("source"), amount,
+    });
+    segment.applyStockEffects({ expectedRevision: 1, nextRevision: 2, event: issue, deficitPolicy: InventoryDeficitPolicy.Record });
+    expect(() => segment.applyStockEffects({
+      expectedRevision: 1, nextRevision: 2, event: planned, deficitPolicy: InventoryDeficitPolicy.Record,
+    })).toThrow(InventorySegmentRevisionConflictError);
+    expect(segment.revision()).toBe(2);
+  });
+
+  it("keeps the FIFO start unknown when a receipt tops up an already-positive seeded row", async () => {
+    const inventory = createTestInventory();
+    const to = loosePosition("seeded-age");
+    const amount = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "seeded-age-open", occurredAtEpochMs: time0, to, amount });
+    const [position] = await inventory.read.positions({ itemId: "item-a" });
+    if (position === undefined) throw new Error("Missing the seeded row.");
+    const id = inventoryStockPositionIdentity(position.key);
+    const seeded = createInMemoryInventorySegmentedPositionStore({ revision: 1, positions: [position] });
+    const empty = createInMemoryInventorySegmentedPositionStore({ revision: 1 });
+    const { event } = await inventory.stock.receive({ operationId: "seeded-age-topup", occurredAtEpochMs: time1, to, amount });
+    const effect = { expectedRevision: 1, nextRevision: 2, event, deficitPolicy: InventoryDeficitPolicy.Reject };
+
+    seeded.applyStockEffects(effect);
+    empty.applyStockEffects(effect);
+
+    expect(seeded.position(id)?.measurements.primary.quantity).toEqual(parseQuantity("2", "piece"));
+    expect(seeded.positiveLayerStart(id)).toBeUndefined();
+    expect(empty.positiveLayerStart(id)).toBe(time1);
+  });
+
+  it("publishes a validated age-only correction with its exact segment revision", async () => {
+    const inventory = createTestInventory();
+    const to = loosePosition("age-only", { lotId: "age-only-lot" });
+    const amount = stockAmount("1", "piece");
+    const receipt = await inventory.stock.receive({ operationId: "age-only-open", occurredAtEpochMs: time1, to, amount });
+    const position = (await inventory.read.positions({ itemId: "item-a" }))[0];
+    if (position === undefined) throw new Error("Expected the opened position.");
+    const id = inventoryStockPositionIdentity(position.key);
+    const segment = createInMemoryInventorySegmentedPositionStore({
+      revision: 1, positions: [position], positiveLayerStarts: { [id]: time1 },
+    });
+    const correction = await inventory.stock.correct({
+      operationId: "age-only-correction", occurredAtEpochMs: time2,
+      correctsEventId: receipt.event.eventId, reason: "The receipt occurred earlier.",
+      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to, amount }),
+    });
+    expect(correction.event.stockEffects).toEqual([]);
+    expect(correction.event.positiveLayerProvenanceOverrides).toEqual([{ position: position.key, startedAtEpochMs: time0 }]);
+    segment.applyStockEffects({
+      expectedRevision: 1, nextRevision: 2, event: correction.event, deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    expect(segment.revision()).toBe(2);
+    expect(segment.position(id)).toEqual(position);
+    expect(segment.positiveLayerStart(id)).toBe(time0);
+  });
+
   it("returns a frozen reader capability without writable segment methods or stock aliases", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
@@ -372,7 +447,7 @@ describe("segmented inventory position store", () => {
     await expectSegmentMatchesPublishedWorld(storage);
   });
 
-  it("serves simple facade position reads without touching the canonical whole-world fallback", async () => {
+  it("serves exact and subtree positions without materializing the world", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
     await inventory.stock.receiveMany({
@@ -412,12 +487,11 @@ describe("segmented inventory position store", () => {
     expect(byRevision).toHaveLength(1);
     expect(byRevision[0]?.key.placementNodeId).toBe("room");
 
-    await expect(
-      inventory.read.positions({
-        itemId: "item-a",
-        withinPlacementNodeIds: ["store"],
-      })
-    ).rejects.toThrow("canonical whole-world fallback was touched");
+    const subtree = await inventory.read.positions({
+      itemId: "item-a",
+      withinPlacementNodeIds: ["store"],
+    });
+    expect(subtree).toMatchObject([{ key: { lotId: "READ-A", placementNodeId: "store" } }]);
   });
 
 
@@ -714,6 +788,95 @@ describe("segmented inventory position store", () => {
     expect(storage.readPositionSegment().revision()).toBe(beforeRevision + 1);
   });
 
+  it("resolves a shared bin's subtree membership once across all stock rows", () => {
+    const placement = createInMemoryInventorySegmentedPlacementStore();
+    placement.applyChange({
+      expectedRevision: 0, nextRevision: 1, eventId: "bin-placed",
+      nodeId: "bin", toParentNodeId: "root", targetAcceptsPlacement: true,
+    });
+    const positions = Array.from({ length: 200 }, (_, index) =>
+      segmentedPosition({ placementNodeId: "bin", lotId: `LOT-${index}` })
+    );
+    const store = createInMemoryInventorySegmentedPositionStore({ positions });
+    const parent = vi.spyOn(placement, "parentNodeId");
+    expect(store.queryPositions({ itemId: "item-a", withinPlacementNodeIds: ["root"] }, placement)).toHaveLength(200);
+    expect(parent).toHaveBeenCalledExactlyOnceWith("bin");
+  });
+
+  it("shares fallback subtree membership across a deep chain of distinct stock nodes", () => {
+    const placement = createInMemoryInventorySegmentedPlacementStore();
+    const positions: InventoryStockPosition[] = [];
+    const depth = 180;
+    for (let index = 0; index < depth; index += 1) {
+      const nodeId = `chain-${index}`;
+      placement.applyChange({
+        expectedRevision: index, nextRevision: index + 1, eventId: `place-${nodeId}`,
+        nodeId, toParentNodeId: index === 0 ? "root" : `chain-${index - 1}`, targetAcceptsPlacement: true,
+      });
+      positions.push(segmentedPosition({ placementNodeId: nodeId, lotId: "stock" }));
+    }
+    positions.push(segmentedPosition({ placementNodeId: "outside", lotId: "stock" }));
+    const store = createInMemoryInventorySegmentedPositionStore({ positions });
+    const parent = vi.spyOn(placement, "parentNodeId");
+    const selected = store.queryPositions({
+      itemId: "item-a", withinPlacementNodeIds: ["root", "chain-40"], lotIds: ["stock"],
+    }, placement);
+    const chainNodes = Array.from({ length: depth }, (_, index) => `chain-${index}`);
+    expect(selected?.map((row) => row.key.placementNodeId).sort()).toEqual([...chainNodes].sort());
+    expect(parent.mock.calls.map(([node]) => node).sort())
+      .toEqual([...chainNodes.filter((node) => node !== "chain-40"), "outside"].sort());
+  });
+
+  it("trusts indexed subtree membership and still applies direct stock filters", () => {
+    const placement = createInMemoryInventorySegmentedPlacementStore();
+    const positions: InventoryStockPosition[] = [];
+    for (let index = 0; index < 20; index += 1) {
+      const nodeId = `child-${index}`;
+      const parentId = index === 0 ? "root" : `child-${index - 1}`;
+      placement.applyChange({
+        expectedRevision: index, nextRevision: index + 1, eventId: `place-${nodeId}`,
+        nodeId, toParentNodeId: parentId, targetAcceptsPlacement: true,
+      });
+      positions.push(segmentedPosition({ placementNodeId: nodeId, lotId: "selected" }));
+      positions.push(segmentedPosition({ placementNodeId: nodeId, lotId: "other" }));
+    }
+    for (let index = 0; index < 200; index += 1) {
+      positions.push(segmentedPosition({ placementNodeId: `outside-${index}`, lotId: "selected" }));
+    }
+    const store = createInMemoryInventorySegmentedPositionStore({ positions });
+    const parent = vi.spyOn(placement, "parentNodeId");
+    const selected = store.queryPositions({
+      itemId: "item-a", withinPlacementNodeIds: ["root", "child-4"], lotIds: ["selected"],
+    }, placement);
+    expect(selected?.map((row) => row.key.lotId)).toEqual(Array(20).fill("selected"));
+    expect(selected?.map((row) => row.key.placementNodeId).sort())
+      .toEqual(Array.from({ length: 20 }, (_, index) => `child-${index}`).sort());
+    expect(parent).not.toHaveBeenCalled();
+  });
+
+  it("preserves the FIFO origin of a same-position positive replacement", () => {
+    const stock = segmentedPosition({ placementNodeId: "store", lotId: "aged" });
+    const id = inventoryStockPositionIdentity(stock.key);
+    const store = createInMemoryInventorySegmentedPositionStore({
+      positions: [stock], positiveLayerStarts: { [id]: time0 }, revision: 1,
+    });
+    store.replaceExactPosition({
+      expectedRevision: 1,
+      fromPositionId: id,
+      to: {
+        ...stock,
+        measurements: {
+          ...stock.measurements,
+          primary: { ...stock.measurements.primary, quantity: parseQuantity("2", "piece") },
+        },
+      },
+    });
+    expect(store.positiveLayerStart(id)).toBe(time0);
+    expect(store.position(id)?.measurements.primary.quantity).toEqual(parseQuantity("2", "piece"));
+    store.applyDelta({ expectedRevision: 2, nextRevision: 3, removePositionIds: [id] });
+    expect(store.positiveLayerStart(id)).toBeUndefined();
+  });
+
   it("updates one exact row and all indexes without materializing a whole world", () => {
     const stock = segmentedPosition({
       placementNodeId: "store",
@@ -770,6 +933,13 @@ describe("segmented inventory position store", () => {
       store.replaceExactPosition({
         expectedRevision: 7,
         fromPositionId: result.toPositionId,
+        to: carrier,
+      })
+    ).toThrow(InventorySegmentRevisionConflictError);
+    expect(() =>
+      store.replaceExactPosition({
+        expectedRevision: 7,
+        fromPositionId: result.fromPositionId,
         to: carrier,
       })
     ).toThrow(InventorySegmentRevisionConflictError);

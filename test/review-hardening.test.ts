@@ -11,6 +11,7 @@ import {
   packageAmount,
   parseQuantity,
   stockAmount,
+  subtractQuantity,
   unitCode,
   type InventoryMetadataValue,
 } from "../src/index.js";
@@ -62,7 +63,7 @@ import {
   time3,
 } from "./test-fixtures.js";
 
-describe("quantity parser input bounds", () => {
+describe("quantity storage bounds", () => {
   it("rejects oversized significant digit text while preserving leading zeros", () => {
     expect(parseQuantity("0000000000000000000000001", "piece")).toMatchObject({
       amountMinor: 1,
@@ -71,6 +72,12 @@ describe("quantity parser input bounds", () => {
     expect(() => parseQuantity(`1${"0".repeat(10_000)}`, "piece")).toThrow(
       "Quantity text exceeds the safe integer storage range."
     );
+  });
+
+  it("narrows an exact public subtraction and rejects a nonzero digit that cannot fit", () => {
+    const largest = parseQuantity("9007199254740991", "kg");
+    expect(subtractQuantity(largest, parseQuantity("1.0", "kg"))).toEqual(parseQuantity("9007199254740990", "kg"));
+    expect(() => subtractQuantity(largest, parseQuantity("0.1", "kg"))).toThrow("safe integer storage range");
   });
 });
 
@@ -194,18 +201,18 @@ describe("collision-free retry identity", () => {
         { position: positionB, capacity: parseQuantity("4", "piece") },
       ],
     });
-    expect(allLocations.recordedDeficit.amountMinor).toBe(6);
-    expect(allLocations.uncoveredDeficit.amountMinor).toBe(3);
+    expect(allLocations.recordedDeficit).toEqual({ amountMinor: 6n, decimals: 0, unit: "piece" });
+    expect(allLocations.uncoveredDeficit).toEqual({ amountMinor: 3n, decimals: 0, unit: "piece" });
     expect(
       allLocations.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(positionA)
-      )?.amountMinor
-    ).toBe(2);
+      )
+    ).toEqual({ amountMinor: 2n, decimals: 0, unit: "piece" });
     expect(
       allLocations.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(positionB)
-      )?.amountMinor
-    ).toBe(2);
+      )
+    ).toEqual({ amountMinor: 2n, decimals: 0, unit: "piece" });
 
     const storeAOnly = applyInventoryRecordedDeficitBurden({
       projection: world.projection,
@@ -215,8 +222,8 @@ describe("collision-free retry identity", () => {
       placementNodeIds: ["store-a"],
       lines: [{ position: positionA, capacity: parseQuantity("3", "piece") }],
     });
-    expect(storeAOnly.recordedDeficit.amountMinor).toBe(1);
-    expect(storeAOnly.uncoveredDeficit.amountMinor).toBe(0);
+    expect(storeAOnly.recordedDeficit).toEqual({ amountMinor: 1n, decimals: 0, unit: "piece" });
+    expect(storeAOnly.uncoveredDeficit).toEqual({ amountMinor: 0n, decimals: 0, unit: "piece" });
     expect(() =>
       applyInventoryRecordedDeficitBurden({
         projection: world.projection,
@@ -263,9 +270,9 @@ describe("collision-free retry identity", () => {
     expect(
       adjusted.capacityByPositionIdentity.get(
         inventoryStockPositionIdentity(position)
-      )?.amountMinor
-    ).toBe(4);
-    expect(adjusted.uncoveredDeficit.amountMinor).toBe(0);
+      )
+    ).toEqual({ amountMinor: 4n, decimals: 0, unit: "piece" });
+    expect(adjusted.uncoveredDeficit).toEqual({ amountMinor: 0n, decimals: 0, unit: "piece" });
   });
   it("rejects storage mutation re-entry from an async failpoint instead of deadlocking", async () => {
     let storage: InventoryDurableStorage | undefined;
@@ -725,7 +732,7 @@ describe("package and serial reservation granularity", () => {
     })).toEqual([]);
   });
 
-  it("lets only one competing claim own one package and blocks unpacking its exact allocation", async () => {
+  it("rejects a competing package claim and retains the exact hold after unpacking", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
       operationId: "receive-competing-box",
@@ -760,12 +767,23 @@ describe("package and serial reservation granularity", () => {
       occurredAtEpochMs: time2,
       allocations: [{ position: position.key, quantity: parseQuantity("20", "piece") }],
     });
-    await expect(inventory.stock.unpack({
+    const hold = (await inventory.read.reservation("first-box-claim"))?.allocations;
+    expect(hold).toEqual([{ position: position.key, quantity: parseQuantity("20", "piece") }]);
+    await inventory.stock.unpack({
       operationId: "unpack-allocated-box",
       occurredAtEpochMs: time2,
       from: position.key,
       packageCount: 1,
-    })).rejects.toThrow("cannot all be fulfilled");
+    });
+    const unpacked = (await inventory.read.positions({ itemId: "item-a" }))
+      .find(({ key }) => key.packagingRevisionId === undefined);
+    const { packagingRevisionId: _packaging, ...looseKey } = position.key;
+    expect(unpacked?.key).toEqual(looseKey);
+    expect(unpacked?.measurements.primary.quantity).toEqual(parseQuantity("20", "piece"));
+    expect((await inventory.read.reservationFeasibility(time2)).groups[0]).toMatchObject({
+      reservationIds: ["first-box-claim"], shortage: parseQuantity("20", "piece"),
+    });
+    expect((await inventory.read.reservation("first-box-claim"))?.allocations).toEqual(hold);
   });
 
   it("defines one serial identity as exactly one primary resource", async () => {

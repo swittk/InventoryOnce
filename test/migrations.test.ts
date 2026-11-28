@@ -168,6 +168,36 @@ function createLegacyStockQuery(): {
 }
 
 describe("typed migration query/plugin, dry-run, apply, and compatibility reuse", () => {
+  it("retains a fixed-size commitment across opening-set sizes and binds source identity", () => {
+    const catalog = createTabletCatalog();
+    /** Compile one opening source with a change confined to the first source row identity. */
+    const compile = (size: number, firstSourceId: string) => defineInventoryMigration({
+      catalog,
+      declaration: {
+        migrationId: "opening-binding",
+        sourceSystem: "legacy-stock",
+        cutoverAtEpochMs: time0,
+        openingStock: Array.from({ length: size }, (_, index) => ({
+          openingId: `open-${index}`,
+          source: { sourceType: "stock", sourceId: index === 0 ? firstSourceId : `source-${index}` },
+          position: { itemId: "item-a", placementNodeId: `aisle-${index}` },
+          amount: stockAmount("1", "piece"),
+        })),
+      },
+    });
+    const small = compile(1, "source-0");
+    const large = compile(160, "source-0");
+    const changedSource = compile(160, "different-source-0");
+    expect(small.events).toHaveLength(1);
+    expect(large.events).toHaveLength(160);
+    expect(changedSource.status).toBe(InventoryMigrationPlanStatus.Ready);
+    expect(changedSource.events).toHaveLength(160);
+    expect(small.planDigest).toMatch(/^[0-9a-f]{64}$/);
+    expect(large.planDigest).toMatch(/^[0-9a-f]{64}$/);
+    expect(large.planDigest).toBe(compile(160, "source-0").planDigest);
+    expect(large.planDigest).not.toBe(changedSource.planDigest);
+  });
+
   it("lets one source plugin derive both catalogue and opening facts from typed queries", async () => {
     const itemRows: readonly LegacyItemDefinitionRow[] = [
       { id: "legacy-item-a", unit: "piece" },

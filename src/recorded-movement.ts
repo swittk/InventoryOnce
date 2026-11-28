@@ -1,0 +1,178 @@
+import {
+  createInventoryScrapEvent,
+  createInventoryTransferEvent,
+  createInventoryTransferManyEvent,
+  type InventoryCommandHeader,
+  type InventoryScrapLine,
+  type InventoryTransferLine,
+} from "./commands.js";
+import { inventoryMetadataFingerprint } from "./canonical.js";
+import { inventoryReportedTransferReplayMetadataKey } from "./reported-transfer-replay.js";
+import type { InventoryCatalog } from "./catalog.js";
+import {
+  defineInventoryEvent,
+  InventoryEventKind,
+  type InventoryEventDraft,
+  type InventoryPositiveLayerProvenanceTransfer,
+  type InventoryStockEffect,
+  type InventoryUnwitnessedStockMovement,
+} from "./events.js";
+import { negateInventoryMeasurements } from "./measurements.js";
+import {
+  addInventoryMeasurementTotals,
+  materializeInventoryMeasurementTotals,
+  type InventoryMeasurementTotals,
+} from "./measurement-totals.js";
+import { inventoryStockPositionIdentity } from "./model.js";
+
+/** Original posting plus working totals only when additional portions share its identity. */
+interface ReportedPosting {
+  /** First posting, retaining position and optional witnessed metadata. */
+  readonly effect: InventoryStockEffect;
+  /** Wide totals created on the first merge. */
+  combined?: InventoryMeasurementTotals;
+  /** Whole package count when supplied by every merged part. */
+  packageCount: bigint | undefined;
+  /** Whether any of the combined quantity has no witnessed effect metadata. */
+  includesUnwitnessed: boolean;
+}
+
+/** One exact reported portion for which the planner found no witnessed source stock. */
+export interface InventoryUnwitnessedMovementLine extends InventoryScrapLine {
+  /** Direct arrival placement for a transfer, or omission on destruction. */
+  readonly toPlacementNodeId?: string;
+}
+
+/** One physical event with optional witnessed effects and explicitly measured unknown portions. */
+interface CreateInventoryRecordedMovementInput {
+  /** Retained catalogue used by the normal physical event builders. */
+  readonly catalog: InventoryCatalog;
+  /** Original operation and audit facts, frozen for replay. */
+  readonly header: InventoryCommandHeader;
+  /** Ordinary physical command whose actual effects are recorded. */
+  readonly kind: InventoryEventKind.Transfer | InventoryEventKind.Scrap;
+  /** Exact witnessed source event if recorded stock backed part of the command. */
+  readonly witnessed: InventoryEventDraft | undefined;
+  /** Individual batch witnesses whose combined posting may require extra precision. */
+  readonly witnessedTransferLines?: readonly InventoryTransferLine[];
+  /** All reported portions without a witnessed lot, serial or original source age. */
+  readonly unknown: readonly InventoryUnwitnessedMovementLine[];
+}
+
+/** Join witnessed picks and the remaining signed portions in one ordinary transfer or scrap. */
+export function createInventoryRecordedMovement({
+  catalog, header, kind, witnessed, witnessedTransferLines, unknown,
+}: CreateInventoryRecordedMovementInput): InventoryEventDraft {
+  if (kind === InventoryEventKind.Transfer && header.metadata?.[inventoryReportedTransferReplayMetadataKey] !== undefined) {
+    throw new Error(`Inventory metadata key '${inventoryReportedTransferReplayMetadataKey}' is reserved for transfer replay.`);
+  }
+  const effects = new Map<string, ReportedPosting>();
+  let eventId = witnessed?.eventId;
+  const unwitnessedStockMovements: InventoryUnwitnessedStockMovement[] = [];
+  // Individual parts are temporary. Only the final event carries the audit and batch evidence.
+  const partHeader = {
+    operationId: header.operationId,
+    occurredAtEpochMs: header.occurredAtEpochMs,
+    ...(header.reason === undefined ? {} : { reason: header.reason }),
+  };
+  for (const effect of witnessed?.stockEffects ?? []) {
+    addReportedPosting(effects, effect);
+  }
+  /** Deduplicate repeated witnesses while retaining complete route endpoints for FIFO. */
+  const witnessedRoutes = new Map<string, InventoryPositiveLayerProvenanceTransfer>();
+  for (const line of witnessedTransferLines ?? []) {
+    const part = createInventoryTransferManyEvent({ ...partHeader, catalog, lines: [line] });
+    eventId ??= part.eventId;
+    for (const effect of part.stockEffects) {
+      const earlier = effects.get(inventoryStockPositionIdentity(effect.position));
+      if (earlier !== undefined &&
+        inventoryMetadataFingerprint(earlier.effect.metadata) !== inventoryMetadataFingerprint(effect.metadata)) {
+        throw new Error("Transfer lines for the same exact position have conflicting effect metadata.");
+      }
+      addReportedPosting(effects, effect);
+    }
+    for (const route of part.positiveLayerProvenanceTransfers ?? []) {
+      witnessedRoutes.set(JSON.stringify([
+        inventoryStockPositionIdentity(route.from), inventoryStockPositionIdentity(route.to),
+      ]), route);
+    }
+  }
+  for (const line of unknown) {
+    const toPlacementNodeId = line.toPlacementNodeId;
+    const portion = toPlacementNodeId === undefined
+      ? createInventoryScrapEvent({ ...partHeader, ...line, catalog })
+      : createInventoryTransferEvent({ ...partHeader, ...line, catalog, toPlacementNodeId });
+    eventId ??= portion.eventId;
+    let source: InventoryStockEffect | undefined;
+    let destination: InventoryStockEffect | undefined;
+    for (const effect of portion.stockEffects) {
+      if (effect.measurementsDelta.primary.quantity.amountMinor < 0) source = effect;
+      else destination = effect;
+      addReportedPosting(effects, effect, true);
+    }
+    if (source === undefined) throw new Error("Recorded movement lost its signed source.");
+    unwitnessedStockMovements.push({
+      from: source.position,
+      measurements: negateInventoryMeasurements(source.measurementsDelta),
+      ...(destination === undefined ? {} : { to: destination.position }),
+    });
+  }
+  if (eventId === undefined) throw new Error("Recorded movement needs at least one physical portion.");
+  return defineInventoryEvent({
+    catalog,
+    event: {
+      ...header,
+      eventId,
+      kind,
+      stockEffects: Array.from(effects.values(), materializeReportedPosting),
+      positiveLayerProvenanceTransfers: witnessed?.positiveLayerProvenanceTransfers ?? [...witnessedRoutes.values()],
+      traceabilityChanges: [],
+      unwitnessedStockMovements,
+    },
+  });
+}
+
+/** Accumulate same-direction portions without storing an intermediate posting. */
+function addReportedPosting(
+  effects: Map<string, ReportedPosting>, effect: InventoryStockEffect, unwitnessed = false,
+): void {
+  const id = inventoryStockPositionIdentity(effect.position);
+  const current = effects.get(id);
+  const count = effect.evidence?.packageCount;
+  if (current === undefined) {
+    effects.set(id, { effect, packageCount: count === undefined ? undefined : BigInt(count), includesUnwitnessed: unwitnessed });
+    return;
+  }
+  const first = current.effect.measurementsDelta;
+  if ((first.primary.quantity.amountMinor < 0) !== (effect.measurementsDelta.primary.quantity.amountMinor < 0)) {
+    throw new Error("An unwitnessed movement cannot merge opposing changes at one stock position.");
+  }
+  if (current.combined === undefined) {
+    current.combined = new Map();
+    addInventoryMeasurementTotals(current.combined, first);
+  }
+  addInventoryMeasurementTotals(current.combined, effect.measurementsDelta);
+  current.includesUnwitnessed ||= unwitnessed;
+  current.packageCount = current.packageCount === undefined || count === undefined
+    ? undefined
+    : current.packageCount + BigInt(count);
+}
+
+/** Store the final signed sum and metadata that applies to the complete posting. */
+function materializeReportedPosting({ effect, combined, packageCount, includesUnwitnessed }: ReportedPosting): InventoryStockEffect {
+  if (combined === undefined) return effect;
+  const { metadata, ...posting } = effect;
+  const measurementsDelta = materializeInventoryMeasurementTotals(combined, effect.measurementsDelta.primary.axisId);
+  return {
+    ...posting,
+    ...(includesUnwitnessed || metadata === undefined ? {} : { metadata }),
+    measurementsDelta,
+    evidence: {
+      transactedMeasurements: measurementsDelta.primary.quantity.amountMinor < 0 ? negateInventoryMeasurements(measurementsDelta) : measurementsDelta,
+      ...(effect.position.packagingRevisionId === undefined
+        ? {}
+        : { packagingRevisionId: effect.position.packagingRevisionId }),
+      ...(packageCount === undefined ? {} : { packageCount: String(packageCount) }),
+    },
+  };
+}

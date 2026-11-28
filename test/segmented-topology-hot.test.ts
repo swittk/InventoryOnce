@@ -1,8 +1,9 @@
 import { performance } from "node:perf_hooks";
 import { describe, expect, it, vi } from "vitest";
-import { InventoryEventKind, parseQuantity, stockAmount } from "../src/index.js";
+import { InventoryDeficitPolicy, InventoryEventKind, InventoryReservationFeasibilityStatus, parseQuantity, stockAmount } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
 import {
+  clockAt,
   createTestInventory,
   loosePosition,
   time0,
@@ -27,6 +28,44 @@ async function defineStandaloneNode(
 }
 
 describe("adapter-native standalone topology events", () => {
+  it("records a loaded cart move out of a reserved subtree without a world read", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage, undefined, undefined, InventoryDeficitPolicy.Record);
+    for (const nodeId of ["STORE", "ROOM", "CART"]) await defineStandaloneNode(inventory, nodeId);
+    await inventory.placement.move({
+      operationId: "claim-cart-park", occurredAtEpochMs: time0, nodeId: "CART", into: "STORE",
+    });
+    await inventory.stock.receive({
+      operationId: "claim-cart-receive", occurredAtEpochMs: time0,
+      to: loosePosition("CART"), amount: stockAmount("2", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "cart-store-claim", operationId: "claim-cart-reserve",
+      itemRevisionId: "item-a-v2", requested: parseQuantity("2", "piece"),
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["STORE"] },
+      createdAtEpochMs: time1,
+    });
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(
+      new Error("A loaded cart move invoked whole-world fallback."),
+    );
+    try {
+      const moved = await inventory.placement.move({
+        operationId: "claim-cart-move", occurredAtEpochMs: time2,
+        nodeId: "CART", into: "ROOM", expectedParent: "STORE",
+      });
+      expect(moved.event.stockEffects).toEqual([]);
+      expect(storage.readPlacementSegment().parentNodeId("CART")).toBe("ROOM");
+      expect(readWorld).not.toHaveBeenCalled();
+    } finally {
+      readWorld.mockRestore();
+    }
+    const report = await inventory.read.reservationFeasibility(time2);
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups[0]).toMatchObject({
+      reservationIds: ["cart-store-claim"], shortage: parseQuantity("2", "piece"),
+    });
+  });
+
   it("moves and unplaces a standalone node without materializing the canonical world", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
@@ -58,24 +97,27 @@ describe("adapter-native standalone topology events", () => {
       expect(await inventory.read.placementAncestry("TRAY")).toEqual([
         "TRAY", "ROOM",
       ]);
-      const replay = await inventory.placement.move(move);
+      const earlierClock = createTestInventory(storage, undefined, clockAt(time0));
+      const replay = await earlierClock.placement.move(move);
       expect(replay.replayed).toBe(true);
       expect(replay.event).toEqual(first.event);
+      expect(replay.receipt).toEqual(first.receipt);
 
       await expect(
-        inventory.placement.move({
+        earlierClock.placement.move({
           ...move,
           into: "OTHER",
         })
       ).rejects.toThrow("changed intent");
       expect(storage.readPositionSegment().revision()).toBe(beforeRevision + 1);
 
-      const unplaced = await inventory.placement.unplace({
+      const unplace = {
         operationId: "topology-hot-unplace-tray",
         occurredAtEpochMs: time2,
         nodeId: "TRAY",
         expectedParent: "ROOM",
-      });
+      } as const;
+      const unplaced = await inventory.placement.unplace(unplace);
       expect(unplaced.event.kind).toBe(InventoryEventKind.Placement);
       expect(unplaced.event.placementChanges).toEqual([
         { nodeId: "TRAY", fromParentNodeId: "ROOM" },
@@ -83,6 +125,12 @@ describe("adapter-native standalone topology events", () => {
       expect(await inventory.read.placementParent("TRAY")).toBeUndefined();
       expect(await inventory.read.placementChildren("ROOM")).toEqual([]);
       expect(await inventory.read.placementAncestry("TRAY")).toEqual(["TRAY"]);
+      const unplaceReplay = await earlierClock.placement.unplace(unplace);
+      expect(unplaceReplay).toEqual({ ...unplaced, replayed: true });
+      await expect(earlierClock.placement.move({
+        ...move, operationId: "topology-hot-future-move",
+      })).rejects.toThrow("cannot occur after its durable record time");
+      expect(await storage.readOperation("topology-hot-future-move")).toBeUndefined();
       expect(storage.readPositionSegment().revision()).toBe(beforeRevision + 2);
       expect(readWorld).not.toHaveBeenCalled();
     } finally {
@@ -470,7 +518,7 @@ describe("adapter-native standalone topology events", () => {
     }));
   }, 30_000);
 
-  it("preserves canonical claim feasibility when moving a location with reserved stock", async () => {
+  it("moves stock covered by a broad claim and keeps the claim feasible", async () => {
     const storage = createInMemoryInventoryDurableStorage();
     const inventory = createTestInventory(storage);
     await defineStandaloneNode(inventory, "ROOM");
@@ -489,27 +537,28 @@ describe("adapter-native standalone topology events", () => {
       requested: parseQuantity("1", "piece"),
       createdAtEpochMs: time1,
     });
-    const readWorld = vi.spyOn(storage, "readWorld").mockImplementation(async () => {
-      throw new Error("Claim-sensitive topology must use canonical validation.");
-    });
+    const readWorld = vi.spyOn(storage, "readWorld").mockRejectedValue(
+      new Error("A broad claim triggered whole-world validation."),
+    );
     try {
-      await expect(
-        inventory.placement.move({
-          operationId: "topology-hot-reserved-move",
-          occurredAtEpochMs: time2,
-          nodeId: "CART",
-          into: "ROOM",
-        })
-      ).rejects.toThrow("Claim-sensitive topology must use canonical validation.");
+      await inventory.placement.move({
+        operationId: "topology-hot-reserved-move",
+        occurredAtEpochMs: time2,
+        nodeId: "CART",
+        into: "ROOM",
+      });
+      expect(readWorld).not.toHaveBeenCalled();
     } finally {
       readWorld.mockRestore();
     }
-    await inventory.placement.move({
-      operationId: "topology-hot-reserved-move",
-      occurredAtEpochMs: time2,
-      nodeId: "CART",
-      into: "ROOM",
-    });
     expect(await inventory.read.placementParent("CART")).toBe("ROOM");
+    expect(await inventory.read.reservationFeasibility(time2)).toMatchObject({
+      status: InventoryReservationFeasibilityStatus.Feasible,
+      groups: [{
+        reservationIds: ["topology-hot-claim"],
+        requested: parseQuantity("1", "piece"),
+        shortage: parseQuantity("0", "piece"),
+      }],
+    });
   });
 });

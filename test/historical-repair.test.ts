@@ -1,15 +1,22 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  InventoryAllocationMethod,
   InventoryDeficitPolicy,
   InventoryEventKind,
   InventoryWhereaboutsAction,
   inventoryCatalogSnapshot,
   parseQuantity,
   stockAmount,
+  type InventoryOnceHistoricalRepairInput,
 } from "../src/index.js";
-import { createInMemoryInventoryDurableStorage } from "../src/storage-api.js";
+import { createInMemoryInventoryDurableStorage, createInMemoryInventorySegmentedPositionStore } from "../src/storage-api.js";
 import { applyInventoryCommittedEvent, projectInventoryEvents } from "../src/projection.js";
-import { createInventoryPlacementEvent } from "../src/commands.js";
+import {
+  createInventoryIssueEvent,
+  createInventoryPlacementEvent,
+  createInventoryReceiptEvent,
+} from "../src/commands.js";
+import { createInventoryHistoricalRepairEvent } from "../src/historical-repair.js";
 import { commitInventoryEvent } from "../src/events.js";
 import { createInventoryCorrectionEvent } from "../src/corrections.js";
 import { replayInventoryHistoricalScenario } from "../src/historical-replay.js";
@@ -29,6 +36,67 @@ export const FORMAL_IMPLEMENTATION_TRACE_IDS = [
 ] as const;
 
 describe("late historical repair", () => {
+  it("retains a settling transfer when correction omits its last positive source layer", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const lotId = "SETTLING-LOT";
+    const from = loosePosition("settling-transfer-source", { lotId });
+    const to = loosePosition("settling-transfer-destination", { lotId });
+    const amount = stockAmount("2", "piece");
+    const receipt = await inventory.stock.receive({
+      operationId: "settling-transfer-receipt", occurredAtEpochMs: time0, to: from, amount,
+    });
+    await inventory.stock.issue({
+      operationId: "settling-transfer-prior-deficit", occurredAtEpochMs: time0, from: to, amount,
+    });
+    const transfer = await inventory.stock.transfer({
+      operationId: "settling-transfer", occurredAtEpochMs: time1, from,
+      toPlacementNodeId: "settling-transfer-destination", amount: stockAmount("3", "piece"),
+    });
+    expect(transfer.event.positiveLayerProvenanceTransfers).toMatchObject([{ from, to }]);
+    const correction = await inventory.stock.correct({
+      operationId: "omit-settling-transfer-receipt", occurredAtEpochMs: time2,
+      correctsEventId: receipt.event.eventId, reason: "The receipt did not occur.",
+      replaceWith: (plans) => plans.omit(),
+    });
+    expect(correction.event.historicalImpact?.deficits).toMatchObject([{
+      position: from, maximumDeficit: { primary: { quantity: parseQuantity("2", "piece") } },
+    }]);
+    const world = await inventory.read.world();
+    expect(world.projection.events[transfer.event.eventId]).toEqual(transfer.event);
+    expect(await inventory.read.positions({ itemId: from.itemId, lotIds: [lotId] })).toMatchObject([{
+      key: from, measurements: { primary: { quantity: parseQuantity("-2", "piece") } },
+    }]);
+  });
+
+  it("retains a mixed transfer witness while exposing the shortage from an earlier corrected receipt", async () => {
+    const inventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+    const from = loosePosition("historical-transfer-source", { lotId: "TRANSFER-LOT" });
+    const receipt = await inventory.stock.receive({
+      operationId: "historical-transfer-receipt", occurredAtEpochMs: time0, to: from, amount: stockAmount("2", "piece"),
+    });
+    const transfer = await inventory.stock.transfer({
+      operationId: "historical-mixed-transfer", occurredAtEpochMs: time1,
+      from, toPlacementNodeId: "historical-transfer-destination", amount: stockAmount("3", "piece"),
+    });
+    expect(transfer.event.unwitnessedStockMovements).toMatchObject([{
+      measurements: { primary: { quantity: parseQuantity("1", "piece") } },
+    }]);
+    const correction = await inventory.stock.correct({
+      operationId: "historical-transfer-receipt-correction", occurredAtEpochMs: time2,
+      reason: "The receipt was one piece smaller than recorded.", correctsEventId: receipt.event.eventId,
+      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: from, amount: stockAmount("1", "piece") }),
+    });
+    expect(correction.event.historicalImpact?.deficits).toMatchObject([{
+      position: { lotId: from.lotId }, maximumDeficit: { primary: { quantity: parseQuantity("1", "piece") } },
+    }]);
+    const world = await inventory.read.world();
+    expect(world.projection.events[transfer.event.eventId]).toEqual(transfer.event);
+    const destination = await inventory.read.planAllocation({
+      selector: { itemId: from.itemId, lotIds: ["TRANSFER-LOT"], placementNodeIds: ["historical-transfer-destination"] },
+      amount: stockAmount("2", "piece"), method: InventoryAllocationMethod.Fifo, atEpochMs: time2,
+    });
+    expect(destination.lines).toMatchObject([{ layerStartedAtEpochMs: time0, allocatedPrimary: parseQuantity("2", "piece") }]);
+  });
   /** A later redundant move still contributes its retained parent-node definition. */
   it("preserves placement metadata when an earlier correction makes a later move redundant", () => {
     const catalog = createTabletCatalog();
@@ -194,6 +262,7 @@ describe("late historical repair", () => {
       valid: false,
       conflict: { code: "negative-stock" },
     });
+
   });
 
   it("allows a Reject-policy correction that does not change a retained recorded deficit", async () => {
@@ -307,6 +376,18 @@ describe("late historical repair", () => {
       valid: false,
       conflict: { code: "negative-stock" },
     });
+    const before = await strictOnOpen.read.world();
+    const positions = await strictOnOpen.read.positions({ itemId: "item-a", placementNodeIds: ["ongoing-shortage"] });
+    const segment = createInMemoryInventorySegmentedPositionStore({ positions, revision: before.revision });
+    const event = commitInventoryEvent(improvement.event, time3, before.projection.lastRecordSequence + 1);
+    const expected = applyInventoryCommittedEvent({
+      catalog: createTabletCatalog(), state: before.projection, event, deficitPolicy: InventoryDeficitPolicy.Reject,
+    }).state;
+    expect(segment.applyStockEffects({
+      expectedRevision: before.revision, nextRevision: before.revision + 1, event,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    })).toMatchObject({ revision: before.revision + 1 });
+    expect(segment.materialize().positions).toEqual(expected.positions);
   });
 
   it("publishes eligible repair and correction envelopes without the canonical coordinator", async () => {
@@ -419,6 +500,7 @@ describe("late historical repair", () => {
       recordedAtEpochMs: time3,
       expectedWorldRevision: before.revision,
       expectedRecordSequence: before.projection.lastRecordSequence,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
       event: plan.event,
     });
     expect(committed).toBeUndefined();
@@ -489,6 +571,7 @@ describe("late historical repair", () => {
         recordedAtEpochMs: time3,
         expectedWorldRevision: beforeWorld.revision,
         expectedRecordSequence: beforeWorld.projection.lastRecordSequence,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
         event: invalidEvent,
       })
     ).rejects.toThrow("omits unknown assertion");
@@ -615,7 +698,7 @@ describe("late historical repair", () => {
     expect((await inventory.read.events()).events).toEqual([]);
   });
 
-  it("falls back to the protected coordinator for same-item claims and counts", async () => {
+  it("publishes a correction with same-item claims and preserves the open-count path", async () => {
     {
       const storage = createInMemoryInventoryDurableStorage();
       const inventory = createTestInventory(storage);
@@ -647,7 +730,8 @@ describe("late historical repair", () => {
               amount: stockAmount("1", "piece"),
             }),
         });
-        expect(begin).toHaveBeenCalled();
+        expect(begin).not.toHaveBeenCalled();
+        expect((await inventory.read.reservationFeasibility()).groups[0]?.shortage).toEqual(parseQuantity("1", "piece"));
       } finally {
         begin.mockRestore();
       }
@@ -1429,6 +1513,46 @@ describe("late historical repair", () => {
     });
   });
 
+  it.each([
+    { canonical: false, relayed: false }, { canonical: true, relayed: false },
+    { canonical: false, relayed: true }, { canonical: true, relayed: true },
+  ])("uses backdated receipts before an unanchored issue (canonical: $canonical, relayed: $relayed)", async ({ canonical, relayed }) => {
+    const storage = canonical
+      ? createInMemoryInventoryDurableStorage({ failpoint: () => undefined })
+      : createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const position = loosePosition("backdated-bin", { lotId: "BACKDATED" });
+    const one = stockAmount("1", "piece");
+    await inventory.stock.receive({ operationId: "later-receipt", occurredAtEpochMs: time2, to: position, amount: one });
+    const source = relayed ? loosePosition("backdated-source", { lotId: "BACKDATED" }) : position;
+    if (relayed) {
+      await inventory.stock.receive({ operationId: "later-source-receipt", occurredAtEpochMs: time2, to: source, amount: one });
+      await inventory.stock.transfer({
+        operationId: "backdated-transfer", occurredAtEpochMs: time0 + 1,
+        from: source, toPlacementNodeId: "backdated-bin", amount: one,
+      });
+    }
+    await inventory.stock.receive({ operationId: "earlier-receipt", occurredAtEpochMs: time0, to: source, amount: one });
+    const repair: InventoryOnceHistoricalRepairInput = {
+      operationId: "backdated-issue",
+      occurredAtEpochMs: time3,
+      reason: "The earlier receipt funded the missed issue.",
+      assertions: [{
+        assertionId: "missed-issue",
+        /** Record a physical issue without imposing an explicit anchor. */
+        assert: (plans) => plans.issue({ occurredAtEpochMs: time1, from: position, amount: one }),
+      }],
+    };
+    const planned = await inventory.stock.planHistorical(repair);
+    expect(planned.valid).toBe(true);
+    const recorded = await inventory.stock.recordHistorical(repair);
+    expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+    expect(await inventory.read.planAllocation({
+      selector: { itemId: position.itemId, placementNodeIds: ["backdated-bin"] },
+      amount: one, method: InventoryAllocationMethod.Fifo, atEpochMs: time3,
+    })).toMatchObject({ lines: [{ layerStartedAtEpochMs: time2 }] });
+  });
+
   it("rejects generic correction of a historical repair envelope", async () => {
     const inventory = createTestInventory();
     await inventory.stock.receive({
@@ -1606,4 +1730,2235 @@ describe("late historical repair", () => {
     });
   });
 
+  it.each([false, true])(
+    "brings forward explicitly anchored dependents of a backdated predecessor ahead of an unanchored issue (sameTime: %s)",
+    async (sameTime) => {
+      const inventory = createTestInventory();
+      const position = loosePosition("anchored-bin", { lotId: "ANCHORED" });
+      const one = stockAmount("1", "piece");
+      const two = stockAmount("2", "piece");
+      const t100 = time0;
+      const t110 = sameTime ? time0 : time0 + 10;
+      const t150 = time1;
+      const t200 = time2;
+
+      await inventory.stock.receive({
+        operationId: "later-receipt-t200",
+        occurredAtEpochMs: t200,
+        to: position,
+        amount: one,
+      });
+      const backdated = await inventory.stock.receive({
+        operationId: "backdated-receipt-t100",
+        occurredAtEpochMs: t100,
+        to: position,
+        amount: one,
+      });
+
+      const repair: InventoryOnceHistoricalRepairInput = {
+        operationId: `anchored-predecessor-repair-${String(sameTime)}`,
+        occurredAtEpochMs: time3,
+        reason: "Both early receipts funded the missed historical issue.",
+        assertions: [
+          {
+            assertionId: "anchored-receipt-t110",
+            afterEventId: backdated.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: t110,
+                to: position,
+                amount: one,
+              }),
+          },
+          {
+            assertionId: "unanchored-issue-t150",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: t150,
+                from: position,
+                amount: two,
+              }),
+          },
+        ],
+      };
+
+      const planned = await inventory.stock.planHistorical(repair);
+      expect(planned.valid).toBe(true);
+      if (!planned.valid) throw new Error(planned.conflict.message);
+      expect(planned.impact.deficits).toEqual([]);
+
+      const recorded = await inventory.stock.recordHistorical(repair);
+      expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+      const positions = await inventory.read.positions({
+        itemId: position.itemId,
+        placementNodeIds: ["anchored-bin"],
+      });
+      expect(positions[0]?.measurements.primary.quantity).toEqual(
+        parseQuantity("1", "piece")
+      );
+      expect(
+        await inventory.read.planAllocation({
+          selector: { itemId: position.itemId, placementNodeIds: ["anchored-bin"] },
+          amount: one,
+          method: InventoryAllocationMethod.Fifo,
+          atEpochMs: time3,
+        })
+      ).toMatchObject({ lines: [{ layerStartedAtEpochMs: t200 }] });
+    }
+  );
+
+  it("does not let an anchored assertion seed predecessor closure without its anchor or move unrelated anchored assertions", () => {
+    const catalog = createTabletCatalog();
+    const binA = loosePosition("bin-a");
+    const binB = loosePosition("bin-b");
+    const binC = loosePosition("bin-c");
+    const one = stockAmount("1", "piece");
+
+    const seedA = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-a-t200",
+        occurredAtEpochMs: time2,
+        to: binA,
+        amount: one,
+      }),
+      time2,
+      1
+    );
+    const seedB200 = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-b-t200",
+        occurredAtEpochMs: time2,
+        to: binB,
+        amount: one,
+      }),
+      time2,
+      2
+    );
+    const anchorB = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-b-t100",
+        occurredAtEpochMs: time0,
+        to: binB,
+        amount: one,
+      }),
+      time2,
+      3
+    );
+    const anchoredReceiptA = createInventoryReceiptEvent({
+      catalog,
+      operationId: "anchored-receipt-a",
+      occurredAtEpochMs: time0 + 10,
+      to: binA,
+      amount: one,
+    });
+    const anchoredReceiptC = createInventoryReceiptEvent({
+      catalog,
+      operationId: "anchored-receipt-c",
+      occurredAtEpochMs: time0 + 10,
+      to: binC,
+      amount: one,
+    });
+    const preRepairProjection = projectInventoryEvents({
+      catalog,
+      events: [seedA, seedB200, anchorB],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const repairEvent = commitInventoryEvent(
+      createInventoryHistoricalRepairEvent(
+        {
+          catalog,
+          projection: preRepairProjection,
+          operationId: "anchored-a-on-b",
+          occurredAtEpochMs: time3,
+          recordedAtEpochMs: time3,
+          reason: "Record anchored receipts before later audit.",
+          assertions: [
+            {
+              assertionId: "anchored-receipt-a",
+              afterEventId: anchorB.eventId,
+              event: anchoredReceiptA,
+            },
+            {
+              assertionId: "anchored-receipt-c",
+              afterEventId: anchorB.eventId,
+              event: anchoredReceiptC,
+            },
+          ],
+        },
+        InventoryDeficitPolicy.Reject
+      ).event,
+      time3,
+      4
+    );
+    const projection = projectInventoryEvents({
+      catalog,
+      events: [seedA, seedB200, anchorB, repairEvent],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+
+    // Anchor anchorB occurred at time0 (<= time1), so an unanchored issue on bin-a pulls both
+    // anchorB and anchored-receipt-a together while keeping unrelated anchored-receipt-c after seed-b-t200.
+    const binAReplay = replayInventoryHistoricalScenario({
+      catalog,
+      projection,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+      assertions: [
+        {
+          assertion: {
+            assertionId: "unanchored-issue-bin-a",
+            event: createInventoryIssueEvent({
+              catalog,
+              operationId: "issue-bin-a-t150",
+              occurredAtEpochMs: time1,
+              from: binA,
+              amount: one,
+            }),
+          },
+          recordedAtEpochMs: time3,
+          durableOrder: projection.lastRecordSequence + 1,
+          assertionOrder: 0,
+        },
+      ],
+    });
+    expect(binAReplay.impact.deficits).toEqual([]);
+    const binASequenceByOp = new Map(
+      binAReplay.effectiveEvents.map((event) => [event.operationId, event.recordSequence])
+    );
+    const binASequenceById = new Map(
+      binAReplay.effectiveEvents.map((event) => [event.eventId, event.recordSequence])
+    );
+    expect(binASequenceByOp.get("seed-b-t100")!).toBeLessThan(
+      binASequenceById.get(anchoredReceiptA.eventId)!
+    );
+    expect(binASequenceById.get(anchoredReceiptA.eventId)!).toBeLessThan(
+      binASequenceByOp.get("issue-bin-a-t150")!
+    );
+    expect(binASequenceByOp.get("issue-bin-a-t150")!).toBeLessThan(
+      binASequenceByOp.get("seed-a-t200")!
+    );
+    expect(binASequenceByOp.get("seed-b-t200")!).toBeLessThan(
+      binASequenceById.get(anchoredReceiptC.eventId)!
+    );
+
+    // An anchored assertion whose anchor occurred AFTER time1 (time2) cannot move ahead of time1.
+    const binD = loosePosition("bin-d");
+    const seedD200 = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-d-t200",
+        occurredAtEpochMs: time2,
+        to: binD,
+        amount: one,
+      }),
+      time2,
+      2
+    );
+    const seedB200Late = commitInventoryEvent(seedB200, time2, 3);
+    const anchorBLate = commitInventoryEvent(anchorB, time2, 4);
+    const lateProjection = projectInventoryEvents({
+      catalog,
+      events: [seedA, seedD200, seedB200Late, anchorBLate],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const lateRepairEvent = commitInventoryEvent(
+      createInventoryHistoricalRepairEvent(
+        {
+          catalog,
+          projection: lateProjection,
+          operationId: "anchored-a-on-late-b",
+          occurredAtEpochMs: time3,
+          recordedAtEpochMs: time3,
+          reason: "Anchor after seed-b-t200 so pre-time2 replay cannot cross it.",
+          assertions: [
+            {
+              assertionId: "anchored-receipt-d-late",
+              afterEventId: seedB200Late.eventId,
+              event: createInventoryReceiptEvent({
+                catalog,
+                operationId: "anchored-receipt-d",
+                occurredAtEpochMs: time0 + 10,
+                to: binD,
+                amount: one,
+              }),
+            },
+          ],
+        },
+        InventoryDeficitPolicy.Reject
+      ).event,
+      time3,
+      5
+    );
+    expect(() =>
+      replayInventoryHistoricalScenario({
+        catalog,
+        projection: projectInventoryEvents({
+          catalog,
+          events: [seedA, seedD200, seedB200Late, anchorBLate, lateRepairEvent],
+          deficitPolicy: InventoryDeficitPolicy.Reject,
+        }),
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+        assertions: [
+          {
+            assertion: {
+              assertionId: "unanchored-issue-bin-d",
+              event: createInventoryIssueEvent({
+                catalog,
+                operationId: "issue-bin-d-t150",
+                occurredAtEpochMs: time1,
+                from: binD,
+                amount: one,
+              }),
+            },
+            recordedAtEpochMs: time3,
+            durableOrder: 6,
+            assertionOrder: 0,
+          },
+        ],
+      })
+    ).toThrow(/negative stock/iu);
+
+    // When anchorB IS reached by bin-b, anchored-receipt-c on bin-c stays after seed-b-t200 while anchorB moves.
+    const replay = replayInventoryHistoricalScenario({
+      catalog,
+      projection,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+      assertions: [
+        {
+          assertion: {
+            assertionId: "unanchored-issue-bin-b",
+            event: createInventoryIssueEvent({
+              catalog,
+              operationId: "issue-bin-b-t150",
+              occurredAtEpochMs: time1,
+              from: binB,
+              amount: one,
+            }),
+          },
+          recordedAtEpochMs: time3,
+          durableOrder: projection.lastRecordSequence + 1,
+          assertionOrder: 0,
+        },
+      ],
+    });
+    expect(replay.impact.deficits).toEqual([]);
+    const sequenceByOperationId = new Map(
+      replay.effectiveEvents.map((event) => [event.operationId, event.recordSequence])
+    );
+    const sequenceByEventId = new Map(
+      replay.effectiveEvents.map((event) => [event.eventId, event.recordSequence])
+    );
+    expect(sequenceByOperationId.get("seed-b-t100")!).toBeLessThan(
+      sequenceByOperationId.get("seed-b-t200")!
+    );
+    expect(sequenceByOperationId.get("seed-b-t200")!).toBeLessThan(
+      sequenceByEventId.get(anchoredReceiptC.eventId)!
+    );
+  });
+
+  it("replays a stock correction before an unanchored serial transfer that uses its stock", async () => {
+    const inventory = createTestInventory();
+    const serialId = "corrected-source-serial";
+    const source = loosePosition("B", { serialId });
+    const destination = loosePosition("C", { serialId });
+    const amount = stockAmount("1", "piece");
+    const receipt = await inventory.stock.receive({
+      operationId: "receive-serial-a", occurredAtEpochMs: time0,
+      to: loosePosition("A", { serialId }), amount,
+    });
+    await inventory.stock.correct({
+      operationId: "correct-serial-b", occurredAtEpochMs: time1, correctsEventId: receipt.event.eventId,
+      reason: "The serial was originally received at B.",
+      replaceWith: (plans) => plans.receive({ occurredAtEpochMs: time0, to: source, amount }),
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "repair-serial-c", occurredAtEpochMs: time2, reason: "The serial moved to C.",
+      assertions: [{
+        assertionId: "move-serial",
+        assert: (plans) => plans.transfer({ occurredAtEpochMs: time2, from: source, toPlacementNodeId: "C", amount }),
+      }],
+    });
+    await inventory.counts.start({
+      countId: "serial-count", operationId: "serial-count-start", startedAtEpochMs: time2,
+      selector: { itemId: "item-a", placementNodeIds: ["C"] },
+    });
+    await inventory.counts.observe({
+      countId: "serial-count", operationId: "serial-count-observe", observedAtEpochMs: time2,
+      observations: [{
+        position: { ...destination, itemRevisionId: "item-a-v2" },
+        measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    const result = await inventory.counts.reconcile({
+      countId: "serial-count", operationId: "serial-count-reconcile", completedAtEpochMs: time3,
+    });
+    expect(result.event).toBeUndefined();
+  });
+
+  it.each(["A", "B"])("keeps the superseded correction to %s when moving placement predecessors", async (firstParent) => {
+    const inventory = createTestInventory();
+    const origin = await inventory.placement.move({
+      operationId: "supersession-root", occurredAtEpochMs: time0 + 10, nodeId: "X", into: "A",
+    });
+    await inventory.stock.receive({
+      operationId: "supersession-observed-stock", occurredAtEpochMs: time0 + 10,
+      to: loosePosition("X"), amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "supersession-later-stock", occurredAtEpochMs: time0 + 40,
+      to: loosePosition("X", { lotId: "late" }), amount: stockAmount("1", "piece"),
+    });
+    for (const [time, parent] of [[25, firstParent], [20, "C"]] as const) {
+      await inventory.stock.correct({
+        operationId: "supersession-correct-" + parent, occurredAtEpochMs: time0 + time,
+        correctsEventId: origin.event.eventId, reason: "Correct the recorded parent.",
+        replaceWith: (plans) => plans.placement({ occurredAtEpochMs: time0 + 10, nodeId: "X", toParentNodeId: parent }),
+      });
+    }
+    await inventory.stock.recordHistorical({
+      operationId: "supersession-repair", occurredAtEpochMs: time0 + 30, reason: "X moved under D.",
+      assertions: [{
+        assertionId: "move-x-to-d",
+        assert: (plans) => plans.placement({ occurredAtEpochMs: time0 + 30, nodeId: "X", toParentNodeId: "D" }),
+      }],
+    });
+    await inventory.counts.start({
+      countId: "supersession-count", operationId: "supersession-count-start", startedAtEpochMs: time0 + 35,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["D"] },
+    });
+    await inventory.counts.observe({
+      countId: "supersession-count", operationId: "supersession-count-observe", observedAtEpochMs: time0 + 35,
+      observations: [{
+        position: { ...loosePosition("X"), itemRevisionId: "item-a-v2" },
+        measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    const result = await inventory.counts.reconcile({
+      countId: "supersession-count", operationId: "supersession-count-reconcile", completedAtEpochMs: time0 + 36,
+    });
+    expect(result.event).toBeUndefined();
+  });
+
+  it.each([false, true])("keeps a placement correction ahead of a later count-cut repair (anchored=%s)", async (anchored) => {
+    const inventory = createTestInventory();
+    const initialMove = await inventory.placement.move({
+      operationId: "correction-order-move-a",
+      occurredAtEpochMs: time0 + 10,
+      nodeId: "X",
+      into: "A",
+    });
+    await inventory.stock.receive({
+      operationId: "correction-order-stock",
+      occurredAtEpochMs: time0 + 10,
+      to: loosePosition("X"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.correct({
+      operationId: "correction-order-correct-b",
+      occurredAtEpochMs: time0 + 20,
+      correctsEventId: initialMove.event.eventId,
+      reason: "X was placed under B first.",
+      replaceWith: (plans) =>
+        plans.placement({
+          occurredAtEpochMs: time0 + 20,
+          nodeId: "X",
+          toParentNodeId: "B",
+        }),
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "correction-order-repair-c",
+      occurredAtEpochMs: time0 + 25,
+      reason: "X moved under C later.",
+      assertions: [
+        {
+          assertionId: "move-x-c",
+          ...(anchored ? { afterEventId: initialMove.event.eventId } : {}),
+          assert: (plans) =>
+            plans.placement({
+              occurredAtEpochMs: time0 + 25,
+              nodeId: "X",
+              toParentNodeId: "C",
+            }),
+        },
+      ],
+    });
+    expect(await inventory.read.placementAncestry("X")).toEqual(["X", "C"]);
+    await inventory.counts.start({
+      countId: "correction-order-count",
+      operationId: "correction-order-count-start",
+      startedAtEpochMs: time0 + 30,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["C"] },
+    });
+    await inventory.counts.observe({
+      countId: "correction-order-count",
+      operationId: "correction-order-count-observe",
+      observedAtEpochMs: time0 + 30,
+      observations: [
+        {
+          position: { ...loosePosition("X"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "correction-order-count",
+      operationId: "correction-order-count-reconcile",
+      completedAtEpochMs: time0 + 31,
+    });
+    expect(reconciled.event).toBeUndefined();
+    expect(await inventory.read.placementAncestry("X")).toEqual(["X", "C"]);
+  });
+
+  it.each([false, true])(
+    "loads and orders exact anchor prerequisites across retained and repaired effective events (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical full-history loading and canonical coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const binA = loosePosition("anchor-bin-a");
+      const binB = loosePosition("anchor-bin-b");
+      const one = stockAmount("1", "piece");
+      const two = stockAmount("2", "piece");
+
+      await inventory.stock.receive({
+        operationId: "anchor-parity-seed-b",
+        occurredAtEpochMs: time2,
+        to: binB,
+        amount: one,
+      });
+      const anchorB = await inventory.stock.receive({
+        operationId: "anchor-parity-early-b",
+        occurredAtEpochMs: time0,
+        to: binB,
+        amount: one,
+      });
+      const firstRepair = await inventory.stock.recordHistorical({
+        operationId: "anchor-parity-repair-1",
+        occurredAtEpochMs: time3,
+        reason: "Anchor receipt on bin A directly onto earlier retained bin B event.",
+        assertions: [
+          {
+            assertionId: "anchored-receipt-a1",
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 10,
+                to: binA,
+                amount: one,
+              }),
+          },
+        ],
+      });
+      const effectiveA1Id = firstRepair.event.historicalRepair?.assertions[0]?.event.eventId;
+      if (effectiveA1Id === undefined) {
+        throw new Error("Expected effective eventId from first anchored repair.");
+      }
+
+      await inventory.stock.recordHistorical({
+        operationId: "anchor-parity-repair-2",
+        occurredAtEpochMs: time3,
+        reason: "Chain second anchored receipt onto the effective event emitted by the first repair.",
+        assertions: [
+          {
+            assertionId: "anchored-receipt-a2",
+            afterEventId: effectiveA1Id,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 20,
+                to: binA,
+                amount: one,
+              }),
+          },
+        ],
+      });
+
+      const issueBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "anchor-parity-issue-a",
+        occurredAtEpochMs: time3,
+        reason: "Consume both earlier anchored receipts on bin A before later retained activity.",
+        assertions: [
+          {
+            assertionId: "unanchored-issue-a",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time1,
+                from: binA,
+                amount: two,
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(issueBundle);
+      expect(planned.valid).toBe(true);
+      if (!planned.valid) throw new Error(planned.conflict.message);
+      expect(planned.impact.deficits).toEqual([]);
+
+      const recorded = await inventory.stock.recordHistorical(issueBundle);
+      expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+      expect(await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["anchor-bin-a"] })).toEqual([]);
+      const remainingB = await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["anchor-bin-b"] });
+      expect(remainingB[0]?.measurements.primary.quantity).toEqual(parseQuantity("2", "piece"));
+    },
+  );
+
+  it("avoids pulling unrelated sibling envelopes anchored to the same anchor on indexed historical plan/load", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const one = stockAmount("1", "piece");
+    const anchorB = await inventory.stock.receive({
+      operationId: "fanout-anchor-b",
+      occurredAtEpochMs: time0,
+      to: loosePosition("fanout-bin-b"),
+      amount: one,
+    });
+    const receiptA = await inventory.stock.receive({
+      operationId: "fanout-receipt-a",
+      occurredAtEpochMs: time0 + 1,
+      to: loosePosition("fanout-bin-a"),
+      amount: one,
+    });
+    const lateReceiptA = await inventory.stock.receive({
+      operationId: "fanout-late-a",
+      occurredAtEpochMs: time2,
+      to: loosePosition("fanout-bin-a"),
+      amount: one,
+    });
+    for (let index = 0; index < 24; index += 1) {
+      await inventory.stock.recordHistorical({
+        operationId: `fanout-unrelated-${index}`,
+        occurredAtEpochMs: time3,
+        reason: "Unrelated historical receipt sharing only the same anchor.",
+        assertions: [
+          {
+            assertionId: `fanout-unrelated-assertion-${index}`,
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 10 + index,
+                to: loosePosition(`fanout-other-${index}`),
+                amount: one,
+              }),
+          },
+        ],
+      });
+    }
+    const queriedKeys: string[][] = [];
+    const originalQuery = storage.queryInventoryEventsByResourceKeys.bind(storage);
+    const returnedEventIds = new Set<string>();
+    const querySpy = vi
+      .spyOn(storage, "queryInventoryEventsByResourceKeys")
+      .mockImplementation(async (query) => {
+        queriedKeys.push([...query.resourceKeys]);
+        const page = await originalQuery(query);
+        for (const event of page.events) returnedEventIds.add(event.eventId);
+        return page;
+      });
+    try {
+      const planned = await inventory.stock.planHistorical({
+        operationId: "fanout-plan-check",
+        occurredAtEpochMs: time3,
+        reason: "Plan narrow historical repair on bin A + anchor on bin B.",
+        assertions: [
+          {
+            assertionId: "fanout-anchored-a2",
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time1 - 10,
+                to: loosePosition("fanout-bin-a"),
+                amount: one,
+              }),
+          },
+          {
+            assertionId: "fanout-issue-a",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time1,
+                from: loosePosition("fanout-bin-a"),
+                amount: stockAmount("2", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(planned.valid).toBe(true);
+      expect(returnedEventIds).toEqual(
+        new Set([anchorB.event.eventId, receiptA.event.eventId, lateReceiptA.event.eventId])
+      );
+      expect(queriedKeys.flat()).not.toContain("dep:anchored-to:" + anchorB.event.eventId);
+    } finally {
+      querySpy.mockRestore();
+    }
+  });
+
+  it.each([false, true])(
+    "rejects omitting an embedded historical assertion whose effective event is still an active anchor (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical full-history loading and publication paths. */
+            get(target, property) {
+              if (property === "queryInventoryEventsByResourceKeys") return undefined;
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const one = stockAmount("1", "piece");
+      const firstRepair = await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-repair-1",
+        occurredAtEpochMs: time3,
+        reason: "Add embedded receipt B.",
+        assertions: [
+          {
+            assertionId: "embedded-b",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: loosePosition("omit-bin-b"),
+                amount: one,
+              }),
+          },
+        ],
+      });
+      const effectiveBId = firstRepair.event.historicalRepair?.assertions[0]?.event.eventId;
+      if (effectiveBId === undefined) throw new Error("Expected effective eventId for embedded-b.");
+      await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-repair-2",
+        occurredAtEpochMs: time3,
+        reason: "Anchor receipt A onto embedded B's effective eventId.",
+        assertions: [
+          {
+            assertionId: "anchored-a-on-b",
+            afterEventId: effectiveBId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 10,
+                to: loosePosition("omit-bin-a"),
+                amount: one,
+              }),
+          },
+        ],
+      });
+
+      const omitBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "omit-anchor-repair-3",
+        occurredAtEpochMs: time3,
+        reason: "Attempt to omit embedded-b while anchored-a-on-b still references it.",
+        assertions: [],
+        omittedAssertionIds: ["embedded-b"],
+      };
+      const planned = await inventory.stock.planHistorical(omitBundle);
+      expect(planned.valid).toBe(false);
+      if (!planned.valid) {
+        expect(planned.conflict.code).toBe("missing-anchor");
+      }
+      await expect(inventory.stock.recordHistorical(omitBundle)).rejects.toThrow(/missing afterEventId/i);
+
+      await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-cleanup-a",
+        occurredAtEpochMs: time3,
+        reason: "Remove dependent assertion first, then omitting embedded-b succeeds.",
+        assertions: [],
+        omittedAssertionIds: ["anchored-a-on-b"],
+      });
+      const cleanOmit = await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-repair-3-after-cleanup",
+        occurredAtEpochMs: time3,
+        reason: "Omit unused embedded-b cleanly.",
+        assertions: [],
+        omittedAssertionIds: ["embedded-b"],
+      });
+      expect(cleanOmit.event.historicalRepair?.omittedAssertionIds).toEqual(["embedded-b"]);
+    },
+  );
+
+  it("isolates embedded historical count replay identities from ordinary operationIds", async () => {
+    const inventory = createTestInventory();
+    const bin = loosePosition("namespace-bin");
+    const repaired = await inventory.stock.recordHistorical({
+      operationId: "repair",
+      occurredAtEpochMs: time1,
+      reason: "Embedded historical receipt with generated child operationId.",
+      assertions: [
+        {
+          assertionId: "receipt",
+          assert: (plans) =>
+            plans.receive({
+              occurredAtEpochMs: time0,
+              to: bin,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    const generatedChildOperationId =
+      repaired.event.historicalRepair?.assertions[0]?.event.operationId;
+    expect(generatedChildOperationId).toBeDefined();
+    await inventory.stock.receive({
+      operationId: generatedChildOperationId!,
+      occurredAtEpochMs: time2,
+      to: bin,
+      amount: stockAmount("2", "piece"),
+    });
+    const reconciled = await inventory.counts.replaceAbsolute({
+      countId: "namespace-count",
+      operationId: "namespace-count-op",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["namespace-bin"] },
+      observedMeasurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("3", "piece") },
+        independent: [],
+      },
+      occurredAtEpochMs: time3,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
+
+  it.each([false, true])("orders an omitting serial correction before a historical receipt (anchored=%s)", async (anchored) => {
+    const inventory = createTestInventory();
+    const pos = loosePosition("serial-omit-bin", { serialId: "SN-REUSE" });
+    const first = await inventory.stock.receive({
+      operationId: "serial-omit-r1",
+      occurredAtEpochMs: time0,
+      to: pos,
+      amount: stockAmount("1", "piece"),
+    });
+    const anchor = await inventory.stock.receive({
+      operationId: "serial-omit-anchor",
+      occurredAtEpochMs: time2,
+      to: loosePosition("unrelated-anchor-bin"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.correct({
+      operationId: "serial-omit-c1",
+      occurredAtEpochMs: time1,
+      correctsEventId: first.event.eventId,
+      reason: "Original serial receipt never arrived.",
+      replaceWith: (plans) => plans.omit(),
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "serial-omit-repair",
+      occurredAtEpochMs: time2,
+      reason: "Serial actually arrived at t2.",
+      assertions: [
+        {
+          assertionId: "serial-arrived-t2",
+          ...(anchored ? { afterEventId: anchor.event.eventId } : {}),
+          assert: (plans) =>
+            plans.receive({
+              occurredAtEpochMs: time2,
+              to: pos,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    await inventory.counts.start({
+      countId: "serial-omit-count",
+      operationId: "serial-omit-start",
+      startedAtEpochMs: time2,
+      selector: { itemId: "item-a", placementNodeIds: ["serial-omit-bin"] },
+    });
+    await inventory.counts.observe({
+      countId: "serial-omit-count",
+      operationId: "serial-omit-observe",
+      observedAtEpochMs: time2,
+      observations: [
+        {
+          position: { ...pos, itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "serial-omit-count",
+      operationId: "serial-omit-reconcile",
+      completedAtEpochMs: time2 + 1,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
+
+  it.each([false, true])(
+    "plans and records embedded historical repairs even after an ordinary operation reuses the child operationId (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const bin = loosePosition("reverse-namespace-bin");
+      const bundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "repair",
+        occurredAtEpochMs: time2,
+        reason: "Earlier one-piece receipt whose child operationId matches the later ordinary receipt.",
+        assertions: [
+          {
+            assertionId: "receipt",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: bin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const preview = await inventory.stock.planHistorical(bundle);
+      expect(preview.valid).toBe(true);
+      if (!preview.valid) throw new Error("Expected valid initial repair preview.");
+      const generatedChildOperationId =
+        preview.event.historicalRepair?.assertions[0]?.event.operationId;
+      expect(generatedChildOperationId).toBeDefined();
+      await inventory.stock.receive({
+        operationId: generatedChildOperationId!,
+        occurredAtEpochMs: time1,
+        to: bin,
+        amount: stockAmount("2", "piece"),
+      });
+      const planned = await inventory.stock.planHistorical(bundle);
+      expect(planned.valid).toBe(true);
+      await inventory.stock.recordHistorical(bundle);
+      const live = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["reverse-namespace-bin"],
+      });
+      expect(live).toHaveLength(1);
+      expect(live[0]?.measurements.primary.quantity).toEqual(parseQuantity("3", "piece"));
+    },
+  );
+
+  it.each([false, true])(
+    "disambiguates explicit afterEventId anchors between ordinary and embedded providers with identical legacy suffixes (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const binA = loosePosition("anchor-ordinary-bin");
+      const binB = loosePosition("anchor-embedded-bin");
+      const embeddedRepair = await inventory.stock.recordHistorical({
+        operationId: "repair",
+        occurredAtEpochMs: time2,
+        reason: "Embedded historical receipt at B.",
+        assertions: [
+          {
+            assertionId: "receipt",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: binB,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const embeddedEventId = embeddedRepair.event.historicalRepair?.assertions[0]?.event.eventId;
+      expect(embeddedEventId).toBeDefined();
+      const ordinaryA = await inventory.stock.receive({
+        operationId: "repair:historical:receipt",
+        occurredAtEpochMs: time2,
+        to: binA,
+        amount: stockAmount("1", "piece"),
+      });
+      expect(ordinaryA.event.eventId).not.toBe(embeddedEventId);
+      const anchoredIssue: InventoryOnceHistoricalRepairInput = {
+        operationId: "issue-after-ordinary-a",
+        occurredAtEpochMs: time2 + 10,
+        reason: "Issue explicitly anchored after the ordinary receipt at A.",
+        assertions: [
+          {
+            assertionId: "issue-a",
+            afterEventId: ordinaryA.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time2 + 5,
+                from: binA,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(anchoredIssue);
+      expect(planned.valid).toBe(true);
+      await inventory.stock.recordHistorical(anchoredIssue);
+      const adversarialSameOp = await inventory.stock.receive({
+        operationId: embeddedRepair.event.historicalRepair!.assertions[0]!.event.operationId,
+        occurredAtEpochMs: time2 + 15,
+        to: binB,
+        amount: stockAmount("2", "piece"),
+      });
+      expect(adversarialSameOp.event.eventId).not.toBe(embeddedEventId);
+      const liveB = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["anchor-embedded-bin"],
+      });
+      expect(liveB[0]?.measurements.primary.quantity).toEqual(parseQuantity("3", "piece"));
+      const liveA = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["anchor-ordinary-bin"],
+      });
+      expect(liveA).toHaveLength(0);
+    },
+  );
+
+  it.each([false, true])(
+    "keeps embedded historical tuples injective and anchors distinct providers despite identical concatenation (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const binB = loosePosition("tuple-b-bin");
+      const binA = loosePosition("tuple-a-bin");
+      const repairB = await inventory.stock.recordHistorical({
+        operationId: "left",
+        occurredAtEpochMs: time1,
+        reason: "First embedded tuple receiving at B.",
+        assertions: [
+          {
+            assertionId: "right:historical:tail",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: binB,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const repairA = await inventory.stock.recordHistorical({
+        operationId: "left:historical:right",
+        occurredAtEpochMs: time2,
+        reason: "Second embedded tuple receiving at A.",
+        assertions: [
+          {
+            assertionId: "tail",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time1 + 1,
+                to: binA,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const eventBId = repairB.event.historicalRepair?.assertions[0]?.event.eventId;
+      const eventAId = repairA.event.historicalRepair?.assertions[0]?.event.eventId;
+      expect(eventAId).toBeDefined();
+      expect(eventBId).toBeDefined();
+      expect(eventAId).not.toBe(eventBId);
+      const anchored = await inventory.stock.recordHistorical({
+        operationId: "consume-tuple-a",
+        occurredAtEpochMs: time3,
+        reason: "Consume A explicitly anchored after tuple A.",
+        assertions: [
+          {
+            assertionId: "consume-a",
+            afterEventId: eventAId!,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time2 + 1,
+                from: binA,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(anchored.event.historicalRepair?.assertions).toHaveLength(1);
+      const liveB = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["tuple-b-bin"],
+      });
+      expect(liveB[0]?.measurements.primary.quantity).toEqual(parseQuantity("1", "piece"));
+      const liveA = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["tuple-a-bin"],
+      });
+      expect(liveA).toHaveLength(0);
+    },
+  );
+
+  it.each([false, true])(
+    "brings earlier serial-removal corrections forward during count replay when a later event stops scan (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const posS = loosePosition("serial-prepass-bin", { serialId: "SN-STOP-SCAN" });
+      const posOther = loosePosition("serial-prepass-bin", { serialId: "SN-LATER-STOP" });
+      const firstReceipt = await inventory.stock.receive({
+        operationId: "serial-prepass-r1",
+        occurredAtEpochMs: time0,
+        to: posS,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "serial-prepass-r2",
+        occurredAtEpochMs: time3,
+        to: posOther,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.correct({
+        operationId: "serial-prepass-omit-r1",
+        occurredAtEpochMs: time1,
+        correctsEventId: firstReceipt.event.eventId,
+        reason: "First serial receipt never happened.",
+        replaceWith: (plans) => plans.omit(),
+      });
+      await inventory.stock.recordHistorical({
+        operationId: "serial-prepass-repair",
+        occurredAtEpochMs: time3,
+        reason: "Serial arrived at intermediate time.",
+        assertions: [
+          {
+            assertionId: "serial-s-arrived",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time2,
+                to: posS,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      await inventory.counts.start({
+        countId: "serial-prepass-count",
+        operationId: "serial-prepass-start",
+        startedAtEpochMs: time2 + 10,
+        selector: { itemId: "item-a", placementNodeIds: ["serial-prepass-bin"] },
+      });
+      await inventory.counts.observe({
+        countId: "serial-prepass-count",
+        operationId: "serial-prepass-observe",
+        observedAtEpochMs: time2 + 10,
+        observations: [
+          {
+            position: { ...posS, itemRevisionId: "item-a-v2" },
+            measurements: {
+              primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+              independent: [],
+            },
+          },
+        ],
+      });
+      const reconciled = await inventory.counts.reconcile({
+        countId: "serial-prepass-count",
+        operationId: "serial-prepass-reconcile",
+        completedAtEpochMs: time2 + 20,
+      });
+      expect(reconciled.event).toBeUndefined();
+    },
+  );
+
+  it.each([false, true])(
+    "brings forward earlier stock-supplying corrections ahead of a moved predecessor during count replay (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const posA = loosePosition("fund-A", { serialId: "SN-FUND" });
+      const posB = loosePosition("fund-B", { serialId: "SN-FUND" });
+      const posC = loosePosition("fund-C", { serialId: "SN-FUND" });
+      const posCOther = loosePosition("fund-C", { serialId: "SN-OTHER-C" });
+      const receiptA = await inventory.stock.receive({
+        operationId: "fund-rx-a",
+        occurredAtEpochMs: time0 + 10,
+        to: posA,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "fund-rx-c-other",
+        occurredAtEpochMs: time0 + 40,
+        to: posCOther,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.correct({
+        operationId: "fund-correct-to-b",
+        occurredAtEpochMs: time0 + 20,
+        correctsEventId: receiptA.event.eventId,
+        reason: "Serial was actually received into bin B.",
+        replaceWith: (plans) =>
+          plans.receive({
+            occurredAtEpochMs: time0 + 20,
+            to: posB,
+            amount: stockAmount("1", "piece"),
+          }),
+      });
+      await inventory.stock.transfer({
+        operationId: "fund-transfer-b-c",
+        occurredAtEpochMs: time0 + 25,
+        from: posB,
+        toPlacementNodeId: "fund-C",
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.recordHistorical({
+        operationId: "fund-historical-issue-c",
+        occurredAtEpochMs: time0 + 50,
+        reason: "Serial was issued at t30.",
+        assertions: [
+          {
+            assertionId: "issue-sn-fund-t30",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 30,
+                from: posC,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      await inventory.counts.start({
+        countId: "fund-count-t35",
+        operationId: "fund-count-start",
+        startedAtEpochMs: time0 + 35,
+        selector: { itemId: "item-a", placementNodeIds: ["fund-C"] },
+      });
+      await inventory.counts.observe({
+        countId: "fund-count-t35",
+        operationId: "fund-count-observe",
+        observedAtEpochMs: time0 + 35,
+        observations: [],
+      });
+      const reconciled = await inventory.counts.reconcile({
+        countId: "fund-count-t35",
+        operationId: "fund-count-reconcile",
+        completedAtEpochMs: time0 + 36,
+      });
+      expect(reconciled.event).toBeUndefined();
+    },
+  );
+
+  it.each([false, true])(
+    "preserves same-anchor caller and envelope tie order and rejects reversed issue-before-receipt order (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const anchor = await inventory.stock.receive({
+        operationId: "shared-anchor-root",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-other-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const targetPos = loosePosition("anchor-target-bin");
+      const reversedBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "shared-anchor-reversed",
+        occurredAtEpochMs: time1,
+        reason: "Reversed issue-before-receipt sharing one anchor must fail negative-stock.",
+        assertions: [
+          {
+            assertionId: "reversed-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "reversed-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const reversedPlan = await inventory.stock.planHistorical(reversedBundle);
+      expect(reversedPlan.valid).toBe(false);
+      if (!reversedPlan.valid) {
+        expect(reversedPlan.conflict.code).toBe("negative-stock");
+      }
+
+      const forwardBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "shared-anchor-forward",
+        occurredAtEpochMs: time1,
+        reason: "Receive then issue sharing one unrelated anchor at identical physical time.",
+        assertions: [
+          {
+            assertionId: "forward-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "forward-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(forwardBundle);
+      expect(planned.valid).toBe(true);
+      if (!planned.valid) throw new Error("Expected forward same-anchor bundle to succeed.");
+      expect(planned.impact.deficits).toEqual([]);
+      const recorded = await inventory.stock.recordHistorical(forwardBundle);
+      expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+
+      // Second repair envelope anchored to the same root also preserves envelope tie order, and chained anchors work too.
+      const secondBin = loosePosition("anchor-second-bin");
+      const env1 = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-env1-receive",
+        occurredAtEpochMs: time1 + 1,
+        reason: "First envelope receives 1 piece after shared anchor.",
+        assertions: [
+          {
+            assertionId: "env1-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: secondBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const env1ChildEventId =
+        env1.event.historicalRepair?.assertions[0]?.event.eventId;
+      expect(env1ChildEventId).toBeDefined();
+      const env2 = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-env2-issue",
+        occurredAtEpochMs: time1 + 2,
+        reason: "Second envelope issues 1 piece sharing the same anchor at equal physical time.",
+        assertions: [
+          {
+            assertionId: "env2-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: secondBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(env2.event.historicalImpact?.deficits).toEqual([]);
+      const thirdBin = loosePosition("anchor-chained-bin");
+      const chainParent = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-chain-receive",
+        occurredAtEpochMs: time1 + 3,
+        reason: "Receive to chain child issue against directly.",
+        assertions: [
+          {
+            assertionId: "chain-parent-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: thirdBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const chainParentEventId =
+        chainParent.event.historicalRepair?.assertions[0]?.event.eventId;
+      if (chainParentEventId === undefined) {
+        throw new Error("Expected effective eventId from chained parent repair.");
+      }
+      const chainChild = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-chain-issue",
+        occurredAtEpochMs: time1 + 4,
+        reason: "Chained issue anchored to child receipt.",
+        assertions: [
+          {
+            assertionId: "chain-child-issue",
+            afterEventId: chainParentEventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: thirdBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(chainChild.event.historicalImpact?.deficits).toEqual([]);
+
+      // Mixed same-time siblings: an unanchored receipt followed by an anchored issue at equal physical time must keep caller order.
+      const mixedPos = loosePosition("anchor-mixed-bin");
+      const mixedReversed = await inventory.stock.planHistorical({
+        operationId: "mixed-anchor-reversed",
+        occurredAtEpochMs: time1 + 5,
+        reason: "Unanchored issue before anchored receipt must fail negative-stock.",
+        assertions: [
+          {
+            assertionId: "mixed-rev-issue",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "mixed-rev-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(mixedReversed.valid).toBe(false);
+      if (!mixedReversed.valid) {
+        expect(mixedReversed.conflict.code).toBe("negative-stock");
+      }
+      const mixedForwardBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "mixed-anchor-forward",
+        occurredAtEpochMs: time1 + 6,
+        reason: "Unanchored receipt followed by anchored issue at identical physical time.",
+        assertions: [
+          {
+            assertionId: "mixed-fwd-receive",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "mixed-fwd-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const mixedPlanned = await inventory.stock.planHistorical(mixedForwardBundle);
+      expect(mixedPlanned.valid).toBe(true);
+      if (!mixedPlanned.valid) throw new Error("Expected mixed same-time forward bundle to succeed.");
+      expect(mixedPlanned.impact.deficits).toEqual([]);
+      const mixedRecorded = await inventory.stock.recordHistorical(mixedForwardBundle);
+      expect(mixedRecorded.event.historicalImpact?.deficits).toEqual([]);
+
+      // Also verify across separate envelopes (unanchored receipt envelope, then anchored issue envelope at identical physical time).
+      const mixedCrossPos = loosePosition("anchor-mixed-cross-bin");
+      await inventory.stock.recordHistorical({
+        operationId: "mixed-cross-rx",
+        occurredAtEpochMs: time1 + 7,
+        reason: "Unanchored receipt envelope.",
+        assertions: [
+          {
+            assertionId: "mixed-cross-receive",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: mixedCrossPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const mixedCrossIssue = await inventory.stock.recordHistorical({
+        operationId: "mixed-cross-iss",
+        occurredAtEpochMs: time1 + 8,
+        reason: "Anchored issue envelope sharing time with earlier unanchored receipt.",
+        assertions: [
+          {
+            assertionId: "mixed-cross-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: mixedCrossPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(mixedCrossIssue.event.historicalImpact?.deficits).toEqual([]);
+
+      // Under InventoryDeficitPolicy.Record as well, mixed same-time caller order must not record a fictitious deficit.
+      const recordStorage = canonical
+        ? new Proxy(createInMemoryInventoryDurableStorage(), {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : createInMemoryInventoryDurableStorage();
+      const recordInventory = createTestInventory(
+        recordStorage,
+        undefined,
+        undefined,
+        InventoryDeficitPolicy.Record
+      );
+      const recordAnchor = await recordInventory.stock.receive({
+        operationId: "mixed-record-anchor",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-record-other-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const recordMixedPos = loosePosition("anchor-record-mixed-bin");
+      const recordMixed = await recordInventory.stock.recordHistorical({
+        operationId: "mixed-record-forward",
+        occurredAtEpochMs: time1 + 9,
+        reason: "Unanchored receipt followed by anchored issue under Record mode.",
+        assertions: [
+          {
+            assertionId: "mixed-rec-receive",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: recordMixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "mixed-rec-issue",
+            afterEventId: recordAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: recordMixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(recordMixed.event.historicalImpact?.deficits).toEqual([]);
+      expect(await recordInventory.read.positions({ itemId: "item-a", placementNodeIds: ["anchor-record-mixed-bin"] })).toEqual([]);
+
+      // Separate independent same-time anchors (receive after B, then issue after A) and unrelated later/earlier history must keep caller order and storage parity.
+      const anchorB = await inventory.stock.receive({
+        operationId: "separate-anchor-b",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-b-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const sepPos = loosePosition("anchor-separate-ab-bin");
+      const sepForward = await inventory.stock.planHistorical({
+        operationId: "separate-anchor-forward",
+        occurredAtEpochMs: time1 + 10,
+        reason: "Receive after anchor B then issue after earlier anchor A at equal physical time.",
+        assertions: [
+          {
+            assertionId: "sep-receive-after-b",
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: sepPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "sep-issue-after-a",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: sepPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(sepForward.valid).toBe(true);
+      if (!sepForward.valid) throw new Error("Expected compatible separate-anchor bundle to pass.");
+      expect(sepForward.impact.deficits).toEqual([]);
+
+      // Unrelated later Q (t110) and earlier R (t95) after an anchor must not shift unanchored-then-anchored same-time ordering.
+      await inventory.stock.receive({
+        operationId: "parity-unrelated-q-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: loosePosition("parity-q-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "parity-unrelated-r-t95",
+        occurredAtEpochMs: time0 + 95,
+        to: loosePosition("parity-r-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const parityPos = loosePosition("parity-target-bin");
+      const parityForward = await inventory.stock.planHistorical({
+        operationId: "parity-mixed-forward",
+        occurredAtEpochMs: time1 + 11,
+        reason: "Unanchored receipt then anchored issue after unrelated t110/t95 events.",
+        assertions: [
+          {
+            assertionId: "parity-fwd-rx",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: parityPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "parity-fwd-iss",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: parityPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(parityForward.valid).toBe(true);
+      const laterFundingNegative = await inventory.stock.planHistorical({
+        operationId: "parity-later-funding-reject",
+        occurredAtEpochMs: time1 + 12,
+        reason: "Later t101 unanchored receipt cannot fund an earlier t100 anchored issue.",
+        assertions: [
+          {
+            assertionId: "parity-neg-rx-101",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 101,
+                to: loosePosition("parity-neg-bin"),
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "parity-neg-iss-100",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: loosePosition("parity-neg-bin"),
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(laterFundingNegative.valid).toBe(false);
+      if (!laterFundingNegative.valid) {
+        expect(laterFundingNegative.conflict.code).toBe("negative-stock");
+      }
+
+      // A same-time unrelated anchor recorded after a later t110 receipt on X must not let a t100 issue on X borrow t110 stock.
+      const xPos = loosePosition("anchor-cutoff-x");
+      const yAnchorPos = loosePosition("anchor-cutoff-y");
+      await inventory.stock.receive({
+        operationId: "cutoff-x-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: xPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const yAnchor = await inventory.stock.receive({
+        operationId: "cutoff-y-t100",
+        occurredAtEpochMs: time0 + 100,
+        to: yAnchorPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const cutoffRejected = await inventory.stock.planHistorical({
+        operationId: "cutoff-issue-t100-reject",
+        occurredAtEpochMs: time1 + 13,
+        reason: "Issue at t100 anchored to Y must not borrow X received at t110.",
+        assertions: [
+          {
+            assertionId: "cutoff-issue-x",
+            afterEventId: yAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: xPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(cutoffRejected.valid).toBe(false);
+      if (!cutoffRejected.valid) {
+        expect(cutoffRejected.conflict.code).toBe("negative-stock");
+      }
+
+      // Under Record mode, the same t100 anchored issue records a t100-t110 deficit rather than borrowing t110 free.
+      const cutoffRecordStorage = canonical
+        ? new Proxy(createInMemoryInventoryDurableStorage(), {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : createInMemoryInventoryDurableStorage();
+      const cutoffRecordInventory = createTestInventory(
+        cutoffRecordStorage,
+        undefined,
+        undefined,
+        InventoryDeficitPolicy.Record
+      );
+      await cutoffRecordInventory.stock.receive({
+        operationId: "cutoff-rec-x-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: xPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const recYAnchor = await cutoffRecordInventory.stock.receive({
+        operationId: "cutoff-rec-y-t100",
+        occurredAtEpochMs: time0 + 100,
+        to: yAnchorPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const cutoffRecorded = await cutoffRecordInventory.stock.recordHistorical({
+        operationId: "cutoff-issue-t100-record",
+        occurredAtEpochMs: time1 + 14,
+        reason: "Record mode must observe the t100-t110 deficit across an unrelated anchor.",
+        assertions: [
+          {
+            assertionId: "cutoff-rec-issue-x",
+            afterEventId: recYAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: xPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(cutoffRecorded.event.historicalImpact?.deficits).toHaveLength(1);
+      expect(cutoffRecorded.event.historicalImpact?.deficits[0]?.startedAtEpochMs).toBe(time0 + 100);
+      expect(cutoffRecorded.event.historicalImpact?.deficits[0]?.endedAtEpochMs).toBe(time0 + 110);
+
+      // Passing control: an earlier t90 receipt on X still funds the t100 anchored issue without deficit.
+      const fundedX = loosePosition("anchor-cutoff-funded-x");
+      await inventory.stock.receive({
+        operationId: "cutoff-funded-t90",
+        occurredAtEpochMs: time0 + 90,
+        to: fundedX,
+        amount: stockAmount("1", "piece"),
+      });
+      const fundedYAnchor = await inventory.stock.receive({
+        operationId: "cutoff-funded-y-t100",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-cutoff-funded-y"),
+        amount: stockAmount("1", "piece"),
+      });
+      const fundedPlan = await inventory.stock.planHistorical({
+        operationId: "cutoff-funded-issue-t100",
+        occurredAtEpochMs: time1 + 15,
+        reason: "Earlier t90 receipt funds the t100 anchored issue.",
+        assertions: [
+          {
+            assertionId: "cutoff-funded-issue",
+            afterEventId: fundedYAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: fundedX,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(fundedPlan.valid).toBe(true);
+      if (!fundedPlan.valid) throw new Error("Expected t90 funded control to pass.");
+      expect(fundedPlan.impact.deficits).toEqual([]);
+
+      // Conflicting t110 barrier on X sitting between independent anchor A (t100) and anchor B (t100):
+      // receive(X, t100, after: B) then issue(X, t100, after: A) must pull [B, receive(X)] ahead of the t110 barrier.
+      const barrierX = loosePosition("anchor-barrier-x");
+      const barrierRecordStorage = canonical
+        ? new Proxy(createInMemoryInventoryDurableStorage(), {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : createInMemoryInventoryDurableStorage();
+      for (const policy of [InventoryDeficitPolicy.Reject, InventoryDeficitPolicy.Record]) {
+        const barrierStorage =
+          policy === InventoryDeficitPolicy.Reject ? storage : barrierRecordStorage;
+        const barrierInventory = createTestInventory(
+          barrierStorage,
+          undefined,
+          undefined,
+          policy
+        );
+        const barrierAnchorA = await barrierInventory.stock.receive({
+          operationId: `barrier-a-${policy}`,
+          occurredAtEpochMs: time0 + 100,
+          to: loosePosition(`barrier-a-bin-${policy}`),
+          amount: stockAmount("1", "piece"),
+        });
+        await barrierInventory.stock.receive({
+          operationId: `barrier-rx-t110-${policy}`,
+          occurredAtEpochMs: time0 + 110,
+          to: barrierX,
+          amount: stockAmount("1", "piece"),
+        });
+        const barrierAnchorB = await barrierInventory.stock.receive({
+          operationId: `barrier-b-${policy}`,
+          occurredAtEpochMs: time0 + 100,
+          to: loosePosition(`barrier-b-bin-${policy}`),
+          amount: stockAmount("1", "piece"),
+        });
+        const barrierBundle: InventoryOnceHistoricalRepairInput = {
+          operationId: `barrier-repair-${policy}`,
+          occurredAtEpochMs: time1 + 16,
+          reason: "Same-time receive after B then issue after A with t110 barrier on X between A and B.",
+          assertions: [
+            {
+              assertionId: "barrier-rx-after-b",
+              afterEventId: barrierAnchorB.event.eventId,
+              assert: (plans) =>
+                plans.receive({
+                  occurredAtEpochMs: time0 + 100,
+                  to: barrierX,
+                  amount: stockAmount("1", "piece"),
+                }),
+            },
+            {
+              assertionId: "barrier-iss-after-a",
+              afterEventId: barrierAnchorA.event.eventId,
+              assert: (plans) =>
+                plans.issue({
+                  occurredAtEpochMs: time0 + 100,
+                  from: barrierX,
+                  amount: stockAmount("1", "piece"),
+                }),
+            },
+          ],
+        };
+        const barrierPlanned = await barrierInventory.stock.planHistorical(barrierBundle);
+        expect(barrierPlanned.valid).toBe(true);
+        if (!barrierPlanned.valid) throw new Error(`Expected barrier plan valid under ${policy}.`);
+        expect(barrierPlanned.impact.deficits).toEqual([]);
+        const barrierRecorded = await barrierInventory.stock.recordHistorical(barrierBundle);
+        expect(barrierRecorded.event.historicalImpact?.deficits).toEqual([]);
+      }
+
+      // Contrasting negative control: if the funding receipt is anchored after a future (t120) event B_late,
+      // it cannot move ahead of the t110 barrier to fund a t100 issue after A.
+      const futureAnchorX = loosePosition("anchor-barrier-future-x");
+      const futureAnchorA = await inventory.stock.receive({
+        operationId: "barrier-future-a",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("barrier-future-a-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "barrier-future-rx-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: futureAnchorX,
+        amount: stockAmount("1", "piece"),
+      });
+      const futureAnchorBLate = await inventory.stock.receive({
+        operationId: "barrier-future-b-t120",
+        occurredAtEpochMs: time0 + 120,
+        to: loosePosition("barrier-future-b-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const futureBlocked = await inventory.stock.planHistorical({
+        operationId: "barrier-future-blocked",
+        occurredAtEpochMs: time1 + 17,
+        reason: "Funding receipt anchored after t120 B_late cannot move ahead of t110 barrier.",
+        assertions: [
+          {
+            assertionId: "barrier-future-rx",
+            afterEventId: futureAnchorBLate.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: futureAnchorX,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "barrier-future-iss",
+            afterEventId: futureAnchorA.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: futureAnchorX,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(futureBlocked.valid).toBe(false);
+      if (!futureBlocked.valid) {
+        expect(futureBlocked.conflict.code).toBe("negative-stock");
+      }
+    },
+  );
+
+  it.each([false, true])(
+    "includes participating replacement-side events in historicalImpact.affectedEventIds during receipt relocation corrections (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const oldPos = loosePosition("impact-old-bin");
+      const newPos = loosePosition("impact-new-bin");
+      const thirdPos = loosePosition("impact-third-bin");
+      const oldRoot = await inventory.stock.receive({
+        operationId: "impact-old-rx",
+        occurredAtEpochMs: time0 + 100,
+        to: oldPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const unrelated = await inventory.stock.receive({
+        operationId: "impact-third-rx",
+        occurredAtEpochMs: time0 + 150,
+        to: thirdPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const newRx = await inventory.stock.receive({
+        operationId: "impact-new-rx",
+        occurredAtEpochMs: time0 + 200,
+        to: newPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const newIssue = await inventory.stock.issue({
+        operationId: "impact-new-issue",
+        occurredAtEpochMs: time0 + 300,
+        from: newPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const correctionInput: Parameters<typeof inventory.stock.correct>[0] = {
+        operationId: "impact-relocate-correction",
+        occurredAtEpochMs: time1,
+        correctsEventId: oldRoot.event.eventId,
+        reason: "Receipt actually landed in new bin at t100.",
+        replaceWith: (plans) =>
+          plans.receive({
+            occurredAtEpochMs: time0 + 100,
+            to: newPos,
+            amount: stockAmount("1", "piece"),
+          }),
+      };
+      const preview = await inventory.stock.planCorrection(correctionInput);
+      expect(preview.valid).toBe(true);
+      if (!preview.valid) throw new Error("Expected relocation correction preview to succeed.");
+      expect(preview.impact.affectedEventIds).toContain(oldRoot.event.eventId);
+      expect(preview.impact.affectedEventIds).toContain(newRx.event.eventId);
+      expect(preview.impact.affectedEventIds).toContain(newIssue.event.eventId);
+      expect(preview.impact.affectedEventIds).not.toContain(unrelated.event.eventId);
+
+      const committed = await inventory.stock.correct(correctionInput);
+      expect(committed.event.historicalImpact?.affectedEventIds).toEqual(preview.impact.affectedEventIds);
+    },
+  );
+
+  it("isolates historical detach and missing cohorts from ordinary commands using scoped ids and preserves them via outputOf", async () => {
+    const inventory = createTestInventory();
+    const src = loosePosition("cohort-src");
+    await inventory.stock.receive({
+      operationId: "cohort-rx-src",
+      occurredAtEpochMs: time0,
+      to: src,
+      amount: stockAmount("3", "piece"),
+    });
+    const collidingOperationId = "inventory:historical-assertion:op:cohort-repair:hist-detach";
+    await inventory.stock.detach({
+      operationId: collidingOperationId,
+      occurredAtEpochMs: time1,
+      from: src,
+      amount: stockAmount("1", "piece"),
+    });
+
+    const recorded = await inventory.stock.recordHistorical({
+      operationId: "cohort-repair",
+      occurredAtEpochMs: time2,
+      reason: "Isolate historical detach cohort while letting sibling assertion place via outputOf.",
+      assertions: [
+        {
+          assertionId: "hist-detach",
+          assert: (plans) =>
+            plans.detach({
+              occurredAtEpochMs: time0 + 10,
+              from: src,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+        {
+          assertionId: "hist-place",
+          assert: (plans) =>
+            plans.place({
+              occurredAtEpochMs: time0 + 20,
+              from: plans.outputOf("hist-detach"),
+              into: "cohort-dst",
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+        {
+          assertionId: "hist-missing",
+          assert: (plans) =>
+            plans.markMissing({
+              occurredAtEpochMs: time0 + 30,
+              from: src,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+    const placed = await inventory.read.positions({
+      itemId: "item-a",
+      placementNodeIds: ["cohort-dst"],
+    });
+    expect(placed[0]?.measurements.primary.quantity).toEqual(parseQuantity("1", "piece"));
+
+    const whereabouts = await inventory.read.whereabouts({ itemIds: ["item-a"] });
+    expect(whereabouts).toHaveLength(2);
+    const ids = new Set(whereabouts.map((entry) => entry.whereaboutsId));
+    expect(ids.size).toBe(2);
+    const ordinaryCohort = whereabouts.find(
+      (entry) => entry.originEvent?.operationId === collidingOperationId
+    );
+    expect(ordinaryCohort?.currentPositions[0]?.measurements.primary.quantity).toEqual(
+      parseQuantity("1", "piece")
+    );
+  });
+
+  it.each([
+    { canonical: false, sourceTime: 15 },
+    { canonical: true, sourceTime: 15 },
+    { canonical: false, sourceTime: 25 },
+    { canonical: true, sourceTime: 25 },
+  ])(
+    "uses physical time for relocated stock predecessors (canonical=$canonical, sourceTime=$sourceTime)",
+    async ({ canonical, sourceTime }) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical full-history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const binB = loosePosition("funded-bin-b", { serialId: "FUNDED-S1" });
+      const binC = loosePosition("funded-bin-c", { serialId: "FUNDED-S1" });
+      await inventory.stock.receive({
+        operationId: "funded-rx-c-t40",
+        occurredAtEpochMs: time0 + 40,
+        to: binC,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.issue({
+        operationId: "funded-issue-c-t45",
+        occurredAtEpochMs: time0 + 45,
+        from: binC,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "funded-rx-b",
+        occurredAtEpochMs: time0 + sourceTime,
+        to: binB,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.transfer({
+        operationId: "funded-tx-bc-t20",
+        occurredAtEpochMs: time0 + 20,
+        from: binB,
+        toPlacementNodeId: "funded-bin-c",
+        amount: stockAmount("1", "piece"),
+      });
+
+      const repairInput: InventoryOnceHistoricalRepairInput = {
+        operationId: "funded-issue-c-t30",
+        occurredAtEpochMs: time1,
+        reason: "Record the issue at C after the transfer from B.",
+        assertions: [
+          {
+            assertionId: "funded-iss-c",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 30,
+                from: binC,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(repairInput);
+      if (sourceTime > 20) {
+        expect(planned).toMatchObject({
+          valid: false,
+          conflict: {
+            code: "serialized-deficit",
+            eventId: "inventory:event:funded-tx-bc-t20",
+          },
+        });
+        return;
+      }
+      expect(planned.valid).toBe(true);
+      if (!planned.valid) throw new Error(planned.conflict.message);
+      expect(planned.impact.deficits).toEqual([]);
+
+      const recorded = await inventory.stock.recordHistorical(repairInput);
+      expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+      expect(
+        await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["funded-bin-c"] })
+      ).toEqual([]);
+    }
+  );
 });

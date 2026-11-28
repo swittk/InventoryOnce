@@ -1,6 +1,6 @@
 # InventoryOnce agent rules
 
-These rules are non-negotiable for every file in this standalone repository. They intentionally mirror the PayMeOnce hardening discipline.
+These rules are non-negotiable for every file in this standalone repository.
 
 
 ## Pre-production rule: one current contract, absolutely no backward compatibility
@@ -65,7 +65,7 @@ These rules are non-negotiable for every file in this standalone repository. The
 - Keep runtime dependencies at zero unless a dependency clearly improves the generic core enough to justify it.
 
 ## Coordination and resume-first worktrees
-- Before substantial InventoryOnce work, read both `AGENT_DIARY.md` and the shared `/home/server/Documents/Projects/InventoryOnce-placement-v2/BULLETIN.local.md` when it exists.
+- Before substantial InventoryOnce work, read `AGENT_DIARY.md` and the shared project handoff when available.
 - Before creating a new branch or worktree, inspect existing `InventoryOnce*` worktrees for the same scope, including Git status and recent file edits. Treat unfinished same-scope work as resumable even if it was created by a prior session.
 - If a same-scope worktree has substantive uncommitted or unmerged work, resume that lane. Do not restart from the base branch merely because the previous session stopped, context was reloaded, or a new session began.
 - Create a replacement lane only when the existing lane is demonstrably unsafe/corrupt, has an incompatible base that cannot be reconciled, or the owner explicitly directs a restart. Before doing so, append a bulletin entry marking the old lane `SUPERSEDED` with the exact reason and a salvage/transplant plan for unique source, tests, docs, and findings.
