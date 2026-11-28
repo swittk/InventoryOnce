@@ -510,26 +510,41 @@ function inventoryEventEffectiveAssertions(
   ];
 }
 
+/** Add public resource-index keys for one stock position. */
+function collectPositionResourceKeys(
+  position: InventoryStockPositionKey,
+  itemRevisionId: string,
+  keys: Set<string>
+): void {
+  keys.add(inventoryItemEventKey(position.itemId));
+  keys.add(inventoryRevisionEventKey(itemRevisionId));
+  keys.add("position:" + inventoryStockPositionIdentity(position));
+  if (position.serialId !== undefined) {
+    keys.add(inventorySerialEventKey(inventorySerialIdentity(position.itemId, position.serialId)));
+  }
+  if (position.lotId !== undefined) {
+    keys.add(inventoryLotEventKey(inventoryLotIdentity(position.itemId, position.lotId)));
+  }
+  if (position.placementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.placementNodeId));
+  if (position.lastPlacementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.lastPlacementNodeId));
+  if (position.whereaboutsId !== undefined) keys.add(inventoryWhereaboutsEventKey(position.whereaboutsId));
+  if (position.transferId !== undefined) keys.add("transfer:" + position.transferId);
+}
+
 /** Collect one ordinary/envelope event's directly named resource identities. */
 function collectOneEventResourceKeys(
   event: InventoryEventDraft,
   keys: Set<string>
 ): void {
   for (const effect of event.stockEffects) {
-    const position = effect.position;
-    keys.add(inventoryItemEventKey(position.itemId));
-    keys.add(inventoryRevisionEventKey(effect.itemRevisionId));
-    keys.add("position:" + inventoryStockPositionIdentity(position));
-    if (position.serialId !== undefined) {
-      keys.add(inventorySerialEventKey(inventorySerialIdentity(position.itemId, position.serialId)));
-    }
-    if (position.lotId !== undefined) {
-      keys.add(inventoryLotEventKey(inventoryLotIdentity(position.itemId, position.lotId)));
-    }
-    if (position.placementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.placementNodeId));
-    if (position.lastPlacementNodeId !== undefined) keys.add(inventoryPlacementEventKey(position.lastPlacementNodeId));
-    if (position.whereaboutsId !== undefined) keys.add(inventoryWhereaboutsEventKey(position.whereaboutsId));
-    if (position.transferId !== undefined) keys.add("transfer:" + position.transferId);
+    collectPositionResourceKeys(effect.position, effect.itemRevisionId, keys);
+  }
+  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
+    collectPositionResourceKeys(
+      override.position,
+      override.position.itemRevisionId,
+      keys
+    );
   }
   if (event.transferLifecycle !== undefined) {
     keys.add("transfer:" + event.transferLifecycle.transferId);

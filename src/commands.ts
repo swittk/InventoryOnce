@@ -18,6 +18,8 @@ import { inventoryMetadataFingerprint } from "./canonical.js";
 import { compareInventoryIdentityText } from "./ordering.js";
 import {
   addInventoryMeasurementTotals,
+  inventoryMeasurementTotalsCancel,
+  inventoryMeasurementTotalsFromVector,
   materializeInventoryMeasurementTotals,
   type InventoryMeasurementTotals,
 } from "./measurement-totals.js";
@@ -2007,7 +2009,7 @@ function assertInventoryReclassificationManyPreservesWhereabouts(
   destinations: readonly InventoryProvenanceLine[]
 ): void {
   const sourceTotals = inventoryWhereaboutsMeasurementTotals(sources);
-  const destinationTotals = inventoryWhereaboutsMeasurementTotals(destinations);
+  const destinationTotals = inventoryWhereaboutsMeasurementTotals(destinations, -1n);
   if (sourceTotals.size !== destinationTotals.size) {
     throw new Error(
       "Generic reclassification cannot create or resolve detached/missing whereabouts cohorts."
@@ -2017,7 +2019,7 @@ function assertInventoryReclassificationManyPreservesWhereabouts(
     const destinationMeasurements = destinationTotals.get(identity);
     if (
       destinationMeasurements === undefined ||
-      !inventoryMeasurementsEqual(sourceMeasurements, destinationMeasurements)
+      !inventoryMeasurementTotalsCancel(sourceMeasurements, destinationMeasurements)
     ) {
       throw new Error(
         "Generic reclassification must preserve each detached/missing whereabouts cohort exactly."
@@ -2026,11 +2028,12 @@ function assertInventoryReclassificationManyPreservesWhereabouts(
   }
 }
 
-/** Aggregate unresolved measurements by item/revision plus exact lifecycle tuple. */
+/** Aggregate unresolved measurements in working precision by item/revision plus exact lifecycle tuple. */
 function inventoryWhereaboutsMeasurementTotals(
-  lines: readonly InventoryProvenanceLine[]
-): ReadonlyMap<string, InventoryMeasurementVector> {
-  const totals = new Map<string, InventoryMeasurementVector>();
+  lines: readonly InventoryProvenanceLine[],
+  sign: 1n | -1n = 1n
+): ReadonlyMap<string, InventoryMeasurementTotals> {
+  const totals = new Map<string, InventoryMeasurementTotals>();
   for (const line of lines) {
     const lifecycle = inventoryWhereaboutsLifecycleIdentity(line.position);
     if (lifecycle === undefined) continue;
@@ -2040,12 +2043,13 @@ function inventoryWhereaboutsMeasurementTotals(
       lifecycle,
     ]);
     const earlier = totals.get(key);
-    totals.set(
-      key,
-      earlier === undefined
-        ? line.measurements
-        : addInventoryMeasurements(earlier, line.measurements)
-    );
+    if (earlier === undefined) {
+      const created: InventoryMeasurementTotals = new Map();
+      addInventoryMeasurementTotals(created, line.measurements, sign);
+      totals.set(key, created);
+    } else {
+      addInventoryMeasurementTotals(earlier, line.measurements, sign);
+    }
   }
   return totals;
 }

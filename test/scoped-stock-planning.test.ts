@@ -3,6 +3,7 @@ import {
   compareQuantity,
   defineInventoryCatalog,
   defineInventoryItem,
+  defineInventoryPackaging,
   defineScalarInventoryItem,
   defineScalarInventoryPackaging,
   extendInventoryCatalog,
@@ -4339,4 +4340,89 @@ describe("indexed stock planning and availability", () => {
       ).rejects.toThrow("cannot be negative while primary is positive");
     },
   );
+
+  it("throws InventoryExactAllocationLimitError instead of recording an empty-witness pick when search overflows", async () => {
+    const item = defineInventoryItem({
+      itemId: "limit-measured",
+      revisionId: "limit-measured-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        role: InventoryMeasurementAxisRole.Primary,
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          unit: unitCode("kg"),
+          role: InventoryMeasurementAxisRole.Independent,
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+      ],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+      qualifiedDimensions: [],
+    });
+    const pk2 = defineInventoryPackaging(
+      {
+        revisionId: "limit-pk2",
+        itemId: item.itemId,
+        itemRevisionId: item.revisionId,
+        packageUnit: unitCode("pk2"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "pieces", quantity: parseQuantity("2", "piece") },
+          [{ axisId: "weight", quantity: parseQuantity("0.4", "kg") }],
+        ),
+      },
+      item,
+    );
+    const pk3 = defineInventoryPackaging(
+      {
+        revisionId: "limit-pk3",
+        itemId: item.itemId,
+        itemRevisionId: item.revisionId,
+        packageUnit: unitCode("pk3"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "pieces", quantity: parseQuantity("3", "piece") },
+          [{ axisId: "weight", quantity: parseQuantity("0.4", "kg") }],
+        ),
+      },
+      item,
+    );
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item],
+      activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [pk2, pk3],
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    const lines = Array.from({ length: 5005 }, (_, index) => ({
+      to: { itemId: item.itemId, placementNodeId: "store", lotId: `lot-${index}`, packagingRevisionId: pk2.revisionId },
+      amount: packageAmount(1, pk2.revisionId),
+    }));
+    for (let start = 0; start < lines.length; start += 1000) {
+      await inventory.stock.receiveMany({
+        operationId: `limit-receive-${start}`,
+        occurredAtEpochMs: time0,
+        lines: lines.slice(start, start + 1000),
+      });
+    }
+    await inventory.stock.receive({
+      operationId: "limit-receive-bad",
+      occurredAtEpochMs: time1,
+      to: { itemId: item.itemId, placementNodeId: "store", lotId: "bad", packagingRevisionId: pk3.revisionId },
+      amount: packageAmount(1, pk3.revisionId),
+    });
+    await expect(
+      inventory.stock.issueByPolicy({
+        operationId: "limit-issue-incompatible",
+        occurredAtEpochMs: time2,
+        selector: inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] }),
+        amount: measuredStockAmount("10003", "piece", [{ axisId: "weight", value: "0.3", unit: "kg" }]),
+        method: InventoryAllocationMethod.Fifo,
+      }),
+    ).rejects.toThrow(/safe search bound/i);
+  });
 });

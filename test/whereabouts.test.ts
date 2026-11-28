@@ -2,17 +2,23 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createInventoryOnce,
   defineInventoryCatalog,
+  defineInventoryItem,
   defineScalarInventoryItem,
   extendInventoryCatalog,
   InventoryAllocationMethod,
   InventoryCountStatus,
   InventoryEventKind,
+  InventoryMeasurementAxisRole,
+  InventoryMeasurementRequirement,
   InventoryOptionalIdentityConstraintKind,
   InventoryReservationFeasibilityStatus,
   InventoryStockWhereaboutsState,
+  InventoryTrackingRequirement,
   InventoryWhereaboutsAction,
+  measuredStockAmount,
   parseQuantity,
   stockAmount,
+  unitCode,
 } from "../src/index.js";
 import {
   createInventoryDetachEvent,
@@ -1299,6 +1305,84 @@ describe("detached and missing stock whereabouts", () => {
       "whereabouts-fence-concurrent-missing",
     ]);
     readWorldSpy.mockRestore();
+  });
+
+  it("preserves exact working precision across detached cohort reclassifyMany measurements", async () => {
+    const measuredItem = defineInventoryItem({
+      itemId: "whereabouts-measured",
+      revisionId: "whereabouts-measured-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        role: InventoryMeasurementAxisRole.Primary,
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          unit: unitCode("kg"),
+          role: InventoryMeasurementAxisRole.Independent,
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+      ],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+      qualifiedDimensions: [],
+    });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [measuredItem],
+      activeItemRevisionIds: { [measuredItem.itemId]: measuredItem.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const bin = { itemId: measuredItem.itemId, placementNodeId: "whereabouts-reclassify-bin" };
+    await inventory.stock.receive({
+      operationId: "whereabouts-reclassify-receive",
+      occurredAtEpochMs: time0,
+      to: bin,
+      amount: measuredStockAmount("10", "piece", [{ axisId: "weight", value: "10", unit: "kg" }]),
+    });
+    const detached = await inventory.stock.detach({
+      operationId: "whereabouts-reclassify-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: measuredStockAmount("10", "piece", [{ axisId: "weight", value: "10", unit: "kg" }]),
+    });
+    const cohortPosition = detached.event.stockEffects.find(
+      /** Locate the newly detached cohort position. */
+      (effect) => effect.position.whereaboutsId !== undefined,
+    )?.position;
+    if (cohortPosition === undefined) {
+      throw new Error("Expected detached multi-axis cohort.");
+    }
+
+    const reclassified = await inventory.stock.reclassifyMany({
+      operationId: "whereabouts-reclassify-split",
+      occurredAtEpochMs: time2,
+      consume: [
+        {
+          from: cohortPosition,
+          amount: measuredStockAmount("10", "piece", [{ axisId: "weight", value: "10", unit: "kg" }]),
+        },
+      ],
+      produce: [
+        {
+          to: { ...cohortPosition, lotId: "split-a" },
+          amount: measuredStockAmount("8", "piece", [{ axisId: "weight", value: "9", unit: "kg" }]),
+        },
+        {
+          to: { ...cohortPosition, lotId: "split-b" },
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0.123456789012345", unit: "kg" }]),
+        },
+        {
+          to: { ...cohortPosition, lotId: "split-c" },
+          amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "0.876543210987655", unit: "kg" }]),
+        },
+      ],
+    });
+    expect(reclassified.event.stockEffects).toHaveLength(4);
   });
 
 });

@@ -385,6 +385,8 @@ function cloneInventoryProjectionForEventBatch(
 interface InventoryCountProjectionScope {
   /** Historical placement nodes that can affect membership in the counted subtrees. */
   readonly placementNodeIds: ReadonlySet<string>;
+  /** Placement-changing events that can affect membership or ancestry in the counted subtrees. */
+  readonly placementEventIds?: ReadonlySet<string>;
   /** Stock selected by the count or needed to fund it at this sequence. */
   readonly includesPosition: (position: InventoryStockPositionKey, recordSequence: number) => boolean;
   /** Complete structured transfers whose lines can contribute to the observed stock. */
@@ -1172,8 +1174,9 @@ function applyInventoryCommittedEventInternal(
   });
   const eventPlacementChanges = normalizedEvent.placementChanges ?? [];
   const placementChanges = countScope === undefined ? eventPlacementChanges : eventPlacementChanges.filter(
-    /** Replay both endpoints of any move in the observation's placement component. */
-    ({ nodeId }) => countScope.placementNodeIds.has(nodeId)
+    /** Replay only moves within the counted subtree's time-scoped topology component. */
+    ({ nodeId }) => countScope.placementNodeIds.has(nodeId) &&
+      (countScope.placementEventIds === undefined || countScope.placementEventIds.has(normalizedEvent.eventId))
   );
   for (const change of placementChanges) {
     const projected = inventorySparseRecordValue(placementNodes, change.nodeId);
@@ -1792,6 +1795,7 @@ function prepareCountProjectionScope(
       serials.has(inventorySerialIdentity(position.itemId, position.serialId));
   return {
     placementNodeIds: placement?.nodeIds ?? new Set(),
+    ...(placement === undefined ? {} : { placementEventIds: placement.placementEventIds }),
     ...countStockDependencies(events, includesObservedPosition),
   };
 }
@@ -1810,6 +1814,7 @@ function countObservedPlacementNodes(
   const hasCarriers = placement.embodiedSerials.size !== 0;
   const scope: InventoryCountProjectionScope = {
     placementNodeIds: placement.nodeIds,
+    placementEventIds: placement.placementEventIds,
     ...(hasCarriers ? countStockDependencies(events, includesCarrier) :
       { transferIds: new Set<string>(), includesPosition: includesCarrier }),
   };
@@ -1856,7 +1861,7 @@ function countObservedPlacementNodes(
 /** Select the placement and carrier facts with the correction evidence they need. */
 function countPlacementReplayEvents(
   events: readonly InventoryCommittedEvent[],
-  { placementNodeIds, transferIds, includesPosition }: InventoryCountProjectionScope,
+  { placementNodeIds, placementEventIds, transferIds, includesPosition }: InventoryCountProjectionScope,
   hasCarriers: boolean,
 ): readonly InventoryCommittedEvent[] {
   /** Selected placement, carrier and correction event identities. */
@@ -1868,10 +1873,11 @@ function countPlacementReplayEvents(
       (correction.supersedesCorrectionEventId !== undefined && retainedIds.has(correction.supersedesCorrectionEventId)));
     const transferId = event.transferLifecycle?.transferId;
     if (correctsRetainedPlacement || (transferId !== undefined && transferIds.has(transferId)) ||
-        event.placementChanges?.some(
+        (placementEventIds !== undefined && placementEventIds.has(event.eventId)) ||
+        (placementEventIds === undefined && event.placementChanges?.some(
           /** Keep changes to the historical topology component. */
           ({ nodeId }) => placementNodeIds.has(nodeId)
-        ) ||
+        )) ||
         event.placementNodeDefinitions?.some(
           /** Keep definitions used by placement and embodiment checks. */
           ({ nodeId }) => placementNodeIds.has(nodeId)
@@ -2001,38 +2007,22 @@ function countStockDependencies(
 interface InventoryCountPlacementDependencies {
   /** Subtree roots named by the count selector. */
   readonly roots: readonly string[];
-  /** Nodes connected to a selected root by any retained placement evidence. */
+  /** Nodes connected to a selected root by time-relevant retained placement evidence. */
   readonly nodeIds: ReadonlySet<string>;
+  /** Events whose placement changes affect membership or ancestry in the counted subtrees. */
+  readonly placementEventIds: ReadonlySet<string>;
   /** Serialized stock that can move one of the retained nodes. */
   readonly embodiedSerials: ReadonlySet<string>;
 }
 
-/** Find possible dependencies without building a second historical placement projection. */
+/** Find possible dependencies in cut order so former descendants cannot pull outside conflicts. */
 function countPlacementDependencies(
   events: readonly InventoryCommittedEvent[],
   roots: readonly string[]
 ): InventoryCountPlacementDependencies {
-  /** Directed parent-to-child edges find all nodes ever placed inside requested subtrees. */
-  const childrenByParent = new Map<string, Set<string>>();
-  /** Directed child-to-parent edges walk upward for cycle validation without pulling sibling subtrees. */
-  const parentsByChild = new Map<string, Set<string>>();
   /** Embodied node identities by the resource whose stock drives their placement. */
   const nodesBySerial = new Map<string, Set<string>>();
-  /** Record one directed historical parent/child placement edge. */
-  function link(nodeId: string, parentNodeId: string | undefined): void {
-    if (parentNodeId === undefined) return;
-    const children = childrenByParent.get(parentNodeId) ?? new Set<string>();
-    children.add(nodeId);
-    childrenByParent.set(parentNodeId, children);
-    const parents = parentsByChild.get(nodeId) ?? new Set<string>();
-    parents.add(parentNodeId);
-    parentsByChild.set(nodeId, parents);
-  }
   for (const event of events) {
-    for (const { nodeId, fromParentNodeId, toParentNodeId } of event.placementChanges ?? []) {
-      link(nodeId, fromParentNodeId);
-      link(nodeId, toParentNodeId);
-    }
     for (const { nodeId, embodiedBy } of event.placementNodeDefinitions ?? []) {
       if (embodiedBy === undefined) continue;
       const identity = inventorySerialIdentity(embodiedBy.itemId, embodiedBy.serialId);
@@ -2041,31 +2031,96 @@ function countPlacementDependencies(
       nodesBySerial.set(identity, nodes);
     }
   }
-  if (nodesBySerial.size > 0) {
-    for (const event of events) {
-      for (const { position } of event.stockEffects) {
-        if (position.serialId === undefined || position.placementNodeId === undefined) continue;
-        const nodes = nodesBySerial.get(inventorySerialIdentity(position.itemId, position.serialId));
-        for (const nodeId of nodes ?? []) link(nodeId, position.placementNodeId);
+  const rootsSet = new Set(roots);
+  const nodeIds = new Set(roots);
+  const rootAncestors = new Set(roots);
+  const placementEventIds = new Set<string>();
+  /** Lightweight parent pointers in cut order so moves out of roots stop pulling later outside moves. */
+  const parentByNode = new Map<string, string>();
+  const childrenByParent = new Map<string, Set<string>>();
+  const lastEdgeEventIdByNode = new Map<string, string>();
+
+  /** True when a node currently resides inside any counted root subtree. */
+  function isUnderRoot(nodeId: string): boolean {
+    const seen = new Set<string>();
+    let current: string | undefined = nodeId;
+    while (current !== undefined && !seen.has(current)) {
+      if (rootsSet.has(current)) return true;
+      seen.add(current);
+      current = parentByNode.get(current);
+    }
+    return false;
+  }
+
+  /** Retain all current live descendants and their defining edges when a detached node re-enters roots. */
+  function retainDescendants(startNodeId: string): void {
+    const pending = [startNodeId];
+    const seen = new Set<string>([startNodeId]);
+    for (let current = pending.pop(); current !== undefined; current = pending.pop()) {
+      nodeIds.add(current);
+      const edgeEventId = lastEdgeEventIdByNode.get(current);
+      if (edgeEventId !== undefined) placementEventIds.add(edgeEventId);
+      for (const childId of childrenByParent.get(current) ?? []) {
+        if (seen.has(childId)) continue;
+        seen.add(childId);
+        pending.push(childId);
       }
     }
   }
-  /** Collect all nodes ever placed under roots, then walk upward only for cycle checks. */
-  const nodeIds = new Set(roots);
-  const pendingDescendants = [...nodeIds];
-  for (let nodeId = pendingDescendants.pop(); nodeId !== undefined; nodeId = pendingDescendants.pop()) {
-    for (const childId of childrenByParent.get(nodeId) ?? []) {
-      if (nodeIds.has(childId)) continue;
-      nodeIds.add(childId);
-      pendingDescendants.push(childId);
+
+  /** Retain all upward ancestors and their defining edges for cycle validation. */
+  function retainAncestors(startNodeId: string, markAsRootAncestor: boolean): void {
+    const seen = new Set<string>();
+    let current: string | undefined = startNodeId;
+    while (current !== undefined && !seen.has(current)) {
+      seen.add(current);
+      nodeIds.add(current);
+      if (markAsRootAncestor) rootAncestors.add(current);
+      const edgeEventId = lastEdgeEventIdByNode.get(current);
+      if (edgeEventId !== undefined) placementEventIds.add(edgeEventId);
+      current = parentByNode.get(current);
     }
   }
-  const pendingAncestors = [...nodeIds];
-  for (let nodeId = pendingAncestors.pop(); nodeId !== undefined; nodeId = pendingAncestors.pop()) {
-    for (const parentId of parentsByChild.get(nodeId) ?? []) {
-      if (nodeIds.has(parentId)) continue;
-      nodeIds.add(parentId);
-      pendingAncestors.push(parentId);
+
+  /** Process one topological edge change (explicit or embodied serial stock move) in cut order. */
+  function applyEdge(eventId: string, nodeId: string, toParentNodeId: string | undefined): void {
+    const wasUnderRoot = isUnderRoot(nodeId);
+    const toUnderRoot = toParentNodeId !== undefined && isUnderRoot(toParentNodeId);
+    const touchesAncestor = rootAncestors.has(nodeId);
+    if (wasUnderRoot || toUnderRoot || touchesAncestor) {
+      placementEventIds.add(eventId);
+      nodeIds.add(nodeId);
+      if (!wasUnderRoot && toUnderRoot) retainDescendants(nodeId);
+      if (toParentNodeId !== undefined) {
+        retainAncestors(toParentNodeId, wasUnderRoot || toUnderRoot || touchesAncestor);
+      }
+    }
+    const previousParent = parentByNode.get(nodeId);
+    if (previousParent !== undefined) {
+      childrenByParent.get(previousParent)?.delete(nodeId);
+    }
+    if (toParentNodeId === undefined) {
+      parentByNode.delete(nodeId);
+      lastEdgeEventIdByNode.delete(nodeId);
+    } else {
+      parentByNode.set(nodeId, toParentNodeId);
+      lastEdgeEventIdByNode.set(nodeId, eventId);
+      const children = childrenByParent.get(toParentNodeId) ?? new Set<string>();
+      children.add(nodeId);
+      childrenByParent.set(toParentNodeId, children);
+    }
+  }
+
+  for (const event of events) {
+    for (const { nodeId, toParentNodeId } of event.placementChanges ?? []) {
+      applyEdge(event.eventId, nodeId, toParentNodeId);
+    }
+    if (nodesBySerial.size > 0) {
+      for (const { position } of event.stockEffects) {
+        if (position.serialId === undefined || position.placementNodeId === undefined) continue;
+        const nodes = nodesBySerial.get(inventorySerialIdentity(position.itemId, position.serialId));
+        for (const nodeId of nodes ?? []) applyEdge(event.eventId, nodeId, position.placementNodeId);
+      }
     }
   }
   const embodiedSerials = new Set<string>();
@@ -2076,7 +2131,7 @@ function countPlacementDependencies(
       break;
     }
   }
-  return { roots, nodeIds, embodiedSerials };
+  return { roots, nodeIds, placementEventIds, embodiedSerials };
 }
 
 /** Replay committed history through the same reducer used for live commits. */

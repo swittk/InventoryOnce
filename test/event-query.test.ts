@@ -456,6 +456,17 @@ describe("indexed retained event history", () => {
         (event) => event.eventId === correction.event.eventId,
       ),
     ).toBe(true);
+
+    const byPlacement = await inventory.read.events({
+      placementNodeIds: ["store"],
+      limit: 100,
+    });
+    expect(
+      byPlacement.events.some(
+        /** Confirm placement-filtered queries include zero-delta provenance overrides. */
+        (event) => event.eventId === correction.event.eventId,
+      ),
+    ).toBe(true);
   });
 
 });

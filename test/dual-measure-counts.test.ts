@@ -124,9 +124,12 @@ describe("historical shortages on independently measured stock", () => {
       operationId: "allocate", reservationId: "held", occurredAtEpochMs: occurredAtEpochMs + 1,
       allocations: [{ position, quantity: three }],
     });
+    const claimBeforeMerge = await inventory.read.reservation("held");
+    expect(claimBeforeMerge?.allocations).toEqual([{ position, quantity: three }]);
     await inventory.stock.receive({
       operationId: "second-box", occurredAtEpochMs: occurredAtEpochMs + 2, to: position, amount: packageAmount(1, box.revisionId),
     });
+    expect(await inventory.read.reservation("held")).toEqual(claimBeforeMerge);
     expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
       fulfillable: three, shortage: parseQuantity("0", "kg"),
     });
@@ -325,6 +328,8 @@ describe("independent physical count reconciliation", () => {
             countId: "reweigh", operationId: "reweigh", itemRevisionId, selector,
             observedMeasurements: measuredVector(pieces, weight), occurredAtEpochMs: occurredAtEpochMs + 2,
           });
+          const [reweighed] = await inventory.read.positions(selector);
+          expect(reweighed?.measurements).toEqual(measuredVector(pieces, weight));
           expect(await inventory.read.reservation("held")).toEqual(claim);
           const report = await inventory.read.reservationFeasibility();
           const [group] = report.groups;

@@ -372,7 +372,12 @@ export function planWorkingInventoryAllocation({
       const measured = canRecordPartial
         ? allocateInventoryUpTo({ ...measuredInput, assessIncrementBlockage: false })
         : allocateWorkingInventory(measuredInput);
-      if (lines === undefined || needsCompleteMeasuredWitness || measured.allocations.length > 0 || canRecordWithoutWitness) {
+      if (
+        (allocated !== undefined && lines === undefined) ||
+        needsCompleteMeasuredWitness ||
+        measured.allocations.length > 0 ||
+        canRecordWithoutWitness
+      ) {
         // The original primary assignment distinguishes a measurement constraint from a stock shortage.
         allocated = needsCompleteMeasuredWitness && primaryWasFilled && measured.shortfall.amountMinor > 0
           ? { ...measured, allocationConstraintBlockedStock: true }
@@ -393,7 +398,12 @@ export function planWorkingInventoryAllocation({
       }
     }
   }
-  if (lines === undefined || allocated === undefined) throw new Error("Accepted allocation cannot store its measured lines.");
+  if (allocated === undefined) {
+    throw new InventoryExactAllocationLimitError(
+      "Exact allocation exceeded its safe search bound; narrow the candidates or request."
+    );
+  }
+  if (lines === undefined) throw new Error("Accepted allocation cannot store its measured lines.");
   if (recordingAttempt === undefined) {
     assertInventoryPolicyCanPickAroundIndependentHold(candidateResult.selectedIndependentHold, allocated.shortfall);
   }

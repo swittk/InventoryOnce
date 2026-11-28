@@ -307,7 +307,7 @@ function allocateInventoryCandidates({
     allocations,
     shortfall,
     expiredStockWasExcluded,
-    incrementBlockedStock,
+    incrementBlockedStock: assessIncrementBlockage && incrementBlockedStock,
     allocationConstraintBlockedStock: false,
   };
 }

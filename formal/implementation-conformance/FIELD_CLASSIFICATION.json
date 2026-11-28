@@ -67639,7 +67639,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/commands.ts:416:35.axisId": {
+    "anonymous@src/commands.ts:418:35.axisId": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67662,7 +67662,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/commands.ts:416:35.unit": {
+    "anonymous@src/commands.ts:418:35.unit": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67685,7 +67685,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "anonymous@src/commands.ts:416:35.value": {
+    "anonymous@src/commands.ts:418:35.value": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68859,5 +68859,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "944b792693352b5c70f9ca8b86ae3e314511c8ba17bd6dc0ce726e77e353761b"
+  "surfaceSha256": "b22605fa59f0955146e80f651af4270e707112c32991b509f146861ecf877ac0"
 }

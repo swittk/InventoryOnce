@@ -682,4 +682,54 @@ describe("reservation closure through an existing shortage", () => {
       shortage: parseQuantity("2", "piece"),
     }]);
   });
+
+  it("prunes competing large single-claim indivisible choices across shared positions", async () => {
+    const item = defineScalarInventoryItem({ itemId: "prune-pack", revisionId: "prune-pack-v1", axisId: "pieces", unit: "piece" });
+    const tri = defineScalarInventoryPackaging({ revisionId: "prune-tri", item, packageUnit: "tri", contains: "3" });
+    const quad = defineScalarInventoryPackaging({ revisionId: "prune-quad", item, packageUnit: "quad", contains: "4" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "prune-pack": item.revisionId }, packagingRevisions: [tri, quad],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "prune-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "X" }, amount: packageAmount(1, tri.revisionId) },
+        { to: { ...store, lotId: "Y" }, amount: packageAmount(200000, quad.revisionId) },
+        { to: { ...store, lotId: "Z" }, amount: stockAmount("2", "piece") },
+      ],
+    });
+    await inventory.reservations.reserve({
+      operationId: "prune-c1",
+      reservationId: "claim-1",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("400001", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "prune-c2",
+      reservationId: "claim-2",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("400001", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.stock.issue({
+      operationId: "prune-issue-z",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "Z" },
+      amount: stockAmount("2", "piece"),
+    });
+
+    const report = await inventory.read.reservationFeasibility(time2);
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups).toMatchObject([{
+      requested: parseQuantity("800002", "piece"),
+      fulfillable: parseQuantity("800000", "piece"),
+      shortage: parseQuantity("2", "piece"),
+    }]);
+  });
 });

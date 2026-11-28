@@ -1685,4 +1685,69 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     expect(reconciled.event).toBeUndefined();
   });
+
+  it("excludes former-descendant cycles entered after stock moves out of the counted root", async () => {
+    const inventory = createTestInventory();
+    await inventory.placement.move({
+      operationId: "former-move-x-r",
+      occurredAtEpochMs: time0,
+      nodeId: "X",
+      into: "R",
+    });
+    await inventory.placement.move({
+      operationId: "former-move-x-s",
+      occurredAtEpochMs: time0 + 1,
+      nodeId: "X",
+      into: "S",
+    });
+    await inventory.placement.move({
+      operationId: "former-move-b-x",
+      occurredAtEpochMs: time0 + 2,
+      nodeId: "B",
+      into: "X",
+    });
+    await inventory.stock.receive({
+      operationId: "former-stock-r",
+      occurredAtEpochMs: time0,
+      to: loosePosition("R"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.unplace({
+      operationId: "former-unplace-b",
+      occurredAtEpochMs: time3,
+      nodeId: "B",
+    });
+    await inventory.placement.moveContents({
+      operationId: "former-move-contents-s-b",
+      occurredAtEpochMs: time1,
+      nodeId: "S",
+      into: "B",
+    });
+    await inventory.counts.start({
+      countId: "former-descendant-count",
+      operationId: "former-descendant-count-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await inventory.counts.observe({
+      countId: "former-descendant-count",
+      operationId: "former-descendant-count-observe",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: { ...loosePosition("R"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "former-descendant-count",
+      operationId: "former-descendant-count-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
 });

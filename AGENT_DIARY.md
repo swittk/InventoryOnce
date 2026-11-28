@@ -2228,3 +2228,11 @@ An unwitnessed debit can leave a private transfer-batch row with positive primar
 Availability attributes recorded deficits in exact position order across signed on-hand, usable on-hand, and unallocated capacity. Indexed whereabouts reads validate the configured catalogue against the same accepted head as their history and position reads. A retained correction can supply the exact stock consumed by a historical assertion, and any superseded corrections are required before its deltas can replay. The predecessor closure carries those durable dependencies even for corrections with no stock or placement effects. Other available predecessors still use physical occurrence time.
 
 The whole-stock reservation search can stop decreasing a single-claim group's pick when that pick plus every later position cannot improve the best result. The same search still explores smaller picks that allow a later package increment to fill the claim.
+
+## 2026-11-28 — placement count cut scope, allocation fallback flags, pruning, and whereabouts precision
+
+- Scoped count projection and placement cycle checks track placement topology chronologically across the cut window and retain root descendants plus ancestor links without dragging in cycles reached after a former descendant leaves the counted subtree.
+- Policy-recorded measured picking no longer drops an empty primary-limit failure into an unwitnessed deficit, and greedy allocation fallback respects `assessIncrementBlockage: false`.
+- Indivisible single-claim reservation assignment uses monotonic suffix bounds across competing groups and uses a shared `edgeCapacityByReservation` matrix name throughout the continuous flow helper.
+- `reclassifyMany` accumulates detached-cohort whereabouts measurements in `InventoryMeasurementTotals` before checking cancellation so valid high-precision splits do not overflow intermediate integer multiplication, and event queries collect placement/provenance dependency keys for `positiveLayerProvenanceOverrides`.
+

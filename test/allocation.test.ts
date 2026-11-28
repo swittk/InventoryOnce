@@ -107,6 +107,7 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
           ...(increment === 1 ? {} : { allocationIncrement: parseQuantity(String(increment), "piece") }),
         },
       }));
+      const rowsByPosition = new Map(candidates.map((entry, index) => [entry.position, rows[index]!]));
       const input = {
         requested: parseQuantity(String(primary), "piece"), candidates,
         method: InventoryAllocationMethod.Fifo, nowEpochMs: time2,
@@ -114,8 +115,8 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
         acceptAllocations: (allocations: readonly InventoryAllocation[]) => {
           let total = 0, first = 0, second = 0;
           for (const { position, quantity } of allocations) {
-            const measured = rows[Number(position.lotId)];
-            if (measured === undefined) throw new Error("Unknown oracle lot.");
+            const measured = rowsByPosition.get(position);
+            if (measured === undefined) throw new Error("Unknown oracle position.");
             const take = quantity.amountMinor;
             if (measured[1] > 1 && (measured[2] !== 0 || measured[3] !== 0) && take % measured[1] !== 0) return false;
             total += take;
@@ -130,8 +131,12 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
         const expected = enumerate(partial, false);
         const relaxed = enumerate(partial, true);
         const result = partial ? allocateInventoryUpTo(input) : allocateWorkingInventory(input);
-        expect(result.allocations.map(({ position, quantity }) => [position.lotId, quantity])).toEqual(
-          (expected?.picks ?? []).flatMap((take, index) => take === 0 ? [] : [[String(index), parseQuantity(String(take), "piece")]]),
+        expect(result.allocations).toEqual(
+          (expected?.picks ?? []).flatMap((take, index) =>
+            take === 0
+              ? []
+              : [{ position: candidates[index]!.position, quantity: parseQuantity(String(take), "piece") }],
+          ),
         );
         expect(result.shortfall).toEqual(parseQuantity(String(primary - (expected?.total ?? 0)), "piece"));
         const incrementBlocked = relaxed !== undefined && (partial && expected?.total !== primary
@@ -867,6 +872,30 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
       expect(compareQuantity(volume.quantity, parseQuantity(sign + "1", "l"))).toBe(0);
     }
     expect(transferred.event.unwitnessedStockMovements).toBeUndefined();
+  });
+
+  it("clears incrementBlockedStock on greedy fallback when assessIncrementBlockage is false", () => {
+    const greedyPool = Array.from({ length: 15 }, (_, index) =>
+      candidate({
+        lotId: `greedy-${index}`,
+        receivedAtEpochMs: time0 + index,
+        expiresAtEpochMs: time3,
+        extra: {
+          available: parseQuantity("2000", "piece"),
+          allocationIncrement: parseQuantity("3", "piece"),
+        },
+      }),
+    );
+    const result = allocateInventoryUpTo({
+      requested: parseQuantity("5000", "piece"),
+      candidates: greedyPool,
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+      assessIncrementBlockage: false,
+    });
+    expect(result.allocations.length).toBeGreaterThan(0);
+    expect(result.shortfall).toEqual(parseQuantity("2", "piece"));
+    expect(result.incrementBlockedStock).toBe(false);
   });
 
 });
