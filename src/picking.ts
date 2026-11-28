@@ -1328,7 +1328,7 @@ function createPolicyAllocationCandidates({
     // Prepared, in-transit, detached and missing stock cannot supply an ordinary pick.
     if (position.key.transferId !== undefined || position.key.placementNodeId === undefined) continue;
     const onHand = inventoryPolicyPositionMeasurement(position, item.primaryAxis.axisId, item.primaryAxis.unit);
-    if (onHand.amountMinor <= 0n) continue;
+    if (onHand.amountMinor <= 0n || workingPositionHasNegativeIndependentAxis(position)) continue;
     const exactReserved = reservationSummary.reservedPrimaryByPositionIdentity.get(positionIdentity);
     const available = exactReserved === undefined ? onHand : subtractWorkingQuantity(onHand, exactReserved);
     if (available.amountMinor <= 0n) continue;
@@ -1356,6 +1356,17 @@ function createPolicyAllocationCandidates({
       reservationSummary.unallocatedReservationsPresent,
     selectedIndependentHold: reservationSummary.selectedIndependentHold,
   };
+}
+
+/** Exclude unpublished batch rows whose independent axes went negative while primary stayed positive. */
+function workingPositionHasNegativeIndependentAxis(
+  position: InventoryPolicyWorkingRow["position"]
+): boolean {
+  if ("measurements" in position) return false;
+  for (const total of position.totals.values()) {
+    if (total.minor < 0n) return true;
+  }
+  return false;
 }
 
 /** Read one exact axis without storing the batch's entire private row. */

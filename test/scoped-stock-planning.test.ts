@@ -4233,4 +4233,76 @@ describe("indexed stock planning and availability", () => {
     expect(after.lines[0]?.position.lotId).toBe("old");
     expect(readWorld).not.toHaveBeenCalled();
   });
+
+  it.each([false, true])(
+    "excludes mid-batch positive-primary rows with negative independent debt from physical picks while validating final aggregate sign (canonical=%s)",
+    async (canonical) => {
+      const catalog = measuredItemCatalog("pieces");
+      const missingLot = inventoryStockSelector("measured", {
+        placementNodeIds: ["store"],
+        lotIds: ["missing-lot"],
+      });
+      /** Run the same physical reports against a freshly seeded pool. */
+      const runBatch = async (middleSelector: ReturnType<typeof inventoryStockSelector>, includeSettlement: boolean) => {
+        const storage = policyPickingStorage(canonical);
+        const inventory = createTestInventory(storage, catalog, undefined, InventoryDeficitPolicy.Record);
+        await inventory.stock.receive({
+          operationId: "mixed-batch-receive-unlabelled",
+          occurredAtEpochMs: time0,
+          to: { itemId: "measured", placementNodeId: "store" },
+          amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+        });
+        await inventory.stock.receive({
+          operationId: "mixed-batch-receive-witness",
+          occurredAtEpochMs: time1,
+          to: { itemId: "measured", placementNodeId: "store", lotId: "witness-lot" },
+          amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+        });
+        const requests = [
+          {
+            requestId: "req-1-debt",
+            selector: missingLot,
+            amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "2", unit: "kg" }]),
+            method: InventoryAllocationMethod.Fifo,
+          },
+          {
+            requestId: "req-2-middle",
+            selector: middleSelector,
+            amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+            method: InventoryAllocationMethod.Fifo,
+          },
+          ...(includeSettlement
+            ? [{
+                requestId: "req-3-settle",
+                selector: missingLot,
+                amount: measuredStockAmount("3", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+                method: InventoryAllocationMethod.Fifo,
+              }]
+            : []),
+        ];
+        return inventory.stock.transferManyByPolicy({
+          operationId: "mixed-batch-transfer",
+          occurredAtEpochMs: time2,
+          toPlacementNodeId: "out",
+          requests,
+        });
+      };
+
+      const broadResult = await runBatch(
+        inventoryStockSelector("measured", { placementNodeIds: ["store"] }),
+        true,
+      );
+      const narrowResult = await runBatch(
+        inventoryStockSelector("measured", { placementNodeIds: ["store"], lotIds: ["witness-lot"] }),
+        true,
+      );
+      expect(broadResult.allocations).toEqual(narrowResult.allocations);
+      expect(broadResult.allocations[1]?.lines).toMatchObject([{ position: { lotId: "witness-lot" } }]);
+      expect(broadResult.event.stockEffects).toEqual(narrowResult.event.stockEffects);
+
+      await expect(
+        runBatch(inventoryStockSelector("measured", { placementNodeIds: ["store"] }), false),
+      ).rejects.toThrow("cannot be negative while primary is positive");
+    },
+  );
 });

@@ -1769,13 +1769,10 @@ function maximumReservationAssignmentWithIndivisibleGroups(
           remainingDemand, wholeStockByGroup[groupIndex], divisibleCapacity
         );
     if (best >= branchCeiling) return;
+    // Each group consumes its own position column, so the edge matrix is constant for this search.
     const stateIdentity = inventoryIntentFingerprint([
       groupIndex,
       remainingDemand.map(String),
-      remainingEdgeCapacity.map(
-        /** Encode one claim's remaining position capacities for search deduplication. */
-        (row) => row.map(String)
-      ),
     ]);
     if (seen.has(stateIdentity)) return;
     seen.add(stateIdentity);

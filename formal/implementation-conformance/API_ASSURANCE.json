@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4539,
-    "compilerCallGraphEdges": 13324,
+    "compilerCallGraphCallables": 4541,
+    "compilerCallGraphEdges": 13333,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -19777,7 +19777,7 @@
           "path": "src/model.ts"
         },
         {
-          "occurrences": 128,
+          "occurrences": 133,
           "path": "src/picking.ts"
         },
         {
@@ -34840,9 +34840,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:75745:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:76181:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 1596,
+              "line": 1607,
               "name": "inventoryAmountForPrimaryAllocation",
               "reason": "resolved-call"
             }
@@ -34851,9 +34851,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:75745:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:76181:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1596,
+            "line": 1607,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -34876,9 +34876,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:75745:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:76181:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1596,
+          "line": 1607,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -58464,9 +58464,9 @@
               "column": 1,
               "file": "src/picking.ts",
               "hasBody": true,
-              "id": "src/picking.ts:75745:inventoryAmountForPrimaryAllocation",
+              "id": "src/picking.ts:76181:inventoryAmountForPrimaryAllocation",
               "kind": "FunctionDeclaration",
-              "line": 1596,
+              "line": 1607,
               "name": "inventoryAmountForPrimaryAllocation",
               "reason": "resolved-call"
             }
@@ -58475,9 +58475,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:75745:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:76181:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1596,
+            "line": 1607,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "test": "test/fungibility.test.ts"
@@ -58500,9 +58500,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:75745:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:76181:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1596,
+          "line": 1607,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -101880,5 +101880,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "3cc730b2cc068ffb8d7442daeeb4461d016a6afa0df7d1f08f9387d154a3314a"
+  "surfaceSha256": "3ada0a9c19f63453456f80f6026e6ad70aaea117537e2881f855f4113ba93b41"
 }
