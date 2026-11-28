@@ -685,7 +685,8 @@ function insertHistoricalAssertion(
       }
     }
     // Same-time assertions in pending are already sorted by comparePendingHistoricalAssertion.
-    // Advance past any earlier-or-equal inserted assertion after the anchor unless blocked by a conflicting later base event.
+    // Advance past any earlier-or-equal inserted assertion after the anchor; if blocked by a strictly
+    // later conflicting base event, pull eligible right-side predecessors and their anchors ahead of it.
     for (let scanIndex = insertionIndex + 1; scanIndex < target.length; scanIndex += 1) {
       const nextEntry = target[scanIndex]!;
       if (embeddedEvents.has(nextEntry.event)) {
@@ -694,10 +695,26 @@ function insertHistoricalAssertion(
         }
         continue;
       }
-      if (nextEntry.event.occurredAtEpochMs <= occurredAt) {
-        continue;
+      if (
+        isLaterConflictingHistoricalEntry(
+          nextEntry.event,
+          occurredAt,
+          dependencies,
+          sourcePositionIds,
+          destinationSerialIds
+        )
+      ) {
+        const predecessors = bringForwardHistoricalPredecessors(
+          target,
+          scanIndex,
+          occurredAt,
+          dependencies,
+          sourcePositionIds,
+          destinationSerialIds
+        );
+        if (predecessors > 0) insertionIndex = scanIndex + predecessors - 1;
+        break;
       }
-      if (eventSharesHistoricalDependency(nextEntry.event, dependencies)) break;
     }
   } else {
     for (let index = 0; index < target.length; index += 1) {

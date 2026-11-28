@@ -3,8 +3,8 @@
     "authorityMethods": 14,
     "callAndConstructSignatures": 632,
     "classMethods": 115,
-    "compilerCallGraphCallables": 4713,
-    "compilerCallGraphEdges": 13981,
+    "compilerCallGraphCallables": 4718,
+    "compilerCallGraphEdges": 13989,
     "compilerCallGraphTestRoots": 62,
     "compilerCallGraphUnresolvedApis": 0,
     "compilerCallGraphWitnessedApis": 632,
@@ -15664,7 +15664,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 198,
+          "occurrences": 197,
           "path": "src/historical-replay.ts"
         },
         {
@@ -80040,7 +80040,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 198,
+          "occurrences": 197,
           "path": "src/historical-replay.ts"
         },
         {
@@ -85854,7 +85854,7 @@
           "path": "src/historical-repair.ts"
         },
         {
-          "occurrences": 198,
+          "occurrences": 197,
           "path": "src/historical-replay.ts"
         },
         {

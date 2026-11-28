@@ -3559,6 +3559,139 @@ describe("late historical repair", () => {
       expect(fundedPlan.valid).toBe(true);
       if (!fundedPlan.valid) throw new Error("Expected t90 funded control to pass.");
       expect(fundedPlan.impact.deficits).toEqual([]);
+
+      // Conflicting t110 barrier on X sitting between independent anchor A (t100) and anchor B (t100):
+      // receive(X, t100, after: B) then issue(X, t100, after: A) must pull [B, receive(X)] ahead of the t110 barrier.
+      const barrierX = loosePosition("anchor-barrier-x");
+      const barrierRecordStorage = canonical
+        ? new Proxy(createInMemoryInventoryDurableStorage(), {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : createInMemoryInventoryDurableStorage();
+      for (const policy of [InventoryDeficitPolicy.Reject, InventoryDeficitPolicy.Record]) {
+        const barrierStorage =
+          policy === InventoryDeficitPolicy.Reject ? storage : barrierRecordStorage;
+        const barrierInventory = createTestInventory(
+          barrierStorage,
+          undefined,
+          undefined,
+          policy
+        );
+        const barrierAnchorA = await barrierInventory.stock.receive({
+          operationId: `barrier-a-${policy}`,
+          occurredAtEpochMs: time0 + 100,
+          to: loosePosition(`barrier-a-bin-${policy}`),
+          amount: stockAmount("1", "piece"),
+        });
+        await barrierInventory.stock.receive({
+          operationId: `barrier-rx-t110-${policy}`,
+          occurredAtEpochMs: time0 + 110,
+          to: barrierX,
+          amount: stockAmount("1", "piece"),
+        });
+        const barrierAnchorB = await barrierInventory.stock.receive({
+          operationId: `barrier-b-${policy}`,
+          occurredAtEpochMs: time0 + 100,
+          to: loosePosition(`barrier-b-bin-${policy}`),
+          amount: stockAmount("1", "piece"),
+        });
+        const barrierBundle: InventoryOnceHistoricalRepairInput = {
+          operationId: `barrier-repair-${policy}`,
+          occurredAtEpochMs: time1 + 16,
+          reason: "Same-time receive after B then issue after A with t110 barrier on X between A and B.",
+          assertions: [
+            {
+              assertionId: "barrier-rx-after-b",
+              afterEventId: barrierAnchorB.event.eventId,
+              assert: (plans) =>
+                plans.receive({
+                  occurredAtEpochMs: time0 + 100,
+                  to: barrierX,
+                  amount: stockAmount("1", "piece"),
+                }),
+            },
+            {
+              assertionId: "barrier-iss-after-a",
+              afterEventId: barrierAnchorA.event.eventId,
+              assert: (plans) =>
+                plans.issue({
+                  occurredAtEpochMs: time0 + 100,
+                  from: barrierX,
+                  amount: stockAmount("1", "piece"),
+                }),
+            },
+          ],
+        };
+        const barrierPlanned = await barrierInventory.stock.planHistorical(barrierBundle);
+        expect(barrierPlanned.valid).toBe(true);
+        if (!barrierPlanned.valid) throw new Error(`Expected barrier plan valid under ${policy}.`);
+        expect(barrierPlanned.impact.deficits).toEqual([]);
+        const barrierRecorded = await barrierInventory.stock.recordHistorical(barrierBundle);
+        expect(barrierRecorded.event.historicalImpact?.deficits).toEqual([]);
+      }
+
+      // Contrasting negative control: if the funding receipt is anchored after a future (t120) event B_late,
+      // it cannot move ahead of the t110 barrier to fund a t100 issue after A.
+      const futureAnchorX = loosePosition("anchor-barrier-future-x");
+      const futureAnchorA = await inventory.stock.receive({
+        operationId: "barrier-future-a",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("barrier-future-a-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "barrier-future-rx-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: futureAnchorX,
+        amount: stockAmount("1", "piece"),
+      });
+      const futureAnchorBLate = await inventory.stock.receive({
+        operationId: "barrier-future-b-t120",
+        occurredAtEpochMs: time0 + 120,
+        to: loosePosition("barrier-future-b-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const futureBlocked = await inventory.stock.planHistorical({
+        operationId: "barrier-future-blocked",
+        occurredAtEpochMs: time1 + 17,
+        reason: "Funding receipt anchored after t120 B_late cannot move ahead of t110 barrier.",
+        assertions: [
+          {
+            assertionId: "barrier-future-rx",
+            afterEventId: futureAnchorBLate.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: futureAnchorX,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "barrier-future-iss",
+            afterEventId: futureAnchorA.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: futureAnchorX,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(futureBlocked.valid).toBe(false);
+      if (!futureBlocked.valid) {
+        expect(futureBlocked.conflict.code).toBe("negative-stock");
+      }
     },
   );
 
