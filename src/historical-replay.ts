@@ -631,6 +631,26 @@ function insertHistoricalAssertion(
   });
 }
 
+/** Pending exact position supply request for pulling earlier funding corrections. */
+interface HistoricalSupplyDemand {
+  /** Exact normalized position identity needing stock before the consumer executes. */
+  readonly positionId: string;
+  /** Latest consumer occurrence time that can still be funded by an earlier correction. */
+  readonly neededAtEpochMs: number;
+  /** In-slice consumer index waiting on this supply, when triggered by a moved predecessor. */
+  readonly dependentIndex?: number;
+}
+
+/** Pending exact serial removal request for pulling earlier serial-clearing corrections. */
+interface HistoricalSerialRemovalDemand {
+  /** Exact serial identity whose earlier clearing correction must precede arrival. */
+  readonly serialId: string;
+  /** Consumer occurrence time that must follow the clearing correction. */
+  readonly neededAtEpochMs: number;
+  /** In-slice consumer index waiting on the serial to be cleared. */
+  readonly dependentIndex?: number;
+}
+
 /** Move earlier related facts and their earlier predecessors ahead of the first later dependency. */
 function bringForwardHistoricalPredecessors(
   target: InventoryHistoricalReplayEntry[],
@@ -649,6 +669,10 @@ function bringForwardHistoricalPredecessors(
   const keysByIndex = new Map<number, readonly string[]>();
   /** Eligible earlier facts indexed by dependency key, including explicitly anchored supplies. */
   const indexesByKey = new Map<string, number[]>();
+  /** Zero-placement corrections indexed by exact position supplied, queried only on debit demand. */
+  const supplyCorrectionIndexesByPosition = new Map<string, number[]>();
+  /** Zero-placement corrections indexed by exact serial removed, queried only on serial receipt demand. */
+  const removalCorrectionIndexesBySerial = new Map<string, number[]>();
   /** Eligible in-slice positions by event id so anchored supplies can pull their anchor chain. */
   const eligibleIndexByEventId = new Map<string, number>();
   /** Superseded corrections can be required even when they changed no stock or placement. */
@@ -657,18 +681,26 @@ function bringForwardHistoricalPredecessors(
     const entry = target[index]!;
     const { event } = entry;
     if (event.kind === InventoryEventKind.Correction) correctionIndexesById.set(event.eventId, index);
-    if (
-      index === firstLater ||
-      event.occurredAtEpochMs > occurredAt ||
-      (event.kind === InventoryEventKind.Correction && (event.placementChanges ?? []).length === 0 &&
-        !isHistoricalStockSupplyCorrection(event, sourcePositionIds) &&
-        !isHistoricalSerialRemovalCorrection(event, destinationSerialIds))
-    ) {
-      continue;
-    }
+    if (index === firstLater || event.occurredAtEpochMs > occurredAt) continue;
     const keys = inventoryEventDependencyKeys(event);
     keysByIndex.set(index, keys);
     eligibleIndexByEventId.set(event.eventId, index);
+    if (event.kind === InventoryEventKind.Correction && (event.placementChanges ?? []).length === 0) {
+      for (const effect of event.stockEffects) {
+        if (effect.measurementsDelta.primary.quantity.amountMinor > 0) {
+          const positionId = inventoryStockPositionIdentity(effect.position);
+          const indexes = supplyCorrectionIndexesByPosition.get(positionId);
+          if (indexes === undefined) supplyCorrectionIndexesByPosition.set(positionId, [index]);
+          else indexes.push(index);
+        } else if (effect.position.serialId !== undefined && effect.measurementsDelta.primary.quantity.amountMinor < 0) {
+          const serialId = inventorySerialIdentity(effect.position.itemId, effect.position.serialId);
+          const indexes = removalCorrectionIndexesBySerial.get(serialId);
+          if (indexes === undefined) removalCorrectionIndexesBySerial.set(serialId, [index]);
+          else indexes.push(index);
+        }
+      }
+      continue;
+    }
     for (const key of keys) {
       const indexes = indexesByKey.get(key);
       if (indexes === undefined) indexesByKey.set(key, [index]);
@@ -678,6 +710,18 @@ function bringForwardHistoricalPredecessors(
   /** Expand reached dependency keys while keeping anchored supplies contingent on eligible anchors. */
   const reached = new Set(dependencies);
   const pendingKeys = [...reached];
+  /** Exact source debits whose funding corrections must also enter the moved slice. */
+  const pendingSupplyDemand: HistoricalSupplyDemand[] = [];
+  for (const positionId of sourcePositionIds) {
+    pendingSupplyDemand.push({ positionId, neededAtEpochMs: occurredAt });
+  }
+  /** Exact serial arrivals whose prior clearing corrections must also enter the moved slice. */
+  const pendingRemovalDemand: HistoricalSerialRemovalDemand[] = [];
+  for (const serialId of destinationSerialIds) {
+    pendingRemovalDemand.push({ serialId, neededAtEpochMs: occurredAt });
+  }
+  /** Explicit correction -> non-correction dependent edges when a correction funds a moved predecessor. */
+  const fundingPredecessorsByEventId = new Map<string, Set<string>>();
   const predecessors = new Set<number>();
   /** Resolve an eligible anchor prerequisite chain, returning in-slice anchors or undefined if blocked. */
   function resolveAnchorChain(startIndex: number): number[] | undefined {
@@ -694,7 +738,20 @@ function bringForwardHistoricalPredecessors(
     }
     return chain;
   }
-  /** Select one predecessor and its anchor prerequisites, enqueueing newly reached resource keys. */
+  /** Record an earlier correction prerequisite before a non-correction funded event. */
+  function recordFundingEdge(correctionIndex: number, dependentIndex: number | undefined): void {
+    if (dependentIndex === undefined) return;
+    const correctionEvent = target[correctionIndex]!.event;
+    const dependentEvent = target[dependentIndex]!.event;
+    if (dependentEvent.kind === InventoryEventKind.Correction) return;
+    let required = fundingPredecessorsByEventId.get(dependentEvent.eventId);
+    if (required === undefined) {
+      required = new Set<string>();
+      fundingPredecessorsByEventId.set(dependentEvent.eventId, required);
+    }
+    required.add(correctionEvent.eventId);
+  }
+  /** Select one predecessor and its anchor prerequisites, enqueueing newly reached resource keys and funding demands. */
   function selectPredecessor(index: number): void {
     if (predecessors.has(index)) return;
     const anchorChain = resolveAnchorChain(index);
@@ -703,6 +760,22 @@ function bringForwardHistoricalPredecessors(
     for (const selectedIndex of batch) {
       if (predecessors.has(selectedIndex)) continue;
       predecessors.add(selectedIndex);
+      const selectedEvent = target[selectedIndex]!.event;
+      for (const effect of selectedEvent.stockEffects) {
+        if (effect.measurementsDelta.primary.quantity.amountMinor < 0) {
+          pendingSupplyDemand.push({
+            positionId: inventoryStockPositionIdentity(effect.position),
+            neededAtEpochMs: selectedEvent.occurredAtEpochMs,
+            dependentIndex: selectedIndex,
+          });
+        } else if (effect.position.serialId !== undefined && effect.measurementsDelta.primary.quantity.amountMinor > 0) {
+          pendingRemovalDemand.push({
+            serialId: inventorySerialIdentity(effect.position.itemId, effect.position.serialId),
+            neededAtEpochMs: selectedEvent.occurredAtEpochMs,
+            dependentIndex: selectedIndex,
+          });
+        }
+      }
       for (const dependency of keysByIndex.get(selectedIndex) ?? []) {
         if (reached.has(dependency)) continue;
         reached.add(dependency);
@@ -710,10 +783,28 @@ function bringForwardHistoricalPredecessors(
       }
     }
   }
-  while (pendingKeys.length > 0) {
-    const key = pendingKeys.pop()!;
-    for (const index of indexesByKey.get(key) ?? []) {
-      selectPredecessor(index);
+  while (pendingKeys.length > 0 || pendingSupplyDemand.length > 0 || pendingRemovalDemand.length > 0) {
+    while (pendingKeys.length > 0) {
+      const key = pendingKeys.pop()!;
+      for (const index of indexesByKey.get(key) ?? []) {
+        selectPredecessor(index);
+      }
+    }
+    while (pendingSupplyDemand.length > 0) {
+      const demand = pendingSupplyDemand.pop()!;
+      for (const index of supplyCorrectionIndexesByPosition.get(demand.positionId) ?? []) {
+        if (target[index]!.event.occurredAtEpochMs > demand.neededAtEpochMs) continue;
+        selectPredecessor(index);
+        if (predecessors.has(index)) recordFundingEdge(index, demand.dependentIndex);
+      }
+    }
+    while (pendingRemovalDemand.length > 0) {
+      const demand = pendingRemovalDemand.pop()!;
+      for (const index of removalCorrectionIndexesBySerial.get(demand.serialId) ?? []) {
+        if (target[index]!.event.occurredAtEpochMs > demand.neededAtEpochMs) continue;
+        selectPredecessor(index);
+        if (predecessors.has(index)) recordFundingEdge(index, demand.dependentIndex);
+      }
     }
   }
   if (predecessors.size === 0) return 0;
@@ -732,7 +823,7 @@ function bringForwardHistoricalPredecessors(
     (predecessors.has(index) ? earlier : remaining).push(target[index]!);
   }
   // Keep unrelated facts in their original order and avoid a variable-size splice argument list.
-  const ordered = orderHistoricalPredecessors(earlier);
+  const ordered = orderHistoricalPredecessors(earlier, fundingPredecessorsByEventId);
   let index = firstLater;
   for (const entry of ordered) target[index++] = entry;
   for (const entry of remaining) target[index++] = entry;
@@ -801,7 +892,8 @@ function popHistoricalReadyIndex(
 
 /** Order moved predecessors by occurrence time while retaining in-slice anchor and correction dependencies. */
 function orderHistoricalPredecessors(
-  earlier: readonly InventoryHistoricalReplayEntry[]
+  earlier: readonly InventoryHistoricalReplayEntry[],
+  fundingPredecessorsByEventId: ReadonlyMap<string, ReadonlySet<string>>
 ): readonly InventoryHistoricalReplayEntry[] {
   const indexByEventId = new Map<string, number>();
   for (let index = 0; index < earlier.length; index += 1) {
@@ -813,7 +905,13 @@ function orderHistoricalPredecessors(
   let hasOrderingConstraint = false;
   for (let index = 0; index < earlier.length; index += 1) {
     const { afterEventId, event } = earlier[index]!;
-    for (const predecessorId of [afterEventId, event.correction?.supersedesCorrectionEventId]) {
+    const fundingIds = fundingPredecessorsByEventId.get(event.eventId);
+    const prerequisiteIds = [
+      afterEventId,
+      event.correction?.supersedesCorrectionEventId,
+      ...(fundingIds === undefined ? [] : fundingIds),
+    ];
+    for (const predecessorId of prerequisiteIds) {
       if (predecessorId === undefined) continue;
       const predecessorIndex = indexByEventId.get(predecessorId);
       if (predecessorIndex === undefined || predecessorIndex === index) continue;

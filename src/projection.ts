@@ -2095,17 +2095,18 @@ function countPlacementDependencies(
   events: readonly InventoryCommittedEvent[],
   roots: readonly string[]
 ): InventoryCountPlacementDependencies {
-  /** Embodied node identities by the resource whose stock drives their placement. */
-  const nodesBySerial = new Map<string, Set<string>>();
+  /** Serials that become embodied by some placement node at some point in the cut. */
+  const futureEmbodiedSerials = new Set<string>();
   for (const event of events) {
-    for (const { nodeId, embodiedBy } of event.placementNodeDefinitions ?? []) {
+    for (const { embodiedBy } of event.placementNodeDefinitions ?? []) {
       if (embodiedBy === undefined) continue;
-      const identity = inventorySerialIdentity(embodiedBy.itemId, embodiedBy.serialId);
-      const nodes = nodesBySerial.get(identity) ?? new Set<string>();
-      nodes.add(nodeId);
-      nodesBySerial.set(identity, nodes);
+      futureEmbodiedSerials.add(inventorySerialIdentity(embodiedBy.itemId, embodiedBy.serialId));
     }
   }
+  /** Active embodied node identities keyed by serial only after their definition event replays. */
+  const nodesBySerial = new Map<string, Set<string>>();
+  /** Current serial binding per node identity so updates never leak stale carrier bindings. */
+  const serialByNodeId = new Map<string, string>();
   const rootsSet = new Set(roots);
   const nodeIds = new Set(roots);
   const placementEventIds = new Set<string>();
@@ -2244,19 +2245,30 @@ function countPlacementDependencies(
     for (const { nodeId, toParentNodeId } of event.placementChanges ?? []) {
       applyEdge(event.eventId, nodeId, toParentNodeId);
     }
-    if (nodesBySerial.size > 0) {
+    if (futureEmbodiedSerials.size > 0) {
       const touchedSerials = new Set<string>();
       for (const definition of event.placementNodeDefinitions ?? []) {
         if (definition.embodiedBy === undefined) continue;
-        touchedSerials.add(
-          inventorySerialIdentity(definition.embodiedBy.itemId, definition.embodiedBy.serialId)
+        const serialId = inventorySerialIdentity(
+          definition.embodiedBy.itemId,
+          definition.embodiedBy.serialId
         );
+        const previousSerial = serialByNodeId.get(definition.nodeId);
+        if (previousSerial !== undefined && previousSerial !== serialId) {
+          nodesBySerial.get(previousSerial)?.delete(definition.nodeId);
+        }
+        serialByNodeId.set(definition.nodeId, serialId);
+        const nodes = nodesBySerial.get(serialId) ?? new Set<string>();
+        nodes.add(definition.nodeId);
+        nodesBySerial.set(serialId, nodes);
+        touchedSerials.add(serialId);
       }
       for (const { position, measurementsDelta } of event.stockEffects) {
         if (position.serialId === undefined) continue;
         const serialId = inventorySerialIdentity(position.itemId, position.serialId);
-        if (!nodesBySerial.has(serialId)) continue;
-        touchedSerials.add(serialId);
+        if (!futureEmbodiedSerials.has(serialId)) continue;
+        // Derive carrier edges only after the embodiment definition has taken effect.
+        if (nodesBySerial.has(serialId)) touchedSerials.add(serialId);
         let positions = serialBalances.get(serialId);
         if (positions === undefined) {
           positions = new Map<string, InventoryEmbodiedPositionBalance>();

@@ -25,8 +25,10 @@ import {
   addInventoryMeasurements,
   inventoryMeasurementAt,
   inventoryMeasurementsAreZero,
+  scalarInventoryMeasurements,
   subtractInventoryMeasurements,
   zeroInventoryMeasurements,
+  type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
   inventoryStockPositionIdentity,
@@ -48,6 +50,7 @@ import {
   inventoryStockPoolRowsFromProjection,
   prepareInventoryPolicyAllocationPool,
 } from "./picking.js";
+import { type InventoryPlacementState } from "./placement.js";
 import {
   findInventoryPositions,
   type InventoryProjectionState,
@@ -478,18 +481,26 @@ function planInventoryFungibilityAllocationWithHolds({
     memberStock.push({ member, candidates: deficitAdjusted.candidates });
     // Convert each eligible row separately. The sum is needed only by the common-basis allocator.
     for (const source of deficitAdjusted.candidates) {
+      const identity = inventoryStockPositionIdentity(source.position);
+      const position = world.projection.positions[identity];
+      if (position === undefined) {
+        throw new Error(
+          "Fungibility member candidate disappeared from the reviewed world."
+        );
+      }
+      // Record evidence even when capacity rounds down to zero so increment diagnostics can check claim feasibility.
+      evidenceByPosition.set(identity, { member, item, position, source });
       const capacity = inventoryAllocationCandidateCapacity(source);
       incrementBlockedStock ||= capacity.incrementBlockedStock;
       if (capacity.quantity.amountMinor === 0) continue;
       const discardedCapacity = addFungibilityCandidate({
         catalog,
-        world,
+        position,
         member,
         item,
         source,
         memberAvailable: capacity.quantity,
         candidates,
-        evidenceByPosition,
       });
       discardedIncrementCapacity ||= discardedCapacity;
     }
@@ -516,16 +527,24 @@ function planInventoryFungibilityAllocationWithHolds({
     earlierShortagesByRevisionSet.set(revisionSetKey, earlierShortages);
     return earlierShortages;
   };
+  /** Build a claim-preservation predicate for legal plans or physical-increment counterfactuals. */
+  const createAcceptAllocations = (allowMeasuredSplitForAdvisory: boolean) =>
+    /** Reject a trial that deepens a current claim shortage. */
+    (allocations: readonly InventoryAllocation[]): boolean =>
+      fungibilityAllocationsPreserveReservations({
+        catalog, world, reservationAtEpochMs, reservationEffect, allocations,
+        evidenceByPosition, claimsByRevision, readEarlierShortages,
+        allowMeasuredSplitForAdvisory,
+      });
   /** Preserve the same claim constraints when testing an earlier physical witness. */
   const acceptAllocations = !allowAllocatedStock && claimsByRevision.size > 0
-    ? /** Reject a trial that deepens a current claim shortage. */
-      (allocations: readonly InventoryAllocation[]): boolean =>
-        fungibilityAllocationsPreserveReservations({
-          catalog, world, reservationAtEpochMs, reservationEffect, allocations,
-          evidenceByPosition, claimsByRevision, readEarlierShortages,
-        })
+    ? createAcceptAllocations(false)
     : /** Keep the complete-plan requirement even without a claim trial. */
       (): boolean => true;
+  /** Claim predicate for counterfactual physical-increment trials that relax unfixed measured splits. */
+  const acceptAdvisoryAllocations = !allowAllocatedStock && claimsByRevision.size > 0
+    ? createAcceptAllocations(true)
+    : acceptAllocations;
   const allocated = allocateWorkingInventory({
     requested,
     candidates,
@@ -577,6 +596,7 @@ function planInventoryFungibilityAllocationWithHolds({
       (discardedIncrementCapacity && discardedCapacityImprovesFungibilityPlan(completedDiagnostic)) ||
       (incrementBlockedStock && discardedCapacityImprovesFungibilityPlan({
         ...completedDiagnostic,
+        acceptAllocations: acceptAdvisoryAllocations,
         checkPhysicalIncrements: true,
       }))
     : (incrementBlockedStock || allocated.incrementBlockedStock || discardedIncrementCapacity) &&
@@ -805,6 +825,8 @@ interface FungibilityReservationPreservationInput {
     itemRevisionIds: ReadonlySet<string>,
     book: InventoryReservationBook
   ) => ReadonlyMap<string, Quantity>;
+  /** Whether advisory increment counterfactuals may deduct primary quantity on unfixed measured splits when claims remain unaffected. */
+  readonly allowMeasuredSplitForAdvisory?: boolean;
 }
 
 /** Accept an allocation when it does not deepen a shortage on changed stock revisions. */
@@ -817,6 +839,7 @@ function fungibilityAllocationsPreserveReservations({
   evidenceByPosition,
   claimsByRevision,
   readEarlierShortages,
+  allowMeasuredSplitForAdvisory = false,
 }: FungibilityReservationPreservationInput): boolean {
   const positions = createFungibilitySparseRecordOverlay(
     world.projection.positions
@@ -848,16 +871,26 @@ function fungibilityAllocationsPreserveReservations({
       evidence.member.poolQuantity,
       evidence.member.memberQuantity
     );
-    const amount = inventoryAmountForPrimaryAllocation({
+    const destinationKey = transferDestinationPositionKey(
+      current.key,
+      reservationEffect
+    );
+    const movedMeasurements = resolveFungibilityReservationTrialMeasurements({
       catalog,
-      itemRevisionId: evidence.item.revisionId,
+      item: evidence.item,
       position: evidence.position,
-      allocatedPrimary: memberQuantity,
+      positionKey: current.key,
+      positionIdentity: identity,
+      currentMeasurements: current.measurements,
+      destinationKey,
+      memberQuantity,
+      claimsForRevision: claimsByRevision.get(current.key.itemRevisionId) ?? [],
+      placement: world.projection.placement,
+      allowMeasuredSplitForAdvisory,
     });
-    const resolved = resolveInventoryAmount(catalog, evidence.item, amount);
     const nextMeasurements = subtractInventoryMeasurements(
       current.measurements,
-      resolved.measurements
+      movedMeasurements
     );
     if (inventoryMeasurementsAreZero(nextMeasurements)) {
       delete positions[identity];
@@ -884,42 +917,22 @@ function fungibilityAllocationsPreserveReservations({
         measurements: nextMeasurements,
       };
     }
-    if (
-      reservationEffect.kind ===
-      InventoryFungibilityReservationEffectKind.Transfer
-    ) {
-      const toPlacementNodeId = reservationEffect.toPlacementNodeId;
-      if (toPlacementNodeId === undefined) {
-        throw new Error(
-          "Fungibility transfer reservation effect lost destination."
-        );
-      }
-      const {
-        whereaboutsId,
-        whereaboutsState,
-        lastPlacementNodeId,
-        detachedAtEpochMs,
-        missingAtEpochMs,
-        ...placedSource
-      } = current.key;
-      const destinationKey = normalizeInventoryStockPositionKey({
-        ...placedSource,
-        placementNodeId: toPlacementNodeId,
-      });
+    if (destinationKey !== undefined) {
       const destinationIdentity =
         inventoryStockPositionIdentity(destinationKey);
       const destination = positions[destinationIdentity];
       const destinationMeasurements =
         destination?.measurements ??
-        zeroInventoryMeasurements(resolved.measurements);
+        zeroInventoryMeasurements(movedMeasurements);
       positions[destinationIdentity] = {
         key: destinationKey,
         measurements: addInventoryMeasurements(
           destinationMeasurements,
-          resolved.measurements
+          movedMeasurements
         ),
       };
       if (destination === undefined) {
+        const toPlacementNodeId = destinationKey.placementNodeId;
         addFungibilitySimulationIndex(
           positionIdsByItemId,
           destinationKey.itemId,
@@ -930,11 +943,13 @@ function fungibilityAllocationsPreserveReservations({
           destinationKey.itemRevisionId,
           destinationIdentity
         );
-        addFungibilitySimulationIndex(
-          positionIdsByPlacementNodeId,
-          toPlacementNodeId,
-          destinationIdentity
-        );
+        if (toPlacementNodeId !== undefined) {
+          addFungibilitySimulationIndex(
+            positionIdsByPlacementNodeId,
+            toPlacementNodeId,
+            destinationIdentity
+          );
+        }
       }
     }
   }
@@ -970,6 +985,152 @@ function fungibilityAllocationsPreserveReservations({
     if (earlier === undefined || compareQuantity(group.shortage, earlier) > 0) return false;
   }
   return true;
+}
+
+/** Inputs for resolving exact or advisory-split measurements moved in a trial pick. */
+interface FungibilityReservationTrialMeasurementInput {
+  /** Catalogue used to validate legal partial allocations. */
+  readonly catalog: InventoryCatalog;
+  /** Exact item revision definition for the moved row. */
+  readonly item: InventoryItemDefinitionRevision;
+  /** Physical source row from the initial planning snapshot. */
+  readonly position: InventoryStockPosition;
+  /** Normalized key of the source row being updated. */
+  readonly positionKey: InventoryStockPositionKey;
+  /** Normalized identity string of the source row being updated. */
+  readonly positionIdentity: string;
+  /** Current simulated measurements remaining on the source row. */
+  readonly currentMeasurements: InventoryMeasurementVector;
+  /** Optional normalized destination key for Transfer simulations. */
+  readonly destinationKey: InventoryStockPositionKey | undefined;
+  /** Member primary quantity being moved in this trial allocation line. */
+  readonly memberQuantity: Quantity;
+  /** Active claims indexed to the moved position's exact item revision. */
+  readonly claimsForRevision: readonly InventoryReservation[];
+  /** Placement graph used when matching subtree-scoped claim selectors. */
+  readonly placement: InventoryPlacementState;
+  /** Whether advisory increment counterfactuals may deduct primary quantity on unfixed measured splits when safe. */
+  readonly allowMeasuredSplitForAdvisory: boolean;
+}
+
+/** Resolve trial movement measurements, preserving legal allocation rules outside safe advisory increment checks. */
+function resolveFungibilityReservationTrialMeasurements({
+  catalog,
+  item,
+  position,
+  positionKey,
+  positionIdentity,
+  currentMeasurements,
+  destinationKey,
+  memberQuantity,
+  claimsForRevision,
+  placement,
+  allowMeasuredSplitForAdvisory,
+}: FungibilityReservationTrialMeasurementInput): InventoryMeasurementVector {
+  try {
+    const amount = inventoryAmountForPrimaryAllocation({
+      catalog,
+      itemRevisionId: item.revisionId,
+      position,
+      allocatedPrimary: memberQuantity,
+    });
+    return resolveInventoryAmount(catalog, item, amount).measurements;
+  } catch (error) {
+    if (!allowMeasuredSplitForAdvisory) throw error;
+    const primaryComparison = compareWorkingQuantities(
+      memberQuantity,
+      currentMeasurements.primary.quantity
+    );
+    if (primaryComparison > 0) throw error;
+    if (primaryComparison === 0) return currentMeasurements;
+    // Advisory counterfactuals omit unfixed independent splits, so only primary-axis claims or untouched positions remain judgeable.
+    if (
+      item.reservationAxisId !== item.primaryAxis.axisId &&
+      fungibilityClaimsTouchPosition(
+        claimsForRevision,
+        positionKey,
+        positionIdentity,
+        destinationKey,
+        placement
+      )
+    ) {
+      throw error;
+    }
+    return scalarInventoryMeasurements(item.primaryAxis.axisId, memberQuantity);
+  }
+}
+
+/** Return whether any active claim matches the moved position or destination directly or by selector. */
+function fungibilityClaimsTouchPosition(
+  claims: readonly InventoryReservation[],
+  positionKey: InventoryStockPositionKey,
+  positionIdentity: string,
+  destinationKey: InventoryStockPositionKey | undefined,
+  placement: InventoryPlacementState
+): boolean {
+  const destinationIdentity = destinationKey === undefined
+    ? undefined
+    : inventoryStockPositionIdentity(destinationKey);
+  for (const reservation of claims) {
+    if (
+      inventoryStockPositionMatchesNormalizedSelector(
+        positionKey,
+        reservation.selector,
+        placement
+      ) ||
+      (destinationKey !== undefined &&
+        inventoryStockPositionMatchesNormalizedSelector(
+          destinationKey,
+          reservation.selector,
+          placement
+        ))
+    ) {
+      return true;
+    }
+    for (const allocation of reservation.allocations) {
+      const allocatedIdentity = inventoryStockPositionIdentity(
+        allocation.position
+      );
+      if (
+        allocatedIdentity === positionIdentity ||
+        allocatedIdentity === destinationIdentity
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Return the placed destination key for a Transfer claim effect, or undefined for depletion effects. */
+function transferDestinationPositionKey(
+  sourceKey: InventoryStockPositionKey,
+  reservationEffect: InventoryFungibilityReservationEffect
+): InventoryStockPositionKey | undefined {
+  if (
+    reservationEffect.kind !==
+    InventoryFungibilityReservationEffectKind.Transfer
+  ) {
+    return undefined;
+  }
+  const toPlacementNodeId = reservationEffect.toPlacementNodeId;
+  if (toPlacementNodeId === undefined) {
+    throw new Error(
+      "Fungibility transfer reservation effect lost destination."
+    );
+  }
+  const {
+    whereaboutsId: _whereaboutsId,
+    whereaboutsState: _whereaboutsState,
+    lastPlacementNodeId: _lastPlacementNodeId,
+    detachedAtEpochMs: _detachedAtEpochMs,
+    missingAtEpochMs: _missingAtEpochMs,
+    ...placedSource
+  } = sourceKey;
+  return normalizeInventoryStockPositionKey({
+    ...placedSource,
+    placementNodeId: toPlacementNodeId,
+  });
 }
 
 /**
@@ -1064,8 +1225,8 @@ function removeFungibilitySimulationIndex(
 interface AddFungibilityCandidateInput {
   /** Frozen catalogue containing package definitions. */
   readonly catalog: InventoryCatalog;
-  /** Current published world containing the exact source position. */
-  readonly world: InventoryWorldState;
+  /** Current published source position for package-increment inspection. */
+  readonly position: InventoryStockPosition;
   /** Exact member conversion. */
   readonly member: InventoryFungibilityMemberDefinition;
   /** Exact member item revision. */
@@ -1076,31 +1237,18 @@ interface AddFungibilityCandidateInput {
   readonly memberAvailable: Quantity;
   /** Mutable candidate array owned by the current planning call. */
   readonly candidates: InventoryWorkingAllocationCandidate[];
-  /** Mutable evidence map owned by the current planning call. */
-  readonly evidenceByPosition: Map<
-    string,
-    InventoryFungibilityCandidateEvidence
-  >;
 }
 
 /** Register exact common-basis picks and report any capacity discarded by their increment. */
 function addFungibilityCandidate({
   catalog,
-  world,
+  position,
   member,
   item,
   source,
   memberAvailable,
   candidates,
-  evidenceByPosition,
 }: AddFungibilityCandidateInput): boolean {
-  const identity = inventoryStockPositionIdentity(source.position);
-  const position = world.projection.positions[identity];
-  if (position === undefined) {
-    throw new Error(
-      "Fungibility member candidate disappeared from the reviewed world."
-    );
-  }
   const memberIncrement = fungibilityMemberAllocationIncrement({
     catalog,
     position,
@@ -1115,7 +1263,6 @@ function addFungibilityCandidate({
   const increments = availableDigits / incrementDigits;
   // Even loose stock can leave a remainder below one pool reference.
   const discardedCapacity = availableDigits % incrementDigits !== 0n;
-  evidenceByPosition.set(identity, { member, item, position, source });
   if (increments === 0n) return discardedCapacity;
   const allocationIncrement = convertQuantityByReferenceExact(
     materializeInventoryWorkingQuantity(memberIncrement, "Fungibility member increment"), member.memberQuantity, member.poolQuantity,

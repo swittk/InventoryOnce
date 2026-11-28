@@ -387,6 +387,7 @@ describe("indexed retained event history", () => {
     const catalog = createTabletCatalog();
     const inventory = createTestInventory(storage, catalog);
     const to = loosePosition("store", { lotId: "LOT-OVERRIDE" });
+    const transferredTo = loosePosition("override-other", { lotId: "LOT-OVERRIDE" });
     const receipt = await inventory.stock.receive({
       operationId: "override-key-receipt-1",
       occurredAtEpochMs: time0,
@@ -401,8 +402,15 @@ describe("indexed retained event history", () => {
     });
     await inventory.stock.issue({
       operationId: "override-key-issue",
-      occurredAtEpochMs: time3,
+      occurredAtEpochMs: time2 + 1,
       from: to,
+      amount: stockAmount("2", "piece"),
+    });
+    await inventory.stock.transfer({
+      operationId: "override-key-transfer",
+      occurredAtEpochMs: time2 + 2,
+      from: to,
+      toPlacementNodeId: "override-other",
       amount: stockAmount("2", "piece"),
     });
     const correction = await inventory.stock.correct({
@@ -421,6 +429,7 @@ describe("indexed retained event history", () => {
     expect(correction.event.positiveLayerProvenanceOverrides).toHaveLength(1);
     const overridePosition =
       correction.event.positiveLayerProvenanceOverrides![0]!.position;
+    expect(overridePosition.placementNodeId).toBe("override-other");
     const keys = new Set(inventoryEventDependencyKeys(correction.event));
     const indexKeys = new Set(inventoryEventDependencyIndexKeys(correction.event));
     const positionDep = "dep:position:" + inventoryStockPositionIdentity(overridePosition);
@@ -435,7 +444,7 @@ describe("indexed retained event history", () => {
     const laterIssue = await inventory.stock.issue({
       operationId: "override-key-later-issue",
       occurredAtEpochMs: time3,
-      from: to,
+      from: transferredTo,
       amount: stockAmount("1", "piece"),
     });
     const retained = await inventory.read.events({ limit: 100 });
@@ -452,18 +461,18 @@ describe("indexed retained event history", () => {
     expect(loaded).toBeDefined();
     expect(
       loaded!.some(
-        /** Confirm the zero-delta age override event is indexed under the touched position. */
+        /** Confirm the zero-delta age override event is indexed under the destination position. */
         (event) => event.eventId === correction.event.eventId,
       ),
     ).toBe(true);
 
     const byPlacement = await inventory.read.events({
-      placementNodeIds: ["store"],
+      placementNodeIds: ["override-other"],
       limit: 100,
     });
     expect(
       byPlacement.events.some(
-        /** Confirm placement-filtered queries include zero-delta provenance overrides. */
+        /** Confirm placement-filtered queries include zero-delta provenance overrides at the destination bin. */
         (event) => event.eventId === correction.event.eventId,
       ),
     ).toBe(true);

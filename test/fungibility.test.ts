@@ -2125,5 +2125,52 @@ describe("derived pool summaries and exact member movements", () => {
     expect(displaced.shortfall.amountMinor).toBe(0);
     expect(displaced.lines.map(({ position }) => position.lotId)).toEqual(["OLD-FREE"]);
     expect(displaced.incrementBlockedStock).toBe(true);
+
+    // An unrelated broad primary claim on another placement node must not silence the incrementBlockedStock flag.
+    await inventory.stock.receive({
+      operationId: "receive-disjoint-bin-b",
+      occurredAtEpochMs: time0,
+      to: { itemId: weighedItem.itemId, lotId: "BIN-B-FREE", placementNodeId: "bin-b" },
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.reservations.reserve({
+      reservationId: "disjoint-broad-claim",
+      operationId: "reserve-disjoint-broad-claim",
+      itemRevisionId: weighedItem.revisionId,
+      createdAtEpochMs: time1,
+      selector: { itemId: weighedItem.itemId, placementNodeIds: ["bin-b"] },
+      requested: parseQuantity("1", "piece"),
+    });
+    const displacedWithDisjointClaim = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("1", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+      atEpochMs: time2,
+    });
+    expect(displacedWithDisjointClaim.shortfall.amountMinor).toBe(0);
+    expect(displacedWithDisjointClaim.lines.map(({ position }) => position.lotId)).toEqual(["OLD-FREE"]);
+    expect(displacedWithDisjointClaim.incrementBlockedStock).toBe(true);
+
+    // By contrast, when an overlapping broad claim needs the remaining unheld piece on the measured lot,
+    // picking the alternative free lot preserves that claim and does not mark incrementBlockedStock.
+    await inventory.reservations.reserve({
+      reservationId: "store-weighed-broad-claim",
+      operationId: "reserve-store-weighed-broad-claim",
+      itemRevisionId: weighedItem.revisionId,
+      createdAtEpochMs: time1,
+      selector: { itemId: weighedItem.itemId, lotIds: ["EARLIEST-WEIGHED"], placementNodeIds: ["store"] },
+      requested: parseQuantity("1", "piece"),
+    });
+    const claimConstrained = await inventory.fungibility.plan({
+      fungibilityRevisionId: pool.revisionId,
+      requested: parseQuantity("1", "equivalent"),
+      method: InventoryAllocationMethod.Fifo,
+      scope: { placementNodeIds: ["store"] },
+      atEpochMs: time2,
+    });
+    expect(claimConstrained.shortfall.amountMinor).toBe(0);
+    expect(claimConstrained.lines.map(({ position }) => position.lotId)).toEqual(["OLD-FREE"]);
+    expect(claimConstrained.incrementBlockedStock).toBe(false);
   });
 });

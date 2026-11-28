@@ -2245,16 +2245,30 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       nodeId: "OUTSIDE_2",
       into: "R",
     });
-    const enteredCount = await inventory.counts.replaceAbsolute({
+    await inventory.counts.start({
       countId: "reparent-entered-count",
-      operationId: "reparent-entered-op",
-      itemRevisionId: "item-a-v2",
+      operationId: "reparent-entered-start",
+      startedAtEpochMs: time2 + 1,
       selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
-      observedMeasurements: {
-        primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
-        independent: [],
-      },
-      occurredAtEpochMs: time2 + 1,
+    });
+    await inventory.counts.observe({
+      countId: "reparent-entered-count",
+      operationId: "reparent-entered-observe",
+      observedAtEpochMs: time2 + 1,
+      observations: [
+        {
+          position: { ...loosePosition("Y"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const enteredCount = await inventory.counts.reconcile({
+      countId: "reparent-entered-count",
+      operationId: "reparent-entered-reconcile",
+      completedAtEpochMs: time2 + 2,
     });
     expect(enteredCount.event).toBeUndefined();
 
@@ -2380,5 +2394,125 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       completedAtEpochMs: time2 + 20,
     });
     expect(reconciled.event).toBeUndefined();
+  });
+
+  it("retains derived carrier edges both on standalone embodiment definitions and atomic individualizations", async () => {
+    const standaloneInventory = createTestInventory();
+    await standaloneInventory.stock.receive({
+      operationId: "standalone-rx-cab",
+      occurredAtEpochMs: time0,
+      to: loosePosition("R", { serialId: "CAB-STANDALONE" }),
+      amount: stockAmount("1", "piece"),
+    });
+    await standaloneInventory.placement.define({
+      operationId: "standalone-embody-cab",
+      occurredAtEpochMs: time0 + 1,
+      nodeId: "X-STANDALONE",
+      placementNode: {
+        category: "cabinet",
+        acceptsPlacement: true,
+        embodiedBy: { itemId: "item-a", serialId: "CAB-STANDALONE" },
+      },
+    });
+    await standaloneInventory.stock.receive({
+      operationId: "standalone-rx-contents",
+      occurredAtEpochMs: time0 + 2,
+      to: loosePosition("X-STANDALONE"),
+      amount: stockAmount("2", "piece"),
+    });
+    await standaloneInventory.counts.start({
+      countId: "standalone-cab-count",
+      operationId: "standalone-cab-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await standaloneInventory.counts.observe({
+      countId: "standalone-cab-count",
+      operationId: "standalone-cab-observe",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: {
+            ...loosePosition("R", { serialId: "CAB-STANDALONE" }),
+            itemRevisionId: "item-a-v2",
+          },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+        {
+          position: { ...loosePosition("X-STANDALONE"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const standaloneReconciled = await standaloneInventory.counts.reconcile({
+      countId: "standalone-cab-count",
+      operationId: "standalone-cab-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(standaloneReconciled.event).toBeUndefined();
+
+    const atomicInventory = createTestInventory();
+    await atomicInventory.stock.receive({
+      operationId: "atomic-rx-seed",
+      occurredAtEpochMs: time0,
+      to: loosePosition("R"),
+      amount: stockAmount("1", "piece"),
+    });
+    await atomicInventory.stock.individualize({
+      operationId: "atomic-embody-cab",
+      occurredAtEpochMs: time0 + 1,
+      from: loosePosition("R"),
+      amount: stockAmount("1", "piece"),
+      serialId: "X-ATOMIC",
+      asPlacementNode: { category: "cabinet", acceptsPlacement: true },
+    });
+    await atomicInventory.stock.receive({
+      operationId: "atomic-rx-contents",
+      occurredAtEpochMs: time0 + 2,
+      to: loosePosition("X-ATOMIC"),
+      amount: stockAmount("2", "piece"),
+    });
+    await atomicInventory.counts.start({
+      countId: "atomic-cab-count",
+      operationId: "atomic-cab-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await atomicInventory.counts.observe({
+      countId: "atomic-cab-count",
+      operationId: "atomic-cab-observe",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: {
+            ...loosePosition("R", { serialId: "X-ATOMIC" }),
+            itemRevisionId: "item-a-v2",
+          },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+        {
+          position: { ...loosePosition("X-ATOMIC"), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const atomicReconciled = await atomicInventory.counts.reconcile({
+      countId: "atomic-cab-count",
+      operationId: "atomic-cab-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(atomicReconciled.event).toBeUndefined();
   });
 });
