@@ -34,6 +34,7 @@ import {
   zeroInventoryMeasurements,
 } from "./measurements.js";
 import {
+  assertInventoryIdentity,
   inventoryLotIdentity,
   inventorySerialIdentity,
   inventoryStockPositionIdentity,
@@ -46,7 +47,6 @@ import {
   applyInventoryPlacementChanges,
   emptyInventoryPlacementState,
   inventoryPlacementParentNodeId,
-  inventoryPlacementSubtreeNodeIds,
   type InventoryPlacementChange,
   type InventoryPlacementState,
 } from "./placement.js";
@@ -1827,9 +1827,28 @@ function countObservedPlacementNodes(
       { catalog, state, event, deficitPolicy }, true, false, true, "occurrence-cut", replayScope
     ).state;
   }
+  /** Seed one worklist with all roots and traverse children once with a shared observed set. */
   const observed = new Set<string>();
+  const pending: string[] = [];
   for (const root of placement.roots) {
-    for (const nodeId of inventoryPlacementSubtreeNodeIds(state.placement, root)) observed.add(nodeId);
+    assertInventoryIdentity(root, "placement rootNodeId");
+    if (observed.has(root)) continue;
+    observed.add(root);
+    pending.push(root);
+  }
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined) break;
+    const children =
+      inventorySparseRecordValue(
+        state.placement.childNodeIdsByParentNodeId,
+        current
+      ) ?? [];
+    for (const child of children) {
+      if (child === undefined || observed.has(child)) continue;
+      observed.add(child);
+      pending.push(child);
+    }
   }
   return observed;
 }

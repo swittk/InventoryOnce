@@ -595,6 +595,11 @@ function inventoryEventDependencyKeysForMode(
   for (const assertionId of event.historicalRepair?.omittedAssertionIds ?? []) {
     keys.add("dep:assertion:" + assertionId);
   }
+  if (mode === "index") {
+    for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
+      keys.add("dep:whereabouts:" + whereaboutsId);
+    }
+  }
   for (const assertion of inventoryEventEffectiveAssertions(event)) {
     for (const effect of assertion.stockEffects) {
       const position = effect.position;
@@ -644,6 +649,21 @@ function inventoryEventDependencyKeysForMode(
       }
       if (position.transferId !== undefined) {
         keys.add("dep:transfer:" + position.transferId);
+      }
+    }
+    if (mode === "index") {
+      for (const transfer of assertion.positiveLayerProvenanceTransfers ?? []) {
+        if (transfer.from.whereaboutsId !== undefined) {
+          keys.add("dep:whereabouts:" + transfer.from.whereaboutsId);
+        }
+        if (transfer.to.whereaboutsId !== undefined) {
+          keys.add("dep:whereabouts:" + transfer.to.whereaboutsId);
+        }
+      }
+      for (const override of assertion.positiveLayerProvenanceOverrides ?? []) {
+        if (override.position.whereaboutsId !== undefined) {
+          keys.add("dep:whereabouts:" + override.position.whereaboutsId);
+        }
       }
     }
     if (assertion.transferLifecycle !== undefined) {

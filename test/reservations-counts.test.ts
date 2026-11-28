@@ -1528,4 +1528,73 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ).toBeUndefined();
     expect((await inventory.read.world()).revision).toBe(revisionBefore);
   });
+
+  it("reconciles counts with overlapping and disjoint subtree roots in one prepass", async () => {
+    const inventory = createTestInventory();
+    const depth = 600;
+    const roots: string[] = [];
+    for (let index = 0; index < depth; index += 1) {
+      const nodeId = `chain-${index}`;
+      roots.push(nodeId);
+      if (index > 0) {
+        await inventory.placement.move({
+          operationId: `link-chain-${index}`,
+          occurredAtEpochMs: time0,
+          nodeId,
+          into: `chain-${index - 1}`,
+        });
+      }
+    }
+    await inventory.placement.move({
+      operationId: "link-disjoint",
+      occurredAtEpochMs: time0,
+      nodeId: "disjoint-child",
+      into: "disjoint-root",
+    });
+    await inventory.stock.receiveMany({
+      operationId: "receive-overlapping-subtrees",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: loosePosition(`chain-${depth - 1}`), amount: stockAmount("2", "piece") },
+        { to: loosePosition("disjoint-child"), amount: stockAmount("3", "piece") },
+        { to: loosePosition("outside"), amount: stockAmount("5", "piece") },
+      ],
+    });
+    const selector = {
+      itemId: "item-a",
+      withinPlacementNodeIds: [...roots, "disjoint-root", "chain-0"],
+    };
+    const count = await inventory.counts.start({
+      countId: "overlapping-roots-count",
+      operationId: "start-overlapping-roots-count",
+      selector,
+      startedAtEpochMs: time1,
+    });
+    await inventory.counts.observe({
+      countId: count.count.countId,
+      operationId: "observe-overlapping-roots-count",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: { ...loosePosition(`chain-${depth - 1}`), itemRevisionId: "item-a-v2" },
+          measurements: { primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") }, independent: [] },
+        },
+        {
+          position: { ...loosePosition("disjoint-child"), itemRevisionId: "item-a-v2" },
+          measurements: { primary: { axisId: "pieces", quantity: parseQuantity("2", "piece") }, independent: [] },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: count.count.countId,
+      operationId: "reconcile-overlapping-roots-count",
+      completedAtEpochMs: time2,
+    });
+    expect(reconciled.event?.stockEffects).toMatchObject([
+      {
+        position: loosePosition("disjoint-child"),
+        measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } },
+      },
+    ]);
+  });
 });

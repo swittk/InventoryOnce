@@ -147,6 +147,7 @@ import {
 } from "./historical-repair.js";
 import { loadInventoryHistoricalDependencies } from "./historical-dependencies.js";
 import {
+  inventoryEventDependencyIndexKeys,
   queryInventoryProjectionEvents,
   type InventoryEventPage,
   type InventoryEventQuery,
@@ -231,6 +232,7 @@ import {
   type InventoryPlacementChange,
 } from "./placement.js";
 import {
+  emptyInventoryProjectionState,
   findInventoryPositions,
   InventoryDeficitPolicy,
   type InventoryProjectedPlacementNodeDefinition,
@@ -256,7 +258,9 @@ import {
   type ListInventoryPackagingRevisionsInput,
 } from "./read-model.js";
 import {
+  createInventorySparseRecord,
   inventorySparseRecordValue,
+  setInventorySparseRecordValue,
 } from "./sparse-record.js";
 import {
   inventoryAmountForPrimaryAllocation,
@@ -10447,6 +10451,165 @@ async function readInventorySegmentedPlacementSnapshot<Result>(
   return { coherent: false };
 }
 
+/** Prefix used by the private journal dependency index for exact whereabouts lifecycles. */
+const inventoryWhereaboutsDependencyKeyPrefix = "dep:whereabouts:";
+
+/** Assemble a minimal projection containing only indexed events for the requested whereabouts cohorts. */
+function buildIndexedWhereaboutsEventsProjection(
+  orderedEvents: readonly InventoryCommittedEvent[],
+  whereaboutsIdSet: ReadonlySet<string>
+): InventoryProjectionState {
+  const base = emptyInventoryProjectionState();
+  const events = createInventorySparseRecord<InventoryCommittedEvent>();
+  const eventIdsBySequence = createInventorySparseRecord<string>();
+  const eventSequencesByWhereaboutsId = createInventorySparseRecord<readonly number[]>();
+  /** Track touched cohort ids per event so correction events inherit their root's cohorts. */
+  const touchedWhereaboutsByEventId = new Map<string, readonly string[]>();
+  for (const event of orderedEvents) {
+    setInventorySparseRecordValue(events, event.eventId, event);
+    setInventorySparseRecordValue(eventIdsBySequence, String(event.recordSequence), event.eventId);
+    const touchedIds = new Set<string>();
+    for (const key of inventoryEventDependencyIndexKeys(event)) {
+      if (!key.startsWith(inventoryWhereaboutsDependencyKeyPrefix)) continue;
+      const whereaboutsId = key.slice(inventoryWhereaboutsDependencyKeyPrefix.length);
+      if (whereaboutsIdSet.has(whereaboutsId)) touchedIds.add(whereaboutsId);
+    }
+    if (event.correction !== undefined) {
+      for (const whereaboutsId of touchedWhereaboutsByEventId.get(event.correction.correctsEventId) ?? []) {
+        touchedIds.add(whereaboutsId);
+      }
+    }
+    if (touchedIds.size > 0) {
+      const list = [...touchedIds];
+      touchedWhereaboutsByEventId.set(event.eventId, list);
+      for (const whereaboutsId of list) {
+        const existing = inventorySparseRecordValue(eventSequencesByWhereaboutsId, whereaboutsId);
+        setInventorySparseRecordValue(
+          eventSequencesByWhereaboutsId,
+          whereaboutsId,
+          existing === undefined ? [event.recordSequence] : [...existing, event.recordSequence]
+        );
+      }
+    }
+  }
+  const lastEvent = orderedEvents[orderedEvents.length - 1];
+  return {
+    ...base,
+    events,
+    eventIdsBySequence,
+    eventSequencesByWhereaboutsId,
+    lastRecordSequence: lastEvent?.recordSequence ?? 0,
+  };
+}
+
+/**
+ * Read exact whereabouts lifecycles or history without loading the entire world when storage
+ * supports indexed event dependency queries and segmented position reads.
+ */
+async function readExactInventoryWhereabouts<Result>(
+  storage: InventoryDurableStorage,
+  whereaboutsIds: readonly string[],
+  project: (projection: InventoryProjectionState) => Result
+): Promise<Result | undefined> {
+  if (
+    !inventoryStorageSupportsSegmentedStockPlanning(storage) ||
+    !inventoryStorageSupportsEventQuery(storage)
+  ) {
+    return undefined;
+  }
+  if (
+    whereaboutsIds.length === 0 ||
+    whereaboutsIds.some(
+      /** Let canonical validators report empty or malformed cohort identities unchanged. */
+      (id) => typeof id !== "string" || id.trim().length === 0 || id !== id.trim()
+    )
+  ) {
+    return project(emptyInventoryProjectionState());
+  }
+  const whereaboutsIdSet = new Set(whereaboutsIds);
+  const requestedWhereaboutsIds = [...whereaboutsIdSet];
+  const resourceKeys: string[] = [];
+  for (const whereaboutsId of requestedWhereaboutsIds) {
+    resourceKeys.push(inventoryWhereaboutsDependencyKeyPrefix + whereaboutsId);
+  }
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const head = await storage.readSegmentedStockHead();
+    const eventsById = new Map<string, InventoryCommittedEvent>();
+    let afterRecordSequence: number | undefined;
+    let headMoved = false;
+    do {
+      const page = await storage.queryInventoryEventsByResourceKeys({
+        resourceKeys,
+        ...(afterRecordSequence === undefined ? {} : { afterRecordSequence }),
+        limit: 1_000,
+      });
+      if (page.throughRecordSequence !== head.recordSequence) {
+        headMoved = true;
+        break;
+      }
+      for (const event of page.events) {
+        if (!eventsById.has(event.eventId)) eventsById.set(event.eventId, event);
+      }
+      afterRecordSequence = page.nextAfterRecordSequence;
+    } while (afterRecordSequence !== undefined);
+    if (headMoved) continue;
+
+    const orderedEvents = [...eventsById.values()];
+    orderedEvents.sort(
+      /** Replay cohort events in exact durable sequence order. */
+      (left, right) => left.recordSequence - right.recordSequence
+    );
+    const eventsProjection = buildIndexedWhereaboutsEventsProjection(orderedEvents, whereaboutsIdSet);
+    const firstPass = inventoryWhereaboutsLifecycles(eventsProjection, whereaboutsIdSet);
+    const touchedItemIds = new Set<string>();
+    for (const lifecycle of firstPass) {
+      for (const itemId of lifecycle.itemIds) touchedItemIds.add(itemId);
+    }
+
+    const positions = createInventorySparseRecord<InventoryStockPosition>();
+    const positionIdsByWhereaboutsId = createInventorySparseRecord<readonly string[]>();
+    if (touchedItemIds.size > 0) {
+      const segment = await storage.readPositionSegment();
+      if ((await segment.revision()) !== head.worldRevision) continue;
+      for (const itemId of touchedItemIds) {
+        const itemPositions = await segment.queryPositions({
+          itemId,
+          whereaboutsIds: requestedWhereaboutsIds,
+        });
+        if (itemPositions === undefined) return undefined;
+        for (const position of itemPositions) {
+          const whereaboutsId = position.key.whereaboutsId;
+          if (whereaboutsId === undefined || !whereaboutsIdSet.has(whereaboutsId)) continue;
+          const positionId = inventoryStockPositionIdentity(position.key);
+          if (inventorySparseRecordValue(positions, positionId) !== undefined) continue;
+          setInventorySparseRecordValue(positions, positionId, position);
+          const existingIds = inventorySparseRecordValue(positionIdsByWhereaboutsId, whereaboutsId);
+          setInventorySparseRecordValue(
+            positionIdsByWhereaboutsId,
+            whereaboutsId,
+            existingIds === undefined ? [positionId] : [...existingIds, positionId]
+          );
+        }
+      }
+      if ((await segment.revision()) !== head.worldRevision) continue;
+    }
+
+    const headAfter = await storage.readSegmentedStockHead();
+    if (
+      headAfter.worldRevision !== head.worldRevision ||
+      headAfter.recordSequence !== head.recordSequence
+    ) {
+      continue;
+    }
+    return project({
+      ...eventsProjection,
+      positions,
+      positionIdsByWhereaboutsId,
+    });
+  }
+  return undefined;
+}
+
 /** Private implementation of current/history reads. */
 class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   /** Owning façade. */
@@ -10500,6 +10663,16 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   async whereabouts(
     input: InventoryOnceWhereaboutsQuery = {}
   ): Promise<readonly InventoryWhereaboutsLifecycle[]> {
+    if (input.whereaboutsIds !== undefined) {
+      const internals = requireInventoryOnceInternals(this.owner);
+      const indexed = await readExactInventoryWhereabouts(
+        internals.storage,
+        input.whereaboutsIds,
+        /** Filter exact-cohort unresolved lifecycles using existing semantics. */
+        (projection) => findCurrentInventoryWhereaboutsLifecycles(projection, input)
+      );
+      if (indexed !== undefined) return indexed;
+    }
     return findCurrentInventoryWhereaboutsLifecycles(
       (await this.world()).projection,
       input
@@ -10510,6 +10683,16 @@ class InventoryOnceReadImplementation implements InventoryOnceReadApi {
   async whereaboutsHistory(
     input: InventoryWhereaboutsHistoryQuery = {}
   ): Promise<readonly InventoryWhereaboutsLifecycle[]> {
+    if (input.whereaboutsIds !== undefined) {
+      const internals = requireInventoryOnceInternals(this.owner);
+      const indexed = await readExactInventoryWhereabouts(
+        internals.storage,
+        input.whereaboutsIds,
+        /** Filter exact-cohort lifecycle history using existing semantics. */
+        (projection) => findInventoryWhereaboutsHistory(projection, input)
+      );
+      if (indexed !== undefined) return indexed;
+    }
     return findInventoryWhereaboutsHistory((await this.world()).projection, input);
   }
 

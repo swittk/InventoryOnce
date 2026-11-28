@@ -11,7 +11,12 @@ import {
 } from "../src/index.js";
 import { createInMemoryInventoryDurableStorage, createInMemoryInventorySegmentedPositionStore } from "../src/storage-api.js";
 import { applyInventoryCommittedEvent, projectInventoryEvents } from "../src/projection.js";
-import { createInventoryPlacementEvent } from "../src/commands.js";
+import {
+  createInventoryIssueEvent,
+  createInventoryPlacementEvent,
+  createInventoryReceiptEvent,
+} from "../src/commands.js";
+import { createInventoryHistoricalRepairEvent } from "../src/historical-repair.js";
 import { commitInventoryEvent } from "../src/events.js";
 import { createInventoryCorrectionEvent } from "../src/corrections.js";
 import { replayInventoryHistoricalScenario } from "../src/historical-replay.js";
@@ -1723,6 +1728,239 @@ describe("late historical repair", () => {
       valid: false,
       conflict: { code: "invalid-history" },
     });
+  });
+
+  it.each([false, true])(
+    "brings forward explicitly anchored dependents of a backdated predecessor ahead of an unanchored issue (sameTime: %s)",
+    async (sameTime) => {
+      const inventory = createTestInventory();
+      const position = loosePosition("anchored-bin", { lotId: "ANCHORED" });
+      const one = stockAmount("1", "piece");
+      const two = stockAmount("2", "piece");
+      const t100 = time0;
+      const t110 = sameTime ? time0 : time0 + 10;
+      const t150 = time1;
+      const t200 = time2;
+
+      await inventory.stock.receive({
+        operationId: "later-receipt-t200",
+        occurredAtEpochMs: t200,
+        to: position,
+        amount: one,
+      });
+      const backdated = await inventory.stock.receive({
+        operationId: "backdated-receipt-t100",
+        occurredAtEpochMs: t100,
+        to: position,
+        amount: one,
+      });
+
+      const repair: InventoryOnceHistoricalRepairInput = {
+        operationId: `anchored-predecessor-repair-${String(sameTime)}`,
+        occurredAtEpochMs: time3,
+        reason: "Both early receipts funded the missed historical issue.",
+        assertions: [
+          {
+            assertionId: "anchored-receipt-t110",
+            afterEventId: backdated.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: t110,
+                to: position,
+                amount: one,
+              }),
+          },
+          {
+            assertionId: "unanchored-issue-t150",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: t150,
+                from: position,
+                amount: two,
+              }),
+          },
+        ],
+      };
+
+      const planned = await inventory.stock.planHistorical(repair);
+      expect(planned.valid).toBe(true);
+      if (!planned.valid) throw new Error(planned.conflict.message);
+      expect(planned.impact.deficits).toEqual([]);
+
+      const recorded = await inventory.stock.recordHistorical(repair);
+      expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+      const positions = await inventory.read.positions({
+        itemId: position.itemId,
+        placementNodeIds: ["anchored-bin"],
+      });
+      expect(positions[0]?.measurements.primary.quantity).toEqual(
+        parseQuantity("1", "piece")
+      );
+      expect(
+        await inventory.read.planAllocation({
+          selector: { itemId: position.itemId, placementNodeIds: ["anchored-bin"] },
+          amount: one,
+          method: InventoryAllocationMethod.Fifo,
+          atEpochMs: time3,
+        })
+      ).toMatchObject({ lines: [{ layerStartedAtEpochMs: t200 }] });
+    }
+  );
+
+  it("does not let an anchored assertion seed predecessor closure without its anchor or move unrelated anchored assertions", () => {
+    const catalog = createTabletCatalog();
+    const binA = loosePosition("bin-a");
+    const binB = loosePosition("bin-b");
+    const binC = loosePosition("bin-c");
+    const one = stockAmount("1", "piece");
+
+    const seedA = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-a-t200",
+        occurredAtEpochMs: time2,
+        to: binA,
+        amount: one,
+      }),
+      time2,
+      1
+    );
+    const seedB200 = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-b-t200",
+        occurredAtEpochMs: time2,
+        to: binB,
+        amount: one,
+      }),
+      time2,
+      2
+    );
+    const anchorB = commitInventoryEvent(
+      createInventoryReceiptEvent({
+        catalog,
+        operationId: "seed-b-t100",
+        occurredAtEpochMs: time0,
+        to: binB,
+        amount: one,
+      }),
+      time2,
+      3
+    );
+    const anchoredReceiptA = createInventoryReceiptEvent({
+      catalog,
+      operationId: "anchored-receipt-a",
+      occurredAtEpochMs: time0 + 10,
+      to: binA,
+      amount: one,
+    });
+    const anchoredReceiptC = createInventoryReceiptEvent({
+      catalog,
+      operationId: "anchored-receipt-c",
+      occurredAtEpochMs: time0 + 10,
+      to: binC,
+      amount: one,
+    });
+    const preRepairProjection = projectInventoryEvents({
+      catalog,
+      events: [seedA, seedB200, anchorB],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+    const repairEvent = commitInventoryEvent(
+      createInventoryHistoricalRepairEvent(
+        {
+          catalog,
+          projection: preRepairProjection,
+          operationId: "anchored-a-on-b",
+          occurredAtEpochMs: time3,
+          recordedAtEpochMs: time3,
+          reason: "Record anchored receipts before later audit.",
+          assertions: [
+            {
+              assertionId: "anchored-receipt-a",
+              afterEventId: anchorB.eventId,
+              event: anchoredReceiptA,
+            },
+            {
+              assertionId: "anchored-receipt-c",
+              afterEventId: anchorB.eventId,
+              event: anchoredReceiptC,
+            },
+          ],
+        },
+        InventoryDeficitPolicy.Reject
+      ).event,
+      time3,
+      4
+    );
+    const projection = projectInventoryEvents({
+      catalog,
+      events: [seedA, seedB200, anchorB, repairEvent],
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+    });
+
+    // Anchor anchorB is on bin-b, so an unanchored issue on bin-a must not pull anchored-receipt-a by itself.
+    expect(() =>
+      replayInventoryHistoricalScenario({
+        catalog,
+        projection,
+        deficitPolicy: InventoryDeficitPolicy.Reject,
+        assertions: [
+          {
+            assertion: {
+              assertionId: "unanchored-issue-bin-a",
+              event: createInventoryIssueEvent({
+                catalog,
+                operationId: "issue-bin-a-t150",
+                occurredAtEpochMs: time1,
+                from: binA,
+                amount: one,
+              }),
+            },
+            recordedAtEpochMs: time3,
+            durableOrder: projection.lastRecordSequence + 1,
+            assertionOrder: 0,
+          },
+        ],
+      })
+    ).toThrow(/negative stock/iu);
+
+    // When anchorB IS reached by bin-b, anchored-receipt-c on bin-c stays after seed-b-t200 while anchorB moves.
+    const replay = replayInventoryHistoricalScenario({
+      catalog,
+      projection,
+      deficitPolicy: InventoryDeficitPolicy.Reject,
+      assertions: [
+        {
+          assertion: {
+            assertionId: "unanchored-issue-bin-b",
+            event: createInventoryIssueEvent({
+              catalog,
+              operationId: "issue-bin-b-t150",
+              occurredAtEpochMs: time1,
+              from: binB,
+              amount: one,
+            }),
+          },
+          recordedAtEpochMs: time3,
+          durableOrder: projection.lastRecordSequence + 1,
+          assertionOrder: 0,
+        },
+      ],
+    });
+    expect(replay.impact.deficits).toEqual([]);
+    const sequenceByOperationId = new Map(
+      replay.effectiveEvents.map((event) => [event.operationId, event.recordSequence])
+    );
+    const sequenceByEventId = new Map(
+      replay.effectiveEvents.map((event) => [event.eventId, event.recordSequence])
+    );
+    expect(sequenceByOperationId.get("seed-b-t100")!).toBeLessThan(
+      sequenceByOperationId.get("seed-b-t200")!
+    );
+    expect(sequenceByOperationId.get("seed-b-t200")!).toBeLessThan(
+      sequenceByEventId.get(anchoredReceiptC.eventId)!
+    );
   });
 
 });

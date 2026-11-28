@@ -2198,3 +2198,10 @@ The R105 portable-current-input authority and final publication both continue to
 - A count retains a supplying row through the last movement or transfer stage that needs it in the observation cut. Selected rows retain their history, and a connected structured transfer still replays its complete retained lifecycle.
 - An unanchored historical assertion can bring backdated predecessors forward ahead of a later fact using the same resources. Explicit anchors still constrain their assertions.
 - Measured allocation uses significant exact digits for its search grid and retains authored precision when emitting storable quantities. Current and historical exact-hold reads both restrict the result to the requested item revision.
+
+## 2026-11-28 — anchored closure, shared-row bound, count roots, and indexed whereabouts
+
+- Bringing forward a backdated predecessor ahead of a later conflicting fact also pulls eligible explicitly anchored descendants whose anchor joined the closure and whose dependency keys intersect the reached component, without letting anchored assertions seed closure alone.
+- Whole-stock reservation feasibility bounds cap each indivisible row by the minimum of its available capacity and the sum of rounded legal claim-edge demand ceilings, preserving per-claim loose bounds and exact integer limits.
+- Count subtree observation seeds one shared worklist with all selected roots and traverses placement children once with a single visited set.
+- Exact `whereaboutsIds` reads on `whereabouts` and `whereaboutsHistory` page the private `dep:whereabouts:<id>` dependency index (including `historicalImpact.whereaboutsIds` and provenance transfers/overrides) under a segmented head/revision fence and fetch only matching current position rows, falling back cleanly when capabilities are absent or concurrent writes interleave.

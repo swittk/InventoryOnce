@@ -1074,5 +1074,205 @@ describe("detached and missing stock whereabouts", () => {
     );
   });
 
+  it("reads exact whereabouts lifecycles and history without readWorld across unrelated stock, corrections, and repair omissions", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const bin = loosePosition("whereabouts-indexed-bin");
+    await inventory.stock.receive({
+      operationId: "whereabouts-indexed-seed",
+      occurredAtEpochMs: time0,
+      to: bin,
+      amount: stockAmount("10", "piece"),
+    });
+
+    // Cohort 1: direct unresolved detach -> partial missing -> partial place.
+    await inventory.stock.detach({
+      operationId: "whereabouts-indexed-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: stockAmount("5", "piece"),
+    });
+    const detached = (await inventory.read.whereabouts()).find(
+      (lifecycle) => lifecycle.originEvent.operationId === "whereabouts-indexed-detach"
+    )?.currentPositions[0];
+    if (detached?.key.whereaboutsId === undefined) {
+      throw new Error("Expected detached cohort position.");
+    }
+    const directId = detached.key.whereaboutsId;
+    await inventory.stock.markMissing({
+      operationId: "whereabouts-indexed-missing",
+      occurredAtEpochMs: time1 + 1,
+      from: detached.key,
+      amount: stockAmount("2", "piece"),
+    });
+    const currentDirectRows = (
+      await inventory.read.whereabouts({ whereaboutsIds: [directId] })
+    )[0]?.currentPositions;
+    const missingRow = currentDirectRows?.find(
+      (row) => row.key.whereaboutsState === InventoryStockWhereaboutsState.Missing
+    );
+    if (missingRow === undefined) {
+      throw new Error("Expected missing split position.");
+    }
+    await inventory.stock.place({
+      operationId: "whereabouts-indexed-place",
+      occurredAtEpochMs: time1 + 2,
+      from: missingRow.key,
+      into: "whereabouts-recovered",
+      amount: stockAmount("1", "piece"),
+    });
+
+    // Cohort 2: correction-resolved cohort.
+    const toCorrect = await inventory.stock.detach({
+      operationId: "whereabouts-indexed-correct-detach",
+      occurredAtEpochMs: time1,
+      from: bin,
+      amount: stockAmount("2", "piece"),
+    });
+    const correctedId = toCorrect.event.stockEffects.find(
+      (effect) => effect.position.whereaboutsId !== undefined
+    )?.position.whereaboutsId;
+    if (correctedId === undefined) {
+      throw new Error("Expected detached cohort for correction.");
+    }
+    await inventory.stock.correct({
+      operationId: "whereabouts-indexed-correct-to-issue",
+      occurredAtEpochMs: time1 + 1,
+      correctsEventId: toCorrect.event.eventId,
+      reason: "Stock was issued rather than detached.",
+      replaceWith: (plans) =>
+        plans.issue({
+          occurredAtEpochMs: time1,
+          from: bin,
+          amount: stockAmount("2", "piece"),
+        }),
+    });
+
+    // Cohort 3: HistoricalRepair assertion later omitted by a superseding HistoricalRepair envelope.
+    await inventory.stock.recordHistorical({
+      operationId: "whereabouts-indexed-repair-add",
+      occurredAtEpochMs: time2,
+      reason: "Record historical missing and recovery.",
+      assertions: [
+        {
+          assertionId: "hist-missing",
+          assert: (plans) =>
+            plans.markMissing({
+              occurredAtEpochMs: time0 + 1,
+              from: bin,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+        {
+          assertionId: "hist-place",
+          assert: (plans) =>
+            plans.place({
+              occurredAtEpochMs: time0 + 2,
+              from: plans.outputOf("hist-missing"),
+              into: "whereabouts-indexed-bin",
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    const historicalOnly = (await inventory.read.whereaboutsHistory()).find(
+      (lifecycle) => lifecycle.originEvent.operationId === "whereabouts-indexed-repair-add"
+    );
+    if (historicalOnly === undefined) {
+      throw new Error("Expected historical repair cohort.");
+    }
+    await inventory.stock.recordHistorical({
+      operationId: "whereabouts-indexed-repair-omit",
+      occurredAtEpochMs: time3,
+      reason: "Supersede historical missing assertions.",
+      omittedAssertionIds: ["hist-missing", "hist-place"],
+      assertions: [],
+    });
+
+    // Populate unrelated segmented stock rows to prove exact whereabouts reads stay bounded.
+    await inventory.stock.receiveMany({
+      operationId: "whereabouts-unrelated-warehouse-rows",
+      occurredAtEpochMs: time3,
+      lines: Array.from({ length: 1_200 }, (_, index) => ({
+        to: loosePosition(`unrelated-bin-${index}`, { lotId: `UNRELATED-${index}` }),
+        amount: stockAmount("1", "piece"),
+      })),
+    });
+
+    const snapshot = await inventory.read.snapshot();
+    const readWorldSpy = vi.spyOn(storage, "readWorld");
+    const targetIds = [directId, correctedId, historicalOnly.whereaboutsId];
+
+    const exactCurrent = await inventory.read.whereabouts({ whereaboutsIds: targetIds });
+    const exactHistory = await inventory.read.whereaboutsHistory({ whereaboutsIds: targetIds });
+    const exactOmittedHistory = await inventory.read.whereaboutsHistory({
+      whereaboutsIds: [historicalOnly.whereaboutsId],
+    });
+
+    expect(readWorldSpy).not.toHaveBeenCalled();
+    expect(exactCurrent).toEqual(snapshot.whereabouts({ whereaboutsIds: targetIds }));
+    expect(exactHistory).toEqual(snapshot.whereaboutsHistory({ whereaboutsIds: targetIds }));
+    expect(exactOmittedHistory[0]?.history).toHaveLength(2);
+    expect(exactOmittedHistory[0]?.history[1]?.actions).toEqual([
+      InventoryWhereaboutsAction.HistoricallyRepaired,
+    ]);
+    await expect(
+      inventory.read.whereabouts({ whereaboutsIds: [] })
+    ).rejects.toThrow("must be omitted instead of empty");
+    expect(readWorldSpy).not.toHaveBeenCalled();
+    readWorldSpy.mockRestore();
+  });
+
+  it("retries exact whereabouts reads when a concurrent mutation moves the segmented head mid-read", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    await inventory.stock.receive({
+      operationId: "whereabouts-fence-seed",
+      occurredAtEpochMs: time0,
+      to: loosePosition("fence-bin"),
+      amount: stockAmount("5", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "whereabouts-fence-detach",
+      occurredAtEpochMs: time1,
+      from: loosePosition("fence-bin"),
+      amount: stockAmount("5", "piece"),
+    });
+    const detached = (await inventory.read.whereabouts())[0]?.currentPositions[0];
+    if (detached?.key.whereaboutsId === undefined) {
+      throw new Error("Expected detached position for fence test.");
+    }
+    const whereaboutsId = detached.key.whereaboutsId;
+
+    const queryEventsOriginal = storage.queryInventoryEventsByResourceKeys.bind(storage);
+    let injected = false;
+    vi.spyOn(storage, "queryInventoryEventsByResourceKeys").mockImplementation(async (query) => {
+      const page = await queryEventsOriginal(query);
+      if (!injected) {
+        injected = true;
+        await inventory.stock.markMissing({
+          operationId: "whereabouts-fence-concurrent-missing",
+          occurredAtEpochMs: time2,
+          from: detached.key,
+          amount: stockAmount("2", "piece"),
+        });
+      }
+      return page;
+    });
+    const readWorldSpy = vi.spyOn(storage, "readWorld");
+
+    const lifecycles = await inventory.read.whereabouts({
+      whereaboutsIds: [whereaboutsId],
+    });
+    expect(injected).toBe(true);
+    expect(readWorldSpy).not.toHaveBeenCalled();
+    expect(lifecycles).toHaveLength(1);
+    expect(lifecycles[0]?.currentPositions).toHaveLength(2);
+    expect(lifecycles[0]?.history.map((entry) => entry.event.operationId)).toEqual([
+      "whereabouts-fence-detach",
+      "whereabouts-fence-concurrent-missing",
+    ]);
+    readWorldSpy.mockRestore();
+  });
 
 });

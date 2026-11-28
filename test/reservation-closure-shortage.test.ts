@@ -518,4 +518,67 @@ describe("reservation closure through an existing shortage", () => {
       await storage.readOperation("closure:release-with-transfer")
     ).toBeUndefined();
   });
+
+  it("caps fulfillableBound per shared indivisible row so exact shortages do not exhaust the state limit", async () => {
+    const item = defineScalarInventoryItem({ itemId: "shared-pack", revisionId: "shared-pack-v1", axisId: "pieces", unit: "piece" });
+    const pair = defineScalarInventoryPackaging({ revisionId: "shared-pair", item, packageUnit: "box", contains: "2" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "shared-pack": item.revisionId }, packagingRevisions: [pair],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "shared-row-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "shared-a" }, amount: packageAmount(25, pair.revisionId) },
+        { to: { ...store, lotId: "shared-b" }, amount: packageAmount(25, pair.revisionId) },
+        { to: { ...store, lotId: "spare" }, amount: packageAmount(100, pair.revisionId) },
+        { to: { ...store, lotId: "loose" }, amount: stockAmount("1", "piece") },
+      ],
+    });
+    // Start feasible with 50 pieces in each shared lot, while 5 broad claims each request 10.
+    for (const lotId of ["shared-a", "shared-b"]) {
+      for (let index = 0; index < 5; index += 1) {
+        const reservationId = `${lotId}-claim-${index}`;
+        await inventory.reservations.reserve({
+          operationId: `reserve-${reservationId}`,
+          reservationId,
+          itemRevisionId: item.revisionId,
+          selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: [lotId] },
+          requested: parseQuantity("10", "piece"),
+          createdAtEpochMs: time1,
+        });
+      }
+    }
+    await inventory.reservations.reserve({
+      operationId: "reserve-spare-claim",
+      reservationId: "spare-claim",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["spare", "loose"] },
+      requested: parseQuantity("21", "piece"),
+      createdAtEpochMs: time1,
+    });
+    // Reduce shared-a to 18 pieces and shared-b to 20 pieces so both shared rows enter an exact shortage.
+    await inventory.stock.issue({
+      operationId: "issue-shared-a-packs",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "shared-a", packagingRevisionId: pair.revisionId },
+      amount: packageAmount(16, pair.revisionId),
+    });
+    await inventory.stock.issue({
+      operationId: "issue-shared-b-packs",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "shared-b", packagingRevisionId: pair.revisionId },
+      amount: packageAmount(15, pair.revisionId),
+    });
+
+    const report = await inventory.read.reservationFeasibility(time2);
+    expect(report.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(report.groups).toMatchObject([{
+      requested: parseQuantity("121", "piece"),
+      fulfillable: parseQuantity("59", "piece"),
+      shortage: parseQuantity("62", "piece"),
+    }]);
+  });
 });

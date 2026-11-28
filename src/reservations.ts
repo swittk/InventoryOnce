@@ -1356,6 +1356,8 @@ function reservationGroupFeasibility(
   let totalCapacity = 0n;
   /** Capacity that can fill a remainder below a whole increment. */
   let divisibleCapacity = 0n;
+  /** Sum of per-row indivisible capacities capped by exact legal claim-edge demand ceilings. */
+  let sharedIndivisibleCapacityBound = 0n;
   /** Every eligible whole assignment uses a multiple of this increment. */
   let stockIncrement = 0n;
   /** Whole picks on each claim use a multiple of its eligible stock increments. */
@@ -1382,15 +1384,22 @@ function reservationGroupFeasibility(
       );
     }
     let eligibleReservationCount = 0;
+    let rowEligibleDemand = 0n;
     for (let reservationIndex = 0; reservationIndex < edgeCapacityByReservation.length; reservationIndex += 1) {
-      if ((edgeCapacityByReservation[reservationIndex]?.[positionIndex] ?? 0n) < incrementMinor) continue;
+      const edgeCapacity = edgeCapacityByReservation[reservationIndex]?.[positionIndex] ?? 0n;
+      if (edgeCapacity < incrementMinor) continue;
+      const requested = requestedByReservation[reservationIndex] ?? 0n;
+      const claimEdgeCeiling = edgeCapacity < requested ? edgeCapacity : requested;
+      if (claimEdgeCeiling < incrementMinor) continue;
       eligibleReservationCount += 1;
+      rowEligibleDemand += claimEdgeCeiling - claimEdgeCeiling % incrementMinor;
       const previous = wholeIncrementByReservation[reservationIndex] ?? 0n;
       if (previous !== 1n && previous !== incrementMinor) {
         wholeIncrementByReservation[reservationIndex] = quantityGreatestCommonDivisor(previous, incrementMinor);
       }
     }
     if (eligibleReservationCount === 0) continue;
+    sharedIndivisibleCapacityBound += rowEligibleDemand < capacityMinor ? rowEligibleDemand : capacityMinor;
     if (stockIncrement !== 1n) stockIncrement = quantityGreatestCommonDivisor(stockIncrement, incrementMinor);
     indivisibleGroups.push({
       positionIndex,
@@ -1421,8 +1430,10 @@ function reservationGroupFeasibility(
       scopedDemandBound += scopedDemand < requested ? scopedDemand : requested;
     }
     const sharedDemandBound = totalWholeDemand + divisibleCapacity;
+    const sharedRowBound = sharedIndivisibleCapacityBound + divisibleCapacity;
     if (scopedDemandBound < fulfillableBound) fulfillableBound = scopedDemandBound;
     if (sharedDemandBound < fulfillableBound) fulfillableBound = sharedDemandBound;
+    if (sharedRowBound < fulfillableBound) fulfillableBound = sharedRowBound;
     if (divisibleCapacity === 0n && stockIncrement > 1n) fulfillableBound -= fulfillableBound % stockIncrement;
   }
   return {
