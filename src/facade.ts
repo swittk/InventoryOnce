@@ -10577,21 +10577,28 @@ async function readExactInventoryWhereabouts<Result>(
     );
     const eventsProjection = buildIndexedWhereaboutsEventsProjection(orderedEvents, whereaboutsIdSet);
     const firstPass = inventoryWhereaboutsLifecycles(eventsProjection, whereaboutsIdSet);
-    const touchedItemIds = new Set<string>();
+    const cohortsByItemId = new Map<string, Set<string>>();
     for (const lifecycle of firstPass) {
-      for (const itemId of lifecycle.itemIds) touchedItemIds.add(itemId);
+      for (const itemId of lifecycle.itemIds) {
+        let bucket = cohortsByItemId.get(itemId);
+        if (bucket === undefined) {
+          bucket = new Set<string>();
+          cohortsByItemId.set(itemId, bucket);
+        }
+        bucket.add(lifecycle.whereaboutsId);
+      }
     }
 
     const positions = createInventorySparseRecord<InventoryStockPosition>();
     const positionIdsByWhereaboutsId = createInventorySparseRecord<readonly string[]>();
     const mutablePositionIdsByWhereaboutsId = new Map<string, string[]>();
-    if (touchedItemIds.size > 0) {
+    if (cohortsByItemId.size > 0) {
       const segment = await storage.readPositionSegment();
       if ((await segment.revision()) !== head.worldRevision) continue;
-      for (const itemId of touchedItemIds) {
+      for (const [itemId, cohortIds] of cohortsByItemId) {
         const itemPositions = await segment.queryPositions({
           itemId,
-          whereaboutsIds: requestedWhereaboutsIds,
+          whereaboutsIds: [...cohortIds],
         });
         if (itemPositions === undefined) return undefined;
         for (const position of itemPositions) {

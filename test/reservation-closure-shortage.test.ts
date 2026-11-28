@@ -732,4 +732,56 @@ describe("reservation closure through an existing shortage", () => {
       shortage: parseQuantity("2", "piece"),
     }]);
   });
+
+  it("tightens indivisible bound by minimum unused pack when whole capacity narrowly exceeds demand", async () => {
+    const item = defineScalarInventoryItem({ itemId: "min-unused-pack", revisionId: "min-unused-pack-v1", axisId: "pieces", unit: "piece" });
+    const six = defineScalarInventoryPackaging({ revisionId: "min-six", item, packageUnit: "six", contains: "6" });
+    const four = defineScalarInventoryPackaging({ revisionId: "min-four", item, packageUnit: "four", contains: "4" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { "min-unused-pack": item.revisionId }, packagingRevisions: [six, four],
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const store = { itemId: item.itemId, placementNodeId: "store" };
+    await inventory.stock.receiveMany({
+      operationId: "min-unused-receive",
+      occurredAtEpochMs: time0,
+      lines: [
+        { to: { ...store, lotId: "S" }, amount: packageAmount(266667, six.revisionId) },
+        { to: { ...store, lotId: "F" }, amount: packageAmount(200000, four.revisionId) },
+        { to: { ...store, lotId: "L" }, amount: stockAmount("2", "piece") },
+      ],
+    });
+    await inventory.reservations.reserve({
+      operationId: "min-unused-c1",
+      reservationId: "claim-1",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("1200000", "piece"),
+      createdAtEpochMs: time1,
+    });
+    await inventory.reservations.reserve({
+      operationId: "min-unused-c2",
+      reservationId: "claim-2",
+      itemRevisionId: item.revisionId,
+      selector: { itemId: item.itemId, placementNodeIds: ["store"] },
+      requested: parseQuantity("1200000", "piece"),
+      createdAtEpochMs: time1,
+    });
+    const fullReport = await inventory.read.reservationFeasibility(time1);
+    expect(fullReport.status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+
+    await inventory.stock.issue({
+      operationId: "min-unused-issue-l",
+      occurredAtEpochMs: time2,
+      from: { ...store, lotId: "L" },
+      amount: stockAmount("2", "piece"),
+    });
+    const shortReport = await inventory.read.reservationFeasibility(time2);
+    expect(shortReport.status).toBe(InventoryReservationFeasibilityStatus.Shortage);
+    expect(shortReport.groups).toMatchObject([{
+      requested: parseQuantity("2400000", "piece"),
+      fulfillable: parseQuantity("2399998", "piece"),
+      shortage: parseQuantity("2", "piece"),
+    }]);
+  });
 });

@@ -4,7 +4,7 @@ This file is generated from the exact TypeScript surface plus the checked API, f
 
 Use the repository `.nvmrc` when one exists; otherwise run the assurance command with a Node version permitted by `package.json#engines`. Edit only checked source/manifests, run `pnpm assurance:generate` when generated evidence must change, then run `pnpm assurance --write-report`.
 
-Surface SHA-256: `b1f29e8a15c367e4daf475c799c3a8ac59273083e61d2ac487d01470997d9b15`
+Surface SHA-256: `339d38a812483148208ca53bb8d71e1f9281cdc640d156b2f4190fbca1840604`
 
 ## Mechanically covered surface
 

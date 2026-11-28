@@ -31,6 +31,7 @@ import {
   readInventoryScopedStockAvailability,
   type InventorySegmentedStockPlanningCapability,
 } from "../src/storage-api.js";
+import { InventoryExactAllocationLimitError } from "../src/allocation.js";
 import { createInventoryTransferManyEvent, defineInventoryEvent, planInventoryAllocation } from "../src/kernel.js";
 import { inventoryStockPositionIdentity } from "../src/model.js";
 import { projectInventoryEvents } from "../src/projection.js";
@@ -4423,6 +4424,70 @@ describe("indexed stock planning and availability", () => {
         amount: measuredStockAmount("10003", "piece", [{ axisId: "weight", value: "0.3", unit: "kg" }]),
         method: InventoryAllocationMethod.Fifo,
       }),
-    ).rejects.toThrow(/safe search bound/i);
+    ).rejects.toBeInstanceOf(InventoryExactAllocationLimitError);
+  });
+
+  it("refuses to turn a non-storable measured primary pick into an empty-witness Record transfer", async () => {
+    const item = defineInventoryItem({
+      itemId: "wide-pkg-item",
+      revisionId: "wide-pkg-item-v1",
+      primaryAxis: {
+        axisId: "pieces",
+        unit: unitCode("piece"),
+        role: InventoryMeasurementAxisRole.Primary,
+        requirement: InventoryMeasurementRequirement.Required,
+      },
+      independentAxes: [
+        {
+          axisId: "weight",
+          unit: unitCode("kg"),
+          role: InventoryMeasurementAxisRole.Independent,
+          requirement: InventoryMeasurementRequirement.Required,
+        },
+      ],
+      reservationAxisId: "pieces",
+      tracking: {
+        lot: InventoryTrackingRequirement.Optional,
+        serial: InventoryTrackingRequirement.Forbidden,
+      },
+      qualifiedDimensions: [],
+    });
+    const widePkg = defineInventoryPackaging(
+      {
+        revisionId: "wide-pkg",
+        itemId: item.itemId,
+        itemRevisionId: item.revisionId,
+        packageUnit: unitCode("pkg"),
+        fixedContents: inventoryMeasurementVector(
+          { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+          [{ axisId: "weight", quantity: parseQuantity("0.9007199254740991", "kg") }],
+        ),
+      },
+      item,
+    );
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item],
+      activeItemRevisionIds: { [item.itemId]: item.revisionId },
+      packagingRevisions: [widePkg],
+    });
+    const inventory = createTestInventory(undefined, catalog, undefined, InventoryDeficitPolicy.Record);
+    await inventory.stock.receive({
+      operationId: "wide-pkg-receive",
+      occurredAtEpochMs: time0,
+      to: { itemId: item.itemId, placementNodeId: "store", lotId: "wide-lot", packagingRevisionId: widePkg.revisionId },
+      amount: packageAmount(10, widePkg.revisionId),
+    });
+
+    await expect(
+      inventory.stock.transferByPolicy({
+        operationId: "wide-pkg-transfer",
+        occurredAtEpochMs: time1,
+        selector: inventoryStockSelector(item.itemId, { placementNodeIds: ["store"] }),
+        toPlacementNodeId: "out",
+        amount: measuredStockAmount("2", "piece", [{ axisId: "weight", value: "0.5", unit: "kg" }]),
+        method: InventoryAllocationMethod.Fifo,
+      }),
+    ).rejects.toThrow("Accepted allocation cannot store its measured lines.");
+    expect(await inventory.read.positions({ itemId: item.itemId, placementNodeIds: ["out"] })).toEqual([]);
   });
 });

@@ -21,6 +21,7 @@ import {
   type InventoryMeasurementVector,
 } from "./measurements.js";
 import {
+  inventorySerialIdentity,
   inventoryStockPositionIdentity,
 } from "./model.js";
 import {
@@ -278,7 +279,11 @@ export function expandInventoryCountRepairAssertions(
     (event) => event.kind === InventoryEventKind.HistoricalRepair
   )) return ordered;
   // Corrections retain their own observation rule and predecessor evidence.
-  return effectiveInventoryHistoryEvents({ ordered, retainCorrections: true });
+  return effectiveInventoryHistoryEvents({
+    ordered,
+    retainCorrections: true,
+    isolateEmbeddedIdentities: true,
+  });
 }
 
 /** Collect current active embedded assertions, merge new evidence, then replay in deterministic order. */
@@ -288,6 +293,7 @@ function effectiveInventoryHistoryEvents({
   omittedAssertionIds = [],
   rootReplacement,
   retainCorrections = false,
+  isolateEmbeddedIdentities = false,
 }: {
   /** Retained event component in durable order. */
   readonly ordered: readonly InventoryCommittedEvent[];
@@ -299,6 +305,8 @@ function effectiveInventoryHistoryEvents({
   readonly rootReplacement?: InventoryHistoricalRootReplacement;
   /** Count cuts apply committed corrections rather than rewriting their root events. */
   readonly retainCorrections?: boolean;
+  /** Isolate embedded count replay operation/event identities from ordinary committed operations. */
+  readonly isolateEmbeddedIdentities?: boolean;
 }): readonly InventoryCommittedEvent[] {
   const active = new Map<string, InventoryPendingHistoricalAssertion>();
   const ordinary: InventoryCommittedEvent[] = [];
@@ -427,13 +435,55 @@ function effectiveInventoryHistoryEvents({
     /** Preserve each retained assertion's durable evidence time. */
     (event) => ({ event, recordedAtEpochMs: event.recordedAtEpochMs })
   );
+  const embeddedEvents = new Set(
+    pending.map(
+      /** Identify embedded repair assertions before anchor insertion completes. */
+      (entry) => entry.assertion.event
+    )
+  );
   for (const entry of pending) {
     insertHistoricalAssertion(merged, entry);
   }
+  if (!isolateEmbeddedIdentities) {
+    return merged.map(
+      /** Assign contiguous local replay sequence without changing durable evidence time. */
+      (entry, index) =>
+        commitInventoryEvent(entry.event, entry.recordedAtEpochMs, index + 1)
+    );
+  }
+  const usedOperationIds = new Set<string>();
+  const usedEventIds = new Set<string>();
+  for (const entry of merged) {
+    if (embeddedEvents.has(entry.event)) continue;
+    usedOperationIds.add(entry.event.operationId);
+    usedEventIds.add(entry.event.eventId);
+  }
+  let embeddedCounter = 0;
   return merged.map(
-    /** Assign contiguous local replay sequence without changing durable evidence time. */
-    (entry, index) =>
-      commitInventoryEvent(entry.event, entry.recordedAtEpochMs, index + 1)
+    /** Assign fresh non-colliding operation/event identities to embedded count-replay assertions. */
+    (entry, index) => {
+      if (!embeddedEvents.has(entry.event)) {
+        return commitInventoryEvent(entry.event, entry.recordedAtEpochMs, index + 1);
+      }
+      embeddedCounter += 1;
+      let operationId = `inventory:count-assertion-op:${embeddedCounter}`;
+      while (usedOperationIds.has(operationId)) {
+        embeddedCounter += 1;
+        operationId = `inventory:count-assertion-op:${embeddedCounter}`;
+      }
+      usedOperationIds.add(operationId);
+      let eventId = `inventory:count-assertion-event:${embeddedCounter}`;
+      while (usedEventIds.has(eventId)) {
+        embeddedCounter += 1;
+        eventId = `inventory:count-assertion-event:${embeddedCounter}`;
+      }
+      usedEventIds.add(eventId);
+      return commitInventoryEvent(
+        { ...entry.event, operationId, eventId },
+        entry.recordedAtEpochMs,
+        index + 1
+      );
+    }
   );
 }
 
@@ -511,6 +561,20 @@ function isHistoricalStockSupplyCorrection(
     );
 }
 
+/** Match a stock correction that removes positive stock for a serial received by an assertion. */
+function isHistoricalSerialRemovalCorrection(
+  event: InventoryEventDraft | InventoryCommittedEvent,
+  destinationSerialIds: ReadonlySet<string>
+): boolean {
+  return event.kind === InventoryEventKind.Correction && destinationSerialIds.size > 0 &&
+    event.stockEffects.some(
+      /** A correction must remove positive stock on a serial the assertion receives. */
+      (effect) => effect.position.serialId !== undefined &&
+        effect.measurementsDelta.primary.quantity.amountMinor < 0 &&
+        destinationSerialIds.has(inventorySerialIdentity(effect.position.itemId, effect.position.serialId))
+    );
+}
+
 /** Insert after an explicit anchor or between the earlier and later facts using the same resources. */
 function insertHistoricalAssertion(
   target: InventoryHistoricalReplayEntry[],
@@ -535,17 +599,23 @@ function insertHistoricalAssertion(
     const dependencies = new Set(inventoryEventDependencyKeys(assertion.event));
     /** Exact stock positions this assertion needs to debit. */
     const sourcePositionIds = new Set<string>();
+    /** Serialized identities this assertion receives so earlier omitting corrections precede it. */
+    const destinationSerialIds = new Set<string>();
     for (const effect of assertion.event.stockEffects) {
       if (effect.measurementsDelta.primary.quantity.amountMinor < 0) {
         sourcePositionIds.add(inventoryStockPositionIdentity(effect.position));
+      } else if (effect.position.serialId !== undefined && effect.measurementsDelta.primary.quantity.amountMinor > 0) {
+        destinationSerialIds.add(inventorySerialIdentity(effect.position.itemId, effect.position.serialId));
       }
     }
     const occurredAt = assertion.event.occurredAtEpochMs;
     for (let index = 0; index < target.length; index += 1) {
       const event = target[index]!.event;
-      // Keep shared topology corrections and earlier corrections that supply the assertion's stock.
+      // Keep shared topology corrections and earlier corrections that supply stock or clear a received serial.
       if (event.kind === InventoryEventKind.Correction && !isSharedPlacementCorrection(event, dependencies) &&
-          (event.occurredAtEpochMs > occurredAt || !isHistoricalStockSupplyCorrection(event, sourcePositionIds))) {
+          (event.occurredAtEpochMs > occurredAt ||
+            (!isHistoricalStockSupplyCorrection(event, sourcePositionIds) &&
+              !isHistoricalSerialRemovalCorrection(event, destinationSerialIds)))) {
         continue;
       }
       if (event.occurredAtEpochMs <= occurredAt) {

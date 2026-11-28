@@ -1,7 +1,7 @@
 {
   "counts": {
-    "callables": 4601,
-    "edges": 13591,
+    "callables": 4615,
+    "edges": 13675,
     "publicEntries": 632,
     "publicEntriesWithTargets": 632,
     "publicEntriesWithWitnesses": 632,
@@ -5458,20 +5458,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:209114:<anonymous@3361>",
+                "id": "test/scoped-stock-planning.test.ts:209189:<anonymous@3362>",
                 "kind": "ArrowFunction",
-                "line": 3361,
-                "name": "<anonymous@3361>",
+                "line": 3362,
+                "name": "<anonymous@3362>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -5752,20 +5752,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:209114:<anonymous@3361>",
+                "id": "test/scoped-stock-planning.test.ts:209189:<anonymous@3362>",
                 "kind": "ArrowFunction",
-                "line": 3361,
-                "name": "<anonymous@3361>",
+                "line": 3362,
+                "name": "<anonymous@3362>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6086,9 +6086,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -6624,20 +6624,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 98,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:241938:<anonymous@3906>",
+                "id": "test/scoped-stock-planning.test.ts:242013:<anonymous@3907>",
                 "kind": "ArrowFunction",
-                "line": 3906,
-                "name": "<anonymous@3906>",
+                "line": 3907,
+                "name": "<anonymous@3907>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -6847,20 +6847,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:220642:<anonymous@3539>",
+                "id": "test/scoped-stock-planning.test.ts:220717:<anonymous@3540>",
                 "kind": "ArrowFunction",
-                "line": 3539,
-                "name": "<anonymous@3539>",
+                "line": 3540,
+                "name": "<anonymous@3540>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -7100,20 +7100,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:220642:<anonymous@3539>",
+                "id": "test/scoped-stock-planning.test.ts:220717:<anonymous@3540>",
                 "kind": "ArrowFunction",
-                "line": 3539,
-                "name": "<anonymous@3539>",
+                "line": 3540,
+                "name": "<anonymous@3540>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -7860,9 +7860,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -9986,9 +9986,9 @@
           "column": 3,
           "file": "src/historical-replay.ts",
           "hasBody": true,
-          "id": "src/historical-replay.ts:2242:InventoryHistoricalReplayConflictError",
+          "id": "src/historical-replay.ts:2269:InventoryHistoricalReplayConflictError",
           "kind": "Constructor",
-          "line": 62,
+          "line": 63,
           "name": "InventoryHistoricalReplayConflictError"
         }
       ],
@@ -9999,9 +9999,9 @@
             "column": 3,
             "file": "src/historical-replay.ts",
             "hasBody": true,
-            "id": "src/historical-replay.ts:2242:InventoryHistoricalReplayConflictError",
+            "id": "src/historical-replay.ts:2269:InventoryHistoricalReplayConflictError",
             "kind": "Constructor",
-            "line": 62,
+            "line": 63,
             "name": "InventoryHistoricalReplayConflictError"
           },
           "witness": {
@@ -10039,9 +10039,9 @@
                 "column": 1,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:5609:replayInventoryHistoricalScenario",
+                "id": "src/historical-replay.ts:5636:replayInventoryHistoricalScenario",
                 "kind": "FunctionDeclaration",
-                "line": 134,
+                "line": 135,
                 "name": "replayInventoryHistoricalScenario",
                 "reason": "resolved-call"
               },
@@ -10049,9 +10049,9 @@
                 "column": 3,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:2242:InventoryHistoricalReplayConflictError",
+                "id": "src/historical-replay.ts:2269:InventoryHistoricalReplayConflictError",
                 "kind": "Constructor",
-                "line": 62,
+                "line": 63,
                 "name": "InventoryHistoricalReplayConflictError",
                 "reason": "resolved-call"
               }
@@ -11749,9 +11749,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:103131:compareCommittedEventSequence",
+          "id": "src/projection.ts:103402:compareCommittedEventSequence",
           "kind": "FunctionDeclaration",
-          "line": 2528,
+          "line": 2533,
           "name": "compareCommittedEventSequence"
         }
       ],
@@ -11762,9 +11762,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:103131:compareCommittedEventSequence",
+            "id": "src/projection.ts:103402:compareCommittedEventSequence",
             "kind": "FunctionDeclaration",
-            "line": 2528,
+            "line": 2533,
             "name": "compareCommittedEventSequence"
           },
           "witness": {
@@ -11802,9 +11802,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:91870:projectInventoryEvents",
+                "id": "src/projection.ts:92141:projectInventoryEvents",
                 "kind": "FunctionDeclaration",
-                "line": 2220,
+                "line": 2225,
                 "name": "projectInventoryEvents",
                 "reason": "resolved-call"
               },
@@ -11812,9 +11812,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:93713:inventoryEventsInRecordSequence",
+                "id": "src/projection.ts:93984:inventoryEventsInRecordSequence",
                 "kind": "FunctionDeclaration",
-                "line": 2265,
+                "line": 2270,
                 "name": "inventoryEventsInRecordSequence",
                 "reason": "resolved-call"
               },
@@ -11822,9 +11822,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:103131:compareCommittedEventSequence",
+                "id": "src/projection.ts:103402:compareCommittedEventSequence",
                 "kind": "FunctionDeclaration",
-                "line": 2528,
+                "line": 2533,
                 "name": "compareCommittedEventSequence",
                 "reason": "external-callback-dispatch"
               }
@@ -12804,9 +12804,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -14718,20 +14718,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 73,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:205573:<anonymous@3303>",
+                "id": "test/scoped-stock-planning.test.ts:205648:<anonymous@3304>",
                 "kind": "ArrowFunction",
-                "line": 3303,
-                "name": "<anonymous@3303>",
+                "line": 3304,
+                "name": "<anonymous@3304>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -16652,9 +16652,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:94191:findInventoryPositions",
+          "id": "src/projection.ts:94462:findInventoryPositions",
           "kind": "FunctionDeclaration",
-          "line": 2281,
+          "line": 2286,
           "name": "findInventoryPositions"
         }
       ],
@@ -16665,9 +16665,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:94191:findInventoryPositions",
+            "id": "src/projection.ts:94462:findInventoryPositions",
             "kind": "FunctionDeclaration",
-            "line": 2281,
+            "line": 2286,
             "name": "findInventoryPositions"
           },
           "witness": {
@@ -16705,9 +16705,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:94191:findInventoryPositions",
+                "id": "src/projection.ts:94462:findInventoryPositions",
                 "kind": "FunctionDeclaration",
-                "line": 2281,
+                "line": 2286,
                 "name": "findInventoryPositions",
                 "reason": "resolved-call"
               }
@@ -16875,9 +16875,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:76408:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:76348:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1617,
+          "line": 1616,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -16888,9 +16888,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:76408:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:76348:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1617,
+            "line": 1616,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -16968,9 +16968,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:76408:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:76348:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1617,
+                "line": 1616,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -17424,7 +17424,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -17434,7 +17434,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -17920,9 +17920,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -18021,9 +18021,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -18142,9 +18142,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -18251,9 +18251,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:93713:inventoryEventsInRecordSequence",
+          "id": "src/projection.ts:93984:inventoryEventsInRecordSequence",
           "kind": "FunctionDeclaration",
-          "line": 2265,
+          "line": 2270,
           "name": "inventoryEventsInRecordSequence"
         }
       ],
@@ -18264,9 +18264,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:93713:inventoryEventsInRecordSequence",
+            "id": "src/projection.ts:93984:inventoryEventsInRecordSequence",
             "kind": "FunctionDeclaration",
-            "line": 2265,
+            "line": 2270,
             "name": "inventoryEventsInRecordSequence"
           },
           "witness": {
@@ -18304,9 +18304,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:91870:projectInventoryEvents",
+                "id": "src/projection.ts:92141:projectInventoryEvents",
                 "kind": "FunctionDeclaration",
-                "line": 2220,
+                "line": 2225,
                 "name": "projectInventoryEvents",
                 "reason": "resolved-call"
               },
@@ -18314,9 +18314,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:93713:inventoryEventsInRecordSequence",
+                "id": "src/projection.ts:93984:inventoryEventsInRecordSequence",
                 "kind": "FunctionDeclaration",
-                "line": 2265,
+                "line": 2270,
                 "name": "inventoryEventsInRecordSequence",
                 "reason": "resolved-call"
               }
@@ -18729,7 +18729,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -18739,7 +18739,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -19144,10 +19144,10 @@
                 "column": 90,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:7942:<anonymous@180>",
+                "id": "test/dual-measure-counts.test.ts:10052:<anonymous@217>",
                 "kind": "ArrowFunction",
-                "line": 180,
-                "name": "<anonymous@180>",
+                "line": 217,
+                "name": "<anonymous@217>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -19691,9 +19691,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:419367:placementAncestry",
+                "id": "src/facade.ts:419595:placementAncestry",
                 "kind": "MethodDeclaration",
-                "line": 10903,
+                "line": 10910,
                 "name": "placementAncestry",
                 "reason": "interface-to-implementation"
               },
@@ -19944,9 +19944,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:94191:findInventoryPositions",
+                "id": "src/projection.ts:94462:findInventoryPositions",
                 "kind": "FunctionDeclaration",
-                "line": 2281,
+                "line": 2286,
                 "name": "findInventoryPositions",
                 "reason": "resolved-call"
               },
@@ -20055,9 +20055,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:417680:placementParent",
+                "id": "src/facade.ts:417908:placementParent",
                 "kind": "MethodDeclaration",
-                "line": 10859,
+                "line": 10866,
                 "name": "placementParent",
                 "reason": "interface-to-implementation"
               },
@@ -20217,7 +20217,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -20227,7 +20227,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -20328,7 +20328,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -20338,7 +20338,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -20905,9 +20905,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:94191:findInventoryPositions",
+                "id": "src/projection.ts:94462:findInventoryPositions",
                 "kind": "FunctionDeclaration",
-                "line": 2281,
+                "line": 2286,
                 "name": "findInventoryPositions",
                 "reason": "resolved-call"
               },
@@ -21685,9 +21685,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:416497:packagingRevisions",
+                "id": "src/facade.ts:416725:packagingRevisions",
                 "kind": "MethodDeclaration",
-                "line": 10826,
+                "line": 10833,
                 "name": "packagingRevisions",
                 "reason": "interface-to-implementation"
               },
@@ -22404,9 +22404,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -23273,9 +23273,9 @@
           "column": 1,
           "file": "src/projection.ts",
           "hasBody": true,
-          "id": "src/projection.ts:91870:projectInventoryEvents",
+          "id": "src/projection.ts:92141:projectInventoryEvents",
           "kind": "FunctionDeclaration",
-          "line": 2220,
+          "line": 2225,
           "name": "projectInventoryEvents"
         }
       ],
@@ -23286,9 +23286,9 @@
             "column": 1,
             "file": "src/projection.ts",
             "hasBody": true,
-            "id": "src/projection.ts:91870:projectInventoryEvents",
+            "id": "src/projection.ts:92141:projectInventoryEvents",
             "kind": "FunctionDeclaration",
-            "line": 2220,
+            "line": 2225,
             "name": "projectInventoryEvents"
           },
           "witness": {
@@ -23326,9 +23326,9 @@
                 "column": 1,
                 "file": "src/projection.ts",
                 "hasBody": true,
-                "id": "src/projection.ts:91870:projectInventoryEvents",
+                "id": "src/projection.ts:92141:projectInventoryEvents",
                 "kind": "FunctionDeclaration",
-                "line": 2220,
+                "line": 2225,
                 "name": "projectInventoryEvents",
                 "reason": "resolved-call"
               }
@@ -23883,9 +23883,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               },
@@ -24053,9 +24053,9 @@
           "column": 1,
           "file": "src/historical-replay.ts",
           "hasBody": true,
-          "id": "src/historical-replay.ts:5609:replayInventoryHistoricalScenario",
+          "id": "src/historical-replay.ts:5636:replayInventoryHistoricalScenario",
           "kind": "FunctionDeclaration",
-          "line": 134,
+          "line": 135,
           "name": "replayInventoryHistoricalScenario"
         }
       ],
@@ -24066,9 +24066,9 @@
             "column": 1,
             "file": "src/historical-replay.ts",
             "hasBody": true,
-            "id": "src/historical-replay.ts:5609:replayInventoryHistoricalScenario",
+            "id": "src/historical-replay.ts:5636:replayInventoryHistoricalScenario",
             "kind": "FunctionDeclaration",
-            "line": 134,
+            "line": 135,
             "name": "replayInventoryHistoricalScenario"
           },
           "witness": {
@@ -24106,9 +24106,9 @@
                 "column": 1,
                 "file": "src/historical-replay.ts",
                 "hasBody": true,
-                "id": "src/historical-replay.ts:5609:replayInventoryHistoricalScenario",
+                "id": "src/historical-replay.ts:5636:replayInventoryHistoricalScenario",
                 "kind": "FunctionDeclaration",
-                "line": 134,
+                "line": 135,
                 "name": "replayInventoryHistoricalScenario",
                 "reason": "resolved-call"
               }
@@ -24907,9 +24907,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:412065:summary",
+                "id": "src/facade.ts:412293:summary",
                 "kind": "MethodDeclaration",
-                "line": 10730,
+                "line": 10737,
                 "name": "summary",
                 "reason": "interface-to-implementation"
               },
@@ -25130,10 +25130,10 @@
                 "column": 90,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:7942:<anonymous@180>",
+                "id": "test/dual-measure-counts.test.ts:10052:<anonymous@217>",
                 "kind": "ArrowFunction",
-                "line": 180,
-                "name": "<anonymous@180>",
+                "line": 217,
+                "name": "<anonymous@217>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -29213,9 +29213,9 @@
           "column": 1,
           "file": "src/picking.ts",
           "hasBody": true,
-          "id": "src/picking.ts:76408:inventoryAmountForPrimaryAllocation",
+          "id": "src/picking.ts:76348:inventoryAmountForPrimaryAllocation",
           "kind": "FunctionDeclaration",
-          "line": 1617,
+          "line": 1616,
           "name": "inventoryAmountForPrimaryAllocation"
         }
       ],
@@ -29226,9 +29226,9 @@
             "column": 1,
             "file": "src/picking.ts",
             "hasBody": true,
-            "id": "src/picking.ts:76408:inventoryAmountForPrimaryAllocation",
+            "id": "src/picking.ts:76348:inventoryAmountForPrimaryAllocation",
             "kind": "FunctionDeclaration",
-            "line": 1617,
+            "line": 1616,
             "name": "inventoryAmountForPrimaryAllocation"
           },
           "witness": {
@@ -29306,9 +29306,9 @@
                 "column": 1,
                 "file": "src/picking.ts",
                 "hasBody": true,
-                "id": "src/picking.ts:76408:inventoryAmountForPrimaryAllocation",
+                "id": "src/picking.ts:76348:inventoryAmountForPrimaryAllocation",
                 "kind": "FunctionDeclaration",
-                "line": 1617,
+                "line": 1616,
                 "name": "inventoryAmountForPrimaryAllocation",
                 "reason": "resolved-call"
               }
@@ -29752,7 +29752,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -29762,7 +29762,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -29974,7 +29974,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -29984,7 +29984,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -30298,10 +30298,10 @@
                 "column": 90,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:7942:<anonymous@180>",
+                "id": "test/dual-measure-counts.test.ts:10052:<anonymous@217>",
                 "kind": "ArrowFunction",
-                "line": 180,
-                "name": "<anonymous@180>",
+                "line": 217,
+                "name": "<anonymous@217>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -30855,7 +30855,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -30865,7 +30865,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -30966,7 +30966,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38832:reservationGroupFeasibility",
+                "id": "src/reservations.ts:38863:reservationGroupFeasibility",
                 "kind": "FunctionDeclaration",
                 "line": 1058,
                 "name": "reservationGroupFeasibility",
@@ -30976,7 +30976,7 @@
                 "column": 1,
                 "file": "src/reservations.ts",
                 "hasBody": true,
-                "id": "src/reservations.ts:38082:reservationPositionEligible",
+                "id": "src/reservations.ts:38113:reservationPositionEligible",
                 "kind": "FunctionDeclaration",
                 "line": 1032,
                 "name": "reservationPositionEligible",
@@ -31260,9 +31260,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:416497:packagingRevisions",
+                "id": "src/facade.ts:416725:packagingRevisions",
                 "kind": "MethodDeclaration",
-                "line": 10826,
+                "line": 10833,
                 "name": "packagingRevisions",
                 "reason": "interface-to-implementation"
               },
@@ -33864,9 +33864,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:412065:summary",
+                "id": "src/facade.ts:412293:summary",
                 "kind": "MethodDeclaration",
-                "line": 10730,
+                "line": 10737,
                 "name": "summary",
                 "reason": "interface-to-implementation"
               },
@@ -34087,10 +34087,10 @@
                 "column": 90,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:7942:<anonymous@180>",
+                "id": "test/dual-measure-counts.test.ts:10052:<anonymous@217>",
                 "kind": "ArrowFunction",
-                "line": 180,
-                "name": "<anonymous@180>",
+                "line": 217,
+                "name": "<anonymous@217>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36133,9 +36133,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:419367:placementAncestry",
+                "id": "src/facade.ts:419595:placementAncestry",
                 "kind": "MethodDeclaration",
-                "line": 10903,
+                "line": 10910,
                 "name": "placementAncestry",
                 "reason": "interface-to-implementation"
               },
@@ -36214,9 +36214,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:409267:positions",
+                "id": "src/facade.ts:409495:positions",
                 "kind": "MethodDeclaration",
-                "line": 10665,
+                "line": 10672,
                 "name": "positions",
                 "reason": "interface-to-implementation"
               },
@@ -36406,9 +36406,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:412065:summary",
+                "id": "src/facade.ts:412293:summary",
                 "kind": "MethodDeclaration",
-                "line": 10730,
+                "line": 10737,
                 "name": "summary",
                 "reason": "interface-to-implementation"
               },
@@ -36720,20 +36720,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 85,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5675:<anonymous@136>",
+                "id": "test/scoped-stock-planning.test.ts:5750:<anonymous@137>",
                 "kind": "ArrowFunction",
-                "line": 136,
-                "name": "<anonymous@136>",
+                "line": 137,
+                "name": "<anonymous@137>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -36811,9 +36811,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:409267:positions",
+                "id": "src/facade.ts:409495:positions",
                 "kind": "MethodDeclaration",
-                "line": 10665,
+                "line": 10672,
                 "name": "positions",
                 "reason": "interface-to-implementation"
               },
@@ -38300,20 +38300,20 @@
                 "column": 55,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:11624:<anonymous@273>",
+                "id": "test/dual-measure-counts.test.ts:13734:<anonymous@310>",
                 "kind": "ArrowFunction",
-                "line": 273,
-                "name": "<anonymous@273>",
+                "line": 310,
+                "name": "<anonymous@310>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 100,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:11731:<anonymous@274>",
+                "id": "test/dual-measure-counts.test.ts:13841:<anonymous@311>",
                 "kind": "ArrowFunction",
-                "line": 274,
-                "name": "<anonymous@274>",
+                "line": 311,
+                "name": "<anonymous@311>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -39847,9 +39847,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:413373:availability",
+          "id": "src/facade.ts:413601:availability",
           "kind": "MethodDeclaration",
-          "line": 10756,
+          "line": 10763,
           "name": "availability"
         }
       ],
@@ -39860,9 +39860,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:413373:availability",
+            "id": "src/facade.ts:413601:availability",
             "kind": "MethodDeclaration",
-            "line": 10756,
+            "line": 10763,
             "name": "availability"
           },
           "witness": {
@@ -39910,9 +39910,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:413373:availability",
+                "id": "src/facade.ts:413601:availability",
                 "kind": "MethodDeclaration",
-                "line": 10756,
+                "line": 10763,
                 "name": "availability",
                 "reason": "interface-to-implementation"
               }
@@ -39928,9 +39928,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:421296:count",
+          "id": "src/facade.ts:421524:count",
           "kind": "MethodDeclaration",
-          "line": 10956,
+          "line": 10963,
           "name": "count"
         }
       ],
@@ -39941,9 +39941,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:421296:count",
+            "id": "src/facade.ts:421524:count",
             "kind": "MethodDeclaration",
-            "line": 10956,
+            "line": 10963,
             "name": "count"
           },
           "witness": {
@@ -39991,9 +39991,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:421296:count",
+                "id": "src/facade.ts:421524:count",
                 "kind": "MethodDeclaration",
-                "line": 10956,
+                "line": 10963,
                 "name": "count",
                 "reason": "interface-to-implementation"
               }
@@ -40009,9 +40009,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420770:event",
+          "id": "src/facade.ts:420998:event",
           "kind": "MethodDeclaration",
-          "line": 10942,
+          "line": 10949,
           "name": "event"
         }
       ],
@@ -40022,9 +40022,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420770:event",
+            "id": "src/facade.ts:420998:event",
             "kind": "MethodDeclaration",
-            "line": 10942,
+            "line": 10949,
             "name": "event"
           },
           "witness": {
@@ -40072,9 +40072,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:420770:event",
+                "id": "src/facade.ts:420998:event",
                 "kind": "MethodDeclaration",
-                "line": 10942,
+                "line": 10949,
                 "name": "event",
                 "reason": "interface-to-implementation"
               }
@@ -40090,9 +40090,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:411604:events",
+          "id": "src/facade.ts:411832:events",
           "kind": "MethodDeclaration",
-          "line": 10721,
+          "line": 10728,
           "name": "events"
         }
       ],
@@ -40103,9 +40103,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:411604:events",
+            "id": "src/facade.ts:411832:events",
             "kind": "MethodDeclaration",
-            "line": 10721,
+            "line": 10728,
             "name": "events"
           },
           "witness": {
@@ -40153,9 +40153,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:411604:events",
+                "id": "src/facade.ts:411832:events",
                 "kind": "MethodDeclaration",
-                "line": 10721,
+                "line": 10728,
                 "name": "events",
                 "reason": "interface-to-implementation"
               }
@@ -40171,9 +40171,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420251:lot",
+          "id": "src/facade.ts:420479:lot",
           "kind": "MethodDeclaration",
-          "line": 10926,
+          "line": 10933,
           "name": "lot"
         }
       ],
@@ -40184,9 +40184,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420251:lot",
+            "id": "src/facade.ts:420479:lot",
             "kind": "MethodDeclaration",
-            "line": 10926,
+            "line": 10933,
             "name": "lot"
           },
           "witness": {
@@ -40234,9 +40234,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:420251:lot",
+                "id": "src/facade.ts:420479:lot",
                 "kind": "MethodDeclaration",
-                "line": 10926,
+                "line": 10933,
                 "name": "lot",
                 "reason": "interface-to-implementation"
               }
@@ -40252,9 +40252,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:420549:lots",
+          "id": "src/facade.ts:420777:lots",
           "kind": "MethodDeclaration",
-          "line": 10935,
+          "line": 10942,
           "name": "lots"
         }
       ],
@@ -40265,9 +40265,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:420549:lots",
+            "id": "src/facade.ts:420777:lots",
             "kind": "MethodDeclaration",
-            "line": 10935,
+            "line": 10942,
             "name": "lots"
           },
           "witness": {
@@ -40315,9 +40315,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:420549:lots",
+                "id": "src/facade.ts:420777:lots",
                 "kind": "MethodDeclaration",
-                "line": 10935,
+                "line": 10942,
                 "name": "lots",
                 "reason": "interface-to-implementation"
               }
@@ -40333,9 +40333,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:416497:packagingRevisions",
+          "id": "src/facade.ts:416725:packagingRevisions",
           "kind": "MethodDeclaration",
-          "line": 10826,
+          "line": 10833,
           "name": "packagingRevisions"
         }
       ],
@@ -40346,9 +40346,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:416497:packagingRevisions",
+            "id": "src/facade.ts:416725:packagingRevisions",
             "kind": "MethodDeclaration",
-            "line": 10826,
+            "line": 10833,
             "name": "packagingRevisions"
           },
           "witness": {
@@ -40396,9 +40396,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:416497:packagingRevisions",
+                "id": "src/facade.ts:416725:packagingRevisions",
                 "kind": "MethodDeclaration",
-                "line": 10826,
+                "line": 10833,
                 "name": "packagingRevisions",
                 "reason": "interface-to-implementation"
               }
@@ -40414,9 +40414,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:419367:placementAncestry",
+          "id": "src/facade.ts:419595:placementAncestry",
           "kind": "MethodDeclaration",
-          "line": 10903,
+          "line": 10910,
           "name": "placementAncestry"
         }
       ],
@@ -40427,9 +40427,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:419367:placementAncestry",
+            "id": "src/facade.ts:419595:placementAncestry",
             "kind": "MethodDeclaration",
-            "line": 10903,
+            "line": 10910,
             "name": "placementAncestry"
           },
           "witness": {
@@ -40467,9 +40467,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:419367:placementAncestry",
+                "id": "src/facade.ts:419595:placementAncestry",
                 "kind": "MethodDeclaration",
-                "line": 10903,
+                "line": 10910,
                 "name": "placementAncestry",
                 "reason": "interface-to-implementation"
               }
@@ -40485,9 +40485,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:418413:placementChildren",
+          "id": "src/facade.ts:418641:placementChildren",
           "kind": "MethodDeclaration",
-          "line": 10877,
+          "line": 10884,
           "name": "placementChildren"
         }
       ],
@@ -40498,9 +40498,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:418413:placementChildren",
+            "id": "src/facade.ts:418641:placementChildren",
             "kind": "MethodDeclaration",
-            "line": 10877,
+            "line": 10884,
             "name": "placementChildren"
           },
           "witness": {
@@ -40548,9 +40548,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:418413:placementChildren",
+                "id": "src/facade.ts:418641:placementChildren",
                 "kind": "MethodDeclaration",
-                "line": 10877,
+                "line": 10884,
                 "name": "placementChildren",
                 "reason": "interface-to-implementation"
               }
@@ -40566,9 +40566,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:416986:placementNode",
+          "id": "src/facade.ts:417214:placementNode",
           "kind": "MethodDeclaration",
-          "line": 10838,
+          "line": 10845,
           "name": "placementNode"
         }
       ],
@@ -40579,9 +40579,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:416986:placementNode",
+            "id": "src/facade.ts:417214:placementNode",
             "kind": "MethodDeclaration",
-            "line": 10838,
+            "line": 10845,
             "name": "placementNode"
           },
           "witness": {
@@ -40629,9 +40629,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:416986:placementNode",
+                "id": "src/facade.ts:417214:placementNode",
                 "kind": "MethodDeclaration",
-                "line": 10838,
+                "line": 10845,
                 "name": "placementNode",
                 "reason": "interface-to-implementation"
               }
@@ -40647,9 +40647,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:417347:placementNodes",
+          "id": "src/facade.ts:417575:placementNodes",
           "kind": "MethodDeclaration",
-          "line": 10849,
+          "line": 10856,
           "name": "placementNodes"
         }
       ],
@@ -40660,9 +40660,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:417347:placementNodes",
+            "id": "src/facade.ts:417575:placementNodes",
             "kind": "MethodDeclaration",
-            "line": 10849,
+            "line": 10856,
             "name": "placementNodes"
           },
           "witness": {
@@ -40710,9 +40710,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:417347:placementNodes",
+                "id": "src/facade.ts:417575:placementNodes",
                 "kind": "MethodDeclaration",
-                "line": 10849,
+                "line": 10856,
                 "name": "placementNodes",
                 "reason": "interface-to-implementation"
               }
@@ -40728,9 +40728,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:417680:placementParent",
+          "id": "src/facade.ts:417908:placementParent",
           "kind": "MethodDeclaration",
-          "line": 10859,
+          "line": 10866,
           "name": "placementParent"
         }
       ],
@@ -40741,9 +40741,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:417680:placementParent",
+            "id": "src/facade.ts:417908:placementParent",
             "kind": "MethodDeclaration",
-            "line": 10859,
+            "line": 10866,
             "name": "placementParent"
           },
           "witness": {
@@ -40791,9 +40791,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:417680:placementParent",
+                "id": "src/facade.ts:417908:placementParent",
                 "kind": "MethodDeclaration",
-                "line": 10859,
+                "line": 10866,
                 "name": "placementParent",
                 "reason": "interface-to-implementation"
               }
@@ -40809,9 +40809,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:413972:planAllocation",
+          "id": "src/facade.ts:414200:planAllocation",
           "kind": "MethodDeclaration",
-          "line": 10772,
+          "line": 10779,
           "name": "planAllocation"
         }
       ],
@@ -40822,9 +40822,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:413972:planAllocation",
+            "id": "src/facade.ts:414200:planAllocation",
             "kind": "MethodDeclaration",
-            "line": 10772,
+            "line": 10779,
             "name": "planAllocation"
           },
           "witness": {
@@ -40872,9 +40872,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:413972:planAllocation",
+                "id": "src/facade.ts:414200:planAllocation",
                 "kind": "MethodDeclaration",
-                "line": 10772,
+                "line": 10779,
                 "name": "planAllocation",
                 "reason": "interface-to-implementation"
               }
@@ -40890,9 +40890,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:409267:positions",
+          "id": "src/facade.ts:409495:positions",
           "kind": "MethodDeclaration",
-          "line": 10665,
+          "line": 10672,
           "name": "positions"
         }
       ],
@@ -40903,9 +40903,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:409267:positions",
+            "id": "src/facade.ts:409495:positions",
             "kind": "MethodDeclaration",
-            "line": 10665,
+            "line": 10672,
             "name": "positions"
           },
           "witness": {
@@ -40943,9 +40943,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:409267:positions",
+                "id": "src/facade.ts:409495:positions",
                 "kind": "MethodDeclaration",
-                "line": 10665,
+                "line": 10672,
                 "name": "positions",
                 "reason": "interface-to-implementation"
               }
@@ -40961,9 +40961,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:421016:reservation",
+          "id": "src/facade.ts:421244:reservation",
           "kind": "MethodDeclaration",
-          "line": 10948,
+          "line": 10955,
           "name": "reservation"
         }
       ],
@@ -40974,9 +40974,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:421016:reservation",
+            "id": "src/facade.ts:421244:reservation",
             "kind": "MethodDeclaration",
-            "line": 10948,
+            "line": 10955,
             "name": "reservation"
           },
           "witness": {
@@ -41014,9 +41014,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:421016:reservation",
+                "id": "src/facade.ts:421244:reservation",
                 "kind": "MethodDeclaration",
-                "line": 10948,
+                "line": 10955,
                 "name": "reservation",
                 "reason": "interface-to-implementation"
               }
@@ -41032,9 +41032,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:421576:reservationFeasibility",
+          "id": "src/facade.ts:421804:reservationFeasibility",
           "kind": "MethodDeclaration",
-          "line": 10961,
+          "line": 10968,
           "name": "reservationFeasibility"
         }
       ],
@@ -41045,9 +41045,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:421576:reservationFeasibility",
+            "id": "src/facade.ts:421804:reservationFeasibility",
             "kind": "MethodDeclaration",
-            "line": 10961,
+            "line": 10968,
             "name": "reservationFeasibility"
           },
           "witness": {
@@ -41085,9 +41085,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:421576:reservationFeasibility",
+                "id": "src/facade.ts:421804:reservationFeasibility",
                 "kind": "MethodDeclaration",
-                "line": 10961,
+                "line": 10968,
                 "name": "reservationFeasibility",
                 "reason": "interface-to-implementation"
               }
@@ -41103,9 +41103,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:408441:snapshot",
+          "id": "src/facade.ts:408669:snapshot",
           "kind": "MethodDeclaration",
-          "line": 10645,
+          "line": 10652,
           "name": "snapshot"
         }
       ],
@@ -41116,9 +41116,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:408441:snapshot",
+            "id": "src/facade.ts:408669:snapshot",
             "kind": "MethodDeclaration",
-            "line": 10645,
+            "line": 10652,
             "name": "snapshot"
           },
           "witness": {
@@ -41166,9 +41166,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:408441:snapshot",
+                "id": "src/facade.ts:408669:snapshot",
                 "kind": "MethodDeclaration",
-                "line": 10645,
+                "line": 10652,
                 "name": "snapshot",
                 "reason": "interface-to-implementation"
               }
@@ -41184,9 +41184,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:412065:summary",
+          "id": "src/facade.ts:412293:summary",
           "kind": "MethodDeclaration",
-          "line": 10730,
+          "line": 10737,
           "name": "summary"
         }
       ],
@@ -41197,9 +41197,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:412065:summary",
+            "id": "src/facade.ts:412293:summary",
             "kind": "MethodDeclaration",
-            "line": 10730,
+            "line": 10737,
             "name": "summary"
           },
           "witness": {
@@ -41247,9 +41247,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:412065:summary",
+                "id": "src/facade.ts:412293:summary",
                 "kind": "MethodDeclaration",
-                "line": 10730,
+                "line": 10737,
                 "name": "summary",
                 "reason": "interface-to-implementation"
               }
@@ -41265,9 +41265,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:410071:whereabouts",
+          "id": "src/facade.ts:410299:whereabouts",
           "kind": "MethodDeclaration",
-          "line": 10684,
+          "line": 10691,
           "name": "whereabouts"
         }
       ],
@@ -41278,9 +41278,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:410071:whereabouts",
+            "id": "src/facade.ts:410299:whereabouts",
             "kind": "MethodDeclaration",
-            "line": 10684,
+            "line": 10691,
             "name": "whereabouts"
           },
           "witness": {
@@ -41328,9 +41328,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:410071:whereabouts",
+                "id": "src/facade.ts:410299:whereabouts",
                 "kind": "MethodDeclaration",
-                "line": 10684,
+                "line": 10691,
                 "name": "whereabouts",
                 "reason": "interface-to-implementation"
               }
@@ -41346,9 +41346,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:410846:whereaboutsHistory",
+          "id": "src/facade.ts:411074:whereaboutsHistory",
           "kind": "MethodDeclaration",
-          "line": 10704,
+          "line": 10711,
           "name": "whereaboutsHistory"
         }
       ],
@@ -41359,9 +41359,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:410846:whereaboutsHistory",
+            "id": "src/facade.ts:411074:whereaboutsHistory",
             "kind": "MethodDeclaration",
-            "line": 10704,
+            "line": 10711,
             "name": "whereaboutsHistory"
           },
           "witness": {
@@ -41409,9 +41409,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:410846:whereaboutsHistory",
+                "id": "src/facade.ts:411074:whereaboutsHistory",
                 "kind": "MethodDeclaration",
-                "line": 10704,
+                "line": 10711,
                 "name": "whereaboutsHistory",
                 "reason": "interface-to-implementation"
               }
@@ -41427,9 +41427,9 @@
           "column": 3,
           "file": "src/facade.ts",
           "hasBody": true,
-          "id": "src/facade.ts:408938:world",
+          "id": "src/facade.ts:409166:world",
           "kind": "MethodDeclaration",
-          "line": 10657,
+          "line": 10664,
           "name": "world"
         }
       ],
@@ -41440,9 +41440,9 @@
             "column": 3,
             "file": "src/facade.ts",
             "hasBody": true,
-            "id": "src/facade.ts:408938:world",
+            "id": "src/facade.ts:409166:world",
             "kind": "MethodDeclaration",
-            "line": 10657,
+            "line": 10664,
             "name": "world"
           },
           "witness": {
@@ -41480,9 +41480,9 @@
                 "column": 3,
                 "file": "src/facade.ts",
                 "hasBody": true,
-                "id": "src/facade.ts:408938:world",
+                "id": "src/facade.ts:409166:world",
                 "kind": "MethodDeclaration",
-                "line": 10657,
+                "line": 10664,
                 "name": "world",
                 "reason": "interface-to-implementation"
               }
@@ -41690,23 +41690,23 @@
                 "name": "test/dual-measure-counts.test.ts"
               },
               {
-                "column": 55,
+                "column": 66,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:11624:<anonymous@273>",
+                "id": "test/dual-measure-counts.test.ts:3432:<anonymous@103>",
                 "kind": "ArrowFunction",
-                "line": 273,
-                "name": "<anonymous@273>",
+                "line": 103,
+                "name": "<anonymous@103>",
                 "reason": "external-callback-dispatch"
               },
               {
-                "column": 100,
+                "column": 110,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:11731:<anonymous@274>",
+                "id": "test/dual-measure-counts.test.ts:5588:<anonymous@138>",
                 "kind": "ArrowFunction",
-                "line": 274,
-                "name": "<anonymous@274>",
+                "line": 138,
+                "name": "<anonymous@138>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -45782,10 +45782,10 @@
                 "column": 90,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:7942:<anonymous@180>",
+                "id": "test/dual-measure-counts.test.ts:10052:<anonymous@217>",
                 "kind": "ArrowFunction",
-                "line": 180,
-                "name": "<anonymous@180>",
+                "line": 217,
+                "name": "<anonymous@217>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -46248,10 +46248,10 @@
                 "column": 79,
                 "file": "test/dual-measure-counts.test.ts",
                 "hasBody": true,
-                "id": "test/dual-measure-counts.test.ts:5705:<anonymous@143>",
+                "id": "test/dual-measure-counts.test.ts:7815:<anonymous@180>",
                 "kind": "ArrowFunction",
-                "line": 143,
-                "name": "<anonymous@143>",
+                "line": 180,
+                "name": "<anonymous@180>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -46805,20 +46805,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 101,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:64870:<anonymous@1014>",
+                "id": "test/scoped-stock-planning.test.ts:64945:<anonymous@1015>",
                 "kind": "ArrowFunction",
-                "line": 1014,
-                "name": "<anonymous@1014>",
+                "line": 1015,
+                "name": "<anonymous@1015>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48435,20 +48435,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:209114:<anonymous@3361>",
+                "id": "test/scoped-stock-planning.test.ts:209189:<anonymous@3362>",
                 "kind": "ArrowFunction",
-                "line": 3361,
-                "name": "<anonymous@3361>",
+                "line": 3362,
+                "name": "<anonymous@3362>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -48597,20 +48597,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 92,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:209114:<anonymous@3361>",
+                "id": "test/scoped-stock-planning.test.ts:209189:<anonymous@3362>",
                 "kind": "ArrowFunction",
-                "line": 3361,
-                "name": "<anonymous@3361>",
+                "line": 3362,
+                "name": "<anonymous@3362>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49185,20 +49185,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:220642:<anonymous@3539>",
+                "id": "test/scoped-stock-planning.test.ts:220717:<anonymous@3540>",
                 "kind": "ArrowFunction",
-                "line": 3539,
-                "name": "<anonymous@3539>",
+                "line": 3540,
+                "name": "<anonymous@3540>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49438,20 +49438,20 @@
                 "column": 53,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:5583:<anonymous@135>",
+                "id": "test/scoped-stock-planning.test.ts:5658:<anonymous@136>",
                 "kind": "ArrowFunction",
-                "line": 135,
-                "name": "<anonymous@135>",
+                "line": 136,
+                "name": "<anonymous@136>",
                 "reason": "external-callback-dispatch"
               },
               {
                 "column": 82,
                 "file": "test/scoped-stock-planning.test.ts",
                 "hasBody": true,
-                "id": "test/scoped-stock-planning.test.ts:220642:<anonymous@3539>",
+                "id": "test/scoped-stock-planning.test.ts:220717:<anonymous@3540>",
                 "kind": "ArrowFunction",
-                "line": 3539,
-                "name": "<anonymous@3539>",
+                "line": 3540,
+                "name": "<anonymous@3540>",
                 "reason": "external-callback-dispatch"
               },
               {
@@ -49563,5 +49563,5 @@
     }
   },
   "schemaVersion": 1,
-  "surfaceSha256": "b1f29e8a15c367e4daf475c799c3a8ac59273083e61d2ac487d01470997d9b15"
+  "surfaceSha256": "339d38a812483148208ca53bb8d71e1f9281cdc640d156b2f4190fbca1840604"
 }

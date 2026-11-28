@@ -2115,4 +2115,62 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     expect(reconciled.event).toBeUndefined();
   });
+
+  it("retains unplacement of a node whose former parent later re-enters the counted subtree", async () => {
+    const inventory = createTestInventory();
+    await inventory.placement.move({
+      operationId: "reenter-x-r-1",
+      occurredAtEpochMs: time0,
+      nodeId: "X",
+      into: "R",
+    });
+    await inventory.placement.move({
+      operationId: "reenter-y-x",
+      occurredAtEpochMs: time0 + 1,
+      nodeId: "Y",
+      into: "X",
+    });
+    await inventory.stock.receive({
+      operationId: "reenter-stock-y",
+      occurredAtEpochMs: time0 + 2,
+      to: loosePosition("Y"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "reenter-x-outside",
+      occurredAtEpochMs: time0 + 3,
+      nodeId: "X",
+      into: "OUTSIDE",
+    });
+    await inventory.placement.unplace({
+      operationId: "reenter-unplace-y",
+      occurredAtEpochMs: time0 + 4,
+      nodeId: "Y",
+    });
+    await inventory.placement.move({
+      operationId: "reenter-x-r-2",
+      occurredAtEpochMs: time0 + 5,
+      nodeId: "X",
+      into: "R",
+    });
+
+    await inventory.counts.start({
+      countId: "reenter-count",
+      operationId: "reenter-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await inventory.counts.observe({
+      countId: "reenter-count",
+      operationId: "reenter-observe",
+      observedAtEpochMs: time1,
+      observations: [],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "reenter-count",
+      operationId: "reenter-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
 });

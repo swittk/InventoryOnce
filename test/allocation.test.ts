@@ -886,16 +886,26 @@ describe("FIFO, FEFO, expiry, priority, and allocation increments", () => {
         },
       }),
     );
-    const result = allocateInventoryUpTo({
+    const defaultResult = allocateWorkingInventory({
+      requested: parseQuantity("5000", "piece"),
+      candidates: greedyPool,
+      method: InventoryAllocationMethod.Fifo,
+      nowEpochMs: time2,
+    });
+    expect(defaultResult.allocations.length).toBeGreaterThan(0);
+    expect(defaultResult.shortfall).toEqual(parseQuantity("2", "piece"));
+    expect(defaultResult.incrementBlockedStock).toBe(true);
+
+    const disabledResult = allocateWorkingInventory({
       requested: parseQuantity("5000", "piece"),
       candidates: greedyPool,
       method: InventoryAllocationMethod.Fifo,
       nowEpochMs: time2,
       assessIncrementBlockage: false,
     });
-    expect(result.allocations.length).toBeGreaterThan(0);
-    expect(result.shortfall).toEqual(parseQuantity("2", "piece"));
-    expect(result.incrementBlockedStock).toBe(false);
+    expect(disabledResult.allocations).toEqual(defaultResult.allocations);
+    expect(disabledResult.shortfall).toEqual(parseQuantity("2", "piece"));
+    expect(disabledResult.incrementBlockedStock).toBe(false);
   });
 
 });

@@ -2219,9 +2219,14 @@ describe("late historical repair", () => {
       const backing = createInMemoryInventoryDurableStorage();
       const storage = canonical
         ? new Proxy(backing, {
-            /** Force canonical full-history loading and publication paths. */
+            /** Force canonical full-history loading and canonical coordinator commits. */
             get(target, property) {
-              if (property === "queryInventoryEventsByResourceKeys") return undefined;
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
               const member = Reflect.get(target, property);
               return typeof member === "function" ? member.bind(target) : member;
             },
@@ -2485,5 +2490,104 @@ describe("late historical repair", () => {
       expect(cleanOmit.event.historicalRepair?.omittedAssertionIds).toEqual(["embedded-b"]);
     },
   );
+
+  it("isolates embedded historical count replay identities from ordinary operationIds", async () => {
+    const inventory = createTestInventory();
+    const bin = loosePosition("namespace-bin");
+    await inventory.stock.recordHistorical({
+      operationId: "repair",
+      occurredAtEpochMs: time1,
+      reason: "Embedded historical receipt with generated child operationId.",
+      assertions: [
+        {
+          assertionId: "receipt",
+          assert: (plans) =>
+            plans.receive({
+              occurredAtEpochMs: time0,
+              to: bin,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    await inventory.stock.receive({
+      operationId: "repair:historical:receipt",
+      occurredAtEpochMs: time2,
+      to: bin,
+      amount: stockAmount("2", "piece"),
+    });
+    const reconciled = await inventory.counts.replaceAbsolute({
+      countId: "namespace-count",
+      operationId: "namespace-count-op",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", placementNodeIds: ["namespace-bin"] },
+      observedMeasurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("3", "piece") },
+        independent: [],
+      },
+      occurredAtEpochMs: time3,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
+
+  it("orders an omitting serial correction before a later historical receipt during count replay", async () => {
+    const inventory = createTestInventory();
+    const pos = loosePosition("serial-omit-bin", { serialId: "SN-REUSE" });
+    const first = await inventory.stock.receive({
+      operationId: "serial-omit-r1",
+      occurredAtEpochMs: time0,
+      to: pos,
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.stock.correct({
+      operationId: "serial-omit-c1",
+      occurredAtEpochMs: time1,
+      correctsEventId: first.event.eventId,
+      reason: "Original serial receipt never arrived.",
+      replaceWith: (plans) => plans.omit(),
+    });
+    await inventory.stock.recordHistorical({
+      operationId: "serial-omit-repair",
+      occurredAtEpochMs: time2,
+      reason: "Serial actually arrived at t2.",
+      assertions: [
+        {
+          assertionId: "serial-arrived-t2",
+          assert: (plans) =>
+            plans.receive({
+              occurredAtEpochMs: time1 + 1,
+              to: pos,
+              amount: stockAmount("1", "piece"),
+            }),
+        },
+      ],
+    });
+    await inventory.counts.start({
+      countId: "serial-omit-count",
+      operationId: "serial-omit-start",
+      startedAtEpochMs: time2,
+      selector: { itemId: "item-a", placementNodeIds: ["serial-omit-bin"] },
+    });
+    await inventory.counts.observe({
+      countId: "serial-omit-count",
+      operationId: "serial-omit-observe",
+      observedAtEpochMs: time2,
+      observations: [
+        {
+          position: { ...pos, itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "serial-omit-count",
+      operationId: "serial-omit-reconcile",
+      completedAtEpochMs: time2 + 1,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
 
 });

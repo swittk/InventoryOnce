@@ -373,7 +373,6 @@ export function planWorkingInventoryAllocation({
         ? allocateInventoryUpTo({ ...measuredInput, assessIncrementBlockage: false })
         : allocateWorkingInventory(measuredInput);
       if (
-        (allocated !== undefined && lines === undefined) ||
         needsCompleteMeasuredWitness ||
         measured.allocations.length > 0 ||
         canRecordWithoutWitness

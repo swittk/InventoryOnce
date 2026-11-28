@@ -135,6 +135,43 @@ describe("historical shortages on independently measured stock", () => {
     });
   });
 
+  it("reserves, allocates, and consumes a single fixed-weight box when multiple boxes sit in the row first", async () => {
+    const item = defineInventoryItem({ ...measuredItem(), reservationAxisId: "weight" });
+    const box = defineInventoryPackaging({
+      revisionId: "fixed-weight-box-2x", itemId, itemRevisionId, packageUnit: unitCode("box"),
+      fixedContents: measuredVector("1", "3"),
+    }, item);
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { [itemId]: itemRevisionId }, packagingRevisions: [box],
+    });
+    const inventory = createInventoryOnce({
+      catalog, storage: createInMemoryInventoryDurableStorage(), clock: { nowEpochMs: () => occurredAtEpochMs + 10 },
+    });
+    const position = { itemId, itemRevisionId, placementNodeId: "store", packagingRevisionId: box.revisionId };
+    const selector = { itemId, placementNodeIds: ["store"] };
+    const three = parseQuantity("3", "kg");
+    await inventory.stock.receive({
+      operationId: "two-boxes-first", occurredAtEpochMs, to: position, amount: packageAmount(2, box.revisionId),
+    });
+    await inventory.reservations.reserve({
+      operationId: "reserve-one-box", reservationId: "one-box", itemRevisionId, selector, requested: three, createdAtEpochMs: occurredAtEpochMs + 1,
+    });
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
+      fulfillable: three, shortage: parseQuantity("0", "kg"),
+    });
+    await inventory.reservations.allocate({
+      operationId: "allocate-one-box", reservationId: "one-box", occurredAtEpochMs: occurredAtEpochMs + 1,
+      allocations: [{ position, quantity: three }],
+    });
+    await inventory.reservations.consume({
+      operationId: "consume-one-box", reservationId: "one-box", occurredAtEpochMs: occurredAtEpochMs + 2,
+      fulfillment: [{ from: position, amount: packageAmount(1, box.revisionId) }],
+    });
+    const remaining = await inventory.read.positions(selector);
+    expect(remaining).toHaveLength(1);
+    expect(remaining[0]?.measurements).toEqual(measuredVector("1", "3"));
+  });
+
   it.each([
     ["before", 2, 3, "2", "34"],
     ["straddling", 2, 5, "1", "10"],

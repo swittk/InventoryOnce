@@ -912,7 +912,13 @@ function assertReservationAllocationCanBecomeLegalIssue(
   const packagingRevisionId = allocation.position.packagingRevisionId;
   if (packagingRevisionId === undefined) return;
   const item = catalog.itemRevision(allocation.position.itemRevisionId);
-  if (axisId !== item.primaryAxis.axisId) {
+  const packaging = catalog.packagingRevision(packagingRevisionId);
+  const onePackage = inventoryMeasurementAt(
+    packaging.fixedContents,
+    axisId,
+    unit
+  );
+  if (axisId !== item.primaryAxis.axisId && onePackage.amountMinor <= 0) {
     if (!quantityEq(allocation.quantity, capacity)) {
       throw new Error(
         "A package allocation on an independently measured reservation axis must reserve the whole stock row."
@@ -920,12 +926,6 @@ function assertReservationAllocationCanBecomeLegalIssue(
     }
     return;
   }
-  const packaging = catalog.packagingRevision(packagingRevisionId);
-  const onePackage = inventoryMeasurementAt(
-    packaging.fixedContents,
-    axisId,
-    unit
-  );
   if (!quantityIsWholeMultipleOf(allocation.quantity, onePackage)) {
     throw new Error(
       "Intact package allocation must equal a whole number of exact packages."
@@ -1358,6 +1358,9 @@ function reservationGroupFeasibility(
   let divisibleCapacity = 0n;
   /** Sum of per-row indivisible capacities capped by exact legal claim-edge demand ceilings. */
   let sharedIndivisibleCapacityBound = 0n;
+  /** Total stock across eligible indivisible rows and minimum unused increment when a pack must be left whole. */
+  let eligibleIndivisibleCapacity = 0n;
+  let smallestEligiblePack = 0n;
   /** Every eligible whole assignment uses a multiple of this increment. */
   let stockIncrement = 0n;
   /** Whole picks on each claim use a multiple of its eligible stock increments. */
@@ -1399,6 +1402,10 @@ function reservationGroupFeasibility(
       }
     }
     if (eligibleReservationCount === 0) continue;
+    eligibleIndivisibleCapacity += capacityMinor;
+    if (smallestEligiblePack === 0n || incrementMinor < smallestEligiblePack) {
+      smallestEligiblePack = incrementMinor;
+    }
     sharedIndivisibleCapacityBound += rowEligibleDemand < capacityMinor ? rowEligibleDemand : capacityMinor;
     if (stockIncrement !== 1n) stockIncrement = quantityGreatestCommonDivisor(stockIncrement, incrementMinor);
     indivisibleGroups.push({
@@ -1444,6 +1451,14 @@ function reservationGroupFeasibility(
         fulfillableBound
       );
       if (flowBound < fulfillableBound) fulfillableBound = flowBound;
+    }
+    if (
+      divisibleCapacity === 0n &&
+      eligibleIndivisibleCapacity > fulfillableBound &&
+      smallestEligiblePack > 0n &&
+      eligibleIndivisibleCapacity - smallestEligiblePack < fulfillableBound
+    ) {
+      fulfillableBound = eligibleIndivisibleCapacity - smallestEligiblePack;
     }
     if (divisibleCapacity === 0n && stockIncrement > 1n) fulfillableBound -= fulfillableBound % stockIncrement;
   }

@@ -2114,7 +2114,12 @@ function countPlacementDependencies(
     const wasUnderRoot = isUnderRoot(nodeId);
     const toUnderRoot = toParentNodeId !== undefined && isUnderRoot(toParentNodeId);
     const touchesAncestor = currentRootAncestors().has(nodeId);
-    if (wasUnderRoot || toUnderRoot || touchesAncestor) {
+    const previousEdgeEventId = lastEdgeEventIdByNode.get(nodeId);
+    const retainsUnplaceOfRetainedEdge =
+      toParentNodeId === undefined &&
+      previousEdgeEventId !== undefined &&
+      placementEventIds.has(previousEdgeEventId);
+    if (wasUnderRoot || toUnderRoot || touchesAncestor || retainsUnplaceOfRetainedEdge) {
       placementEventIds.add(eventId);
       nodeIds.add(nodeId);
       if (!wasUnderRoot && toUnderRoot) retainDescendants(nodeId);
