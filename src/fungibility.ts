@@ -70,11 +70,14 @@ import {
   MAXIMUM_QUANTITY_DECIMALS,
   positiveQuantity,
   quantity,
+  quantityIsWholeMultipleOf,
+  subtractQuantity,
   type Quantity,
 } from "./quantity.js";
 import {
   addExactQuantityDigits,
   compareWorkingQuantities,
+  InventoryQuantityRepresentationError,
   leastCommonWorkingQuantityMultiple,
   materializeInventoryWorkingQuantity,
   quantityGreatestCommonDivisor,
@@ -527,39 +530,30 @@ function planInventoryFungibilityAllocationWithHolds({
     earlierShortagesByRevisionSet.set(revisionSetKey, earlierShortages);
     return earlierShortages;
   };
-  /** Verify whether a candidate trial produces valid, storable movement amounts across all picked lines. */
-  const trialProducesStorableAmounts =
-    /** Reject any trial whose line amounts fail item/package resolution or decimal storage bounds. */
-    (allocations: readonly InventoryAllocation[]): boolean =>
-      fungibilityTrialProducesStorableAmounts({
-        catalog,
-        allocations,
-        evidenceByPosition,
-      });
-  /** Build a claim-preservation predicate for legal plans or physical-increment counterfactuals. */
+  /** Track claims only when this plan needs to preserve their current capacity. */
+  const preservesClaims = !allowAllocatedStock && claimsByRevision.size > 0;
+  /** A transfer also needs to materialize its destination balance. */
+  const simulatesDestination = reservationEffect.kind === InventoryFungibilityReservationEffectKind.Transfer;
+  /** Test a trial before publication, rejecting only expected exact storage-range failures. */
   const createAcceptAllocations = (allowMeasuredSplitForAdvisory: boolean) =>
-    /** Reject a trial that deepens a current claim shortage or produces an unstorable movement amount. */
+    /** Keep legal source and destination balances and, when requested, existing claim capacity. */
     (allocations: readonly InventoryAllocation[]): boolean => {
       try {
-        return (
-          (allowMeasuredSplitForAdvisory || trialProducesStorableAmounts(allocations)) &&
-          fungibilityAllocationsPreserveReservations({
-            catalog, world, reservationAtEpochMs, reservationEffect, allocations,
-            evidenceByPosition, claimsByRevision, readEarlierShortages,
-            allowMeasuredSplitForAdvisory,
-          })
-        );
+        return preservesClaims || simulatesDestination
+          ? fungibilityAllocationFitsProjection({
+              catalog, world, reservationAtEpochMs, reservationEffect, allocations,
+              evidenceByPosition, claimsByRevision, readEarlierShortages, preservesClaims,
+              allowMeasuredSplitForAdvisory,
+            })
+          : fungibilityIssueBalancesAreStorable({ catalog, allocations, evidenceByPosition });
       } catch (error) {
-        if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
-        return false;
+        if (error instanceof InventoryQuantityRepresentationError) return false;
+        throw error;
       }
     };
-  /** Preserve legal claim feasibility and storable movement amounts with or without active claims. */
-  const acceptAllocations = !allowAllocatedStock && claimsByRevision.size > 0
-    ? createAcceptAllocations(false)
-    : trialProducesStorableAmounts;
-  /** Claim predicate for counterfactual physical-increment trials that relax unfixed measured splits. */
-  const acceptAdvisoryAllocations = !allowAllocatedStock && claimsByRevision.size > 0
+  const acceptAllocations = createAcceptAllocations(false);
+  /** Only broad claims need a simulated advisory split when testing physical increments. */
+  const acceptAdvisoryAllocations = preservesClaims
     ? createAcceptAllocations(true)
     : acceptAllocations;
   const allocated = allocateWorkingInventory({
@@ -604,8 +598,8 @@ function planInventoryFungibilityAllocationWithHolds({
     });
   }
   const completedDiagnostic = {
-    catalog, requested, method, atEpochMs, memberStock, candidates,
-    allocations: allocated.allocations, evidenceByPosition, acceptAllocations,
+    requested, method, atEpochMs, memberStock, candidates,
+    allocations: allocated.allocations, acceptAllocations,
     unallocatedReservationsPresent,
   };
   const incrementBlockage = allocated.shortfall.amountMinor === 0
@@ -643,8 +637,6 @@ interface FungibilityMemberStock {
 
 /** Inputs for testing discarded reference capacity without changing an accepted plan. */
 interface FungibilityIncrementDiagnosticInput {
-  /** Catalogue used to check that alternate physical amounts can be stored. */
-  readonly catalog: InventoryCatalog;
   /** Exact pool quantity needed by the completed plan. */
   readonly requested: Quantity;
   /** Original stock selection policy. */
@@ -657,8 +649,6 @@ interface FungibilityIncrementDiagnosticInput {
   readonly candidates: readonly InventoryWorkingAllocationCandidate[];
   /** The accepted complete allocation. */
   readonly allocations: readonly InventoryAllocation[];
-  /** Source rows and conversion references used to validate alternate quantities. */
-  readonly evidenceByPosition: ReadonlyMap<string, InventoryFungibilityCandidateEvidence>;
   /** The original claim-preservation condition. */
   readonly acceptAllocations: (allocations: readonly InventoryAllocation[]) => boolean;
   /** Whether any unallocated broad claim requires running the full claim predicate during diagnostic trials. */
@@ -669,7 +659,7 @@ interface FungibilityIncrementDiagnosticInput {
 
 /** Prove that a discarded fraction admits an earlier complete plan in policy order. */
 function discardedCapacityImprovesFungibilityPlan({
-  catalog, requested, method, atEpochMs, memberStock, candidates, allocations, evidenceByPosition, acceptAllocations,
+  requested, method, atEpochMs, memberStock, candidates, allocations, acceptAllocations,
   unallocatedReservationsPresent, checkPhysicalIncrements = false,
 }: FungibilityIncrementDiagnosticInput): boolean {
   const last = allocations.at(-1);
@@ -690,28 +680,10 @@ function discardedCapacityImprovesFungibilityPlan({
     }
   }
   if (!earlierCapacityIncreased) return false;
-  // Exact holds are already subtracted from source capacities; only broad claims or conversion checks need a predicate.
+  // Relaxed physical trials without broad claims only test the earlier raw capacity.
   const diagnosticAccept = checkPhysicalIncrements && !unallocatedReservationsPresent
     ? undefined
-    : /** Preserve physical conversion increments and broad claim feasibility during diagnostic trials. */
-      (trial: readonly InventoryAllocation[]): boolean => {
-        try {
-          if (!checkPhysicalIncrements) {
-            for (const { position, quantity: picked } of trial) {
-              const evidence = evidenceByPosition.get(inventoryStockPositionIdentity(position));
-              if (evidence === undefined) return false;
-              inventoryAmountForPrimaryAllocation({
-                catalog, itemRevisionId: evidence.item.revisionId, position: evidence.position,
-                allocatedPrimary: convertQuantityByReferenceExact(picked, evidence.member.poolQuantity, evidence.member.memberQuantity),
-              });
-            }
-          }
-          return acceptAllocations(trial);
-        } catch (error) {
-          if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
-          return false;
-        }
-      };
+    : acceptAllocations;
   const diagnostic: Parameters<typeof allocateWorkingInventory>[0] = {
     requested, candidates: [...rawByPosition.values()], method, nowEpochMs: atEpochMs, allowExpired: true, assessIncrementBlockage: false,
     ...(diagnosticAccept === undefined ? {} : { acceptAllocations: diagnosticAccept }),
@@ -818,8 +790,8 @@ function validateFungibilityReservationEffect(
   }
 }
 
-/** Inputs for checking one complete pool allocation against every active item claim. */
-interface FungibilityReservationPreservationInput {
+/** Inputs for simulating one exact pool allocation against stock and active claims. */
+interface FungibilityProjectionTrialInput {
   /** Frozen retained catalogue used by amount resolution and feasibility checks. */
   readonly catalog: InventoryCatalog;
   /** Current published world before the hypothetical pool issue/transfer. */
@@ -842,12 +814,14 @@ interface FungibilityReservationPreservationInput {
     itemRevisionIds: ReadonlySet<string>,
     book: InventoryReservationBook
   ) => ReadonlyMap<string, Quantity>;
+  /** Whether to check claim capacity after the physical movement is found to be storable. */
+  readonly preservesClaims: boolean;
   /** Whether advisory increment counterfactuals may deduct primary quantity on unfixed measured splits when claims remain unaffected. */
   readonly allowMeasuredSplitForAdvisory?: boolean;
 }
 
-/** Accept an allocation when it does not deepen a shortage on changed stock revisions. */
-function fungibilityAllocationsPreserveReservations({
+/** Check exact source and destination balances before comparing any existing claim shortage. */
+function fungibilityAllocationFitsProjection({
   catalog,
   world,
   reservationAtEpochMs,
@@ -856,8 +830,9 @@ function fungibilityAllocationsPreserveReservations({
   evidenceByPosition,
   claimsByRevision,
   readEarlierShortages,
+  preservesClaims,
   allowMeasuredSplitForAdvisory = false,
-}: FungibilityReservationPreservationInput): boolean {
+}: FungibilityProjectionTrialInput): boolean {
   const positions = createFungibilitySparseRecordOverlay(
     world.projection.positions
   );
@@ -905,6 +880,7 @@ function fungibilityAllocationsPreserveReservations({
       placement: world.projection.placement,
       allowMeasuredSplitForAdvisory,
     });
+    if (movedMeasurements === undefined) return false;
     const nextMeasurements = subtractInventoryMeasurements(
       current.measurements,
       movedMeasurements
@@ -970,6 +946,7 @@ function fungibilityAllocationsPreserveReservations({
       }
     }
   }
+  if (!preservesClaims) return true;
   const projection: InventoryProjectionState = {
     ...world.projection,
     positions,
@@ -1030,49 +1007,61 @@ interface FungibilityReservationTrialMeasurementInput {
   readonly allowMeasuredSplitForAdvisory: boolean;
 }
 
-/** Inputs verifying whether a complete candidate trial produces storable movement amounts. */
-interface FungibilityTrialStorableAmountsInput {
-  /** Frozen catalogue validating item and package measurement rules. */
+/** Inputs for checking the physical balance of a claim-free issue. */
+interface FungibilityIssueBalanceInput {
+  /** Catalogue that resolves the selected item and package measurements. */
   readonly catalog: InventoryCatalog;
   /** Candidate pool allocations returned by working-stock picking. */
   readonly allocations: readonly InventoryAllocation[];
-  /** Member conversion/item evidence keyed by normalized source position identity. */
+  /** Exact member and position evidence for each candidate. */
   readonly evidenceByPosition: ReadonlyMap<string, InventoryFungibilityCandidateEvidence>;
 }
 
-/** Verify that every picked line builds a resolvable, storable movement amount. */
-function fungibilityTrialProducesStorableAmounts({
+/** Check exact movement and remaining source balances without simulating a claim book. */
+function fungibilityIssueBalancesAreStorable({
   catalog,
   allocations,
   evidenceByPosition,
-}: FungibilityTrialStorableAmountsInput): boolean {
-  try {
-    for (const allocation of allocations) {
-      const evidence = evidenceByPosition.get(
-        inventoryStockPositionIdentity(allocation.position)
-      );
-      if (evidence === undefined) return false;
-      const memberQuantity = convertQuantityByReferenceExact(
-        allocation.quantity,
-        evidence.member.poolQuantity,
-        evidence.member.memberQuantity
-      );
-      const amount = inventoryAmountForPrimaryAllocation({
-        catalog,
-        itemRevisionId: evidence.item.revisionId,
-        position: evidence.position,
-        allocatedPrimary: memberQuantity,
-      });
-      resolveInventoryAmount(catalog, evidence.item, amount);
+}: FungibilityIssueBalanceInput): boolean {
+  for (const allocation of allocations) {
+    const evidence = evidenceByPosition.get(inventoryStockPositionIdentity(allocation.position));
+    if (evidence === undefined) {
+      throw new Error("Fungibility issue trial references a missing candidate evidence row.");
     }
-    return true;
-  } catch (error) {
-    if (error instanceof InventoryReservationFeasibilityLimitError) throw error;
-    return false;
+    const memberQuantity = convertQuantityByReferenceExact(
+      allocation.quantity,
+      evidence.member.poolQuantity,
+      evidence.member.memberQuantity
+    );
+    if (evidence.position.key.packagingRevisionId === undefined && evidence.item.independentAxes.length === 0) {
+      const onHand = evidence.position.measurements.primary.quantity;
+      // An in-range positive portion at the same scale always leaves an in-range scalar balance.
+      if (onHand.decimals !== memberQuantity.decimals) subtractQuantity(onHand, memberQuantity);
+      continue;
+    }
+    const moved = resolveFungibilityMovementMeasurements(catalog, evidence.item, evidence.position, memberQuantity);
+    subtractInventoryMeasurements(evidence.position.measurements, moved);
   }
+  return true;
 }
 
-/** Resolve trial movement measurements, preserving legal allocation rules outside safe advisory increment checks. */
+/** Resolve the same exact stock amount that the completed fungibility plan will record. */
+function resolveFungibilityMovementMeasurements(
+  catalog: InventoryCatalog,
+  item: InventoryItemDefinitionRevision,
+  position: InventoryStockPosition,
+  memberQuantity: Quantity
+): InventoryMeasurementVector {
+  const amount = inventoryAmountForPrimaryAllocation({
+    catalog,
+    itemRevisionId: item.revisionId,
+    position,
+    allocatedPrimary: memberQuantity,
+  });
+  return resolveInventoryAmount(catalog, item, amount).measurements;
+}
+
+/** Relax only the identified physical increment when testing an advisory counterfactual. */
 function resolveFungibilityReservationTrialMeasurements({
   catalog,
   item,
@@ -1085,38 +1074,29 @@ function resolveFungibilityReservationTrialMeasurements({
   claimsForRevision,
   placement,
   allowMeasuredSplitForAdvisory,
-}: FungibilityReservationTrialMeasurementInput): InventoryMeasurementVector {
-  try {
-    const amount = inventoryAmountForPrimaryAllocation({
-      catalog,
-      itemRevisionId: item.revisionId,
-      position,
-      allocatedPrimary: memberQuantity,
-    });
-    return resolveInventoryAmount(catalog, item, amount).measurements;
-  } catch (error) {
-    if (!allowMeasuredSplitForAdvisory) throw error;
-    const primaryComparison = compareWorkingQuantities(
-      memberQuantity,
-      currentMeasurements.primary.quantity
+}: FungibilityReservationTrialMeasurementInput): InventoryMeasurementVector | undefined {
+  if (allowMeasuredSplitForAdvisory &&
+      compareWorkingQuantities(memberQuantity, currentMeasurements.primary.quantity) < 0) {
+    const packaging = position.key.packagingRevisionId === undefined
+      ? undefined
+      : catalog.packagingRevision(position.key.packagingRevisionId);
+    const splitsPackage = packaging !== undefined && !quantityIsWholeMultipleOf(
+      memberQuantity, packaging.fixedContents.primary.quantity
     );
-    if (primaryComparison > 0) throw error;
-    if (primaryComparison === 0) return currentMeasurements;
-    // Advisory counterfactuals omit unfixed independent splits, so only primary-axis claims or untouched positions remain judgeable.
-    if (
-      item.reservationAxisId !== item.primaryAxis.axisId &&
-      fungibilityClaimsTouchPosition(
-        claimsForRevision,
-        positionKey,
-        positionIdentity,
-        destinationKey,
-        placement
-      )
-    ) {
-      throw error;
+    if (splitsPackage || hasUnfixedIndependentMeasuredContents(position, item, packaging)) {
+      // An unfixed-axis claim needs exact split measurements even during an advisory trial.
+      if (
+        item.reservationAxisId !== item.primaryAxis.axisId &&
+        fungibilityClaimsTouchPosition(
+          claimsForRevision, positionKey, positionIdentity, destinationKey, placement
+        )
+      ) {
+        return undefined;
+      }
+      return scalarInventoryMeasurements(item.primaryAxis.axisId, memberQuantity);
     }
-    return scalarInventoryMeasurements(item.primaryAxis.axisId, memberQuantity);
   }
+  return resolveFungibilityMovementMeasurements(catalog, item, position, memberQuantity);
 }
 
 /** Return whether any active claim matches the moved position or destination directly or by selector. */

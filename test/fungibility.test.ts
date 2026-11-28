@@ -2176,7 +2176,18 @@ describe("derived pool summaries and exact member movements", () => {
     expect(claimConstrained.incrementBlockedStock).toBe(false);
   });
 
-  it("skips older fixed-weight packs whose combined pick weight is unstorable both with and without claims", async () => {
+  it.each([
+    { canonical: false, withClaim: false, requestedPieces: 1 },
+    { canonical: false, withClaim: false, requestedPieces: 2 },
+    { canonical: false, withClaim: true, requestedPieces: 1 },
+    { canonical: false, withClaim: true, requestedPieces: 2 },
+    { canonical: true, withClaim: false, requestedPieces: 1 },
+    { canonical: true, withClaim: false, requestedPieces: 2 },
+    { canonical: true, withClaim: true, requestedPieces: 1 },
+    { canonical: true, withClaim: true, requestedPieces: 2 },
+  ])("skips picks with an unstorable movement or remainder (canonical=$canonical, claim=$withClaim, pieces=$requestedPieces)", async ({
+    canonical, withClaim, requestedPieces,
+  }) => {
     const heavyItem = defineInventoryItem({
       itemId: "heavy-measured",
       revisionId: "heavy-measured-v1",
@@ -2240,11 +2251,16 @@ describe("derived pool summaries and exact member movements", () => {
       fungibilityRevisions: [pool],
       activeFungibilityRevisionIds: { [pool.poolId]: pool.revisionId },
     });
-    const inventory = createInventoryOnce({
-      catalog,
-      storage: createInMemoryInventoryDurableStorage(),
-      clock: clockAt(time3),
-    });
+    const backing = createInMemoryInventoryDurableStorage();
+    const storage = canonical ? new Proxy(backing, {
+      /** Use canonical publication instead of the segmented commit capability. */
+      get(target, property) {
+        if (property === "commitSegmentedStockEvent") return undefined;
+        const value = Reflect.get(target, property);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    }) : backing;
+    const inventory = createInventoryOnce({ catalog, storage, clock: clockAt(time3) });
 
     await inventory.stock.receive({
       operationId: "heavy-older-packs",
@@ -2268,47 +2284,40 @@ describe("derived pool summaries and exact member movements", () => {
       amount: stockAmount("2", "piece"),
     });
 
-    // Without claims: two older packs would exceed MAX_SAFE_INTEGER weight digits, so 2 eq takes 1 OLDER-PACKS + 1 NEWER-LOOSE while 1 eq still uses OLDER-PACKS.
-    const twoNoClaims = await inventory.fungibility.plan({
-      fungibilityRevisionId: pool.revisionId,
-      requested: parseQuantity("2", "equivalent"),
-      method: InventoryAllocationMethod.Fifo,
-      scope: { placementNodeIds: ["store"] },
-      atEpochMs: time2,
-    });
-    expect(twoNoClaims.shortfall.amountMinor).toBe(0);
-    expect(twoNoClaims.lines.map(({ position }) => position.lotId)).toEqual([
-      "OLDER-PACKS",
-      "NEWER-LOOSE",
-    ]);
+    if (withClaim) {
+      await inventory.reservations.reserve({
+        reservationId: "heavy-claim-1",
+        operationId: "heavy-claim-reserve",
+        itemRevisionId: heavyItem.revisionId,
+        createdAtEpochMs: time2,
+        selector: { itemId: heavyItem.itemId, lotIds: ["OLDER-PACKS"], placementNodeIds: ["store"] },
+        requested: parseQuantity("1", "piece"),
+      });
+    }
 
-    const oneNoClaims = await inventory.fungibility.plan({
+    const request = {
       fungibilityRevisionId: pool.revisionId,
-      requested: parseQuantity("1", "equivalent"),
+      requested: parseQuantity(String(requestedPieces), "equivalent"),
       method: InventoryAllocationMethod.Fifo,
       scope: { placementNodeIds: ["store"] },
-      atEpochMs: time2,
-    });
-    expect(oneNoClaims.shortfall.amountMinor).toBe(0);
-    expect(oneNoClaims.lines.map(({ position }) => position.lotId)).toEqual(["OLDER-PACKS"]);
+    };
+    const preview = await inventory.fungibility.plan({ ...request, atEpochMs: time2 });
+    expect(preview.shortfall.amountMinor).toBe(0);
+    expect(preview.lines.map(({ position }) => position.lotId)).toEqual(["NEWER-LOOSE"]);
 
-    // With an active claim on the same revision: both two-pack and mixed trials that yield unstorable claim deltas backtrack to NEWER-LOOSE.
-    await inventory.reservations.reserve({
-      reservationId: "heavy-claim-1",
-      operationId: "heavy-claim-reserve",
-      itemRevisionId: heavyItem.revisionId,
-      createdAtEpochMs: time2,
-      selector: { itemId: heavyItem.itemId, lotIds: ["OLDER-PACKS"], placementNodeIds: ["store"] },
-      requested: parseQuantity("1", "piece"),
+    const issued = await inventory.fungibility.issue({
+      ...request,
+      occurredAtEpochMs: time2,
+      operationId: "heavy-pool-issue",
     });
-    const twoWithClaim = await inventory.fungibility.plan({
-      fungibilityRevisionId: pool.revisionId,
-      requested: parseQuantity("2", "equivalent"),
-      method: InventoryAllocationMethod.Fifo,
-      scope: { placementNodeIds: ["store"] },
-      atEpochMs: time2,
-    });
-    expect(twoWithClaim.shortfall.amountMinor).toBe(0);
-    expect(twoWithClaim.lines.map(({ position }) => position.lotId)).toEqual(["NEWER-LOOSE"]);
+    expect(issued.event.stockEffects.map(({ position }) => position.lotId)).toEqual(["NEWER-LOOSE"]);
+    expect((await inventory.read.positions({ itemId: heavyItem.itemId }))[0]?.measurements.primary.quantity)
+      .toEqual(parseQuantity("10", "piece"));
+    const remainingLoose = await inventory.read.positions({ itemId: newerLoose.itemId });
+    expect(remainingLoose[0]?.measurements.primary.quantity.amountMinor ?? 0).toBe(2 - requestedPieces);
+    if (withClaim) {
+      expect((await inventory.read.reservationFeasibility()).groups[0]?.shortage)
+        .toEqual(parseQuantity("0", "piece"));
+    }
   });
 });

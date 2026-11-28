@@ -5520,7 +5520,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryDetachInput.__@historicalWhereaboutsId@5000": {
+    "CreateInventoryDetachInput.__@historicalWhereaboutsId@5004": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -7269,7 +7269,7 @@
       "optional": true,
       "rationale": "Retained for audit, provenance, or explanation; it may participate in retry identity but does not alter conserved physical resources."
     },
-    "CreateInventoryMarkMissingInput.__@historicalWhereaboutsId@5000": {
+    "CreateInventoryMarkMissingInput.__@historicalWhereaboutsId@5004": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -67519,7 +67519,7 @@
       "optional": false,
       "rationale": "This field changes or observes the abstract catalogue, resource, reservation, count, traceability, migration, authority, or publication state."
     },
-    "UnitCode.__@unitCodeBrand@576": {
+    "UnitCode.__@unitCodeBrand@578": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68867,7 +68867,7 @@
       "optional": false,
       "rationale": "Exact identity, revision, token, sequence, digest, or replay field selects/fences a modeled fact and prevents changed-intent aliasing."
     },
-    "anonymous@src/quantity.ts:10:33.__@unitCodeBrand@576": {
+    "anonymous@src/quantity.ts:10:33.__@unitCodeBrand@578": {
       "allowsNull": false,
       "allowsUndefined": false,
       "callSignatures": [],
@@ -68905,5 +68905,5 @@
     ],
     "truncatedTypes": []
   },
-  "surfaceSha256": "6c64dbdeb3e8e1c734158b69257511ec540d9aef343ec3febf84deb1574d2165"
+  "surfaceSha256": "08700b0e271f9b684aeb6a5bfe6d544fe83de9e77199ac60938751c65d41f43b"
 }

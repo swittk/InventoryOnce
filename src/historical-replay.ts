@@ -1038,8 +1038,6 @@ function orderHistoricalPredecessors(
   fundingPredecessorsByEventId: ReadonlyMap<string, ReadonlySet<string>>
 ): readonly InventoryHistoricalReplayEntry[] {
   const indexByEventId = new Map<string, number>();
-  /** Prior supply indices in durable/effective slice order keyed by normalized position identity. */
-  const supplyIndicesByPosition = new Map<string, number[]>();
   for (let index = 0; index < earlier.length; index += 1) {
     indexByEventId.set(earlier[index]!.event.eventId, index);
   }
@@ -1050,48 +1048,20 @@ function orderHistoricalPredecessors(
   for (let index = 0; index < earlier.length; index += 1) {
     const { afterEventId, event } = earlier[index]!;
     const fundingIds = fundingPredecessorsByEventId.get(event.eventId);
-    const prerequisiteIds: Array<string | undefined> = [
+    const prerequisiteIds = [
       afterEventId,
       event.correction?.supersedesCorrectionEventId,
       ...(fundingIds === undefined ? [] : fundingIds),
     ];
-    // Preserve prior non-correction slice funding order when a later-in-slice debit drew from an earlier-in-slice supply at the same position.
-    if (event.kind !== InventoryEventKind.Correction) {
-      for (const effect of event.stockEffects) {
-        if (effect.measurementsDelta.primary.quantity.amountMinor >= 0) continue;
-        const priorSupplies = supplyIndicesByPosition.get(
-          inventoryStockPositionIdentity(effect.position)
-        );
-        if (priorSupplies === undefined) continue;
-        for (const priorIndex of priorSupplies) {
-          prerequisiteIds.push(earlier[priorIndex]!.event.eventId);
-        }
-      }
-    }
-    const seenPredecessors = new Set<number>();
     for (const predecessorId of prerequisiteIds) {
       if (predecessorId === undefined) continue;
       const predecessorIndex = indexByEventId.get(predecessorId);
-      if (
-        predecessorIndex === undefined ||
-        predecessorIndex === index ||
-        seenPredecessors.has(predecessorIndex)
-      ) {
-        continue;
-      }
-      seenPredecessors.add(predecessorIndex);
+      if (predecessorIndex === undefined || predecessorIndex === index) continue;
       hasOrderingConstraint = true;
       inDegree[index] = (inDegree[index] ?? 0) + 1;
       const dependents = dependentsByIndex.get(predecessorIndex);
       if (dependents === undefined) dependentsByIndex.set(predecessorIndex, [index]);
       else dependents.push(index);
-    }
-    for (const effect of event.stockEffects) {
-      if (effect.measurementsDelta.primary.quantity.amountMinor <= 0) continue;
-      const positionId = inventoryStockPositionIdentity(effect.position);
-      const supplies = supplyIndicesByPosition.get(positionId);
-      if (supplies === undefined) supplyIndicesByPosition.set(positionId, [index]);
-      else supplies.push(index);
     }
   }
   if (!hasOrderingConstraint) {

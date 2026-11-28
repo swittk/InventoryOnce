@@ -6740,8 +6740,7 @@ class InventoryOnceHistoricalAssertionPlansImplementation
   }
 }
 
-/** Build a disjoint, injectively encoded operation or event identity for one embedded historical assertion. */
-/** Isolate historical assertion operation, event, and cohort whereabouts identities from ordinary commands. */
+/** Build disjoint, injective operation, event, and cohort identities for historical assertions. */
 function inventoryHistoricalAssertionScopedId(
   kind: "op" | "event" | "whereabouts",
   repairOperationId: string,

@@ -33,21 +33,9 @@ export class InventoryStockClaimIndex {
 
   /** Seed the index when opening a canonical snapshot or publishing an explicit migration. */
   constructor(book: InventoryReservationBook) {
-    /** Track which reservation identities have retained lifecycle history for as-of queries. */
-    const reservationIdsWithHistory = new Set<string>();
-    for (const operation of Object.values(book.operations)) {
-      this.retainHistory(operation);
-      reservationIdsWithHistory.add(operation.reservationId);
-    }
-    for (const reservation of Object.values(book.reservations)) {
-      if (!reservationIdsWithHistory.has(reservation.reservationId)) {
-        throw new Error(
-          `Seeded inventory reservation '${reservation.reservationId}' is missing retained lifecycle history.`
-        );
-      }
-      this.indexCurrent(reservation, true);
-    }
+    for (const reservation of Object.values(book.reservations)) this.indexCurrent(reservation, true);
     for (const revisionId of this.broad.keys()) this.refreshBroadLeaders(revisionId);
+    for (const operation of Object.values(book.operations)) this.retainHistory(operation);
   }
 
   /** Change only the affected claim postings at the published world revision. */

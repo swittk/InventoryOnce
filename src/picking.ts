@@ -50,6 +50,7 @@ import {
   addExactQuantityDigits,
   compareWorkingQuantities,
   materializeInventoryWorkingQuantity,
+  InventoryQuantityRepresentationError,
   quantityGreatestCommonDivisor,
   storableQuantityScale,
   subtractWorkingQuantity,
@@ -1675,7 +1676,7 @@ export function inventoryAmountForPrimaryAllocation({
   catalog, itemRevisionId, position, allocatedPrimary,
 }: InventoryAmountForPrimaryAllocationInput): InventoryAmount {
   const amount = inventoryAmountForWorkingPrimaryAllocation({ catalog, itemRevisionId, position, allocatedPrimary });
-  if (amount === undefined) throw new Error("Selected inventory measurement exceeds the safe integer storage range.");
+  if (amount === undefined) throw new InventoryQuantityRepresentationError("Selected inventory measurement exceeds the safe integer storage range.");
   return amount;
 }
 

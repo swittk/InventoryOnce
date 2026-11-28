@@ -3,6 +3,9 @@ import type { Quantity } from "./quantity.js";
 /** Largest absolute digit allowed in a stored quantity. */
 export const MAXIMUM_STORED_QUANTITY_MINOR = BigInt(Number.MAX_SAFE_INTEGER);
 
+/** An exact arithmetic result with no durable finite-decimal representation. */
+export class InventoryQuantityRepresentationError extends Error {}
+
 /** Exact working digits before applying the storage limit. */
 export interface ExactQuantityDigits {
   /** Signed digits aligned to the current decimal scale. */

@@ -1,5 +1,5 @@
 /** Exact physical-quantity arithmetic. InventoryOnce never uses epsilon comparisons. */
-import { leastCommonWorkingQuantityMultiple, quantityGreatestCommonDivisor, storableQuantityDigits } from "./quantity-storage.js";
+import { InventoryQuantityRepresentationError, leastCommonWorkingQuantityMultiple, quantityGreatestCommonDivisor, storableQuantityDigits } from "./quantity-storage.js";
 
 declare const unitCodeBrand: unique symbol;
 
@@ -148,7 +148,7 @@ export function subtractQuantity(left: Quantity, right: Quantity): Quantity {
 /** Store an exact arithmetic result without discarding any significant digits. */
 function quantityAtStorableScale(minor: bigint, decimals: number, unit: UnitCode, label: string): Quantity {
   const stored = storableQuantityDigits(minor, decimals);
-  if (stored === undefined) throw new Error(`${label} exceeds the safe integer storage range.`);
+  if (stored === undefined) throw new InventoryQuantityRepresentationError(`${label} exceeds the safe integer storage range.`);
   return quantity({ ...stored, unit });
 }
 
@@ -321,10 +321,14 @@ function exactFractionQuantity(
     fives += 1;
   }
   if (denominator !== 1n) {
-    throw new Error(`${label} has a non-terminating decimal result.`);
+    throw new InventoryQuantityRepresentationError(`${label} has a non-terminating decimal result.`);
   }
   const decimals = Math.max(twos, fives);
-  assertDecimals(decimals);
+  if (decimals > MAXIMUM_QUANTITY_DECIMALS) {
+    throw new InventoryQuantityRepresentationError(
+      `Quantity decimals must be an integer from 0 through ${MAXIMUM_QUANTITY_DECIMALS}.`,
+    );
+  }
   const scaled =
     numerator *
     (2n ** BigInt(decimals - twos)) *
@@ -363,7 +367,7 @@ function powerOfTen(power: number): bigint {
 export function safeNumber(value: bigint, label: string): number {
   const converted = Number(value);
   if (!Number.isSafeInteger(converted)) {
-    throw new Error(`${label} exceeds the safe integer storage range.`);
+    throw new InventoryQuantityRepresentationError(`${label} exceeds the safe integer storage range.`);
   }
   return converted;
 }

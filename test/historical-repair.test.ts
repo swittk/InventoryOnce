@@ -3862,9 +3862,14 @@ describe("late historical repair", () => {
     );
   });
 
-  it.each([false, true])(
-    "preserves retained receipt funding order ahead of backdated transfers when pulled before later receipts (canonical=%s)",
-    async (canonical) => {
+  it.each([
+    { canonical: false, sourceTime: 15 },
+    { canonical: true, sourceTime: 15 },
+    { canonical: false, sourceTime: 25 },
+    { canonical: true, sourceTime: 25 },
+  ])(
+    "uses physical time for relocated stock predecessors (canonical=$canonical, sourceTime=$sourceTime)",
+    async ({ canonical, sourceTime }) => {
       const backing = createInMemoryInventoryDurableStorage();
       const storage = canonical
         ? new Proxy(backing, {
@@ -3887,12 +3892,18 @@ describe("late historical repair", () => {
       await inventory.stock.receive({
         operationId: "funded-rx-c-t40",
         occurredAtEpochMs: time0 + 40,
-        to: loosePosition("funded-bin-c", { serialId: "OTHER-C" }),
+        to: binC,
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.issue({
+        operationId: "funded-issue-c-t45",
+        occurredAtEpochMs: time0 + 45,
+        from: binC,
         amount: stockAmount("1", "piece"),
       });
       await inventory.stock.receive({
-        operationId: "funded-rx-b-t25",
-        occurredAtEpochMs: time0 + 25,
+        operationId: "funded-rx-b",
+        occurredAtEpochMs: time0 + sourceTime,
         to: binB,
         amount: stockAmount("1", "piece"),
       });
@@ -3907,7 +3918,7 @@ describe("late historical repair", () => {
       const repairInput: InventoryOnceHistoricalRepairInput = {
         operationId: "funded-issue-c-t30",
         occurredAtEpochMs: time1,
-        reason: "Unanchored issue at C (t30) pulls funded B receipt (t25) + backdated B->C transfer (t20) ahead of t40 receipt.",
+        reason: "Record the issue at C after the transfer from B.",
         assertions: [
           {
             assertionId: "funded-iss-c",
@@ -3921,6 +3932,16 @@ describe("late historical repair", () => {
         ],
       };
       const planned = await inventory.stock.planHistorical(repairInput);
+      if (sourceTime > 20) {
+        expect(planned).toMatchObject({
+          valid: false,
+          conflict: {
+            code: "serialized-deficit",
+            eventId: "inventory:event:funded-tx-bc-t20",
+          },
+        });
+        return;
+      }
       expect(planned.valid).toBe(true);
       if (!planned.valid) throw new Error(planned.conflict.message);
       expect(planned.impact.deficits).toEqual([]);
@@ -3929,7 +3950,7 @@ describe("late historical repair", () => {
       expect(recorded.event.historicalImpact?.deficits).toEqual([]);
       expect(
         await inventory.read.positions({ itemId: "item-a", placementNodeIds: ["funded-bin-c"] })
-      ).toHaveLength(1);
+      ).toEqual([]);
     }
   );
 });

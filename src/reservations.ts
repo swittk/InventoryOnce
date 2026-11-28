@@ -1512,10 +1512,10 @@ function minimumReachableIndivisibleSlack({
   smallestEligiblePack,
 }: MinimumReachableIndivisibleSlackInput): bigint {
   if (minimumUnused <= 0n || stockIncrement <= 0n) return minimumUnused;
+  // One smallest pack is the optimum when the gap does not exceed its increment.
+  if (minimumUnused <= smallestEligiblePack) return smallestEligiblePack;
   const minimumUnits = (minimumUnused + stockIncrement - 1n) / stockIncrement;
-  if (minimumUnits > MAXIMUM_INDIVISIBLE_SLACK_DP_UNITS) {
-    return smallestEligiblePack > minimumUnused ? smallestEligiblePack : minimumUnused;
-  }
+  if (minimumUnits > MAXIMUM_INDIVISIBLE_SLACK_DP_UNITS) return minimumUnused;
   const minimumUnitsNumber = Number(minimumUnits);
   /** Best reachable unused unit count >= minimumUnits found so far. */
   let bestUnits = eligibleIndivisibleCapacity / stockIncrement;
@@ -1524,6 +1524,10 @@ function minimumReachableIndivisibleSlack({
   for (const group of indivisibleGroups) {
     if (group.count <= 0n) continue;
     const weight = group.capacityMinor / stockIncrement;
+    // An exact multiple needs no combinations or allocation-specific eligibility assumptions.
+    if (minimumUnits % weight === 0n && group.count >= minimumUnits / weight) {
+      return minimumUnits * stockIncrement;
+    }
     if (weight >= minimumUnits) {
       if (weight < bestUnits) bestUnits = weight;
       continue;
@@ -1556,6 +1560,7 @@ function minimumReachableIndivisibleSlack({
       }
       if (reachable[sum] === 1 && used[sum]! < availableCount) {
         const nextSum = BigInt(sum + weightNumber);
+        if (nextSum === minimumUnits) return nextSum * stockIncrement;
         if (nextSum >= minimumUnits && nextSum < bestUnits) bestUnits = nextSum;
       }
     }

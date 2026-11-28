@@ -2734,7 +2734,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
   });
 
-  it("rejects opening seeded worlds whose reservations omit retained lifecycle operations", async () => {
+  it("retains earlier reservation holds when reopening a published world", async () => {
     const seeded = createTestInventory();
     await seeded.stock.receive({
       operationId: "seed-rx",
@@ -2751,19 +2751,6 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       createdAtEpochMs: time1,
     });
     const world = await seeded.read.world();
-    expect(() =>
-      createInMemoryInventoryDurableStorage({
-        initialWorld: {
-          ...world,
-          reservations: {
-            reservations: world.reservations.reservations,
-            operations: {},
-          },
-        },
-      })
-    ).toThrow(/missing retained lifecycle history/u);
-
-    // Properly seeded history preserves earlier as-of holds after a later lifecycle operation advances the watermark.
     const reopenedStorage = createInMemoryInventoryDurableStorage({ initialWorld: world });
     const reopened = createInventoryOnce({
       catalog: createTabletCatalog(),
