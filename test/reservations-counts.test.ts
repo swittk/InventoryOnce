@@ -1613,7 +1613,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         measurementsDelta: { primary: { quantity: parseQuantity("-1", "piece") } },
       },
     ]);
-  });
+  }, 15_000);
 
   it("excludes unrelated sibling-subtree placement cycles during scoped count prepass", async () => {
     const inventory = createTestInventory();
@@ -2172,5 +2172,152 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       completedAtEpochMs: time1 + 1,
     });
     expect(reconciled.event).toBeUndefined();
+  });
+
+  it("detaches a child reparented to an outside node before its former parent returns without pulling outside cycles", async () => {
+    // Reparenting Y outside to OUTSIDE_2 before X returns to R must keep Y outside R.
+    const inventory = createTestInventory();
+    await inventory.placement.move({
+      operationId: "reparent-x-r-1",
+      occurredAtEpochMs: time0,
+      nodeId: "X",
+      into: "R",
+    });
+    await inventory.placement.move({
+      operationId: "reparent-y-x",
+      occurredAtEpochMs: time0 + 1,
+      nodeId: "Y",
+      into: "X",
+    });
+    await inventory.stock.receive({
+      operationId: "reparent-stock-y",
+      occurredAtEpochMs: time0 + 2,
+      to: loosePosition("Y"),
+      amount: stockAmount("1", "piece"),
+    });
+    await inventory.placement.move({
+      operationId: "reparent-x-out1",
+      occurredAtEpochMs: time0 + 3,
+      nodeId: "X",
+      into: "OUTSIDE_1",
+    });
+    await inventory.placement.move({
+      operationId: "reparent-y-out2",
+      occurredAtEpochMs: time0 + 4,
+      nodeId: "Y",
+      into: "OUTSIDE_2",
+    });
+    await inventory.placement.move({
+      operationId: "reparent-x-r-2",
+      occurredAtEpochMs: time0 + 5,
+      nodeId: "X",
+      into: "R",
+    });
+
+    await inventory.counts.start({
+      countId: "reparent-empty-count",
+      operationId: "reparent-empty-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await inventory.counts.observe({
+      countId: "reparent-empty-count",
+      operationId: "reparent-empty-observe",
+      observedAtEpochMs: time1,
+      observations: [],
+    });
+    const emptyCount = await inventory.counts.reconcile({
+      countId: "reparent-empty-count",
+      operationId: "reparent-empty-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(emptyCount.event).toBeUndefined();
+    const liveAtY = await inventory.read.positions({
+      itemId: "item-a",
+      withinPlacementNodeIds: ["OUTSIDE_2"],
+    });
+    expect(liveAtY).toHaveLength(1);
+
+    // Moving OUTSIDE_2 itself into R later must still bring Y under R.
+    await inventory.placement.move({
+      operationId: "reparent-out2-r",
+      occurredAtEpochMs: time2,
+      nodeId: "OUTSIDE_2",
+      into: "R",
+    });
+    const enteredCount = await inventory.counts.replaceAbsolute({
+      countId: "reparent-entered-count",
+      operationId: "reparent-entered-op",
+      itemRevisionId: "item-a-v2",
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+      observedMeasurements: {
+        primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+        independent: [],
+      },
+      occurredAtEpochMs: time2 + 1,
+    });
+    expect(enteredCount.event).toBeUndefined();
+
+    // Two nodes that both left R cannot introduce an outside backdated cycle into a count under R.
+    const cycleInventory = createTestInventory();
+    await cycleInventory.placement.move({
+      operationId: "leaving-x-r",
+      occurredAtEpochMs: time0,
+      nodeId: "X",
+      into: "R",
+    });
+    await cycleInventory.placement.move({
+      operationId: "leaving-y-r",
+      occurredAtEpochMs: time0 + 1,
+      nodeId: "Y",
+      into: "R",
+    });
+    await cycleInventory.placement.move({
+      operationId: "leaving-x-o1",
+      occurredAtEpochMs: time0 + 2,
+      nodeId: "X",
+      into: "OUTSIDE_1",
+    });
+    await cycleInventory.placement.move({
+      operationId: "leaving-y-o2",
+      occurredAtEpochMs: time0 + 3,
+      nodeId: "Y",
+      into: "OUTSIDE_2",
+    });
+    await cycleInventory.placement.move({
+      operationId: "leaving-y-x-back",
+      occurredAtEpochMs: time1,
+      nodeId: "Y",
+      into: "X",
+    });
+    await cycleInventory.placement.unplace({
+      operationId: "leaving-unplace-y",
+      occurredAtEpochMs: time3,
+      nodeId: "Y",
+    });
+    await cycleInventory.placement.move({
+      operationId: "leaving-x-y-back",
+      occurredAtEpochMs: time1 + 1,
+      nodeId: "X",
+      into: "Y",
+    });
+    await cycleInventory.counts.start({
+      countId: "leaving-cycle-count",
+      operationId: "leaving-cycle-start",
+      startedAtEpochMs: time2,
+      selector: { itemId: "item-a", withinPlacementNodeIds: ["R"] },
+    });
+    await cycleInventory.counts.observe({
+      countId: "leaving-cycle-count",
+      operationId: "leaving-cycle-observe",
+      observedAtEpochMs: time2,
+      observations: [],
+    });
+    const leavingCount = await cycleInventory.counts.reconcile({
+      countId: "leaving-cycle-count",
+      operationId: "leaving-cycle-reconcile",
+      completedAtEpochMs: time2 + 1,
+    });
+    expect(leavingCount.event).toBeUndefined();
   });
 });

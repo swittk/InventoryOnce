@@ -282,7 +282,6 @@ export function expandInventoryCountRepairAssertions(
   return effectiveInventoryHistoryEvents({
     ordered,
     retainCorrections: true,
-    isolateEmbeddedIdentities: true,
   });
 }
 
@@ -293,7 +292,6 @@ function effectiveInventoryHistoryEvents({
   omittedAssertionIds = [],
   rootReplacement,
   retainCorrections = false,
-  isolateEmbeddedIdentities = false,
 }: {
   /** Retained event component in durable order. */
   readonly ordered: readonly InventoryCommittedEvent[];
@@ -305,8 +303,6 @@ function effectiveInventoryHistoryEvents({
   readonly rootReplacement?: InventoryHistoricalRootReplacement;
   /** Count cuts apply committed corrections rather than rewriting their root events. */
   readonly retainCorrections?: boolean;
-  /** Isolate embedded count replay operation/event identities from ordinary committed operations. */
-  readonly isolateEmbeddedIdentities?: boolean;
 }): readonly InventoryCommittedEvent[] {
   const active = new Map<string, InventoryPendingHistoricalAssertion>();
   const ordinary: InventoryCommittedEvent[] = [];
@@ -444,42 +440,32 @@ function effectiveInventoryHistoryEvents({
   for (const entry of pending) {
     insertHistoricalAssertion(merged, entry);
   }
-  if (!isolateEmbeddedIdentities) {
-    return merged.map(
-      /** Assign contiguous local replay sequence without changing durable evidence time. */
-      (entry, index) =>
-        commitInventoryEvent(entry.event, entry.recordedAtEpochMs, index + 1)
-    );
-  }
   const usedOperationIds = new Set<string>();
-  const usedEventIds = new Set<string>();
   for (const entry of merged) {
     if (embeddedEvents.has(entry.event)) continue;
     usedOperationIds.add(entry.event.operationId);
-    usedEventIds.add(entry.event.eventId);
   }
   let embeddedCounter = 0;
   return merged.map(
-    /** Assign fresh non-colliding operation/event identities to embedded count-replay assertions. */
+    /** Isolate embedded operationIds from ordinary operations inside reducer receipts while keeping disjoint eventIds intact. */
     (entry, index) => {
       if (!embeddedEvents.has(entry.event)) {
         return commitInventoryEvent(entry.event, entry.recordedAtEpochMs, index + 1);
       }
-      embeddedCounter += 1;
-      let operationId = `inventory:count-assertion-op:${embeddedCounter}`;
-      while (usedOperationIds.has(operationId)) {
+      let operationId = entry.event.operationId;
+      if (usedOperationIds.has(operationId)) {
         embeddedCounter += 1;
-        operationId = `inventory:count-assertion-op:${embeddedCounter}`;
+        operationId = `inventory:historical-assertion-op:${embeddedCounter}`;
+        while (usedOperationIds.has(operationId)) {
+          embeddedCounter += 1;
+          operationId = `inventory:historical-assertion-op:${embeddedCounter}`;
+        }
       }
       usedOperationIds.add(operationId);
-      let eventId = `inventory:count-assertion-event:${embeddedCounter}`;
-      while (usedEventIds.has(eventId)) {
-        embeddedCounter += 1;
-        eventId = `inventory:count-assertion-event:${embeddedCounter}`;
-      }
-      usedEventIds.add(eventId);
       return commitInventoryEvent(
-        { ...entry.event, operationId, eventId },
+        operationId === entry.event.operationId
+          ? entry.event
+          : { ...entry.event, operationId },
         entry.recordedAtEpochMs,
         index + 1
       );

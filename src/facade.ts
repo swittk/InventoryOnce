@@ -6725,6 +6725,15 @@ class InventoryOnceHistoricalAssertionPlansImplementation
   }
 }
 
+/** Build a disjoint, injectively encoded operation or event identity for one embedded historical assertion. */
+function inventoryHistoricalAssertionScopedId(
+  kind: "op" | "event",
+  repairOperationId: string,
+  assertionId: string
+): string {
+  return `inventory:historical-assertion:${kind}:${encodeURIComponent(repairOperationId)}:${encodeURIComponent(assertionId)}`;
+}
+
 /** Build stable ordinary assertion drafts from existing correction-plan verbs. */
 function buildInventoryHistoricalAssertions(
   catalog: InventoryCatalog,
@@ -6736,6 +6745,7 @@ function buildInventoryHistoricalAssertions(
   ) {
     throw new Error("Historical repair must add or omit at least one assertion.");
   }
+  assertInventoryIdentity(input.operationId, "historical repair operationId");
   const assertionIds = new Set<string>();
   const result: InventoryHistoricalAssertion[] = [];
   const earlierAssertions = new Map<string, InventoryEventDraft>();
@@ -6755,15 +6765,30 @@ function buildInventoryHistoricalAssertions(
     }
     const plans = new InventoryOnceHistoricalAssertionPlansImplementation(
       catalog,
-      `${input.operationId}:historical:${assertion.assertionId}`,
+      inventoryHistoricalAssertionScopedId(
+        "op",
+        input.operationId,
+        assertion.assertionId
+      ),
       earlierAssertions
     );
-    const event = readReplacementEventDraft(assertion.assert(plans));
-    if (event === undefined) {
+    const draft = readReplacementEventDraft(assertion.assert(plans));
+    if (draft === undefined) {
       throw new Error(
         "Historical assertion cannot use omit(); omit an earlier assertionId instead."
       );
     }
+    const event = defineInventoryEvent({
+      catalog,
+      event: {
+        ...draft,
+        eventId: inventoryHistoricalAssertionScopedId(
+          "event",
+          input.operationId,
+          assertion.assertionId
+        ),
+      },
+    });
     result.push({
       assertionId: assertion.assertionId,
       ...(assertion.afterEventId === undefined

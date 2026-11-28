@@ -2590,4 +2590,236 @@ describe("late historical repair", () => {
     expect(reconciled.event).toBeUndefined();
   });
 
+  it.each([false, true])(
+    "plans and records embedded historical repairs even after an ordinary operation reuses the child operationId (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const bin = loosePosition("reverse-namespace-bin");
+      await inventory.stock.receive({
+        operationId: "repair:historical:receipt",
+        occurredAtEpochMs: time1,
+        to: bin,
+        amount: stockAmount("2", "piece"),
+      });
+      const bundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "repair",
+        occurredAtEpochMs: time2,
+        reason: "Earlier one-piece receipt whose child operationId matches the later ordinary receipt.",
+        assertions: [
+          {
+            assertionId: "receipt",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: bin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(bundle);
+      expect(planned.valid).toBe(true);
+      await inventory.stock.recordHistorical(bundle);
+      const live = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["reverse-namespace-bin"],
+      });
+      expect(live).toHaveLength(1);
+      expect(live[0]?.measurements.primary.quantity).toEqual(parseQuantity("3", "piece"));
+    },
+  );
+
+  it.each([false, true])(
+    "disambiguates explicit afterEventId anchors between ordinary and embedded providers with identical legacy suffixes (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const binA = loosePosition("anchor-ordinary-bin");
+      const binB = loosePosition("anchor-embedded-bin");
+      const embeddedRepair = await inventory.stock.recordHistorical({
+        operationId: "repair",
+        occurredAtEpochMs: time2,
+        reason: "Embedded historical receipt at B.",
+        assertions: [
+          {
+            assertionId: "receipt",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: binB,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const embeddedEventId = embeddedRepair.event.historicalRepair?.assertions[0]?.event.eventId;
+      expect(embeddedEventId).toBeDefined();
+      const ordinaryA = await inventory.stock.receive({
+        operationId: "repair:historical:receipt",
+        occurredAtEpochMs: time2,
+        to: binA,
+        amount: stockAmount("1", "piece"),
+      });
+      expect(ordinaryA.event.eventId).not.toBe(embeddedEventId);
+      const anchoredIssue: InventoryOnceHistoricalRepairInput = {
+        operationId: "issue-after-ordinary-a",
+        occurredAtEpochMs: time2 + 10,
+        reason: "Issue explicitly anchored after the ordinary receipt at A.",
+        assertions: [
+          {
+            assertionId: "issue-a",
+            afterEventId: ordinaryA.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time2 + 5,
+                from: binA,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(anchoredIssue);
+      expect(planned.valid).toBe(true);
+      await inventory.stock.recordHistorical(anchoredIssue);
+      const adversarialSameOp = await inventory.stock.receive({
+        operationId: embeddedRepair.event.historicalRepair!.assertions[0]!.event.operationId,
+        occurredAtEpochMs: time2 + 15,
+        to: binB,
+        amount: stockAmount("2", "piece"),
+      });
+      expect(adversarialSameOp.event.eventId).not.toBe(embeddedEventId);
+      const liveB = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["anchor-embedded-bin"],
+      });
+      expect(liveB[0]?.measurements.primary.quantity).toEqual(parseQuantity("3", "piece"));
+      const liveA = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["anchor-ordinary-bin"],
+      });
+      expect(liveA).toHaveLength(0);
+    },
+  );
+
+  it.each([false, true])(
+    "keeps embedded historical tuples injective and anchors distinct providers despite identical concatenation (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const binB = loosePosition("tuple-b-bin");
+      const binA = loosePosition("tuple-a-bin");
+      const repairB = await inventory.stock.recordHistorical({
+        operationId: "left",
+        occurredAtEpochMs: time1,
+        reason: "First embedded tuple receiving at B.",
+        assertions: [
+          {
+            assertionId: "right:historical:tail",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: binB,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const repairA = await inventory.stock.recordHistorical({
+        operationId: "left:historical:right",
+        occurredAtEpochMs: time2,
+        reason: "Second embedded tuple receiving at A.",
+        assertions: [
+          {
+            assertionId: "tail",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time1 + 1,
+                to: binA,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const eventBId = repairB.event.historicalRepair?.assertions[0]?.event.eventId;
+      const eventAId = repairA.event.historicalRepair?.assertions[0]?.event.eventId;
+      expect(eventAId).toBeDefined();
+      expect(eventBId).toBeDefined();
+      expect(eventAId).not.toBe(eventBId);
+      const anchored = await inventory.stock.recordHistorical({
+        operationId: "consume-tuple-a",
+        occurredAtEpochMs: time3,
+        reason: "Consume A explicitly anchored after tuple A.",
+        assertions: [
+          {
+            assertionId: "consume-a",
+            afterEventId: eventAId!,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time2 + 1,
+                from: binA,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(anchored.event.historicalRepair?.assertions).toHaveLength(1);
+      const liveB = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["tuple-b-bin"],
+      });
+      expect(liveB[0]?.measurements.primary.quantity).toEqual(parseQuantity("1", "piece"));
+      const liveA = await inventory.read.positions({
+        itemId: "item-a",
+        placementNodeIds: ["tuple-a-bin"],
+      });
+      expect(liveA).toHaveLength(0);
+    },
+  );
+
 });
