@@ -2277,3 +2277,7 @@ An anchored count replay keeps eligible stock, serial, and placement corrections
 ## 2026-11-28 — exact package count witnesses for reservation splits
 
 A fixed-axis package claim must be issuable as one exact movement and leave a storable remainder on every fixed axis. The same count rule serves exact binding and the bounded whole-stock search. Ordinary rows retain sparse exact-claim aggregation. For exceptional rows, decimal divisibility skips impossible package counts and the existing state budget covers restricted choices. Mixed stock bounds cap each disjoint loose component by its own stock, so an unrelated loose shortage cannot hide unreachable whole-package slack.
+
+## 2026-11-28 — executable policy picks and scalar claims
+
+A standalone policy preview checks the exact source balance left by each candidate. Transfer recording also checks the selected destination balance under the same publication fence. If a destination cannot store the first pick, the same bounded search considers alternatives using only the exact destinations for eligible source rows. Ordered batches still carry private balances until their final effects are known. Pure scalar claims use the shared exact split arithmetic when the common decimal grid makes a physical row too large at that scale. Ordinary divisible rows still use continuous flow, and exact claims still aggregate sparsely.

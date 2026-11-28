@@ -155,6 +155,92 @@ function threeAxisPickingFixture(canonical: boolean, policy: InventoryDeficitPol
 }
 
 describe("indexed stock planning and availability", () => {
+  it.each([false, true])("chooses storable FIFO source and destination balances (canonical: %s)", async (canonical) => {
+    const item = defineInventoryItem({
+      ...defineScalarInventoryItem({ itemId: "precise", revisionId: "precise-v1", axisId: "pieces", unit: "piece" }),
+      independentAxes: [{
+        axisId: "volume", role: InventoryMeasurementAxisRole.Independent,
+        requirement: InventoryMeasurementRequirement.Required, unit: unitCode("L"),
+      }],
+    });
+    const box = defineInventoryPackaging({
+      itemId: item.itemId, itemRevisionId: item.revisionId, revisionId: "precise-box", packageUnit: unitCode("box"),
+      fixedContents: inventoryMeasurementVector({ axisId: "pieces", quantity: parseQuantity("1", "piece") }, [
+        { axisId: "volume", quantity: parseQuantity("1.500000000000005", "L") },
+      ]),
+    }, item);
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [item], activeItemRevisionIds: { precise: item.revisionId }, packagingRevisions: [box],
+    });
+    const selected = { itemId: item.itemId, placementNodeIds: ["source"], lotIds: ["old", "new"] };
+    const old = { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "source", lotId: "old", packagingRevisionId: box.revisionId };
+    const young = { ...old, lotId: "new" };
+    for (const kind of ["issue", "transfer"] as const) {
+      for (const count of [1, 2]) {
+        for (const withHold of [false, true]) {
+          const backing = createInMemoryInventoryDurableStorage();
+          const inventory = createTestInventory(
+            canonical ? canonicalForwardingStorage(backing) : backing, catalog, clockAt(time3), InventoryDeficitPolicy.Record
+          );
+          await inventory.stock.receive({
+            operationId: "old", occurredAtEpochMs: time0, to: old, amount: packageAmount(kind === "issue" ? 10 : 2, box.revisionId),
+          });
+          await inventory.stock.receive({
+            operationId: "new", occurredAtEpochMs: time1, to: young, amount: packageAmount(2, box.revisionId),
+          });
+          if (kind === "transfer") {
+            await inventory.stock.receiveMany({
+              operationId: "destination", occurredAtEpochMs: time1,
+              lines: [
+                { to: { ...old, placementNodeId: "destination" }, amount: packageAmount(10, box.revisionId) },
+                { to: { ...old, lotId: "excluded" }, amount: packageAmount(1, box.revisionId) },
+              ],
+            });
+          }
+          if (withHold) {
+            const requested = parseQuantity("1", "piece");
+            await inventory.reservations.reserve({
+              operationId: "hold", reservationId: "hold", createdAtEpochMs: time1,
+              itemRevisionId: item.revisionId, selector: selected, requested,
+            });
+            await inventory.reservations.allocate({
+              operationId: "bind", reservationId: "hold", occurredAtEpochMs: time1,
+              allocations: [{ position: young, quantity: requested }],
+            });
+          }
+          const readWorld = canonical ? undefined : vi.spyOn(backing, "readWorld").mockRejectedValue(new Error("whole world"));
+          const reader = backing.readPositionSegment();
+          const readPosition = vi.fn(reader.position);
+          vi.spyOn(backing, "readPositionSegment").mockReturnValue({ ...reader, position: readPosition });
+          const request = { selector: selected, amount: packageAmount(count, box.revisionId), method: InventoryAllocationMethod.Fifo };
+          const preview = await inventory.read.planAllocation(request);
+          const expected = count === 1 ? "new" : "old";
+          // A source-only preview does not treat an unrelated destination as a constraint.
+          expect(preview.lines.map((line) => line.position.lotId)).toEqual([kind === "issue" ? expected : "old"]);
+          const command = { ...request, operationId: "move", occurredAtEpochMs: time2 };
+          const result = kind === "issue"
+            ? await inventory.stock.issueByPolicy(command)
+            : await inventory.stock.transferByPolicy({ ...command, toPlacementNodeId: "destination" });
+          expect(result.event.stockEffects.every((effect) => effect.position.lotId === expected)).toBe(true);
+          expect(result.event.unwitnessedStockMovements).toBeUndefined();
+          if (!canonical && kind === "transfer") {
+            const destinations = readPosition.mock.calls.map(([id]) => id).filter((id) => id.includes("destination"));
+            expect(destinations).toContain(inventoryStockPositionIdentity({ ...old, placementNodeId: "destination" }));
+            expect(destinations.some((id) => id.includes("excluded"))).toBe(false);
+            if (count === 2) {
+              expect(destinations).not.toContain(inventoryStockPositionIdentity({ ...young, placementNodeId: "destination" }));
+            }
+          }
+          if (readWorld !== undefined) expect(readWorld).not.toHaveBeenCalled();
+          const replay = kind === "issue"
+            ? await inventory.stock.issueByPolicy(command)
+            : await inventory.stock.transferByPolicy({ ...command, toPlacementNodeId: "destination" });
+          expect(replay).toEqual({ ...result, replayed: true });
+        }
+      }
+    }
+  });
+
   it("attributes the same deficit to a lot regardless of scoped adapter row order", async () => {
     const catalog = createTabletCatalog();
     const storage = createInMemoryInventoryDurableStorage();
@@ -886,10 +972,11 @@ describe("indexed stock planning and availability", () => {
     const inventory = createTestInventory(undefined, catalog);
     const position = { itemId: item.itemId, placementNodeId: "store" };
     const scope = { itemId: item.itemId, placementNodeIds: ["store"] };
-    const held = parseQuantity("0.1", "kg");
+    const held = parseQuantity("0.9", "kg");
     const method = InventoryAllocationMethod.Fifo;
+    // The fractional hold leaves the largest storable one-decimal remainder.
     await inventory.stock.receive({ operationId: "large-held-position", occurredAtEpochMs: time0,
-      to: position, amount: stockAmount("9007199254740991", "kg") });
+      to: position, amount: stockAmount("900719925474100", "kg") });
     await inventory.reservations.reserve({
       operationId: "hold-fractional-quantity", reservationId: "fractional", itemRevisionId: item.revisionId,
       selector: scope, requested: held, createdAtEpochMs: time1,
@@ -903,12 +990,12 @@ describe("indexed stock planning and availability", () => {
     expect(preview.lines.map((line) => line.allocatedPrimary)).toEqual([parseQuantity("0.9", "kg")]);
     const result = await inventory.stock.issueManyByPolicy({
       operationId: "issue-separate-from-fractional-hold", occurredAtEpochMs: time2,
-      requests: ["0.9", "0.1"].map((value) => ({
+      requests: ["0.1", "0.9"].map((value) => ({
         requestId: value, selector: scope, amount: stockAmount(value, "kg"), method,
       })),
     });
     expect(result.allocations.map((allocation) => allocation.lines.map((line) => line.allocatedPrimary)))
-      .toEqual([[parseQuantity("0.9", "kg")], [held]]);
+      .toEqual([[parseQuantity("0.1", "kg")], [held]]);
     expect((await inventory.read.reservation("fractional"))?.allocations.map((allocation) => allocation.quantity))
       .toEqual([held]);
   });
@@ -1019,7 +1106,7 @@ describe("indexed stock planning and availability", () => {
       to: { ...position, lotId: "large" }, amount: stockAmount("9007199254740991", "kg") });
     await inventory.stock.issue({ operationId: "record-fractional-deficit", occurredAtEpochMs: time0,
       from: { ...position, lotId: "deficit" }, amount: stockAmount("0.1", "kg") });
-    const requested = parseQuantity("0.9", "kg");
+    const requested = parseQuantity("1.0", "kg");
     await inventory.reservations.reserve({
       operationId: "reserve-small", reservationId: "small", itemRevisionId: item.revisionId,
       selector: { itemId: item.itemId, placementNodeIds: ["store"], lotIds: ["large"] },
@@ -1031,6 +1118,13 @@ describe("indexed stock planning and availability", () => {
     expect(await inventory.read.reservationFeasibility(time2)).toMatchObject({
       status: "feasible", groups: [{ requested, fulfillable: requested, shortage: parseQuantity("0.0", "kg") }],
     });
+    expect((await inventory.reservations.consume({
+      operationId: "consume-small", reservationId: "small", occurredAtEpochMs: time2,
+      fulfillment: [{
+        from: { ...position, itemRevisionId: item.revisionId, lotId: "large" },
+        amount: stockAmount("1.0", "kg"),
+      }],
+    })).reservation.status).toBe(InventoryReservationStatus.Consumed);
   });
 
   it("considers a later measured witness when a private row cannot supply a storable whole amount", async () => {

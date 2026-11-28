@@ -93,6 +93,87 @@ function createExactPackageReservationFixture(canonical: boolean) {
 }
 
 describe("broad reservations and physical truth", () => {
+  it.each([false, true])("checks exact scalar remainder before admitting and binding a claim (canonical: %s)", async (canonical) => {
+    const item = defineScalarInventoryItem({ itemId: "liquid", revisionId: "liquid-v1", axisId: "volume", unit: "L" });
+    const catalog = defineInventoryCatalog({ itemRevisions: [item], activeItemRevisionIds: { liquid: item.revisionId } });
+    const backing = createInMemoryInventoryDurableStorage();
+    const storage = canonical ? new Proxy(backing, {
+      /** Use a canonical adapter without optional segmented stock capabilities. */
+      get(target, property) {
+        if (property === "commitSegmentedStockEvent" || property === "queryInventoryEventsByResourceKeys") return undefined;
+        const member = Reflect.get(target, property);
+        return typeof member === "function" ? member.bind(target) : member;
+      },
+    }) : backing;
+    const inventory = createInventoryOnce({ catalog, storage, clock: { nowEpochMs: () => time3 } });
+    const source = { itemId: item.itemId, itemRevisionId: item.revisionId, placementNodeId: "store", lotId: "source" };
+    const extra = { ...source, lotId: "extra" };
+    const requested = parseQuantity("1.500000000000005", "L");
+    const selector = { itemId: item.itemId, placementNodeIds: ["store"] };
+    const reserve = {
+      operationId: "reserve", reservationId: "claim", createdAtEpochMs: time1,
+      itemRevisionId: item.revisionId, selector, requested,
+    };
+    const allocate = { operationId: "allocate", reservationId: "claim", occurredAtEpochMs: time2,
+      allocations: [{ position: source, quantity: requested }] };
+    await inventory.stock.receive({
+      operationId: "receipt", occurredAtEpochMs: time0, to: source, amount: stockAmount("15.00000000000005", "L"),
+    });
+    const beforeReserve = (await inventory.read.world()).revision;
+    await expect(inventory.reservations.reserve(reserve)).rejects.toThrow("cannot all be fulfilled simultaneously");
+    expect((await inventory.read.world()).revision).toBe(beforeReserve);
+    await inventory.stock.receive({
+      operationId: "extra", occurredAtEpochMs: time1, to: extra, amount: stockAmount("0.000000000000005", "L"),
+    });
+    await inventory.reservations.reserve(reserve);
+    const beforeBind = (await inventory.read.world()).revision;
+    await expect(inventory.reservations.allocate(allocate)).rejects.toThrow("exact remaining balance");
+    expect((await inventory.read.world()).revision).toBe(beforeBind);
+    await inventory.reservations.allocate({
+      ...allocate, allocations: [
+        { position: source, quantity: parseQuantity("1.5", "L") },
+        { position: extra, quantity: parseQuantity("0.000000000000005", "L") },
+      ],
+    });
+    const consume = { operationId: "consume", reservationId: "claim", occurredAtEpochMs: time2,
+      fulfillment: [
+        { from: source, amount: stockAmount("1.5", "L") },
+        { from: extra, amount: stockAmount("0.000000000000005", "L") },
+      ] };
+    const result = await inventory.reservations.consume(consume);
+    expect(result.reservation.status).toBe(InventoryReservationStatus.Consumed);
+    expect(await inventory.reservations.consume(consume)).toEqual({ ...result, replayed: true });
+
+    // A hold made against a smaller balance can become short after a truthful receipt.
+    const other = { ...source, placementNodeId: "other-store" };
+    await inventory.stock.receive({
+      operationId: "smaller", occurredAtEpochMs: time2, to: other, amount: stockAmount("3.00000000000001", "L"),
+    });
+    await inventory.reservations.reserve({
+      ...reserve, operationId: "reserve-other", reservationId: "other", createdAtEpochMs: time2,
+      selector: { itemId: item.itemId, placementNodeIds: ["other-store"] },
+    });
+    await inventory.reservations.allocate({
+      ...allocate, operationId: "allocate-other", reservationId: "other",
+      allocations: [{ position: other, quantity: requested }],
+    });
+    await inventory.stock.receive({
+      operationId: "more", occurredAtEpochMs: time2 + 1, to: other, amount: stockAmount("12.00000000000004", "L"),
+    });
+    expect((await inventory.read.reservationFeasibility()).groups[0]).toMatchObject({
+      fulfillable: parseQuantity("1.500000000000000", "L"),
+      shortage: parseQuantity("0.000000000000005", "L"),
+    });
+    await inventory.stock.issue({
+      operationId: "remove", occurredAtEpochMs: time2 + 2, from: other, amount: stockAmount("12.00000000000004", "L"),
+    });
+    expect((await inventory.read.reservationFeasibility()).status).toBe(InventoryReservationFeasibilityStatus.Feasible);
+    expect((await inventory.reservations.consume({
+      ...consume, operationId: "consume-other", reservationId: "other", occurredAtEpochMs: time3,
+      fulfillment: [{ from: other, amount: stockAmount("1.500000000000005", "L") }],
+    })).reservation.status).toBe(InventoryReservationStatus.Consumed);
+  });
+
   it.each([false, true])("requires storable package movement and remainder across claim operations (canonical: %s)", async (canonical) => {
     for (const boxes of [1, 2, 3, 4]) {
       const { inventory, item, packaging, boxPosition, loosePosition, selector } =

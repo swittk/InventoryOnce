@@ -38,7 +38,7 @@ import {
   inventoryMeasurementAt,
   type InventoryMeasurementVector,
 } from "./measurements.js";
-import type { InventoryMeasurementTotals } from "./measurement-totals.js";
+import { inventoryMeasurementChangeFitsStorage, type InventoryMeasurementTotals } from "./measurement-totals.js";
 import {
   inventoryStockPositionIdentity,
   type InventoryStockPosition,
@@ -49,6 +49,7 @@ import { findInventoryPositions, type InventoryProjectionState } from "./project
 import {
   addExactQuantityDigits,
   compareWorkingQuantities,
+  inventoryQuantityChangeFitsStorage,
   materializeInventoryWorkingQuantity,
   InventoryQuantityRepresentationError,
   quantityGreatestCommonDivisor,
@@ -259,6 +260,10 @@ export interface PlanWorkingInventoryAllocationInput extends Omit<PlanInventoryA
   readonly recordingAttempt?: "prefer-unheld" | "all-physical";
   /** Record mode can keep a compatible partial witness and post the measured remainder. */
   readonly allowMeasuredShortfall?: boolean;
+  /** Check the publishable source remainder for a standalone movement or preview. */
+  readonly checkSourceBalance?: true;
+  /** Transfer destination vectors indexed by their exact source IDs for this selection. */
+  readonly destinationBalances?: ReadonlyMap<string, InventoryMeasurementVector | undefined>;
 }
 
 /** Internal picker result before a caller asks for separately materialized deficit totals. */
@@ -271,7 +276,7 @@ export interface InventoryWorkingPolicyAllocationPlan extends Omit<InventoryPoli
 
 /** Plan exact FIFO/FEFO picks over one complete signed stock pool. */
 export function planInventoryAllocationInPool(input: PlanInventoryAllocationInPoolInput): InventoryPolicyAllocationPlan {
-  const result = planWorkingInventoryAllocation(input);
+  const result = planWorkingInventoryAllocation({ ...input, checkSourceBalance: true });
   return {
     ...result,
     recordedDeficit: materializeInventoryWorkingQuantity(result.recordedDeficit, "Inventory recorded deficit"),
@@ -292,6 +297,8 @@ export function planWorkingInventoryAllocation({
   allowAllocatedStock = false,
   recordingAttempt,
   allowMeasuredShortfall = false,
+  checkSourceBalance,
+  destinationBalances,
   reservationAtEpochMs = atEpochMs,
 }: PlanWorkingInventoryAllocationInput): InventoryWorkingPolicyAllocationPlan {
   assertInventoryEpochMilliseconds(atEpochMs, "inventory allocation authority time");
@@ -334,6 +341,8 @@ export function planWorkingInventoryAllocation({
       allocations,
       candidates: deficitAdjusted.byPositionIdentity,
       rows: candidateResult.rowsById,
+      checkSourceBalance: checkSourceBalance === true,
+      destinationBalances,
     });
   let lines = allocated === undefined ? undefined : buildLines(allocated.allocations);
   if (lines === undefined || validateReportedAxes) {
@@ -962,11 +971,15 @@ interface InventoryPolicyAllocationLinesInput {
   readonly candidates: ReadonlyMap<string, InventoryWorkingAllocationCandidate>;
   /** Current signed stock rows with the exact measurements. */
   readonly rows: ReadonlyMap<string, InventoryPolicyWorkingRow>;
+  /** Whether a selected source is part of a standalone publishable movement. */
+  readonly checkSourceBalance: boolean;
+  /** Current destination vectors keyed by the selected source identity. */
+  readonly destinationBalances: ReadonlyMap<string, InventoryMeasurementVector | undefined> | undefined;
 }
 
 /** Materialize exact movement lines from allocations and the frozen source rows. */
 function inventoryPolicyAllocationLines({
-  catalog, item, allocations, candidates, rows,
+  catalog, item, allocations, candidates, rows, checkSourceBalance, destinationBalances,
 }: InventoryPolicyAllocationLinesInput): InventoryPolicyAllocationLine[] | undefined {
   // Final allocation lines assembled from the reviewed candidate/result pairing.
   const lines: InventoryPolicyAllocationLine[] = [];
@@ -987,6 +1000,18 @@ function inventoryPolicyAllocationLines({
     });
     // A whole working row can have an independent axis that cannot be used in a durable line.
     if (amount === undefined) return undefined;
+    const source = checkSourceBalance && "measurements" in currentPosition ? currentPosition.measurements : undefined;
+    const destination = destinationBalances?.get(positionId);
+    if (source !== undefined || destination !== undefined) {
+      if (item.independentAxes.length === 0) {
+        if (source !== undefined && !inventoryQuantityChangeFitsStorage(source.primary.quantity, allocation.quantity, -1)) return undefined;
+        if (destination !== undefined && !inventoryQuantityChangeFitsStorage(destination.primary.quantity, allocation.quantity, 1)) return undefined;
+      } else {
+        const movement = resolveInventoryAmount(catalog, item, amount).measurements;
+        if (source !== undefined && !inventoryMeasurementChangeFitsStorage(source, movement, -1)) return undefined;
+        if (destination !== undefined && !inventoryMeasurementChangeFitsStorage(destination, movement, 1)) return undefined;
+      }
+    }
     lines.push({
       position: allocation.position,
       amount,

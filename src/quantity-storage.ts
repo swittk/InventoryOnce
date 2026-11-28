@@ -65,6 +65,20 @@ export function subtractWorkingQuantity(left: InventoryWorkingQuantity, right: I
   return { amountMinor: total.minor, decimals: total.decimals, unit: left.unit };
 }
 
+/** Decide whether a signed change leaves a storable balance without materializing it. */
+export function inventoryQuantityChangeFitsStorage(
+  balance: Quantity,
+  change: Quantity,
+  sign: 1 | -1
+): boolean {
+  if (balance.decimals === change.decimals &&
+      Number.isSafeInteger(balance.amountMinor + sign * change.amountMinor)) return true;
+  const decimals = Math.max(balance.decimals, change.decimals);
+  const minor = workingQuantityAtDecimals(balance, decimals) +
+    BigInt(sign) * workingQuantityAtDecimals(change, decimals);
+  return storableQuantityScale(minor, decimals) !== undefined;
+}
+
 /** Materialize an exact working quantity only when the returned digits fit storage. */
 export function materializeInventoryWorkingQuantity(value: InventoryWorkingQuantity, label: string): Quantity {
   const stored = storableQuantityDigits(BigInt(value.amountMinor), value.decimals);

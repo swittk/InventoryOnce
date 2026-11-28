@@ -51,6 +51,7 @@ import {
   prepareInventoryPolicyAllocationPool,
 } from "./picking.js";
 import { type InventoryPlacementState } from "./placement.js";
+import { inventoryMeasurementChangeFitsStorage } from "./measurement-totals.js";
 import {
   findInventoryPositions,
   type InventoryProjectionState,
@@ -71,12 +72,12 @@ import {
   positiveQuantity,
   quantity,
   quantityIsWholeMultipleOf,
-  subtractQuantity,
   type Quantity,
 } from "./quantity.js";
 import {
   addExactQuantityDigits,
   compareWorkingQuantities,
+  inventoryQuantityChangeFitsStorage,
   InventoryQuantityRepresentationError,
   leastCommonWorkingQuantityMultiple,
   materializeInventoryWorkingQuantity,
@@ -1037,12 +1038,11 @@ function fungibilityIssueBalancesAreStorable({
     );
     if (evidence.position.key.packagingRevisionId === undefined && evidence.item.independentAxes.length === 0) {
       const onHand = evidence.position.measurements.primary.quantity;
-      // An in-range positive portion at the same scale always leaves an in-range scalar balance.
-      if (onHand.decimals !== memberQuantity.decimals) subtractQuantity(onHand, memberQuantity);
+      if (!inventoryQuantityChangeFitsStorage(onHand, memberQuantity, -1)) return false;
       continue;
     }
     const moved = resolveFungibilityMovementMeasurements(catalog, evidence.item, evidence.position, memberQuantity);
-    subtractInventoryMeasurements(evidence.position.measurements, moved);
+    if (!inventoryMeasurementChangeFitsStorage(evidence.position.measurements, moved, -1)) return false;
   }
   return true;
 }

@@ -190,6 +190,7 @@ import {
 } from "./fungibility.js";
 import {
   addInventoryMeasurementTotals,
+  inventoryMeasurementChangeFitsStorage,
   materializeInventoryMeasurementTotals,
   type InventoryMeasurementTotals,
 } from "./measurement-totals.js";
@@ -4307,6 +4308,8 @@ function segmentedPolicyStockSource(
   storage: InventorySegmentedStockPlanningCapability,
   recordedAtEpochMs: number
 ): InventoryPolicyStockSource {
+  /** Reuse the same reader for exact positions in this scoped planning attempt. */
+  let positions: ReturnType<InventorySegmentedStockPlanningCapability["readPositionSegment"]> | undefined;
   return {
     /** Read the complete affected pool with the claim and FIFO evidence it needs. */
     pool: (selection) => storage.readSegmentedStockPool({
@@ -4315,7 +4318,7 @@ function segmentedPolicyStockSource(
       reservationAtEpochMs: recordedAtEpochMs,
     }),
     /** Read one exact signed row for an optional explicit deficit identity. */
-    position: async (positionId) => (await storage.readPositionSegment()).position(positionId),
+    position: async (positionId) => (await (positions ??= storage.readPositionSegment())).position(positionId),
     /** Read live ancestry through the same published topology index. */
     ancestry: async (nodeId) => (await storage.readPlacementSegment()).ancestry(nodeId),
     /** Read direct rows and child bindings from the adapter's current indexes. */
@@ -5508,6 +5511,12 @@ function requirePolicyBatchMetadataString(
   return value;
 }
 
+/** Standalone policy planning keeps the captured source rows and their live ancestry. */
+interface StandalonePolicyAllocationInput extends PlanWorkingInventoryAllocationInput {
+  /** Current signed rows under the movement's publication fence. */
+  readonly pool: InventoryScopedStockPool;
+}
+
 /** Plan and commit one policy movement against the same world revision it selects from. */
 async function commitInventoryPolicyMovement(
   owner: InventoryOnce,
@@ -5552,10 +5561,11 @@ async function commitInventoryPolicyMovement(
         internals.catalog, input.selector, input.amount, input.itemRevisionId
       );
       const pool = await source.pool(selection);
-      const allocation = planInventoryAllocationForRecording({
+      const allocationInput: StandalonePolicyAllocationInput = {
         catalog: internals.catalog,
         selection, pool, amount: input.amount, method: input.method,
         allowMeasuredShortfall: internals.deficitPolicy === InventoryDeficitPolicy.Record,
+        checkSourceBalance: true,
         atEpochMs: input.occurredAtEpochMs,
         reservationAtEpochMs: recordedAtEpochMs,
         ...(input.allowExpiredLots === undefined
@@ -5564,7 +5574,10 @@ async function commitInventoryPolicyMovement(
         ...(input.allowAllocatedStock === undefined
           ? {}
           : { allowAllocatedStock: input.allowAllocatedStock }),
-      });
+      };
+      const allocation = toPlacementNodeId === undefined
+        ? planInventoryAllocationForRecording(allocationInput)
+        : await planPolicyTransferAllocation(source, allocationInput, toPlacementNodeId.trim());
       const deficit = await policyRecordedDeficit({
         catalog: internals.catalog,
         kind,
@@ -5591,6 +5604,44 @@ async function commitInventoryPolicyMovement(
     ...eventResult,
     ...(deficit === undefined ? {} : { deficit }),
   };
+}
+
+/** Plan one transfer with scoped destination evidence only for the rows it might use. */
+async function planPolicyTransferAllocation(
+  source: InventoryPolicyStockSource,
+  input: StandalonePolicyAllocationInput,
+  toPlacementNodeId: string,
+): Promise<InventoryWorkingPolicyAllocationPlan> {
+  const first = planInventoryAllocationForRecording(input);
+  /** Cache absent destinations as well as current vectors in this attempt. */
+  const destinations = new Map<string, InventoryMeasurementVector | undefined>();
+  /** Read the one current position this exact source would credit. */
+  async function readDestination(from: InventoryStockPositionKey): Promise<InventoryMeasurementVector | undefined> {
+    const fromId = inventoryStockPositionIdentity(from);
+    if (!destinations.has(fromId)) {
+      const intoId = inventoryStockPositionIdentity({ ...from, placementNodeId: toPlacementNodeId });
+      destinations.set(fromId, (await source.position(intoId))?.measurements);
+    }
+    return destinations.get(fromId);
+  }
+  let fits = true;
+  for (const line of first.lines) {
+    const balance = await readDestination(line.position);
+    if (balance === undefined) continue;
+    const movement = resolveInventoryAmount(input.catalog, input.selection.item, line.amount).measurements;
+    if (!inventoryMeasurementChangeFitsStorage(balance, movement, 1)) fits = false;
+  }
+  if (fits) return first;
+
+  // Read alternative destinations only when the ordinary pick cannot be stored.
+  for (const row of input.pool.positions) {
+    if (row.position.measurements.primary.quantity.amountMinor <= 0 ||
+        !inventoryScopedStockMatches(row.position.key, input.selection.selector, row.ancestry) ||
+        (input.allowExpiredLots !== true && row.effectiveUseByEpochMs !== undefined &&
+          row.effectiveUseByEpochMs <= input.atEpochMs)) continue;
+    await readDestination(row.position.key);
+  }
+  return planInventoryAllocationForRecording({ ...input, destinationBalances: destinations });
 }
 
 /** Prefer stock free of exact holds, then use actual held stock if it covers more of the physical report. */

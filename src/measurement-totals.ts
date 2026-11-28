@@ -1,6 +1,6 @@
 import { inventoryMeasurement, inventoryMeasurementVector, type InventoryMeasurement, type InventoryMeasurementVector } from "./measurements.js";
 import type { Quantity } from "./quantity.js";
-import { addExactQuantityDigits, materializeInventoryWorkingQuantity, type ExactQuantityDigits } from "./quantity-storage.js";
+import { addExactQuantityDigits, inventoryQuantityChangeFitsStorage, materializeInventoryWorkingQuantity, type ExactQuantityDigits } from "./quantity-storage.js";
 
 /** Temporary sum of one normalized measurement axis. */
 interface InventoryMeasurementTotal extends ExactQuantityDigits {
@@ -10,6 +10,24 @@ interface InventoryMeasurementTotal extends ExactQuantityDigits {
 
 /** Exact working totals for measurements of one frozen item schema. */
 export type InventoryMeasurementTotals = Map<string, InventoryMeasurementTotal>;
+
+/** Check only changed axes on two vectors of the same frozen schema. */
+export function inventoryMeasurementChangeFitsStorage(
+  balance: InventoryMeasurementVector,
+  change: InventoryMeasurementVector,
+  sign: 1 | -1
+): boolean {
+  if (!inventoryQuantityChangeFitsStorage(balance.primary.quantity, change.primary.quantity, sign)) return false;
+  for (const { axisId, quantity } of change.independent) {
+    // A previously absent axis gains only the already storable change.
+    for (const current of balance.independent) {
+      if (current.axisId !== axisId) continue;
+      if (!inventoryQuantityChangeFitsStorage(current.quantity, quantity, sign)) return false;
+      break;
+    }
+  }
+  return true;
+}
 
 /** Start an exact accumulator with the normalized axes and values of a vector. */
 export function inventoryMeasurementTotalsFromVector(measurements: InventoryMeasurementVector): InventoryMeasurementTotals {
