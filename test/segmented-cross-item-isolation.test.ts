@@ -236,14 +236,8 @@ describe("segmented writes with unrelated reservation/count scopes", () => {
       readWorld.mockRestore();
     }
     expect(indexed).toHaveLength(1);
-    expect(indexed).toMatchObject([
-      {
-        key: { ...loosePosition("store"), itemRevisionId: "item-a-v2" },
-        measurements: {
-          primary: { quantity: parseQuantity("-2", "piece") },
-        },
-      },
-    ]);
+    expect(indexed[0]?.key).toEqual({ ...loosePosition("store"), itemRevisionId: "item-a-v2" });
+    expect(indexed[0]?.measurements.primary.quantity).toEqual(parseQuantity("-2", "piece"));
     const world = await storage.readWorld();
     expect(Object.values(world.projection.positions)).toEqual(indexed);
   });

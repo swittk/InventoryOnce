@@ -2269,3 +2269,7 @@ The whole-stock reservation search can stop decreasing a single-claim group's pi
 ## 2026-11-28 — exact fungibility trial balances and retained physical time
 
 Fungibility checks selected movement and the exact remaining balance during allocation. A one-pack movement can fit the durable quantity format while its source remainder cannot. The picker can choose a different lot in either case. The trial rejects only exact arithmetic representation failures and preserves claim and search-limit outcomes. A retained later receipt cannot fund a physically earlier transfer when historical replay pulls dependencies forward. Published reservation snapshots keep the same lifecycle records through migration and restart.
+
+## 2026-11-28 — count replay dependencies and independent claim bounds
+
+An anchored count replay keeps eligible stock, serial, and placement corrections ahead of the assertion they support. A carrier binding removed by a replacement definition keeps the old serial only through that definition change. Indexed cohort history uses the same membership test as the projection and journal, while private dependency keys still locate candidate events. Loose stock in a disjoint claim component cannot relax the whole-package slack bound of another component.

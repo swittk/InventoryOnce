@@ -1,3 +1,4 @@
+import { inventoryEventWhereaboutsMembership } from "./whereabouts-membership.js";
 import { inventoryIntentFingerprint } from "./canonical.js";
 import { inventorySha256 } from "./digest.js";
 import {
@@ -555,8 +556,8 @@ export class InMemoryInventorySegmentedEventJournal
       );
     }
 
-    let touchedWhereaboutsIds =
-      inventoryJournalTouchedWhereaboutsIds(retained);
+    /** The retained ordinary root also contributes its direct cohort evidence. */
+    let correctedRoot: InventoryCommittedEvent | undefined;
     const resourceKeys = new Set([
       ...inventoryEventResourceKeys(retained),
       ...inventoryEventDependencyIndexKeys(retained),
@@ -564,6 +565,7 @@ export class InMemoryInventorySegmentedEventJournal
     const correction = retained.correction;
     if (correction !== undefined) {
       const corrected = this.eventsById.get(correction.correctsEventId);
+      correctedRoot = corrected;
       if (corrected === undefined) {
         throw new Error(
           `Segmented journal correction target '${correction.correctsEventId}' does not exist.`
@@ -590,12 +592,6 @@ export class InMemoryInventorySegmentedEventJournal
           `Segmented journal correction must supersede '${currentCorrection}'.`
         );
       }
-      touchedWhereaboutsIds = [
-        ...new Set([
-          ...touchedWhereaboutsIds,
-          ...inventoryJournalTouchedWhereaboutsIds(corrected),
-        ]),
-      ].sort();
       for (const key of [
         ...inventoryEventResourceKeys(corrected),
         ...inventoryEventDependencyIndexKeys(corrected),
@@ -658,7 +654,7 @@ export class InMemoryInventorySegmentedEventJournal
     const kinds = inventoryEventEffectiveKinds(retained);
     return {
       retained,
-      touchedWhereaboutsIds,
+      touchedWhereaboutsIds: inventoryEventWhereaboutsMembership(retained, correctedRoot),
       resourceKeys: [...resourceKeys].sort(),
       omittedAssertions,
       addedAssertions,
@@ -762,56 +758,6 @@ function appendJournalSequence<Key>(
   const sequences = index.get(key) ?? [];
   sequences.push(sequence);
   index.set(key, sequences);
-}
-
-/** Treat embedded assertion effects as retained facts for lifecycle indexing only. */
-function commitInventoryAssertionForIndex(
-  assertion: import("./events.js").InventoryEventDraft,
-  envelope: InventoryCommittedEvent
-): InventoryCommittedEvent {
-  return {
-    ...assertion,
-    recordedAtEpochMs: envelope.recordedAtEpochMs,
-    recordSequence: envelope.recordSequence,
-  };
-}
-
-/** Collect stable whereabouts lifecycle identities touched directly by one event. */
-function inventoryJournalTouchedWhereaboutsIds(
-  event: InventoryCommittedEvent
-): readonly string[] {
-  const result = new Set<string>();
-  for (const effect of event.stockEffects) {
-    if (effect.position.whereaboutsId !== undefined) {
-      result.add(effect.position.whereaboutsId);
-    }
-  }
-  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-    if (transfer.from.whereaboutsId !== undefined) {
-      result.add(transfer.from.whereaboutsId);
-    }
-    if (transfer.to.whereaboutsId !== undefined) {
-      result.add(transfer.to.whereaboutsId);
-    }
-  }
-  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
-    if (override.position.whereaboutsId !== undefined) {
-      result.add(override.position.whereaboutsId);
-    }
-  }
-  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
-    result.add(whereaboutsId);
-  }
-  for (const assertion of event.historicalRepair?.assertions ?? []) {
-    for (const whereaboutsId of inventoryJournalTouchedWhereaboutsIds(
-      commitInventoryAssertionForIndex(assertion.event, event)
-    )) {
-      result.add(whereaboutsId);
-    }
-  }
-  const ordered = [...result];
-  ordered.sort();
-  return ordered;
 }
 
 /** Compare durable event sequences oldest first. */

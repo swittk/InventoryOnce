@@ -2141,7 +2141,7 @@ describe("late historical repair", () => {
     expect(result.event).toBeUndefined();
   });
 
-  it("keeps an earlier placement correction ahead of a later unanchored placement repair during count replay", async () => {
+  it.each([false, true])("keeps a placement correction ahead of a later count-cut repair (anchored=%s)", async (anchored) => {
     const inventory = createTestInventory();
     const initialMove = await inventory.placement.move({
       operationId: "correction-order-move-a",
@@ -2174,6 +2174,7 @@ describe("late historical repair", () => {
       assertions: [
         {
           assertionId: "move-x-c",
+          ...(anchored ? { afterEventId: initialMove.event.eventId } : {}),
           assert: (plans) =>
             plans.placement({
               occurredAtEpochMs: time0 + 25,
@@ -2534,13 +2535,19 @@ describe("late historical repair", () => {
     expect(reconciled.event).toBeUndefined();
   });
 
-  it("orders an omitting serial correction before a later historical receipt during count replay", async () => {
+  it.each([false, true])("orders an omitting serial correction before a historical receipt (anchored=%s)", async (anchored) => {
     const inventory = createTestInventory();
     const pos = loosePosition("serial-omit-bin", { serialId: "SN-REUSE" });
     const first = await inventory.stock.receive({
       operationId: "serial-omit-r1",
       occurredAtEpochMs: time0,
       to: pos,
+      amount: stockAmount("1", "piece"),
+    });
+    const anchor = await inventory.stock.receive({
+      operationId: "serial-omit-anchor",
+      occurredAtEpochMs: time2,
+      to: loosePosition("unrelated-anchor-bin"),
       amount: stockAmount("1", "piece"),
     });
     await inventory.stock.correct({
@@ -2557,9 +2564,10 @@ describe("late historical repair", () => {
       assertions: [
         {
           assertionId: "serial-arrived-t2",
+          ...(anchored ? { afterEventId: anchor.event.eventId } : {}),
           assert: (plans) =>
             plans.receive({
-              occurredAtEpochMs: time1 + 1,
+              occurredAtEpochMs: time2,
               to: pos,
               amount: stockAmount("1", "piece"),
             }),

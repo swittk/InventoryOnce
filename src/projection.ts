@@ -1,3 +1,4 @@
+import { inventoryEventWhereaboutsMembership } from "./whereabouts-membership.js";
 import { candidateSubtreePositionIds } from "./stock-scope.js";
 import {
   assertInventoryStockAgeOverride,
@@ -1650,61 +1651,16 @@ function inventoryCorrectionMetadataSources(
   return [root, superseded];
 }
 
-/** Return every whereabouts lifecycle identity retained by one event or its corrected root. */
+/** Resolve the exact retained root for cohort membership before applying a correction. */
 function inventoryWhereaboutsIdsTouchedByProjectionEvent(
   state: InventoryProjectionState,
   event: InventoryCommittedEvent
 ): readonly string[] {
-  const result = new Set<string>();
-  addDirectInventoryWhereaboutsIds(result, event);
-  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
-    result.add(whereaboutsId);
-  }
-  for (const assertion of event.historicalRepair?.assertions ?? []) {
-    addDirectInventoryWhereaboutsIds(result, assertion.event);
-  }
-  if (event.correction !== undefined) {
-    const corrected = inventorySparseRecordValue(
-      state.events,
-      event.correction.correctsEventId
-    );
-    if (corrected === undefined) {
-      throw new Error(
-        "Whereabouts correction references missing event '" +
-          event.correction.correctsEventId +
-          "'."
-      );
-    }
-    addDirectInventoryWhereaboutsIds(result, corrected);
-  }
-  const ordered = [...result];
-  ordered.sort(compareInventoryIdentityText);
-  return ordered;
-}
-
-/** Add direct whereabouts identities retained in one event's stock/provenance evidence. */
-function addDirectInventoryWhereaboutsIds(
-  result: Set<string>,
-  event: InventoryEventDraft
-): void {
-  for (const effect of event.stockEffects) {
-    if (effect.position.whereaboutsId !== undefined) {
-      result.add(effect.position.whereaboutsId);
-    }
-  }
-  for (const transfer of event.positiveLayerProvenanceTransfers ?? []) {
-    if (transfer.from.whereaboutsId !== undefined) {
-      result.add(transfer.from.whereaboutsId);
-    }
-    if (transfer.to.whereaboutsId !== undefined) {
-      result.add(transfer.to.whereaboutsId);
-    }
-  }
-  for (const override of event.positiveLayerProvenanceOverrides ?? []) {
-    if (override.position.whereaboutsId !== undefined) {
-      result.add(override.position.whereaboutsId);
-    }
-  }
+  const rootId = event.correction?.correctsEventId;
+  if (rootId === undefined) return inventoryEventWhereaboutsMembership(event);
+  const root = inventorySparseRecordValue(state.events, rootId);
+  if (root === undefined) throw new Error("Whereabouts correction references missing event '" + rootId + "'.");
+  return inventoryEventWhereaboutsMembership(event, root);
 }
 
 /** Stable current placement-node comparison including policy, identifiers, and metadata. */
@@ -1837,7 +1793,7 @@ function prepareCountProjectionScope(
   const matchesObservedPosition = (position: InventoryStockPositionKey): boolean =>
     inventoryStockPositionMatchesNormalizedSelector(position, directSelector) &&
     (observedNodes === undefined || (position.placementNodeId !== undefined && observedNodes.has(position.placementNodeId)));
-  const serials = new Set(placement?.embodiedSerials);
+  const serials = new Set<string>();
   for (const event of events) {
     for (const { position } of event.stockEffects) {
       if (position.serialId === undefined || !matchesObservedPosition(position)) continue;
@@ -1845,9 +1801,11 @@ function prepareCountProjectionScope(
     }
   }
   /** Preserve all positions of each selected serial so incoming and outgoing stock remain paired. */
-  const includesObservedPosition = (position: InventoryStockPositionKey): boolean =>
-    position.serialId === undefined ? matchesObservedPosition(position) :
-      serials.has(inventorySerialIdentity(position.itemId, position.serialId));
+  const includesObservedPosition = (position: InventoryStockPositionKey, sequence: number): boolean => {
+    if (position.serialId === undefined) return matchesObservedPosition(position);
+    const identity = inventorySerialIdentity(position.itemId, position.serialId);
+    return serials.has(identity) || sequence <= (placement?.embodiedSerialThrough.get(identity) ?? 0);
+  };
   return {
     placementNodeIds: placement?.nodeIds ?? new Set(),
     ...(placement === undefined
@@ -1868,11 +1826,11 @@ function countObservedPlacementNodes(
   placement: InventoryCountPlacementDependencies
 ): ReadonlySet<string> {
   /** A carrier's stock position supplies the parent of its embodied node. */
-  const includesCarrier = (position: InventoryStockPositionKey): boolean =>
+  const includesCarrier = (position: InventoryStockPositionKey, sequence: number): boolean =>
     position.serialId !== undefined &&
-    placement.embodiedSerials.has(inventorySerialIdentity(position.itemId, position.serialId));
+    sequence <= (placement.embodiedSerialThrough.get(inventorySerialIdentity(position.itemId, position.serialId)) ?? 0);
   /** A standalone topology needs only placement and correction facts. */
-  const hasCarriers = placement.embodiedSerials.size !== 0;
+  const hasCarriers = placement.embodiedSerialThrough.size !== 0;
   const scope: InventoryCountProjectionScope = {
     placementNodeIds: placement.nodeIds,
     placementEventIds: placement.placementEventIds,
@@ -1991,7 +1949,7 @@ type InventoryCountStockRoute =
 /** Keep supplying rows through the use that needs them and preserve complete structured transfers. */
 function countStockDependencies(
   events: readonly InventoryCommittedEvent[],
-  matchesPosition: (position: InventoryStockPositionKey) => boolean
+  matchesPosition: InventoryCountProjectionScope["includesPosition"]
 ): Pick<InventoryCountProjectionScope, "transferIds" | "includesPosition"> {
   const transferIds = new Set<string>();
   if (!events.some(
@@ -2028,7 +1986,7 @@ function countStockDependencies(
     }
     for (const { position } of event.stockEffects) {
       const identity = countTransferPositionIdentity(position);
-      if (matchesPosition(position)) need(identity, Infinity);
+      if (matchesPosition(position, sequence)) need(identity, sequence);
       if (transferId !== undefined) {
         const positions = positionsByTransfer.get(transferId) ?? new Map<string, number>();
         positions.set(identity, sequence);
@@ -2061,7 +2019,7 @@ function countStockDependencies(
   return {
     transferIds,
     /** Retain the counted row or the prefix required by a downstream movement. */
-    includesPosition: (position, sequence) => matchesPosition(position) ||
+    includesPosition: (position, sequence) => matchesPosition(position, sequence) ||
       (neededThrough.size !== 0 && sequence <= (neededThrough.get(countTransferPositionIdentity(position)) ?? 0)),
   };
 }
@@ -2078,8 +2036,8 @@ interface InventoryCountPlacementDependencies {
   readonly retainedPlacementEdgeKeys: ReadonlySet<string>;
   /** Event/node pairs leaving the tracked subgraph that must replay as unplacements. */
   readonly detachedPlacementEdgeKeys: ReadonlySet<string>;
-  /** Serialized stock that can move one of the retained nodes. */
-  readonly embodiedSerials: ReadonlySet<string>;
+  /** Last cut sequence needing each serial for a retained definition or movement. */
+  readonly embodiedSerialThrough: ReadonlyMap<string, number>;
 }
 
 /** Working primary balance and current placement of one embodied serial position. */
@@ -2107,6 +2065,10 @@ function countPlacementDependencies(
   const nodesBySerial = new Map<string, Set<string>>();
   /** Current serial binding per node identity so updates never leak stale carrier bindings. */
   const serialByNodeId = new Map<string, string>();
+  /** Earlier carrier bindings needed only through the correction that removes them. */
+  const releasedBindingsByNode = new Map<string, Map<string, number>>();
+  /** Nodes an earlier metadata event bound to a serial, for later omission corrections. */
+  const embodiedNodesByEventId = new Map<string, readonly string[]>();
   const rootsSet = new Set(roots);
   const nodeIds = new Set(roots);
   const placementEventIds = new Set<string>();
@@ -2241,28 +2203,60 @@ function countPlacementDependencies(
     return undefined;
   }
 
+  /** End one carrier binding and preserve the prefix that validates the previous definition. */
+  function releaseBinding(nodeId: string, serialId: string, through: number): void {
+    nodesBySerial.get(serialId)?.delete(nodeId);
+    serialByNodeId.delete(nodeId);
+    const previous = releasedBindingsByNode.get(nodeId);
+    if (previous === undefined) releasedBindingsByNode.set(nodeId, new Map([[serialId, through]]));
+    else previous.set(serialId, through);
+  }
+
   for (const event of events) {
     for (const { nodeId, toParentNodeId } of event.placementChanges ?? []) {
       applyEdge(event.eventId, nodeId, toParentNodeId);
     }
     if (futureEmbodiedSerials.size > 0) {
       const touchedSerials = new Set<string>();
-      for (const definition of event.placementNodeDefinitions ?? []) {
-        if (definition.embodiedBy === undefined) continue;
+      const definitions = event.placementNodeDefinitions ?? [];
+      const correction = event.correction;
+      if (correction !== undefined) {
+        const prior = correction.supersedesCorrectionEventId ?? correction.correctsEventId;
+        for (const nodeId of embodiedNodesByEventId.get(prior) ?? []) {
+          const previousSerial = serialByNodeId.get(nodeId);
+          if (previousSerial === undefined || definitions.some(
+            /** Explicit replacements update their binding below. */
+            (definition) => definition.nodeId === nodeId
+          )) continue;
+          releaseBinding(nodeId, previousSerial, event.recordSequence);
+        }
+      }
+      /** Only definitions that bind a serial can need an implicit release later. */
+      const embodiedNodeIds: string[] = [];
+      for (const definition of definitions) {
+        const previousSerial = serialByNodeId.get(definition.nodeId);
+        if (definition.embodiedBy === undefined) {
+          // Generic definitions leave subsequent serial movements independent of this node.
+          if (previousSerial !== undefined) {
+            releaseBinding(definition.nodeId, previousSerial, event.recordSequence);
+          }
+          continue;
+        }
         const serialId = inventorySerialIdentity(
           definition.embodiedBy.itemId,
           definition.embodiedBy.serialId
         );
-        const previousSerial = serialByNodeId.get(definition.nodeId);
         if (previousSerial !== undefined && previousSerial !== serialId) {
-          nodesBySerial.get(previousSerial)?.delete(definition.nodeId);
+          releaseBinding(definition.nodeId, previousSerial, event.recordSequence);
         }
         serialByNodeId.set(definition.nodeId, serialId);
+        embodiedNodeIds.push(definition.nodeId);
         const nodes = nodesBySerial.get(serialId) ?? new Set<string>();
         nodes.add(definition.nodeId);
         nodesBySerial.set(serialId, nodes);
         touchedSerials.add(serialId);
       }
+      if (embodiedNodeIds.length > 0) embodiedNodesByEventId.set(event.eventId, embodiedNodeIds);
       for (const { position, measurementsDelta } of event.stockEffects) {
         if (position.serialId === undefined) continue;
         const serialId = inventorySerialIdentity(position.itemId, position.serialId);
@@ -2300,13 +2294,13 @@ function countPlacementDependencies(
       }
     }
   }
-  const embodiedSerials = new Set<string>();
-  for (const [identity, nodes] of nodesBySerial) {
-    for (const nodeId of nodes) {
-      if (!nodeIds.has(nodeId)) continue;
-      embodiedSerials.add(identity);
-      break;
+  const embodiedSerialThrough = new Map<string, number>();
+  for (const nodeId of nodeIds) {
+    for (const [identity, sequence] of releasedBindingsByNode.get(nodeId) ?? []) {
+      if (sequence > (embodiedSerialThrough.get(identity) ?? 0)) embodiedSerialThrough.set(identity, sequence);
     }
+    const current = serialByNodeId.get(nodeId);
+    if (current !== undefined) embodiedSerialThrough.set(current, Infinity);
   }
   return {
     roots,
@@ -2314,7 +2308,7 @@ function countPlacementDependencies(
     placementEventIds,
     retainedPlacementEdgeKeys,
     detachedPlacementEdgeKeys,
-    embodiedSerials,
+    embodiedSerialThrough,
   };
 }
 

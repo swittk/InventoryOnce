@@ -1,3 +1,4 @@
+import { inventoryEventWhereaboutsMembership } from "./whereabouts-membership.js";
 import { createInventoryRecordedMovement, type InventoryUnwitnessedMovementLine } from "./recorded-movement.js";
 import { stampInventoryReportedTransferReplay } from "./reported-transfer-replay.js";
 import { historicalWhereaboutsId } from "./stock-age.js";
@@ -148,7 +149,6 @@ import {
 } from "./historical-repair.js";
 import { loadInventoryHistoricalDependencies } from "./historical-dependencies.js";
 import {
-  inventoryEventDependencyIndexKeys,
   queryInventoryProjectionEvents,
   type InventoryEventPage,
   type InventoryEventQuery,
@@ -10530,35 +10530,19 @@ function buildIndexedWhereaboutsEventsProjection(
   const events = createInventorySparseRecord<InventoryCommittedEvent>();
   const eventIdsBySequence = createInventorySparseRecord<string>();
   const eventSequencesByWhereaboutsId = createInventorySparseRecord<readonly number[]>();
-  /** Track touched cohort ids per event so correction events inherit their root's cohorts. */
-  const touchedWhereaboutsByEventId = new Map<string, readonly string[]>();
   /** Locally owned mutable buckets avoid copying cohort sequence arrays on every push. */
   const mutableSequencesByWhereaboutsId = new Map<string, number[]>();
   for (const event of orderedEvents) {
     setInventorySparseRecordValue(events, event.eventId, event);
     setInventorySparseRecordValue(eventIdsBySequence, String(event.recordSequence), event.eventId);
-    const touchedIds = new Set<string>();
-    for (const key of inventoryEventDependencyIndexKeys(event)) {
-      if (!key.startsWith(inventoryWhereaboutsDependencyKeyPrefix)) continue;
-      const whereaboutsId = key.slice(inventoryWhereaboutsDependencyKeyPrefix.length);
-      if (whereaboutsIdSet.has(whereaboutsId)) touchedIds.add(whereaboutsId);
-    }
-    if (event.correction !== undefined) {
-      for (const whereaboutsId of touchedWhereaboutsByEventId.get(event.correction.correctsEventId) ?? []) {
-        touchedIds.add(whereaboutsId);
-      }
-    }
-    if (touchedIds.size > 0) {
-      const list = [...touchedIds];
-      touchedWhereaboutsByEventId.set(event.eventId, list);
-      for (const whereaboutsId of list) {
-        const bucket = mutableSequencesByWhereaboutsId.get(whereaboutsId);
-        if (bucket === undefined) {
-          mutableSequencesByWhereaboutsId.set(whereaboutsId, [event.recordSequence]);
-        } else {
-          bucket.push(event.recordSequence);
-        }
-      }
+    const rootId = event.correction?.correctsEventId;
+    // A root that touches this cohort is returned by the same private dependency query.
+    const correctedRoot = rootId === undefined ? undefined : inventorySparseRecordValue(events, rootId);
+    for (const whereaboutsId of inventoryEventWhereaboutsMembership(event, correctedRoot)) {
+      if (!whereaboutsIdSet.has(whereaboutsId)) continue;
+      const bucket = mutableSequencesByWhereaboutsId.get(whereaboutsId);
+      if (bucket === undefined) mutableSequencesByWhereaboutsId.set(whereaboutsId, [event.recordSequence]);
+      else bucket.push(event.recordSequence);
     }
   }
   for (const [whereaboutsId, sequences] of mutableSequencesByWhereaboutsId) {

@@ -1495,4 +1495,36 @@ describe("detached and missing stock whereabouts", () => {
     ]);
   });
 
+  it("excludes a repeated correction from a cohort touched solely by its replacement draft", async () => {
+    const inventory = createTestInventory();
+    const bin = loosePosition("replacement-cohort");
+    const one = stockAmount("1", "piece");
+    await inventory.stock.receive({
+      operationId: "replacement-stock", occurredAtEpochMs: time0, to: bin, amount: stockAmount("4", "piece"),
+    });
+    await inventory.stock.detach({
+      operationId: "replacement-detach", occurredAtEpochMs: time1, from: bin, amount: stockAmount("2", "piece"),
+    });
+    const [cohort] = await inventory.read.whereabouts();
+    const source = cohort?.currentPositions[0]?.key;
+    if (cohort === undefined || source === undefined) throw new Error("Expected detached cohort.");
+    const issue = await inventory.stock.issue({
+      operationId: "replacement-issue", occurredAtEpochMs: time1 + 1, from: bin, amount: one,
+    });
+    for (const attempt of [1, 2]) {
+      await inventory.stock.correct({
+        operationId: "replacement-correction-" + attempt,
+        occurredAtEpochMs: time1 + 1 + attempt,
+        correctsEventId: issue.event.eventId,
+        reason: "The detached cohort supplied the issue.",
+        replaceWith: (plans) => plans.issue({ occurredAtEpochMs: time1 + 1, from: source, amount: one }),
+      });
+    }
+    const query = { whereaboutsIds: [cohort.whereaboutsId] };
+    const snapshot = await inventory.read.snapshot();
+    const canonical = await snapshot.whereaboutsHistory(query);
+    expect(canonical).toHaveLength(1);
+    expect(await inventory.read.whereaboutsHistory(query)).toEqual(canonical);
+  });
+
 });

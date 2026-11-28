@@ -608,20 +608,26 @@ function eventConsumesOrReordersState(
 function isLaterConflictingHistoricalEntry(
   event: InventoryEventDraft | InventoryCommittedEvent,
   occurredAt: number,
-  dependencies: ReadonlySet<string>,
-  sourcePositionIds: ReadonlySet<string>,
-  destinationSerialIds: ReadonlySet<string>
+  dependencies: ReadonlySet<string>
 ): boolean {
-  if (
-    event.kind === InventoryEventKind.Correction &&
-    !isSharedPlacementCorrection(event, dependencies) &&
-    (event.occurredAtEpochMs > occurredAt ||
-      (!isHistoricalStockSupplyCorrection(event, sourcePositionIds) &&
-        !isHistoricalSerialRemovalCorrection(event, destinationSerialIds)))
-  ) {
-    return false;
-  }
-  return event.occurredAtEpochMs > occurredAt && eventSharesHistoricalDependency(event, dependencies);
+  return event.occurredAtEpochMs > occurredAt &&
+    (event.kind !== InventoryEventKind.Correction || isSharedPlacementCorrection(event, dependencies)) &&
+    eventSharesHistoricalDependency(event, dependencies);
+}
+
+/** Match an earlier correction that supplies stock, clears a serial or changes needed topology. */
+function isEarlierHistoricalCorrection(
+  event: InventoryEventDraft | InventoryCommittedEvent,
+  { occurredAt, dependencies, sourcePositionIds, destinationSerialIds, requiredAnchorEventId }: Omit<
+    BringForwardHistoricalPredecessorsInput, "target" | "firstLater"
+  >
+): boolean {
+  return event.kind === InventoryEventKind.Correction &&
+    event.occurredAtEpochMs <= occurredAt &&
+    ((requiredAnchorEventId !== undefined && event.correction?.correctsEventId === requiredAnchorEventId) ||
+      isSharedPlacementCorrection(event, dependencies) ||
+      isHistoricalStockSupplyCorrection(event, sourcePositionIds) ||
+      isHistoricalSerialRemovalCorrection(event, destinationSerialIds));
 }
 
 /** Insert after an explicit anchor or between the earlier and later facts using the same resources. */
@@ -635,6 +641,11 @@ function insertHistoricalAssertion(
   const { sourcePositionIds, destinationSerialIds } =
     collectHistoricalAssertionStockBounds(assertion.event);
   const occurredAt = assertion.event.occurredAtEpochMs;
+  /** Apply the same correction history rules whether the assertion has an explicit anchor or not. */
+  const correctionBounds = {
+    occurredAt, dependencies, sourcePositionIds, destinationSerialIds,
+    ...(assertion.afterEventId === undefined ? {} : { requiredAnchorEventId: assertion.afterEventId }),
+  };
   let insertionIndex = -1;
   if (assertion.afterEventId !== undefined) {
     insertionIndex = target.findIndex(
@@ -662,9 +673,7 @@ function insertHistoricalAssertion(
           isLaterConflictingHistoricalEntry(
             candidateEvent,
             occurredAt,
-            dependencies,
-            sourcePositionIds,
-            destinationSerialIds
+            dependencies
           )
         ) {
           bringForwardHistoricalPredecessors({
@@ -695,15 +704,12 @@ function insertHistoricalAssertion(
         }
         continue;
       }
-      if (
-        isLaterConflictingHistoricalEntry(
-          nextEntry.event,
-          occurredAt,
-          dependencies,
-          sourcePositionIds,
-          destinationSerialIds
-        )
-      ) {
+      // Occurrence-cut replay retains corrections as separate executable facts.
+      if (isEarlierHistoricalCorrection(nextEntry.event, correctionBounds)) {
+        insertionIndex = scanIndex;
+        continue;
+      }
+      if (isLaterConflictingHistoricalEntry(nextEntry.event, occurredAt, dependencies)) {
         const predecessors = bringForwardHistoricalPredecessors({
           target,
           firstLater: scanIndex,
@@ -720,15 +726,11 @@ function insertHistoricalAssertion(
     for (let index = 0; index < target.length; index += 1) {
       const event = target[index]!.event;
       // Keep shared topology corrections and earlier corrections that supply stock or clear a received serial.
-      if (event.kind === InventoryEventKind.Correction && !isSharedPlacementCorrection(event, dependencies) &&
-          (event.occurredAtEpochMs > occurredAt ||
-            (!isHistoricalStockSupplyCorrection(event, sourcePositionIds) &&
-              !isHistoricalSerialRemovalCorrection(event, destinationSerialIds)))) {
-        continue;
-      }
       if (event.occurredAtEpochMs <= occurredAt) {
-        insertionIndex = index;
-      } else if (eventSharesHistoricalDependency(event, dependencies)) {
+        if (event.kind !== InventoryEventKind.Correction || isEarlierHistoricalCorrection(event, correctionBounds)) {
+          insertionIndex = index;
+        }
+      } else if (isLaterConflictingHistoricalEntry(event, occurredAt, dependencies)) {
         // First put any backdated predecessors ahead of this later fact.
         const predecessors = bringForwardHistoricalPredecessors({
           target,

@@ -664,10 +664,12 @@ function discardedCapacityImprovesFungibilityPlan({
 }: FungibilityIncrementDiagnosticInput): boolean {
   const last = allocations.at(-1);
   if (last === undefined) return false;
+  /** Candidate capacity after relaxing the selected increment, keyed by exact position reference. */
   const rawByPosition = new Map<InventoryStockPositionKey, InventoryWorkingAllocationCandidate>();
   for (const candidate of candidates) rawByPosition.set(candidate.position, candidate);
   const lastCandidate = rawByPosition.get(last.position);
   if (lastCandidate === undefined) return false;
+  /** Whether earlier relaxed capacity could improve on the last accepted pick. */
   let earlierCapacityIncreased = false;
   for (const { member, candidates: sources } of memberStock) {
     for (const source of sources) {

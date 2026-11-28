@@ -2599,7 +2599,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     ).rejects.toThrow("Inventory reservations cannot all be fulfilled simultaneously");
   });
 
-  it("tightens whole-pack slack bounds when required unused capacity is unreachable without hitting search limits", async () => {
+  it.each([false, true])("reports unreachable whole-pack slack even with disjoint loose claims (%s)", async (disjointLoose) => {
     const heavyItem = defineInventoryItem({
       itemId: "heavy-slab",
       revisionId: "heavy-slab-v1",
@@ -2694,6 +2694,19 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
         { axisId: "weight", value: "2", unit: "kg" },
       ]),
     });
+    const extra = disjointLoose ? 1 : 0;
+    if (disjointLoose) {
+      await inventory.stock.receive({
+        operationId: "slab-other-loose", occurredAtEpochMs: time0,
+        to: { itemId: heavyItem.itemId, placementNodeId: "other-store" },
+        amount: measuredStockAmount("1", "piece", [{ axisId: "weight", value: "1", unit: "kg" }]),
+      });
+      await inventory.reservations.reserve({
+        reservationId: "slab-other-claim", operationId: "slab-other-reserve", itemRevisionId: heavyItem.revisionId,
+        selector: { itemId: heavyItem.itemId, placementNodeIds: ["other-store"] },
+        requested: parseQuantity("1", "kg"), createdAtEpochMs: time1,
+      });
+    }
     const claimWeight = parseQuantity("4000000", "kg");
     await inventory.reservations.reserve({
       reservationId: "slab-claim-1",
@@ -2715,7 +2728,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     // Divisible loose control: 2 kg loose stock closes the shortage completely.
     const looseFeasibility = await inventory.read.reservationFeasibility();
     expect(looseFeasibility.groups[0]).toMatchObject({
-      fulfillable: parseQuantity("8000000", "kg"),
+      fulfillable: parseQuantity(String(8_000_000 + extra), "kg"),
       shortage: parseQuantity("0", "kg"),
     });
 
@@ -2729,7 +2742,7 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     const wholeFeasibility = await inventory.read.reservationFeasibility();
     expect(wholeFeasibility.groups[0]).toMatchObject({
-      fulfillable: parseQuantity("7999998", "kg"),
+      fulfillable: parseQuantity(String(7_999_998 + extra), "kg"),
       shortage: parseQuantity("2", "kg"),
     });
   });
@@ -2772,4 +2785,61 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     expect(asOfPool.reservations.map((row) => row.reservationId)).toEqual(["seed-claim"]);
   });
+  it.each(["rebound", "released", "omitted"])("counts cargo after a carrier binding is %s", async (fixture) => {
+    const cargo = defineScalarInventoryItem({ itemId: "cargo", revisionId: "cargo-v1", axisId: "pieces", unit: "piece" });
+    const carrier = defineScalarInventoryItem({ itemId: "carrier", revisionId: "carrier-v1", axisId: "pieces", unit: "piece" });
+    const catalog = defineInventoryCatalog({
+      itemRevisions: [cargo, carrier],
+      activeItemRevisionIds: { cargo: cargo.revisionId, carrier: carrier.revisionId },
+    });
+    const inventory = createTestInventory(undefined, catalog);
+    const one = stockAmount("1", "piece");
+    for (const serialId of ["S", "T"]) {
+      await inventory.stock.receive({
+        operationId: "binding-receive-" + serialId, occurredAtEpochMs: time0,
+        to: { itemId: carrier.itemId, placementNodeId: "R", serialId }, amount: one,
+      });
+    }
+    await inventory.placement.define({
+      operationId: "binding-define", occurredAtEpochMs: time0 + 1, nodeId: "X",
+      placementNode: { acceptsPlacement: true, embodiedBy: { itemId: carrier.itemId, serialId: "S" } },
+    });
+    await inventory.placement.correct({
+      operationId: "binding-correct", occurredAtEpochMs: time0 + 2, nodeId: "X", reason: "Match the physical holder.",
+      ...(fixture === "omitted" ? {} : {
+        placementNode: {
+          acceptsPlacement: true,
+          ...(fixture === "rebound" ? { embodiedBy: { itemId: carrier.itemId, serialId: "T" } } : {}),
+        },
+      }),
+    });
+    if (fixture !== "rebound") {
+      await inventory.placement.move({ operationId: "binding-A", occurredAtEpochMs: time0 + 3, nodeId: "A", into: "R" });
+      await inventory.placement.move({ operationId: "binding-X", occurredAtEpochMs: time0 + 4, nodeId: "X", into: "A" });
+      await inventory.stock.transfer({
+        operationId: "binding-move-S", occurredAtEpochMs: time0 + 5,
+        from: { itemId: carrier.itemId, placementNodeId: "R", serialId: "S" }, toPlacementNodeId: "outside", amount: one,
+      });
+    }
+    await inventory.placement.move({ operationId: "binding-Y", occurredAtEpochMs: time0 + 6, nodeId: "Y", into: "X" });
+    const observed = { itemId: cargo.itemId, itemRevisionId: cargo.revisionId, placementNodeId: "Y" };
+    await inventory.stock.receive({ operationId: "binding-cargo", occurredAtEpochMs: time0 + 7, to: observed, amount: one });
+    expect(await inventory.read.placementAncestry("Y")).toContain("R");
+    await inventory.counts.start({
+      countId: "binding-count", operationId: "binding-start", startedAtEpochMs: time1,
+      selector: { itemId: cargo.itemId, withinPlacementNodeIds: ["R"] },
+    });
+    await inventory.counts.observe({
+      countId: "binding-count", operationId: "binding-observe", observedAtEpochMs: time1,
+      observations: [{
+        position: observed,
+        measurements: { primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") }, independent: [] },
+      }],
+    });
+    const result = await inventory.counts.reconcile({
+      countId: "binding-count", operationId: "binding-reconcile", completedAtEpochMs: time1 + 1,
+    });
+    expect(result.event).toBeUndefined();
+  });
+
 });

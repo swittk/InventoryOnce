@@ -1443,32 +1443,25 @@ function reservationGroupFeasibility(
     if (sharedDemandBound < fulfillableBound) fulfillableBound = sharedDemandBound;
     if (sharedRowBound < fulfillableBound) fulfillableBound = sharedRowBound;
     if (fulfillableBound > 0n) {
-      const flowBound = maximumBoundedReservationFulfillmentFlow(
-        positions,
-        requestedByReservation,
-        edgeCapacityByReservation,
-        wholeIncrementByReservation,
-        decimals,
-        fulfillableBound
-      );
+      const flowBound = maximumBoundedReservationFulfillmentFlow({
+        positions, requestedByReservation, edgeCapacityByReservation, wholeIncrementByReservation,
+        decimals, target: fulfillableBound,
+      });
       if (flowBound < fulfillableBound) fulfillableBound = flowBound;
     }
-    if (divisibleCapacity === 0n && stockIncrement > 1n) fulfillableBound -= fulfillableBound % stockIncrement;
-    if (divisibleCapacity === 0n && eligibleIndivisibleCapacity > fulfillableBound) {
-      const minimumUnused = eligibleIndivisibleCapacity - fulfillableBound;
-      const tightenedUnused = minimumReachableIndivisibleSlack({
+    if (divisibleCapacity === 0n) {
+      fulfillableBound = wholeStockFulfillmentBound({
         indivisibleGroups,
         eligibleIndivisibleCapacity,
-        minimumUnused,
+        demandBound: fulfillableBound,
         stockIncrement,
         smallestEligiblePack,
       });
-      if (
-        tightenedUnused > minimumUnused &&
-        eligibleIndivisibleCapacity - tightenedUnused < fulfillableBound
-      ) {
-        fulfillableBound = eligibleIndivisibleCapacity - tightenedUnused;
-      }
+    } else if (requestedByReservation.length > 1) {
+      const componentBound = mixedStockComponentBound({
+        requestedByReservation, edgeCapacityByReservation, divisibleCapacityByPosition, indivisibleGroups,
+      });
+      if (componentBound < fulfillableBound) fulfillableBound = componentBound;
     }
   }
   return {
@@ -1484,6 +1477,126 @@ function reservationGroupFeasibility(
       fulfillableBound
     ),
   };
+}
+
+/** A connected set of claims that can use the same stock rows. */
+interface ReservationStockComponent {
+  /** The combined maximum claim demand on the selected axis. */
+  demand: bigint;
+  /** Whether divisible stock can fill gaps for any claim in this component. */
+  hasLooseStock: boolean;
+  /** The component's eligible whole-package and serial positions. */
+  readonly groups: ReservationIndivisibleGroup[];
+}
+
+/** Eligible claim edges and stock capacities used to find independent slack bounds. */
+interface MixedStockComponentBoundInput {
+  /** Demand by claim index, including claims with no eligible stock. */
+  readonly requestedByReservation: readonly bigint[];
+  /** The eligible amount for each claim and stock position. */
+  readonly edgeCapacityByReservation: readonly (readonly bigint[])[];
+  /** Loose positions referenced by the eligibility matrix. */
+  readonly divisibleCapacityByPosition: readonly bigint[];
+  /** Whole-stock positions and their legal minimum increments. */
+  readonly indivisibleGroups: readonly ReservationIndivisibleGroup[];
+}
+
+/** Bound disjoint whole-only claims without letting other components' loose stock fill their gaps. */
+function mixedStockComponentBound({
+  requestedByReservation, edgeCapacityByReservation, divisibleCapacityByPosition, indivisibleGroups,
+}: MixedStockComponentBoundInput): bigint {
+  /** Path-compressed roots connect claims that can draw from the same stock position. */
+  const parents = new Map<number, number>();
+  /** Return the current component representative of a claim. */
+  function root(claim: number): number {
+    const parent = parents.get(claim);
+    if (parent === undefined) return claim;
+    const representative = root(parent);
+    parents.set(claim, representative);
+    return representative;
+  }
+
+  /** Reuse the first eligible claim per stock row once the graph is fully connected. */
+  const firstClaimByPosition = new Map<number, number>();
+  /** Connect each quantity-bearing row using its smallest eligible edge. */
+  function connect(position: number, minimum: bigint): void {
+    let first: number | undefined;
+    for (const [claim, edges] of edgeCapacityByReservation.entries()) {
+      if ((edges[position] ?? 0n) < minimum) continue;
+      if (first === undefined) {
+        first = claim;
+        firstClaimByPosition.set(position, claim);
+      } else {
+        const parent = root(first);
+        const other = root(claim);
+        if (other !== parent) parents.set(other, parent);
+      }
+    }
+  }
+  for (const [position, capacity] of divisibleCapacityByPosition.entries()) {
+    if (capacity > 0n) connect(position, 1n);
+  }
+  for (const group of indivisibleGroups) connect(group.positionIndex, group.capacityMinor);
+
+  /** Aggregate demand and stock after every shared position has connected its claims. */
+  const components = new Map<number, ReservationStockComponent>();
+  for (const [index, requested] of requestedByReservation.entries()) {
+    const representative = root(index);
+    const component = components.get(representative);
+    if (component === undefined) {
+      components.set(representative, { demand: requested, hasLooseStock: false, groups: [] });
+    } else {
+      component.demand += requested;
+    }
+  }
+  for (const [position, capacity] of divisibleCapacityByPosition.entries()) {
+    if (!(capacity > 0n)) continue;
+    const claim = firstClaimByPosition.get(position);
+    const component = claim === undefined ? undefined : components.get(root(claim));
+    if (component !== undefined) component.hasLooseStock = true;
+  }
+  for (const group of indivisibleGroups) {
+    const claim = firstClaimByPosition.get(group.positionIndex);
+    if (claim !== undefined) components.get(root(claim))?.groups.push(group);
+  }
+
+  let result = 0n;
+  for (const component of components.values()) {
+    if (component.hasLooseStock) {
+      result += component.demand;
+      continue;
+    }
+    let capacity = 0n;
+    let smallest = 0n;
+    let increment = 0n;
+    for (const group of component.groups) {
+      const weight = group.capacityMinor;
+      capacity += weight * group.count;
+      if (smallest === 0n || weight < smallest) smallest = weight;
+      if (increment !== 1n) increment = quantityGreatestCommonDivisor(increment, weight);
+    }
+    result += wholeStockFulfillmentBound({
+      indivisibleGroups: component.groups, eligibleIndivisibleCapacity: capacity,
+      demandBound: component.demand < capacity ? component.demand : capacity,
+      stockIncrement: increment, smallestEligiblePack: smallest,
+    });
+  }
+  return result;
+}
+
+/** Apply whole-stock slack to a ceiling after rounding down to the available stock increment. */
+function wholeStockFulfillmentBound({
+  indivisibleGroups, eligibleIndivisibleCapacity, demandBound, stockIncrement, smallestEligiblePack,
+}: Omit<MinimumReachableIndivisibleSlackInput, "minimumUnused"> & {
+  /** Highest plausible assigned amount before checking unused stock. */
+  readonly demandBound: bigint;
+}): bigint {
+  const bound = stockIncrement > 1n ? demandBound - demandBound % stockIncrement : demandBound;
+  const minimumUnused = eligibleIndivisibleCapacity - bound;
+  if (minimumUnused <= 0n) return bound;
+  return eligibleIndivisibleCapacity - minimumReachableIndivisibleSlack({
+    indivisibleGroups, eligibleIndivisibleCapacity, minimumUnused, stockIncrement, smallestEligiblePack,
+  });
 }
 
 /** Maximum increment units checked for exact indivisible slack reachability before keeping coarse bounds. */
@@ -2008,15 +2121,26 @@ function assignIndivisibleGroupCounts(
   return assignReservation(0, group.count, 0n);
 }
 
+/** Inputs for relaxing the whole-package feasibility graph into a flow ceiling. */
+interface MaximumBoundedReservationFulfillmentFlowInput {
+  /** Eligible stock positions in matrix column order. */
+  readonly positions: readonly ReservationFeasibilityPosition[];
+  /** Total requested stock by reservation. */
+  readonly requestedByReservation: readonly bigint[];
+  /** Claim-to-position upper limits in matrix order. */
+  readonly edgeCapacityByReservation: readonly (readonly bigint[])[];
+  /** Smallest shared whole increment for each reservation. */
+  readonly wholeIncrementByReservation: readonly bigint[];
+  /** Shared decimal scale for claim and stock amounts. */
+  readonly decimals: number;
+  /** Highest fulfillment still worth proving with the relaxation. */
+  readonly target: bigint;
+}
+
 /** Tight admissible fulfillment ceiling across all claims, whole increments, and capacities together. */
-function maximumBoundedReservationFulfillmentFlow(
-  positions: readonly ReservationFeasibilityPosition[],
-  requestedByReservation: readonly bigint[],
-  edgeCapacityByReservation: readonly (readonly bigint[])[],
-  wholeIncrementByReservation: readonly bigint[],
-  decimals: number,
-  target: bigint
-): bigint {
+function maximumBoundedReservationFulfillmentFlow({
+  positions, requestedByReservation, edgeCapacityByReservation, wholeIncrementByReservation, decimals, target,
+}: MaximumBoundedReservationFulfillmentFlowInput): bigint {
   const source = 0;
   const reservationCount = requestedByReservation.length;
   const firstReservationNode = 1;

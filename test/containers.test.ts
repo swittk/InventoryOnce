@@ -285,6 +285,15 @@ it.each([
       from: loosePosition("source"), amount, serialId: "deficit-case",
       asPlacementNode: { acceptsPlacement: true },
     });
+    if (move === "contents") {
+      await inventory.stock.receive({
+        operationId: "receive-mixed-loose", occurredAtEpochMs: time1, to: loosePosition("source"),
+        amount: stockAmount("2", "piece"),
+      });
+      await inventory.placement.move({
+        operationId: "attach-mixed-sibling", occurredAtEpochMs: time1, nodeId: "standalone-sibling", into: "source",
+      });
+    }
     const before = await inventory.read.world();
     const beforeStock = storage.readSegmentedStockHead();
     const beforeRows = storage.readPositionSegment().materialize();
@@ -295,6 +304,13 @@ it.each([
     await expect(move === "node" ? inventory.placement.move(command) : inventory.placement.moveContents(command))
       .rejects.toThrow(error);
     expect(await inventory.read.placementAncestry("deficit-case")).toEqual(["deficit-case", "source"]);
+    if (move === "contents") {
+      expect(await inventory.read.placementAncestry("standalone-sibling")).toEqual(["standalone-sibling", "source"]);
+      const looseRows = (await inventory.read.positions({ itemId: "item-a" })).filter(({ key }) => key.serialId === undefined);
+      expect(looseRows.map(({ key }) => key.placementNodeId)).toEqual(["source"]);
+      expect(looseRows.map(({ measurements }) => measurements.primary.quantity)).toEqual([parseQuantity("2", "piece")]);
+    }
+    expect(await storage.readOperation(command.operationId)).toBeUndefined();
     expect(await inventory.read.world()).toEqual(before);
     expect(storage.readSegmentedStockHead()).toEqual(beforeStock);
     expect(storage.readPositionSegment().materialize()).toEqual(beforeRows);
