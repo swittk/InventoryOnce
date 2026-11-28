@@ -2188,3 +2188,7 @@ The R105 portable-current-input authority and final publication both continue to
 
 - Count replay retains loose stock matching the selector and follows conserved routes from arrivals to their sources. A connected structured transfer retains its full lifecycle and every funding line.
 - Unanchored historical assertions replay before the first later physical event that shares their resources. Explicit anchors continue to set the insertion point.
+
+## 2026-11-28 — subtree membership at observation
+
+- Subtree counts replay the placement and carrier facts needed to resolve ancestry at observation. Payload admission uses that resolved subtree. Correction predecessors and complete carrier lifecycles supply the shared reducer with the facts it needs.
