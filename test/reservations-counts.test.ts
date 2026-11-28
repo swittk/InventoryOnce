@@ -2070,4 +2070,49 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
       }
     }
   });
+
+  it("keeps count prepass work independent of root count across disjoint placement moves", async () => {
+    const inventory = createTestInventory();
+    const roots = Array.from({ length: 2401 }, (_, index) => `scale-root-${index}`);
+    await inventory.stock.receive({
+      operationId: "scale-roots-seed",
+      occurredAtEpochMs: time0,
+      to: loosePosition(roots[0]!),
+      amount: stockAmount("1", "piece"),
+    });
+    for (let index = 0; index < 600; index += 1) {
+      await inventory.placement.move({
+        operationId: `scale-disjoint-move-${index}`,
+        occurredAtEpochMs: time0 + index + 1,
+        nodeId: `disjoint-node-${index}`,
+        into: `disjoint-parent-${index}`,
+      });
+    }
+    await inventory.counts.start({
+      countId: "scale-roots-count",
+      operationId: "scale-roots-start",
+      startedAtEpochMs: time1,
+      selector: { itemId: "item-a", withinPlacementNodeIds: roots },
+    });
+    await inventory.counts.observe({
+      countId: "scale-roots-count",
+      operationId: "scale-roots-observe",
+      observedAtEpochMs: time1,
+      observations: [
+        {
+          position: { ...loosePosition(roots[0]!), itemRevisionId: "item-a-v2" },
+          measurements: {
+            primary: { axisId: "pieces", quantity: parseQuantity("1", "piece") },
+            independent: [],
+          },
+        },
+      ],
+    });
+    const reconciled = await inventory.counts.reconcile({
+      countId: "scale-roots-count",
+      operationId: "scale-roots-reconcile",
+      completedAtEpochMs: time1 + 1,
+    });
+    expect(reconciled.event).toBeUndefined();
+  });
 });

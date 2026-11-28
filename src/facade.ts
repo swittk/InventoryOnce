@@ -3587,6 +3587,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
         ...(root === undefined ? [] : [root]),
         ...(replacement === undefined ? [] : [replacement]),
       ],
+      reverseAnchorEventIds: [input.correctsEventId],
     });
     try {
       const event = createInventoryCorrectionEvent(
@@ -3676,6 +3677,7 @@ class InventoryOnceStockImplementation implements InventoryOnceStockApi {
           ...(root === undefined ? [] : [root]),
           ...(replacement === undefined ? [] : [replacement]),
         ],
+        reverseAnchorEventIds: [input.correctsEventId],
       });
       return createInventoryCorrectionEvent(
         {

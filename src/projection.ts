@@ -2062,8 +2062,12 @@ function countPlacementDependencies(
     return false;
   }
 
+  /** Cached live ancestors above all counted roots; invalidated only when a chain edge changes. */
+  let liveRootAncestors: Set<string> | undefined = new Set(roots);
+
   /** Walk live ancestors above all counted roots so moved-away roots or leaving destinations do not stay sticky. */
   function currentRootAncestors(): Set<string> {
+    if (liveRootAncestors !== undefined) return liveRootAncestors;
     const ancestors = new Set<string>();
     for (const root of roots) {
       let current: string | undefined = root;
@@ -2072,6 +2076,7 @@ function countPlacementDependencies(
         current = parentByNode.get(current);
       }
     }
+    liveRootAncestors = ancestors;
     return ancestors;
   }
 
@@ -2135,6 +2140,10 @@ function countPlacementDependencies(
       const children = childrenByParent.get(toParentNodeId) ?? new Set<string>();
       children.add(nodeId);
       childrenByParent.set(toParentNodeId, children);
+    }
+    // Disjoint edges cannot alter any upward root chain; only invalidate when a live root/ancestor moves.
+    if (touchesAncestor) {
+      liveRootAncestors = undefined;
     }
   }
 

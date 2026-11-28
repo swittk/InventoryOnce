@@ -618,7 +618,9 @@ function inventoryEventDependencyKeysForMode(
       keys.add("dep:event:" + assertion.event.eventId);
     }
     if (assertion.afterEventId !== undefined) {
-      keys.add("dep:event:" + assertion.afterEventId);
+      // Consumers query the provider directly without indexing all siblings under dep:event:<anchor>,
+      // while anchor deletions/omissions query dep:anchored-to:<anchor> explicitly.
+      keys.add((mode === "index" ? "dep:anchored-to:" : "dep:event:") + assertion.afterEventId);
     }
   }
   for (const assertionId of event.historicalRepair?.omittedAssertionIds ?? []) {

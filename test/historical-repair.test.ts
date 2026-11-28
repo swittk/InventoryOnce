@@ -2314,4 +2314,176 @@ describe("late historical repair", () => {
     },
   );
 
+  it("avoids pulling unrelated sibling envelopes anchored to the same anchor on indexed historical plan/load", async () => {
+    const storage = createInMemoryInventoryDurableStorage();
+    const inventory = createTestInventory(storage);
+    const one = stockAmount("1", "piece");
+    const anchorB = await inventory.stock.receive({
+      operationId: "fanout-anchor-b",
+      occurredAtEpochMs: time0,
+      to: loosePosition("fanout-bin-b"),
+      amount: one,
+    });
+    const receiptA = await inventory.stock.receive({
+      operationId: "fanout-receipt-a",
+      occurredAtEpochMs: time0 + 1,
+      to: loosePosition("fanout-bin-a"),
+      amount: one,
+    });
+    await inventory.stock.receive({
+      operationId: "fanout-late-a",
+      occurredAtEpochMs: time2,
+      to: loosePosition("fanout-bin-a"),
+      amount: one,
+    });
+    for (let index = 0; index < 24; index += 1) {
+      await inventory.stock.recordHistorical({
+        operationId: `fanout-unrelated-${index}`,
+        occurredAtEpochMs: time3,
+        reason: "Unrelated historical receipt sharing only the same anchor.",
+        assertions: [
+          {
+            assertionId: `fanout-unrelated-assertion-${index}`,
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 10 + index,
+                to: loosePosition(`fanout-other-${index}`),
+                amount: one,
+              }),
+          },
+        ],
+      });
+    }
+    const queriedKeys: string[][] = [];
+    const originalQuery = storage.queryInventoryEventsByResourceKeys.bind(storage);
+    const returnedEventIds = new Set<string>();
+    const querySpy = vi
+      .spyOn(storage, "queryInventoryEventsByResourceKeys")
+      .mockImplementation(async (query) => {
+        queriedKeys.push([...query.resourceKeys]);
+        const page = await originalQuery(query);
+        for (const event of page.events) returnedEventIds.add(event.eventId);
+        return page;
+      });
+    try {
+      const planned = await inventory.stock.planHistorical({
+        operationId: "fanout-plan-check",
+        occurredAtEpochMs: time3,
+        reason: "Plan narrow historical repair on bin A + anchor on bin B.",
+        assertions: [
+          {
+            assertionId: "fanout-anchored-a2",
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time1 - 10,
+                to: loosePosition("fanout-bin-a"),
+                amount: one,
+              }),
+          },
+          {
+            assertionId: "fanout-issue-a",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time1,
+                from: loosePosition("fanout-bin-a"),
+                amount: stockAmount("2", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(planned.valid).toBe(true);
+      expect(returnedEventIds.size).toBe(3);
+      expect(queriedKeys.flat()).not.toContain("dep:anchored-to:" + anchorB.event.eventId);
+      expect(receiptA.event.eventId).toBeDefined();
+    } finally {
+      querySpy.mockRestore();
+    }
+  });
+
+  it.each([false, true])(
+    "rejects omitting an embedded historical assertion whose effective event is still an active anchor (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical full-history loading and publication paths. */
+            get(target, property) {
+              if (property === "queryInventoryEventsByResourceKeys") return undefined;
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const one = stockAmount("1", "piece");
+      const firstRepair = await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-repair-1",
+        occurredAtEpochMs: time3,
+        reason: "Add embedded receipt B.",
+        assertions: [
+          {
+            assertionId: "embedded-b",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0,
+                to: loosePosition("omit-bin-b"),
+                amount: one,
+              }),
+          },
+        ],
+      });
+      const effectiveBId = firstRepair.event.historicalRepair?.assertions[0]?.event.eventId;
+      if (effectiveBId === undefined) throw new Error("Expected effective eventId for embedded-b.");
+      await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-repair-2",
+        occurredAtEpochMs: time3,
+        reason: "Anchor receipt A onto embedded B's effective eventId.",
+        assertions: [
+          {
+            assertionId: "anchored-a-on-b",
+            afterEventId: effectiveBId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 10,
+                to: loosePosition("omit-bin-a"),
+                amount: one,
+              }),
+          },
+        ],
+      });
+
+      const omitBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "omit-anchor-repair-3",
+        occurredAtEpochMs: time3,
+        reason: "Attempt to omit embedded-b while anchored-a-on-b still references it.",
+        assertions: [],
+        omittedAssertionIds: ["embedded-b"],
+      };
+      const planned = await inventory.stock.planHistorical(omitBundle);
+      expect(planned.valid).toBe(false);
+      if (!planned.valid) {
+        expect(planned.conflict.code).toBe("missing-anchor");
+      }
+      await expect(inventory.stock.recordHistorical(omitBundle)).rejects.toThrow(/missing afterEventId/i);
+
+      await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-cleanup-a",
+        occurredAtEpochMs: time3,
+        reason: "Remove dependent assertion first, then omitting embedded-b succeeds.",
+        assertions: [],
+        omittedAssertionIds: ["anchored-a-on-b"],
+      });
+      const cleanOmit = await inventory.stock.recordHistorical({
+        operationId: "omit-anchor-repair-3-after-cleanup",
+        occurredAtEpochMs: time3,
+        reason: "Omit unused embedded-b cleanly.",
+        assertions: [],
+        omittedAssertionIds: ["embedded-b"],
+      });
+      expect(cleanOmit.event.historicalRepair?.omittedAssertionIds).toEqual(["embedded-b"]);
+    },
+  );
+
 });
