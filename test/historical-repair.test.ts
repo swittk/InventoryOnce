@@ -3008,4 +3008,630 @@ describe("late historical repair", () => {
       expect(reconciled.event).toBeUndefined();
     },
   );
+
+  it.each([false, true])(
+    "preserves same-anchor caller and envelope tie order and rejects reversed issue-before-receipt order (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const anchor = await inventory.stock.receive({
+        operationId: "shared-anchor-root",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-other-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const targetPos = loosePosition("anchor-target-bin");
+      const reversedBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "shared-anchor-reversed",
+        occurredAtEpochMs: time1,
+        reason: "Reversed issue-before-receipt sharing one anchor must fail negative-stock.",
+        assertions: [
+          {
+            assertionId: "reversed-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "reversed-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const reversedPlan = await inventory.stock.planHistorical(reversedBundle);
+      expect(reversedPlan.valid).toBe(false);
+      if (!reversedPlan.valid) {
+        expect(reversedPlan.conflict.code).toBe("negative-stock");
+      }
+
+      const forwardBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "shared-anchor-forward",
+        occurredAtEpochMs: time1,
+        reason: "Receive then issue sharing one unrelated anchor at identical physical time.",
+        assertions: [
+          {
+            assertionId: "forward-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "forward-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: targetPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const planned = await inventory.stock.planHistorical(forwardBundle);
+      expect(planned.valid).toBe(true);
+      if (!planned.valid) throw new Error("Expected forward same-anchor bundle to succeed.");
+      expect(planned.impact.deficits).toEqual([]);
+      const recorded = await inventory.stock.recordHistorical(forwardBundle);
+      expect(recorded.event.historicalImpact?.deficits).toEqual([]);
+
+      // Second repair envelope anchored to the same root also preserves envelope tie order, and chained anchors work too.
+      const secondBin = loosePosition("anchor-second-bin");
+      const env1 = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-env1-receive",
+        occurredAtEpochMs: time1 + 1,
+        reason: "First envelope receives 1 piece after shared anchor.",
+        assertions: [
+          {
+            assertionId: "env1-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: secondBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const env1ChildEventId =
+        env1.event.historicalRepair?.assertions[0]?.event.eventId;
+      expect(env1ChildEventId).toBeDefined();
+      const env2 = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-env2-issue",
+        occurredAtEpochMs: time1 + 2,
+        reason: "Second envelope issues 1 piece sharing the same anchor at equal physical time.",
+        assertions: [
+          {
+            assertionId: "env2-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: secondBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(env2.event.historicalImpact?.deficits).toEqual([]);
+      const thirdBin = loosePosition("anchor-chained-bin");
+      const chainParent = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-chain-receive",
+        occurredAtEpochMs: time1 + 3,
+        reason: "Receive to chain child issue against directly.",
+        assertions: [
+          {
+            assertionId: "chain-parent-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: thirdBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const chainParentEventId =
+        chainParent.event.historicalRepair?.assertions[0]?.event.eventId;
+      const chainChild = await inventory.stock.recordHistorical({
+        operationId: "shared-anchor-chain-issue",
+        occurredAtEpochMs: time1 + 4,
+        reason: "Chained issue anchored to child receipt.",
+        assertions: [
+          {
+            assertionId: "chain-child-issue",
+            afterEventId: chainParentEventId!,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: thirdBin,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(chainChild.event.historicalImpact?.deficits).toEqual([]);
+
+      // Mixed same-time siblings: an unanchored receipt followed by an anchored issue at equal physical time must keep caller order.
+      const mixedPos = loosePosition("anchor-mixed-bin");
+      const mixedReversed = await inventory.stock.planHistorical({
+        operationId: "mixed-anchor-reversed",
+        occurredAtEpochMs: time1 + 5,
+        reason: "Unanchored issue before anchored receipt must fail negative-stock.",
+        assertions: [
+          {
+            assertionId: "mixed-rev-issue",
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "mixed-rev-receive",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(mixedReversed.valid).toBe(false);
+      if (!mixedReversed.valid) {
+        expect(mixedReversed.conflict.code).toBe("negative-stock");
+      }
+      const mixedForwardBundle: InventoryOnceHistoricalRepairInput = {
+        operationId: "mixed-anchor-forward",
+        occurredAtEpochMs: time1 + 6,
+        reason: "Unanchored receipt followed by anchored issue at identical physical time.",
+        assertions: [
+          {
+            assertionId: "mixed-fwd-receive",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "mixed-fwd-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: mixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      };
+      const mixedPlanned = await inventory.stock.planHistorical(mixedForwardBundle);
+      expect(mixedPlanned.valid).toBe(true);
+      if (!mixedPlanned.valid) throw new Error("Expected mixed same-time forward bundle to succeed.");
+      expect(mixedPlanned.impact.deficits).toEqual([]);
+      const mixedRecorded = await inventory.stock.recordHistorical(mixedForwardBundle);
+      expect(mixedRecorded.event.historicalImpact?.deficits).toEqual([]);
+
+      // Also verify across separate envelopes (unanchored receipt envelope, then anchored issue envelope at identical physical time).
+      const mixedCrossPos = loosePosition("anchor-mixed-cross-bin");
+      await inventory.stock.recordHistorical({
+        operationId: "mixed-cross-rx",
+        occurredAtEpochMs: time1 + 7,
+        reason: "Unanchored receipt envelope.",
+        assertions: [
+          {
+            assertionId: "mixed-cross-receive",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: mixedCrossPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      const mixedCrossIssue = await inventory.stock.recordHistorical({
+        operationId: "mixed-cross-iss",
+        occurredAtEpochMs: time1 + 8,
+        reason: "Anchored issue envelope sharing time with earlier unanchored receipt.",
+        assertions: [
+          {
+            assertionId: "mixed-cross-issue",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: mixedCrossPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(mixedCrossIssue.event.historicalImpact?.deficits).toEqual([]);
+
+      // Under InventoryDeficitPolicy.Record as well, mixed same-time caller order must not record a fictitious deficit.
+      const recordInventory = createTestInventory(undefined, undefined, undefined, InventoryDeficitPolicy.Record);
+      const recordAnchor = await recordInventory.stock.receive({
+        operationId: "mixed-record-anchor",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-record-other-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const recordMixedPos = loosePosition("anchor-record-mixed-bin");
+      const recordMixed = await recordInventory.stock.recordHistorical({
+        operationId: "mixed-record-forward",
+        occurredAtEpochMs: time1 + 9,
+        reason: "Unanchored receipt followed by anchored issue under Record mode.",
+        assertions: [
+          {
+            assertionId: "mixed-rec-receive",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: recordMixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "mixed-rec-issue",
+            afterEventId: recordAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: recordMixedPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(recordMixed.event.historicalImpact?.deficits).toEqual([]);
+      expect(await recordInventory.read.positions({ itemId: "item-a", placementNodeIds: ["anchor-record-mixed-bin"] })).toEqual([]);
+
+      // Separate independent same-time anchors (receive after B, then issue after A) and unrelated later/earlier history must keep caller order and storage parity.
+      const anchorB = await inventory.stock.receive({
+        operationId: "separate-anchor-b",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-b-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const sepPos = loosePosition("anchor-separate-ab-bin");
+      const sepForward = await inventory.stock.planHistorical({
+        operationId: "separate-anchor-forward",
+        occurredAtEpochMs: time1 + 10,
+        reason: "Receive after anchor B then issue after earlier anchor A at equal physical time.",
+        assertions: [
+          {
+            assertionId: "sep-receive-after-b",
+            afterEventId: anchorB.event.eventId,
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: sepPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "sep-issue-after-a",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: sepPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(sepForward.valid).toBe(true);
+      if (!sepForward.valid) throw new Error("Expected compatible separate-anchor bundle to pass.");
+      expect(sepForward.impact.deficits).toEqual([]);
+
+      // Unrelated later Q (t110) and earlier R (t95) after an anchor must not shift unanchored-then-anchored same-time ordering.
+      await inventory.stock.receive({
+        operationId: "parity-unrelated-q-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: loosePosition("parity-q-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      await inventory.stock.receive({
+        operationId: "parity-unrelated-r-t95",
+        occurredAtEpochMs: time0 + 95,
+        to: loosePosition("parity-r-bin"),
+        amount: stockAmount("1", "piece"),
+      });
+      const parityPos = loosePosition("parity-target-bin");
+      const parityForward = await inventory.stock.planHistorical({
+        operationId: "parity-mixed-forward",
+        occurredAtEpochMs: time1 + 11,
+        reason: "Unanchored receipt then anchored issue after unrelated t110/t95 events.",
+        assertions: [
+          {
+            assertionId: "parity-fwd-rx",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 100,
+                to: parityPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "parity-fwd-iss",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: parityPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(parityForward.valid).toBe(true);
+      const laterFundingNegative = await inventory.stock.planHistorical({
+        operationId: "parity-later-funding-reject",
+        occurredAtEpochMs: time1 + 12,
+        reason: "Later t101 unanchored receipt cannot fund an earlier t100 anchored issue.",
+        assertions: [
+          {
+            assertionId: "parity-neg-rx-101",
+            assert: (plans) =>
+              plans.receive({
+                occurredAtEpochMs: time0 + 101,
+                to: loosePosition("parity-neg-bin"),
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+          {
+            assertionId: "parity-neg-iss-100",
+            afterEventId: anchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: loosePosition("parity-neg-bin"),
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(laterFundingNegative.valid).toBe(false);
+      if (!laterFundingNegative.valid) {
+        expect(laterFundingNegative.conflict.code).toBe("negative-stock");
+      }
+
+      // A same-time unrelated anchor recorded after a later t110 receipt on X must not let a t100 issue on X borrow t110 stock.
+      const xPos = loosePosition("anchor-cutoff-x");
+      const yAnchorPos = loosePosition("anchor-cutoff-y");
+      await inventory.stock.receive({
+        operationId: "cutoff-x-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: xPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const yAnchor = await inventory.stock.receive({
+        operationId: "cutoff-y-t100",
+        occurredAtEpochMs: time0 + 100,
+        to: yAnchorPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const cutoffRejected = await inventory.stock.planHistorical({
+        operationId: "cutoff-issue-t100-reject",
+        occurredAtEpochMs: time1 + 13,
+        reason: "Issue at t100 anchored to Y must not borrow X received at t110.",
+        assertions: [
+          {
+            assertionId: "cutoff-issue-x",
+            afterEventId: yAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: xPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(cutoffRejected.valid).toBe(false);
+      if (!cutoffRejected.valid) {
+        expect(cutoffRejected.conflict.code).toBe("negative-stock");
+      }
+
+      // Under Record mode, the same t100 anchored issue records a t100-t110 deficit rather than borrowing t110 free.
+      const cutoffRecordStorage = canonical
+        ? new Proxy(createInMemoryInventoryDurableStorage(), {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : createInMemoryInventoryDurableStorage();
+      const cutoffRecordInventory = createTestInventory(
+        cutoffRecordStorage,
+        undefined,
+        undefined,
+        InventoryDeficitPolicy.Record
+      );
+      await cutoffRecordInventory.stock.receive({
+        operationId: "cutoff-rec-x-t110",
+        occurredAtEpochMs: time0 + 110,
+        to: xPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const recYAnchor = await cutoffRecordInventory.stock.receive({
+        operationId: "cutoff-rec-y-t100",
+        occurredAtEpochMs: time0 + 100,
+        to: yAnchorPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const cutoffRecorded = await cutoffRecordInventory.stock.recordHistorical({
+        operationId: "cutoff-issue-t100-record",
+        occurredAtEpochMs: time1 + 14,
+        reason: "Record mode must observe the t100-t110 deficit across an unrelated anchor.",
+        assertions: [
+          {
+            assertionId: "cutoff-rec-issue-x",
+            afterEventId: recYAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: xPos,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(cutoffRecorded.event.historicalImpact?.deficits).toHaveLength(1);
+      expect(cutoffRecorded.event.historicalImpact?.deficits[0]?.startedAtEpochMs).toBe(time0 + 100);
+      expect(cutoffRecorded.event.historicalImpact?.deficits[0]?.endedAtEpochMs).toBe(time0 + 110);
+
+      // Passing control: an earlier t90 receipt on X still funds the t100 anchored issue without deficit.
+      const fundedX = loosePosition("anchor-cutoff-funded-x");
+      await inventory.stock.receive({
+        operationId: "cutoff-funded-t90",
+        occurredAtEpochMs: time0 + 90,
+        to: fundedX,
+        amount: stockAmount("1", "piece"),
+      });
+      const fundedYAnchor = await inventory.stock.receive({
+        operationId: "cutoff-funded-y-t100",
+        occurredAtEpochMs: time0 + 100,
+        to: loosePosition("anchor-cutoff-funded-y"),
+        amount: stockAmount("1", "piece"),
+      });
+      const fundedPlan = await inventory.stock.planHistorical({
+        operationId: "cutoff-funded-issue-t100",
+        occurredAtEpochMs: time1 + 15,
+        reason: "Earlier t90 receipt funds the t100 anchored issue.",
+        assertions: [
+          {
+            assertionId: "cutoff-funded-issue",
+            afterEventId: fundedYAnchor.event.eventId,
+            assert: (plans) =>
+              plans.issue({
+                occurredAtEpochMs: time0 + 100,
+                from: fundedX,
+                amount: stockAmount("1", "piece"),
+              }),
+          },
+        ],
+      });
+      expect(fundedPlan.valid).toBe(true);
+      if (!fundedPlan.valid) throw new Error("Expected t90 funded control to pass.");
+      expect(fundedPlan.impact.deficits).toEqual([]);
+    },
+  );
+
+  it.each([false, true])(
+    "includes participating replacement-side events in historicalImpact.affectedEventIds during receipt relocation corrections (canonical=%s)",
+    async (canonical) => {
+      const backing = createInMemoryInventoryDurableStorage();
+      const storage = canonical
+        ? new Proxy(backing, {
+            /** Force canonical history loading and coordinator commits. */
+            get(target, property) {
+              if (
+                property === "queryInventoryEventsByResourceKeys" ||
+                property === "commitSegmentedStockEvent"
+              ) {
+                return undefined;
+              }
+              const member = Reflect.get(target, property);
+              return typeof member === "function" ? member.bind(target) : member;
+            },
+          })
+        : backing;
+      const inventory = createTestInventory(storage);
+      const oldPos = loosePosition("impact-old-bin");
+      const newPos = loosePosition("impact-new-bin");
+      const thirdPos = loosePosition("impact-third-bin");
+      const oldRoot = await inventory.stock.receive({
+        operationId: "impact-old-rx",
+        occurredAtEpochMs: time0 + 100,
+        to: oldPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const unrelated = await inventory.stock.receive({
+        operationId: "impact-third-rx",
+        occurredAtEpochMs: time0 + 150,
+        to: thirdPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const newRx = await inventory.stock.receive({
+        operationId: "impact-new-rx",
+        occurredAtEpochMs: time0 + 200,
+        to: newPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const newIssue = await inventory.stock.issue({
+        operationId: "impact-new-issue",
+        occurredAtEpochMs: time0 + 300,
+        from: newPos,
+        amount: stockAmount("1", "piece"),
+      });
+      const correctionInput = {
+        operationId: "impact-relocate-correction",
+        occurredAtEpochMs: time1,
+        correctsEventId: oldRoot.event.eventId,
+        reason: "Receipt actually landed in new bin at t100.",
+        replaceWith: (plans: Parameters<typeof inventory.stock.correct>[0]["replaceWith"] extends
+          (plans: infer Plans) => unknown ? Plans : never) =>
+          plans.receive({
+            occurredAtEpochMs: time0 + 100,
+            to: newPos,
+            amount: stockAmount("1", "piece"),
+          }),
+      };
+      const preview = await inventory.stock.planCorrection(correctionInput);
+      expect(preview.valid).toBe(true);
+      if (!preview.valid) throw new Error("Expected relocation correction preview to succeed.");
+      expect(preview.impact.affectedEventIds).toContain(oldRoot.event.eventId);
+      expect(preview.impact.affectedEventIds).toContain(newRx.event.eventId);
+      expect(preview.impact.affectedEventIds).toContain(newIssue.event.eventId);
+      expect(preview.impact.affectedEventIds).not.toContain(unrelated.event.eventId);
+
+      const committed = await inventory.stock.correct(correctionInput);
+      expect(committed.event.historicalImpact?.affectedEventIds).toEqual(preview.impact.affectedEventIds);
+    },
+  );
 });

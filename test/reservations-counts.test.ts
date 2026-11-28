@@ -2515,4 +2515,60 @@ describe("snapshot, observation, and movement-safe count reconciliation", () => 
     });
     expect(atomicReconciled.event).toBeUndefined();
   });
+
+  it("excludes prepared and in-transit transfer stock from backing debt inside reservation feasibility", async () => {
+    const inventory = createTestInventory(
+      undefined,
+      undefined,
+      undefined,
+      InventoryDeficitPolicy.Record
+    );
+    const sourceLotP = loosePosition("transfer-debt-src", { lotId: "LOT-P" });
+    const sourceLotO = loosePosition("transfer-debt-src", { lotId: "LOT-O" });
+    const sourceLotD = loosePosition("transfer-debt-src", { lotId: "LOT-D" });
+    await inventory.stock.receive({
+      operationId: "td-rx-p",
+      occurredAtEpochMs: time0,
+      to: sourceLotP,
+      amount: stockAmount("10", "piece"),
+    });
+    await inventory.stock.receive({
+      operationId: "td-rx-o",
+      occurredAtEpochMs: time0,
+      to: sourceLotO,
+      amount: stockAmount("5", "piece"),
+    });
+    await inventory.transfers.prepare({
+      operationId: "td-prepare",
+      occurredAtEpochMs: time1,
+      transferId: "td-transfer-1",
+      transitPlacementNodeId: "transfer-debt-transit",
+      destinationPlacementNodeId: "transfer-debt-dst",
+      lines: [{ lineId: "p10", from: sourceLotP, amount: stockAmount("10", "piece") }],
+    });
+    // Record an exact 5-piece deficit in another lot at the same placement node, consuming LOT-O capacity.
+    await inventory.stock.issue({
+      operationId: "td-record-deficit",
+      occurredAtEpochMs: time1 + 1,
+      from: sourceLotD,
+      amount: stockAmount("5", "piece"),
+    });
+
+    const avail = await inventory.read.availability({
+      itemId: "item-a",
+      placementNodeIds: ["transfer-debt-src"],
+    });
+    expect(avail.revisions[0]?.unallocatedUsablePhysical).toEqual(parseQuantity("0", "piece"));
+
+    await expect(
+      inventory.reservations.reserve({
+        reservationId: "td-reserve-5",
+        operationId: "td-reserve-op",
+        itemRevisionId: "item-a-v2",
+        selector: { itemId: "item-a", placementNodeIds: ["transfer-debt-src"] },
+        requested: parseQuantity("5", "piece"),
+        createdAtEpochMs: time2,
+      })
+    ).rejects.toThrow("Inventory reservations cannot all be fulfilled simultaneously");
+  });
 });

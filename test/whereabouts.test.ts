@@ -1248,6 +1248,22 @@ describe("detached and missing stock whereabouts", () => {
     expect(exactOmittedHistory[0]?.history[1]?.actions).toEqual([
       InventoryWhereaboutsAction.HistoricallyRepaired,
     ]);
+    const cohortEvents = await inventory.read.events({
+      whereaboutsIds: [historicalOnly.whereaboutsId],
+    });
+    expect(cohortEvents.events.map(({ operationId }) => operationId)).toEqual([
+      "whereabouts-indexed-repair-add",
+      "whereabouts-indexed-repair-omit",
+    ]);
+    expect(
+      snapshot.events({ whereaboutsIds: [historicalOnly.whereaboutsId] }).events.map(
+        /** Confirm canonical snapshot event queries include zero-delta cohort omissions. */
+        ({ operationId }) => operationId
+      )
+    ).toEqual([
+      "whereabouts-indexed-repair-add",
+      "whereabouts-indexed-repair-omit",
+    ]);
     await expect(
       inventory.read.whereabouts({ whereaboutsIds: [] })
     ).rejects.toThrow("must be omitted instead of empty");

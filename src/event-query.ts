@@ -474,6 +474,9 @@ export function inventoryEventResourceKeys(
   for (const assertionId of event.historicalRepair?.omittedAssertionIds ?? []) {
     keys.add(inventoryAssertionEventKey(assertionId));
   }
+  for (const whereaboutsId of event.historicalImpact?.whereaboutsIds ?? []) {
+    keys.add(inventoryWhereaboutsEventKey(whereaboutsId));
+  }
   for (const assertion of inventoryEventEffectiveAssertions(event)) {
     collectOneEventResourceKeys(assertion, keys);
   }

@@ -438,7 +438,7 @@ function effectiveInventoryHistoryEvents({
     )
   );
   for (const entry of pending) {
-    insertHistoricalAssertion(merged, entry);
+    insertHistoricalAssertion(merged, entry, embeddedEvents);
   }
   const usedOperationIds = new Set<string>();
   for (const entry of merged) {
@@ -561,12 +561,80 @@ function isHistoricalSerialRemovalCorrection(
     );
 }
 
+/** Collect exact debited source positions and received serials for historical replay dependency matching. */
+function collectHistoricalAssertionStockBounds(
+  event: InventoryEventDraft
+): {
+  /** Exact stock positions this assertion debits. */
+  readonly sourcePositionIds: ReadonlySet<string>;
+  /** Item-scoped serials this assertion receives. */
+  readonly destinationSerialIds: ReadonlySet<string>;
+} {
+  const sourcePositionIds = new Set<string>();
+  const destinationSerialIds = new Set<string>();
+  for (const effect of event.stockEffects) {
+    if (effect.measurementsDelta.primary.quantity.amountMinor < 0) {
+      sourcePositionIds.add(inventoryStockPositionIdentity(effect.position));
+    } else if (effect.position.serialId !== undefined && effect.measurementsDelta.primary.quantity.amountMinor > 0) {
+      destinationSerialIds.add(inventorySerialIdentity(effect.position.itemId, effect.position.serialId));
+    }
+  }
+  return { sourcePositionIds, destinationSerialIds };
+}
+
+/** True when a candidate replay entry shares at least one dependency key with the target assertion. */
+function eventSharesHistoricalDependency(
+  event: InventoryEventDraft | InventoryCommittedEvent,
+  dependencies: ReadonlySet<string>
+): boolean {
+  for (const key of inventoryEventDependencyKeys(event)) {
+    if (dependencies.has(key)) return true;
+  }
+  return false;
+}
+
+/** True when a replay event debits stock or alters placement topology rather than purely adding loose stock. */
+function eventConsumesOrReordersState(
+  event: InventoryEventDraft | InventoryCommittedEvent
+): boolean {
+  if ((event.placementChanges?.length ?? 0) > 0) return true;
+  for (const effect of event.stockEffects) {
+    if (effect.measurementsDelta.primary.quantity.amountMinor < 0) return true;
+  }
+  return false;
+}
+
+/** True when an earlier-positioned entry ahead of an insertion point is a strictly later resource conflict. */
+function isLaterConflictingHistoricalEntry(
+  event: InventoryEventDraft | InventoryCommittedEvent,
+  occurredAt: number,
+  dependencies: ReadonlySet<string>,
+  sourcePositionIds: ReadonlySet<string>,
+  destinationSerialIds: ReadonlySet<string>
+): boolean {
+  if (
+    event.kind === InventoryEventKind.Correction &&
+    !isSharedPlacementCorrection(event, dependencies) &&
+    (event.occurredAtEpochMs > occurredAt ||
+      (!isHistoricalStockSupplyCorrection(event, sourcePositionIds) &&
+        !isHistoricalSerialRemovalCorrection(event, destinationSerialIds)))
+  ) {
+    return false;
+  }
+  return event.occurredAtEpochMs > occurredAt && eventSharesHistoricalDependency(event, dependencies);
+}
+
 /** Insert after an explicit anchor or between the earlier and later facts using the same resources. */
 function insertHistoricalAssertion(
   target: InventoryHistoricalReplayEntry[],
-  pending: InventoryPendingHistoricalAssertion
+  pending: InventoryPendingHistoricalAssertion,
+  embeddedEvents: ReadonlySet<InventoryEventDraft | InventoryCommittedEvent>
 ): void {
   const assertion = pending.assertion;
+  const dependencies = new Set(inventoryEventDependencyKeys(assertion.event));
+  const { sourcePositionIds, destinationSerialIds } =
+    collectHistoricalAssertionStockBounds(assertion.event);
+  const occurredAt = assertion.event.occurredAtEpochMs;
   let insertionIndex = -1;
   if (assertion.afterEventId !== undefined) {
     insertionIndex = target.findIndex(
@@ -580,21 +648,58 @@ function insertHistoricalAssertion(
         eventId: assertion.event.eventId,
       });
     }
-  } else {
-    /** Only events using these resources can constrain this assertion's replay order. */
-    const dependencies = new Set(inventoryEventDependencyKeys(assertion.event));
-    /** Exact stock positions this assertion needs to debit. */
-    const sourcePositionIds = new Set<string>();
-    /** Serialized identities this assertion receives so earlier omitting corrections precede it. */
-    const destinationSerialIds = new Set<string>();
-    for (const effect of assertion.event.stockEffects) {
-      if (effect.measurementsDelta.primary.quantity.amountMinor < 0) {
-        sourcePositionIds.add(inventoryStockPositionIdentity(effect.position));
-      } else if (effect.position.serialId !== undefined && effect.measurementsDelta.primary.quantity.amountMinor > 0) {
-        destinationSerialIds.add(inventorySerialIdentity(effect.position.itemId, effect.position.serialId));
+    // If an eligible anchor (occurredAt <= assertion) sat durably behind a later conflicting dependency
+    // (for assertions that consume/move stock or later entries that consume/reorder it), bring both ahead.
+    const assertionTouchesExistingState =
+      sourcePositionIds.size > 0 ||
+      destinationSerialIds.size > 0 ||
+      (assertion.event.placementChanges?.length ?? 0) > 0;
+    if (target[insertionIndex]!.event.occurredAtEpochMs <= occurredAt) {
+      for (let index = 0; index < insertionIndex; index += 1) {
+        const candidateEvent = target[index]!.event;
+        if (
+          (assertionTouchesExistingState || eventConsumesOrReordersState(candidateEvent)) &&
+          isLaterConflictingHistoricalEntry(
+            candidateEvent,
+            occurredAt,
+            dependencies,
+            sourcePositionIds,
+            destinationSerialIds
+          )
+        ) {
+          bringForwardHistoricalPredecessors(
+            target,
+            index,
+            occurredAt,
+            dependencies,
+            sourcePositionIds,
+            destinationSerialIds,
+            assertion.afterEventId
+          );
+          insertionIndex = target.findIndex(
+            /** Re-locate the anchor after bringing it ahead of the strictly later resource conflict. */
+            (entry) => entry.event.eventId === assertion.afterEventId
+          );
+          break;
+        }
       }
     }
-    const occurredAt = assertion.event.occurredAtEpochMs;
+    // Same-time assertions in pending are already sorted by comparePendingHistoricalAssertion.
+    // Advance past any earlier-or-equal inserted assertion after the anchor unless blocked by a conflicting later base event.
+    for (let scanIndex = insertionIndex + 1; scanIndex < target.length; scanIndex += 1) {
+      const nextEntry = target[scanIndex]!;
+      if (embeddedEvents.has(nextEntry.event)) {
+        if (nextEntry.event.occurredAtEpochMs <= occurredAt) {
+          insertionIndex = scanIndex;
+        }
+        continue;
+      }
+      if (nextEntry.event.occurredAtEpochMs <= occurredAt) {
+        continue;
+      }
+      if (eventSharesHistoricalDependency(nextEntry.event, dependencies)) break;
+    }
+  } else {
     for (let index = 0; index < target.length; index += 1) {
       const event = target[index]!.event;
       // Keep shared topology corrections and earlier corrections that supply stock or clear a received serial.
@@ -606,10 +711,7 @@ function insertHistoricalAssertion(
       }
       if (event.occurredAtEpochMs <= occurredAt) {
         insertionIndex = index;
-      } else if (inventoryEventDependencyKeys(event).some(
-        /** A later event sharing a resource must see the assertion first. */
-        (key) => dependencies.has(key)
-      )) {
+      } else if (eventSharesHistoricalDependency(event, dependencies)) {
         // First put any backdated predecessors ahead of this later fact.
         const predecessors = bringForwardHistoricalPredecessors(
           target,
@@ -658,7 +760,8 @@ function bringForwardHistoricalPredecessors(
   occurredAt: number,
   dependencies: ReadonlySet<string>,
   sourcePositionIds: ReadonlySet<string>,
-  destinationSerialIds: ReadonlySet<string>
+  destinationSerialIds: ReadonlySet<string>,
+  requiredAnchorEventId?: string
 ): number {
   /** Events already ordered before the insertion slice satisfy anchor prerequisites immediately. */
   const priorEventIds = new Set<string>();
@@ -782,6 +885,10 @@ function bringForwardHistoricalPredecessors(
         pendingKeys.push(dependency);
       }
     }
+  }
+  if (requiredAnchorEventId !== undefined) {
+    const requiredAnchorIndex = eligibleIndexByEventId.get(requiredAnchorEventId);
+    if (requiredAnchorIndex !== undefined) selectPredecessor(requiredAnchorIndex);
   }
   while (pendingKeys.length > 0 || pendingSupplyDemand.length > 0 || pendingRemovalDemand.length > 0) {
     while (pendingKeys.length > 0) {
@@ -1323,8 +1430,11 @@ function inventoryAffectedHistoricalEventIds(
         inventoryEventIntentFingerprint(after)
     ) {
       changed.add(eventId);
-      for (const key of inventoryEventDependencyKeys(before ?? after!)) {
-        resourceKeys.add(key);
+      for (const variant of [before, after]) {
+        if (variant === undefined) continue;
+        for (const key of inventoryEventDependencyKeys(variant)) {
+          resourceKeys.add(key);
+        }
       }
     }
   }

@@ -1141,6 +1141,7 @@ function reservationGroupFeasibility(
       );
     }
     if (
+      position.key.transferId !== undefined ||
       position.key.placementNodeId === undefined ||
       !selectedLocations.has(position.key.placementNodeId)
     ) continue;
